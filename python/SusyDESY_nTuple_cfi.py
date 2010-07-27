@@ -1,6 +1,6 @@
 import FWCore.ParameterSet.Config as cms
 
-from  SUSYBSMAnalysis.SusyDESY.SusyDESY_Module_cfi import *
+from  SUSYBSMAnalysis.DesySusy.SusyDESY_Module_cfi import *
 
 susyTree = cms.EDAnalyzer("SusyTree",
     outputCommands = cms.untracked.vstring(
