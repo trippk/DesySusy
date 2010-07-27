@@ -1,4 +1,4 @@
-#include "SUSYBSMAnalysis/SusyDESY/interface/SusyDESY_Module.h"
+#include "SUSYBSMAnalysis/DesySusy/interface/SusyDESY_Module.h"
 #include "FWCore/Framework/interface/Event.h"
 
 SusyDESY_Electrons::SusyDESY_Electrons(const edm::ParameterSet& iConfig)
