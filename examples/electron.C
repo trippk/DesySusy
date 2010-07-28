@@ -94,7 +94,12 @@ void electron(){
 		vector<float>&     trackIso  = tree->Get(&trackIso,         "electronTrackIsoPat");
 		vector<float>&   eleidLoose  = tree->Get(&eleidLoose,       "electronEIDLoosePat");
 		vector<float>&        eleid  = tree->Get(&eleid,            "electron"+eid+"Pat");
-
+/*
+		map<string,bool>& triggered    = tree->Get(&triggered,  "triggered");
+		map<string,int>&  prescaled    = tree->Get(&prescaled,  "prescaled");
+		map<string,bool>& L1triggered  = tree->Get(&L1triggered,"L1triggered");
+		map<string,int>&  L1prescaled  = tree->Get(&L1prescaled,"L1prescaled");
+*/
 
 		for(unsigned int k=0;k<Electrons.size();k++){
 			if( eleid[k]==0 && eleidLoose[k]==0 ) continue;
