@@ -95,10 +95,16 @@ void electron(){
 		vector<float>&   eleidLoose  = tree->Get(&eleidLoose,       "electronEIDLoosePat");
 		vector<float>&        eleid  = tree->Get(&eleid,            "electron"+eid+"Pat");
 /*
-		map<string,bool>& triggered    = tree->Get(&triggered,  "triggered");
-		map<string,int>&  prescaled    = tree->Get(&prescaled,  "prescaled");
-		map<string,bool>& L1triggered  = tree->Get(&L1triggered,"L1triggered");
-		map<string,int>&  L1prescaled  = tree->Get(&L1prescaled,"L1prescaled");
+		map<string,bool>& triggered        = tree->Get(&triggered,       "triggered");
+		map<string,int>&  prescaled        = tree->Get(&prescaled,       "prescaled");
+		map<string,bool>& L1triggered      = tree->Get(&L1triggered,     "L1triggered");
+		map<string,int>&  L1prescaled      = tree->Get(&L1prescaled,     "L1prescaled");
+		map<string,int>&  L1prescaled      = tree->Get(&L1prescaled,     "L1prescaled");
+		map<string,int>&  parasiticTrigger = tree->Get(&parasiticTrigger,"parasiticTrigger");
+		// may need options.register('SourceName', "DS:EG", ... in exampleTree_cfg.py
+		if( triggered["HLT_Ele10_LW_L1R"] ) {
+			cout<<"HLT_Ele10_LW_L1R triggered"<<endl;
+		};
 */
 
 		for(unsigned int k=0;k<Electrons.size();k++){

@@ -110,16 +110,19 @@ public:
 	//       electron->size()
 	template<typename T> 
 	inline T* Get(T** ppt, const char* name){
-		*ppt=0;
 		TBranch* branch;
+		static  T* last(0);
 		if( byName.find(name)==byName.end() ) branch=byName[name]= GetBranch( name );
 		else branch=byName[name];
 		if(branch==0) {
 			cerr<<"Branch "<<name<<" is undefined in tree: "<<GetName()<<endl;
 			exit(0);
 		}
+		if(last!=0) delete last;
+		*ppt=0;
 		branch->SetAddress( ppt );
 		branch->GetEntry(localEntry,1);
+		last=*ppt;
 		return *ppt;
 	};
 	template<typename T> 
@@ -131,8 +134,8 @@ public:
 	//       Electron.size()
 	template<typename T> 
 	inline T& Get(T* leaf,const char* name) {
-		T* pt=0;
 		TBranch* branch;
+		static  T* last(0);
 		// This increases the performance since GetBranch seraches the full tree
 		// byNames.find only the used names
 		if( byName.find(name)==byName.end() ) branch=byName[name]= GetBranch( name );
@@ -141,8 +144,11 @@ public:
 			cerr<<"Branch "<<name<<" is undefined in tree: "<<GetName()<<endl;
 			exit(0);
 		}
+		if(last!=0) delete last;
+		T* pt=0;
 		branch->SetAddress( &pt );
 		branch->GetEntry(localEntry,1);
+		last=pt;
 		return *pt;
 	};
 	template<typename T> 
