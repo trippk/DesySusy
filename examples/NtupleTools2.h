@@ -31,6 +31,11 @@ typedef ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> >            Lor
 typedef ROOT::Math::DisplacementVector3D<ROOT::Math::Cartesian3D<double> > XYZVectorD;
 typedef ROOT::Math::PositionVector3D<ROOT::Math::Cartesian3D<double>  >     XYZPointD;
 
+#ifdef __MAKECINT__
+#pragma link C++ class pair<string,bool>+;
+#pragma link C++ class vector<LorentzV>+;
+#pragma link C++ class map<string,bool>+;
+#endif
 
 //---------- simple progress counter and timer -----------------------------
 void progress(ostream& os=cout){
@@ -111,18 +116,21 @@ public:
 	template<typename T> 
 	inline T* Get(T** ppt, const char* name){
 		TBranch* branch;
-		static  T* last(0);
-		if( byName.find(name)==byName.end() ) branch=byName[name]= GetBranch( name );
+		static  map<string,T*> localByName;
+		if( localByName.find(name)==localByName.end() ) {
+			branch=byName[name]= GetBranch( name );
+			localByName[name] = 0;
+		}
 		else branch=byName[name];
 		if(branch==0) {
 			cerr<<"Branch "<<name<<" is undefined in tree: "<<GetName()<<endl;
 			exit(0);
 		}
-		if(last!=0) delete last;
+		if(localByName[name]!=0) delete localByName[name];
 		*ppt=0;
 		branch->SetAddress( ppt );
 		branch->GetEntry(localEntry,1);
-		last=*ppt;
+		localByName[name]=*ppt;
 		return *ppt;
 	};
 	template<typename T> 
@@ -135,20 +143,23 @@ public:
 	template<typename T> 
 	inline T& Get(T* leaf,const char* name) {
 		TBranch* branch;
-		static  T* last(0);
+		static  map<string,T*> localByName;
 		// This increases the performance since GetBranch seraches the full tree
 		// byNames.find only the used names
-		if( byName.find(name)==byName.end() ) branch=byName[name]= GetBranch( name );
+		if( localByName.find(name)==localByName.end() ) {
+			branch=byName[name]= GetBranch( name );
+			localByName[name] = 0;
+		}
 		else branch=byName[name];
 		if(branch==0) {
 			cerr<<"Branch "<<name<<" is undefined in tree: "<<GetName()<<endl;
 			exit(0);
 		}
-		if(last!=0) delete last;
+		if(localByName[name]!=0) delete localByName[name];
 		T* pt=0;
 		branch->SetAddress( &pt );
 		branch->GetEntry(localEntry,1);
-		last=pt;
+		localByName[name]=pt;
 		return *pt;
 	};
 	template<typename T> 
