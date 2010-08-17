@@ -112,12 +112,20 @@ void electron(){
 			if(Electrons[k].pt()<elMinPt)               continue;
 			if(fabs(Electrons[k].eta())<elMaxEta)       continue;
 			double relIso = (trackIso[k]+ecalIso[k]+hcalIso[k])/Electrons[k].pt();
-			if( eleid[k]==1) {
+			// 0: fails
+			// 1: passes electron ID only
+			// 2: passes electron Isolation only
+			// 3: passes electron ID and Isolation only
+			// 4: passes conversion rejection
+			// 5: passes conversion rejection and ID
+			// 6: passes conversion rejection and Isolation
+			// 7: passes the whole selection
+			if( eleid[k]==7) {
 				cntE++;
 				m_pt+=Electrons[k].pt();
 				m_relIso += relIso;
 			}
-			if( eleidLoose[k]==1) {
+			if( eleidLoose[k]==7) {
 				cntELoose++;
 				m_ptLoose+=Electrons[k].pt();
 				m_relIsoLoose += relIso;
