@@ -11,7 +11,8 @@ susyTree = cms.EDAnalyzer("SusyTree",
 
 nTupleSequenceDESY = cms.Sequence(susydesypatelectrons +
                                   susydesypfelectrons +
-                                  susydesymuons
+                                  susydesypatmuons +
+                                  susydesypfmuons
                                   )
 
 

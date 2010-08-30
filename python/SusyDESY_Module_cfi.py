@@ -16,11 +16,20 @@ susydesypfelectrons = cms.EDProducer("SusyDESY_Electrons",
                                      #any other parameter
                                      )
 
-susydesymuons = cms.EDProducer("SusyDESY_Muons",
-                               Prefix       = cms.string('muon'),
-                               Suffix       = cms.string('DESY'),
+susydesypatmuons = cms.EDProducer("SusyDESY_Muons",
+                               Prefix       = cms.string('DESYmuon'),
+                               Suffix       = cms.string('Pat'),
                                    
                                PatMuons     = cms.InputTag('cleanPatMuons'),
+
+                               #any other parameter
+                               )
+
+susydesypfmuons = cms.EDProducer("SusyDESY_Muons",
+                               Prefix       = cms.string('DESYmuon'),
+                               Suffix       = cms.string('PF'),
+                                   
+                               PatMuons     = cms.InputTag('selectedPatMuonsPF'),
 
                                #any other parameter
                                )

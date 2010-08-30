@@ -89,11 +89,16 @@ SusyDESY_Muons::SusyDESY_Muons(const edm::ParameterSet& iConfig)
   produces <bool>                 ( Prefix + "PatMuonsHandleValid" + Suffix );
   //produces <std::vector<double> > ( Prefix + "PatMuonPT"           + Suffix );
 
+  produces <std::vector<double> > ( Prefix + "PatMuonHCALenergy"   + Suffix );
+  produces <std::vector<double> > ( Prefix + "PatMuonECALenergy"   + Suffix );
+
   //all variables you want to be added to the ntuple by your module
 }
 void SusyDESY_Muons::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
   std::auto_ptr<bool>                 handleValid ( new bool(false)           );
   //std::auto_ptr<std::vector<double> > muonPT      ( new std::vector<double>() );
+  std::auto_ptr<std::vector<double> > muonHCALenergy ( new std::vector<double>() );
+  std::auto_ptr<std::vector<double> > muonECALenergy ( new std::vector<double>() );
 
   //all variables you want to be added to the ntuple by your module
 
@@ -104,13 +109,16 @@ void SusyDESY_Muons::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) 
     *handleValid.get() = true;
     //you might do here something to get the variables you want to add, for example
 
-//     for(std::vector<pat::Muon>::const_iterator el = MuColl->begin(); el!=MuColl->end(); el++) {
+    for(std::vector<pat::Muon>::const_iterator el = MuColl->begin(); el!=MuColl->end(); el++) {
 //       muonPT->push_back(el->pt());
-//     }
+      muonHCALenergy->push_back( el->calEnergy().had );
+      muonECALenergy->push_back( el->calEnergy().em  );
+    }
   }
   iEvent.put( handleValid, Prefix + "PatMuonsHandleValid" + Suffix );
   //iEvent.put( muonPT     , Prefix + "PatMuonPT"           + Suffix );
-
+  iEvent.put( muonHCALenergy, Prefix + "PatMuonHCALenergy"   + Suffix );
+  iEvent.put( muonECALenergy, Prefix + "PatMuonECALenergy"   + Suffix );
   //all variables you want to be added to the ntuple by your module
 }
 void SusyDESY_Muons::beginJob(){}
