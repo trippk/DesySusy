@@ -14,6 +14,8 @@
 #include "TFile.h"
 #include "TStopwatch.h"
 #include "NtupleTools2.h"
+#include "Math/VectorUtil.h"
+#include "NtupleTools2.h"
 
 using namespace std;
 
@@ -68,7 +70,8 @@ void electron(){
 	set<int> runs;
 	TStopwatch timer;
 	timer.Start();
-	for(int i=0;i<N;++i){
+	for(int i=0;i<1000;++i){
+//	for(int i=0;i<N;++i){
 
 		tree->GetEntry(i);
 
@@ -77,7 +80,16 @@ void electron(){
 		unsigned   run = tree->Get(run,  "run");
 		runs.insert(run);
 
-		//references
+		// In ROOT LorentzV = ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> >
+		// is not related to the older TLorentzVector!
+		// Therefore the following does not work: TLorentzVector*   metP4Calo = tree->Get(&metP4Calo,"metP4Calo");
+		// If you need the TLorentzVector methods you may use instead: 
+		//     LorentzV*         LV_metP4Calo = tree->Get(&metP4Calo,"metP4Calo");
+		//     double ca[4];
+		//     LV_metP4Calo->GetCoordinates(ca);
+		//     TLorentzVector  TLV_metP4Calo(ca); // TLorentzVector*  pTLV_metP4Calo = new TLorentzVector(ca);
+		// or (the better way) look into ROOT::Math::VectorUtil
+		
 		vector<LorentzV>& Electrons = tree->Get(&Electrons,"electronP4Pat");
 		if( Electrons.size()!=0) cntEevts++;
 		else continue;
@@ -120,6 +132,7 @@ void electron(){
 			// 5: passes conversion rejection and ID
 			// 6: passes conversion rejection and Isolation
 			// 7: passes the whole selection
+
 			if( eleid[k]==7) {
 				cntE++;
 				m_pt+=Electrons[k].pt();
