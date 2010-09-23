@@ -177,7 +177,7 @@ void ra4(){
 		unsigned j;
 		for(j=0;j<Jets.size();j++){
 			if(Jets[j].pt()<30 || fabs(Jets[j].eta())>2.4 || JetID[j]==0) continue;
-			if(++jetCnt == 5) break; //4: 3797, 5: 1926
+			if(++jetCnt == 4) break; //4: 3797, 5: 1926
 		}
 		if(j==Jets.size()) continue;
 		cnt4jets++;
