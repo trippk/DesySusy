@@ -37,6 +37,7 @@ void ra4(){
 
 	// main selection counts
 	int cntTightMu=0;   //Number of evts ... - exactly 1 tight Muon within cuts - see bellow
+	int cntTightMoreMu=0;   //Number of evts ... - at leadt 1 tight Muon within cuts - see bellow
 	int cntNoLooseMu=0; //Number of evts ... - no further loose muon
 	int cntNoLooseEl=0; //Number of evts ... - no electron
 	int cnt4jets=0;     //Number of evts ... - at least 4 jets
@@ -55,7 +56,7 @@ void ra4(){
 		//technical trigger bits
 		vector<int>& L1tech  = tree->Get(&L1tech,"l1techbits");
 		if(data) if(!L1tech[0]) continue;
-		if(L1tech[36]||L1tech[37]||L1tech[38]||L1tech[39]) continue;
+//		if(L1tech[36]||L1tech[37]||L1tech[38]||L1tech[39]) continue;
 		cntTec++;
 
 		//HLT trigger
@@ -69,14 +70,17 @@ void ra4(){
 		vector<double>&    Vertex_ndof    = tree->Get( &Vertex_ndof,   "vertexNdof"    );
 		vector<int>&       Vertex_nTracks = tree->Get( &Vertex_nTracks,"vertexNtrks"   );
 		unsigned vx;
+		vector<unsigned> vertices;
 		for( vx=0; vx < Vertices.size(); ++vx ) {
 			if( Vertex_isFake[vx] ) 	   continue;
 			if( fabs(Vertices[vx].z()) > 15 )  continue; // 24 data
 			if( Vertices[vx].rho() >  2 )      continue;
 			if( Vertex_ndof[vx] <=   4 )       continue;
-			break;
+			vertices.push_back(vx);
+//			break;
 		}
-		if(vx==Vertices.size()) continue;
+//		if(vx==Vertices.size()) continue;
+		if(vertices.size()==0) continue;
 		cntVer++;
 
 		//HBHEnoiseFilter
@@ -102,15 +106,16 @@ void ra4(){
 		//Muon what else
 		vector<LorentzV>& Muons = tree->Get(&Muons, "muonP4Pat");
 		if(Muons.size()==0) continue;
-
 		// isolations
 		vector<float>&      muEcalIso  = tree->Get(&muEcalIso,  "muonEcalIsoPat");
 		vector<float>&      muHcalIso  = tree->Get(&muHcalIso,  "muonHcalIsoPat");
 		vector<float>&     muTrackIso  = tree->Get(&muTrackIso, "muonTrackIsoPat");
-		vector<double>&           dxy  = tree->Get(&dxy,        "muonGlobalTrackDxyPat"); // equals d0
+//		vector<double>&           dxy  = tree->Get(&dxy,        "muonGlobalTrackDxyBSPat"); // equals d0
+		vector<double>&           dxy  = tree->Get(&dxy,        "muonInnerTrackDxyBSPat");
 		// muonID etc.
 		vector<int>& muidTight = tree->Get(&muidTight, "muonIDGlobalMuonPromptTightPat");
 		vector<int>& isGlobal  = tree->Get(&muidTight, "muonIsGlobalMuonPat");
+		vector<int>& isTracker = tree->Get(&isTracker, "muonIsTrackerMuonPat");
 		vector<int>& ValidHits = tree->Get(&ValidHits, "muonInnerTrackNumberOfValidHitsPat"); // should be muon->globalTrack()-> hitPattern().numberOfValidTrackerHits() 
 		//
 		// tight: mu_pt>=20, |mu_eta|<=2.1, relIso<0.05, d0<0.2 (should that be muonGlobalTrackDxyBSPat)
@@ -120,11 +125,10 @@ void ra4(){
 		int loose(0),tight(0);
 		vector<unsigned> candidates;
 		for(unsigned k=0;k<Muons.size();k++) {
-
 			if( Muons[k].pt() < 10 || fabs(Muons[k].eta()) > 2.5 ) continue; // neither veto nor tight muon
 
-			double relIso=(muEcalIso[k]+muHcalIso[k]+muTrackIso[k])/Muons[k].pt();
-			if( muidTight[k] && Muons[k].pt() >= 20 && fabs(Muons[k].eta()) <= 2.1
+			double relIso=(muEcalIso[k]+muHcalIso[k]+muTrackIso[k])/Muons[k].Et();
+			if( muidTight[k] && isTracker[k] && Muons[k].pt() >= 20 && fabs(Muons[k].eta()) <= 2.1
 			    && relIso<0.05 && fabs(dxy[k])<0.02 && ValidHits[k]>=11)
 				candidates.push_back(k);
 			else if ( isGlobal[k] && relIso<0.2 ) {
@@ -152,15 +156,22 @@ void ra4(){
 			}
 			if(k==Jets.size()) tight++;
 		}
+		if( tight>=1 ) cntTightMoreMu++;
 		if( tight==1 ) cntTightMu++;
 		if( tight==0 || tight+loose>1 ) continue;
 		cntNoLooseMu++;
 
 		//veto electron
 		vector<LorentzV>& Electrons = tree->Get(&Electrons,  "electronP4Pat");
+/*
 		vector<float>&    elEcalIso = tree->Get(&elEcalIso,  "electronEcalIsoPat");
 		vector<float>&    elHcalIso = tree->Get(&elHcalIso,  "electronHcalIsoPat");
 		vector<float>&   elTrackIso = tree->Get(&elTrackIso, "electronTrackIsoPat");
+*/
+		vector<float>&    elHcalIso = tree->Get(&elHcalIso,  "electronDr03HcalTowerSumEtPat");
+		vector<float>&   elTrackIso = tree->Get(&elTrackIso, "electronDr03TkSumPtPat");
+		vector<float>&    elEcalIso = tree->Get(&elEcalIso,  "electronDr03EcalRecHitSumEtPat");
+
 		unsigned ie;
 		for(ie=0;ie<Electrons.size();ie++){
 			if( Electrons[ie].pt()<15 || fabs(Electrons[ie].eta())>2.5) continue;
@@ -175,15 +186,16 @@ void ra4(){
 		vector<int>&      JetID(*ak5JetJetIDloosePat);
 		unsigned jetCnt=0;
 		unsigned j;
+		if(Jets.size()<4) continue;
 		for(j=0;j<Jets.size();j++){
 			if(Jets[j].pt()<30 || fabs(Jets[j].eta())>2.4 || JetID[j]==0) continue;
 			if(++jetCnt == 4) break; //4: 3797, 5: 1926
 		}
 		if(j==Jets.size()) continue;
 		cnt4jets++;
-		
+
 		//MET wo ist PAT MET?
-		//metP4AK5 
+		//metP4AK5
 		LorentzV* metP4Calo = tree->Get(&metP4Calo,"metP4Calo");
 		if(metP4Calo->Et()<=100) continue;
 		cntMET++;
@@ -201,6 +213,7 @@ void ra4(){
 	cout<<cntHBN<<" Number of ... + HBHEnoiseFilter "<<100./N*cntHBN<<endl;
 	cout<<cntPur<<" Number of ... + PKAM "<<100./N*cntPur<<endl;
 	cout<<endl;
+	cout<<cntTightMoreMu  <<" Number of ... + at least 1 tight Muon within cuts "<<100./N*cntTightMu<<endl;
 	cout<<cntTightMu  <<" Number of ... + exactly 1 tight Muon within cuts "<<100./N*cntTightMu<<endl;
 	cout<<cntNoLooseMu<<" Number of ... + no further loose muon "<<100./N*cntNoLooseMu<<endl;
 	cout<<cntNoLooseEl<<" Number of ... + no electron "<<100./N*cntNoLooseEl<<endl;
