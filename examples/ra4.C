@@ -6,8 +6,9 @@
 #include <iostream>
 #include "TFile.h"
 #include "Math/VectorUtil.h"
+//#include "Math/VectorUtil_Cint.h"
 #include "TStopwatch.h"
-#include "NtupleTools2.h"
+#include "../code/NtupleTools2.h"
 
 using namespace std;
 using namespace ROOT::Math::VectorUtil;
@@ -20,7 +21,8 @@ void ra4(){
 	EasyChain* tree = new EasyChain("/susyTree/tree");
 	TStopwatch t;
 	t.Start();
-	const string dir="/scratch/hh/current/cms/user/mstein/ntuples/LM1/Spring10-START3X_V26_S09-v1/GEN-SIM-RECO/V00-13-06";
+	const string dir="/scratch/hh/current/cms/user/kruecker/ntuples/V00-02-00/mc/LM1/Spring10-START3X_V26_S09-v1/GEN-SIM-RECO/";
+//	AllRootFilesIn(dir,tree,1);
 	AllRootFilesIn(dir,tree,"ls");
 	t.Stop();
 	cout<<tree->GetNtrees()<<" files read. Real: "<<t.RealTime()<<" CPU: "<<t.CpuTime()<<endl;
@@ -37,7 +39,7 @@ void ra4(){
 
 	// main selection counts
 	int cntTightMu=0;   //Number of evts ... - exactly 1 tight Muon within cuts - see bellow
-	int cntTightMoreMu=0;   //Number of evts ... - at leadt 1 tight Muon within cuts - see bellow
+	int cntTightMoreMu=0;   //Number of evts ... - at least 1 tight Muon within cuts - see bellow
 	int cntNoLooseMu=0; //Number of evts ... - no further loose muon
 	int cntNoLooseEl=0; //Number of evts ... - no electron
 	int cnt4jets=0;     //Number of evts ... - at least 4 jets
@@ -114,9 +116,12 @@ void ra4(){
 		vector<double>&           dxy  = tree->Get(&dxy,        "muonInnerTrackDxyBSPat");
 		// muonID etc.
 		vector<int>& muidTight = tree->Get(&muidTight, "muonIDGlobalMuonPromptTightPat");
-		vector<int>& isGlobal  = tree->Get(&muidTight, "muonIsGlobalMuonPat");
+		vector<int>& isGlobal  = tree->Get(&isGlobal,  "muonIsGlobalMuonPat");
 		vector<int>& isTracker = tree->Get(&isTracker, "muonIsTrackerMuonPat");
-		vector<int>& ValidHits = tree->Get(&ValidHits, "muonInnerTrackNumberOfValidHitsPat"); // should be muon->globalTrack()-> hitPattern().numberOfValidTrackerHits() 
+		vector<unsigned>& ValidHitsI = tree->Get(&ValidHitsI, "muonInnerTrackNumberOfValidHitsPat"); // should be muon->globalTrack()-> hitPattern().numberOfValidTrackerHits() 
+		vector<unsigned>& ValidHitsG = tree->Get(&ValidHitsG, "muonGlobalTracknumberOfValidHitsPat");
+		vector<unsigned>& ValidHitsO = tree->Get(&ValidHitsO, "muonOuterTrackNumberOfValidHitsPat");
+		vector<unsigned>& ValidHits  = tree->Get(&ValidHits, "DESYmuonGlobalTrackNumberOfValidTrackerHitsPat");
 		//
 		// tight: mu_pt>=20, |mu_eta|<=2.1, relIso<0.05, d0<0.2 (should that be muonGlobalTrackDxyBSPat)
 		//        no calo jet within R<0.3
@@ -125,9 +130,11 @@ void ra4(){
 		int loose(0),tight(0);
 		vector<unsigned> candidates;
 		for(unsigned k=0;k<Muons.size();k++) {
+
 			if( Muons[k].pt() < 10 || fabs(Muons[k].eta()) > 2.5 ) continue; // neither veto nor tight muon
 
 			double relIso=(muEcalIso[k]+muHcalIso[k]+muTrackIso[k])/Muons[k].Et();
+
 			if( muidTight[k] && isTracker[k] && Muons[k].pt() >= 20 && fabs(Muons[k].eta()) <= 2.1
 			    && relIso<0.05 && fabs(dxy[k])<0.02 && ValidHits[k]>=11)
 				candidates.push_back(k);
@@ -136,6 +143,7 @@ void ra4(){
 //				break; // do not use this for the comparision of the number of tight muons
 				       // although the final (not the tight count) result stays the same and it is a bit faster
 			}
+
 		}
 		vector<LorentzV>*    ak5CaloJets=0;
 		vector<int>* ak5JetJetIDloosePat=0;
@@ -151,14 +159,13 @@ void ra4(){
 			unsigned k;
 			for(k=0;k<Jets.size();k++){
 				if(Jets[k].pt()<30 || fabs(Jets[k].eta())>2.4 || JetID[k]==0) continue; // 14093
-//				if(Jets[k].pt()<30 || fabs(Jets[k].eta())>2.4 ) continue; // 14052
 				if(DeltaR(Jets[k],Muons[candidates[i]])<=0.3) break;
 			}
 			if(k==Jets.size()) tight++;
 		}
 		if( tight>=1 ) cntTightMoreMu++;
 		if( tight==1 ) cntTightMu++;
-		if( tight==0 || tight+loose>1 ) continue;
+		if( tight==0 || tight+loose>1 || candidates.size()>1) continue;
 		cntNoLooseMu++;
 
 		//veto electron
@@ -195,9 +202,9 @@ void ra4(){
 		cnt4jets++;
 
 		//MET wo ist PAT MET?
-		//metP4AK5
-		LorentzV* metP4Calo = tree->Get(&metP4Calo,"metP4Calo");
-		if(metP4Calo->Et()<=100) continue;
+		LorentzV* metP4 = tree->Get(&metP4,"metP4AK5");
+//		LorentzV* metP4 = tree->Get(&metP4,"metP4Calo");
+		if(metP4->Et()<=100) continue;
 		cntMET++;
 		progress();
 	}
