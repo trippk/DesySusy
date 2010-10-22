@@ -5,14 +5,16 @@
 SusyDESY_Electrons::SusyDESY_Electrons(const edm::ParameterSet& iConfig)
   : Prefix( iConfig.getParameter<string> ("Prefix") ),
     Suffix( iConfig.getParameter<string> ("Suffix") ),
-    PatElectrons( iConfig.getParameter<edm::InputTag> ("PatElectrons") )
+    PatElectrons( iConfig.getParameter<edm::InputTag> ("PatElectrons") )//,
+    //    ElectronSeeds( iConfig.getParameter<edm::InputTag> ("ElectronSeeds") )
 {
   produces <bool>                 ( Prefix + "PatElectronsHandleValid" + Suffix );
 
-  produces <std::vector<double> > ( Prefix + "SCrawEnergy"             + Suffix ); 
-  produces <std::vector<double> > ( Prefix + "SCetaWidth"              + Suffix );
-  produces <std::vector<double> > ( Prefix + "SCphiWidth"              + Suffix );
-  produces <std::vector<double> > ( Prefix + "SCpreshowerEnergy"       + Suffix );
+  produces <std::vector<double> > ( Prefix + "SuperClusterEnergy"          + Suffix ); 
+  produces <std::vector<double> > ( Prefix + "SuperClusterRawEnergy"       + Suffix ); 
+  produces <std::vector<double> > ( Prefix + "SuperClusterEtaWidth"        + Suffix );
+  produces <std::vector<double> > ( Prefix + "SuperClusterPhiWidth"        + Suffix );
+  produces <std::vector<double> > ( Prefix + "SuperClusterPreshowerEnergy" + Suffix );
 
   //all variables you want to be added to the ntuple by your module
   produces <std::vector<double> > ( Prefix + "GenMatched"              + Suffix );
@@ -31,11 +33,34 @@ SusyDESY_Electrons::SusyDESY_Electrons(const edm::ParameterSet& iConfig)
   produces <std::vector<float> > ( Prefix + "SimpleEleId80cIso"   + Suffix );
   produces <std::vector<float> > ( Prefix + "SimpleEleId70cIso"   + Suffix );
   produces <std::vector<float> > ( Prefix + "SimpleEleId60cIso"   + Suffix );
+
+  produces <std::vector<bool> > ( Prefix + "ChargeInfoIsGsfCtfConsistent"      + Suffix );
+  produces <std::vector<bool> > ( Prefix + "ChargeInfoIsGsfCtfScPixConsistent" + Suffix );
+  produces <std::vector<bool> > ( Prefix + "ChargeInfoIsGsfScPixConsistent"    + Suffix );
+
+  produces <std::vector<bool> > ( Prefix + "IsGsfCtfChargeConsistent"      + Suffix );
+  produces <std::vector<bool> > ( Prefix + "IsGsfCtfScPixChargeConsistent" + Suffix );
+  produces <std::vector<bool> > ( Prefix + "IsGsfScPixChargeConsistent"    + Suffix );
+
+  produces <std::vector<int> > ( Prefix + "GsfTrackCharge"     + Suffix );
+  produces <std::vector<int> > ( Prefix + "CtfTrackCharge"     + Suffix );
+  produces <std::vector<int> > ( Prefix + "ScPixCharge"        + Suffix );
+
+  produces <std::vector<bool> > ( Prefix + "EcalDrivenSeed"    + Suffix );
+  produces <std::vector<bool> > ( Prefix + "TrackerDrivenSeed" + Suffix );
+
+  produces <std::vector<bool> > ( Prefix + "IsEB"  + Suffix );
+  produces <std::vector<bool> > ( Prefix + "IsEE"  + Suffix );
+  produces <std::vector<bool> > ( Prefix + "IsGap" + Suffix );
+
+
+//   produces <std::vector<> > ( Prefix + ""   + Suffix );
 }
 
 void SusyDESY_Electrons::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
   std::auto_ptr<bool>                 handleValid       ( new bool(false)           );
 
+  std::auto_ptr<std::vector<double> > SCenergy          ( new std::vector<double>() );
   std::auto_ptr<std::vector<double> > SCrawEnergy       ( new std::vector<double>() );
   std::auto_ptr<std::vector<double> > SCetaWidth        ( new std::vector<double>() );
   std::auto_ptr<std::vector<double> > SCphiWidth        ( new std::vector<double>() );
@@ -60,18 +85,37 @@ void SusyDESY_Electrons::produce(edm::Event& iEvent, const edm::EventSetup& iSet
   std::auto_ptr<std::vector<float> > simpleEleId70cIso   ( new std::vector<float>() );
   std::auto_ptr<std::vector<float> > simpleEleId60cIso   ( new std::vector<float>() );
 
+  std::auto_ptr<std::vector<bool> > chargeInfoIsGsfCtfConsistent      ( new std::vector<bool>() );
+  std::auto_ptr<std::vector<bool> > chargeInfoIsGsfCtfScPixConsistent ( new std::vector<bool>() );
+  std::auto_ptr<std::vector<bool> > chargeInfoIsGsfScPixConsistent    ( new std::vector<bool>() );
+
+  std::auto_ptr<std::vector<bool> > isGsfCtfChargeConsistent      ( new std::vector<bool>() );
+  std::auto_ptr<std::vector<bool> > isGsfCtfScPixChargeConsistent ( new std::vector<bool>() );
+  std::auto_ptr<std::vector<bool> > isGsfScPixChargeConsistent    ( new std::vector<bool>() );
+
+  std::auto_ptr<std::vector<int> > GsfTrackCharge         ( new std::vector<int>() );
+  std::auto_ptr<std::vector<int> > CtfTrackCharge         ( new std::vector<int>() );
+  std::auto_ptr<std::vector<int> > ScPixCharge            ( new std::vector<int>() );
+
+  std::auto_ptr<std::vector<bool> > EcalDrivenSeed    ( new std::vector<bool>() );
+  std::auto_ptr<std::vector<bool> > TrackerDrivenSeed ( new std::vector<bool>() );
+
+  std::auto_ptr<std::vector<bool> > IsEB  ( new std::vector<bool>() );
+  std::auto_ptr<std::vector<bool> > IsEE  ( new std::vector<bool>() );
+  std::auto_ptr<std::vector<bool> > IsGap ( new std::vector<bool>() );
+
   edm::Handle<std::vector<pat::Electron> > ElColl;
   iEvent.getByLabel(PatElectrons, ElColl);
 
   if(ElColl.isValid()){
     *handleValid.get() = true;
-    //you might do here something to get the variables you want to add, for example
 
     for(std::vector<pat::Electron>::const_iterator el = ElColl->begin(); el!=ElColl->end(); el++) {
 
-      SCrawEnergy->push_back(el->superCluster()->rawEnergy());
-      SCetaWidth->push_back(el->superCluster()->etaWidth());	
-      SCphiWidth->push_back(el->superCluster()->phiWidth());
+      SCenergy         ->push_back(el->superCluster()->energy()         );
+      SCrawEnergy      ->push_back(el->superCluster()->rawEnergy()      );
+      SCetaWidth       ->push_back(el->superCluster()->etaWidth()       );	
+      SCphiWidth       ->push_back(el->superCluster()->phiWidth()       );
       SCpreshowerEnergy->push_back(el->superCluster()->preshowerEnergy());
       
       simpleEleId95relIso->push_back(el->electronID("simpleEleId95relIso"));
@@ -86,6 +130,31 @@ void SusyDESY_Electrons::produce(edm::Event& iEvent, const edm::EventSetup& iSet
       simpleEleId80cIso  ->push_back(el->electronID("simpleEleId80cIso"  ));
       simpleEleId70cIso  ->push_back(el->electronID("simpleEleId70cIso"  ));
       simpleEleId60cIso  ->push_back(el->electronID("simpleEleId60cIso"  ));
+      
+      chargeInfoIsGsfCtfConsistent     ->push_back(el->chargeInfo().isGsfCtfConsistent     );
+      chargeInfoIsGsfCtfScPixConsistent->push_back(el->chargeInfo().isGsfCtfScPixConsistent);
+      chargeInfoIsGsfScPixConsistent   ->push_back(el->chargeInfo().isGsfScPixConsistent   );
+      
+      isGsfCtfChargeConsistent     ->push_back(el->isGsfCtfChargeConsistent()     );
+      isGsfCtfScPixChargeConsistent->push_back(el->isGsfCtfScPixChargeConsistent());
+      isGsfScPixChargeConsistent   ->push_back(el->isGsfScPixChargeConsistent()   );
+
+      GsfTrackCharge    ->push_back(el->gsfTrack()->charge()          );
+      if(el->closestCtfTrackRef().isNonnull())
+	CtfTrackCharge    ->push_back(el->closestCtfTrackRef()->charge());
+      else
+	CtfTrackCharge    ->push_back(0);
+      ScPixCharge       ->push_back(el->chargeInfo().scPixCharge      );
+
+      //std::cout<<"###########################"<<el->closestCtfTrack()<<std::endl;
+      //el->closestCtfTrack().ctfTrack;
+
+      EcalDrivenSeed   ->push_back(el->ecalDrivenSeed()   );
+      TrackerDrivenSeed->push_back(el->trackerDrivenSeed());
+      
+      IsEB ->push_back(el->isEB() );
+      IsEE ->push_back(el->isEE() );
+      IsGap->push_back(el->isGap());
       
       if(el->genLepton()){
 	GenMatched->push_back(1);
@@ -103,13 +172,27 @@ void SusyDESY_Electrons::produce(edm::Event& iEvent, const edm::EventSetup& iSet
       //cout<<endl;
     }
   }
+//   edm::Handle<std::vector<pat::Electron> > ElColl;
+//   iEvent.getByLabel(PatElectrons, ElColl);
+
+//   if(ElColl.isValid()){
+//     *handleValid.get() = true;
+
+//     for(std::vector<pat::Electron>::const_iterator el = ElColl->begin(); el!=ElColl->end(); el++) {
+
+
+
+
+//     }
+//   }
 
   iEvent.put( handleValid       , Prefix + "PatElectronsHandleValid" + Suffix );
 
-  iEvent.put( SCrawEnergy       , Prefix + "SCrawEnergy"             + Suffix );
-  iEvent.put( SCetaWidth        , Prefix + "SCetaWidth"              + Suffix );
-  iEvent.put( SCphiWidth        , Prefix + "SCphiWidth"              + Suffix );
-  iEvent.put( SCpreshowerEnergy , Prefix + "SCpreshowerEnergy"       + Suffix );
+  iEvent.put( SCenergy          , Prefix + "SuperClusterEnergy"          + Suffix );
+  iEvent.put( SCrawEnergy       , Prefix + "SuperClusterRawEnergy"       + Suffix );
+  iEvent.put( SCetaWidth        , Prefix + "SuperClusterEtaWidth"        + Suffix );
+  iEvent.put( SCphiWidth        , Prefix + "SuperClusterPhiWidth"        + Suffix );
+  iEvent.put( SCpreshowerEnergy , Prefix + "SuperClusterPreshowerEnergy" + Suffix );
 
   //all variables you want to be added to the ntuple by your module
   iEvent.put( GenMatched        , Prefix + "GenMatched"              + Suffix );
@@ -128,6 +211,25 @@ void SusyDESY_Electrons::produce(edm::Event& iEvent, const edm::EventSetup& iSet
   iEvent.put( simpleEleId80cIso  , Prefix + "SimpleEleId80cIso"  + Suffix );
   iEvent.put( simpleEleId70cIso  , Prefix + "SimpleEleId70cIso"  + Suffix );
   iEvent.put( simpleEleId60cIso  , Prefix + "SimpleEleId60cIso"  + Suffix );
+
+  iEvent.put( chargeInfoIsGsfCtfConsistent     , Prefix + "ChargeInfoIsGsfCtfConsistent"      + Suffix );
+  iEvent.put( chargeInfoIsGsfCtfScPixConsistent, Prefix + "ChargeInfoIsGsfCtfScPixConsistent" + Suffix );
+  iEvent.put( chargeInfoIsGsfScPixConsistent   , Prefix + "ChargeInfoIsGsfScPixConsistent"    + Suffix );
+
+  iEvent.put( isGsfCtfChargeConsistent     , Prefix + "IsGsfCtfChargeConsistent"      + Suffix );
+  iEvent.put( isGsfCtfScPixChargeConsistent, Prefix + "IsGsfCtfScPixChargeConsistent" + Suffix );
+  iEvent.put( isGsfScPixChargeConsistent   , Prefix + "IsGsfScPixChargeConsistent"    + Suffix ); 
+
+  iEvent.put( GsfTrackCharge, Prefix + "GsfTrackCharge"     + Suffix );
+  iEvent.put( CtfTrackCharge, Prefix + "CtfTrackCharge"     + Suffix );
+  iEvent.put( ScPixCharge   , Prefix + "ScPixCharge"        + Suffix );
+
+  iEvent.put( EcalDrivenSeed   , Prefix + "EcalDrivenSeed"     + Suffix );
+  iEvent.put( TrackerDrivenSeed, Prefix + "TrackerDrivenSeed"  + Suffix );
+
+  iEvent.put( IsEB , Prefix + "IsEB"  + Suffix );
+  iEvent.put( IsEE , Prefix + "IsEE"  + Suffix );
+  iEvent.put( IsGap, Prefix + "IsGap" + Suffix );
 }
 
 void SusyDESY_Electrons::beginJob(){}
@@ -147,7 +249,9 @@ SusyDESY_Muons::SusyDESY_Muons(const edm::ParameterSet& iConfig)
   produces <std::vector<unsigned> > ( Prefix + "GlobalTrackNumberOfValidTrackerHits" + Suffix );
   produces <std::vector<double> >   ( Prefix + "TrackD0"                             + Suffix );
 
-  //all variables you want to be added to the ntuple by your module
+  produces <std::vector<double> >   ( Prefix + "IsolationR03emVetoEt"  + Suffix );
+  produces <std::vector<double> >   ( Prefix + "IsolationR03hadVetoEt" + Suffix );
+  produces <std::vector<double> >   ( Prefix + "IsolationR03hoVetoEt"  + Suffix );
 }
 
 void SusyDESY_Muons::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
@@ -159,14 +263,15 @@ void SusyDESY_Muons::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) 
 
   std::auto_ptr<std::vector<double> > muonTrackD0 ( new std::vector<double>() );
 
-  //all variables you want to be added to the ntuple by your module
+  std::auto_ptr<std::vector<double> > iso03emVetoEt  ( new std::vector<double>() );
+  std::auto_ptr<std::vector<double> > iso03hadVetoEt ( new std::vector<double>() );
+  std::auto_ptr<std::vector<double> > iso03hoVetoEt  ( new std::vector<double>() );
 
   edm::Handle<std::vector<pat::Muon> > MuColl;
   iEvent.getByLabel(PatMuons, MuColl);
 
   if(MuColl.isValid()){
     *handleValid.get() = true;
-    //you might do here something to get the variables you want to add, for example
 
     for(std::vector<pat::Muon>::const_iterator mu = MuColl->begin(); mu!=MuColl->end(); mu++) {
 
@@ -182,6 +287,11 @@ void SusyDESY_Muons::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) 
       bool tracker= mu->innerTrack().isNonnull();
       globalTrackNHVIT->push_back( global ? mu->globalTrack()->hitPattern().numberOfValidTrackerHits() : 0);
       muonTrackD0->push_back( tracker ? mu->track()->d0() : 999999999. );
+
+
+      iso03emVetoEt ->push_back(mu->isolationR03().emVetoEt );
+      iso03hadVetoEt->push_back(mu->isolationR03().hadVetoEt);
+      iso03hoVetoEt ->push_back(mu->isolationR03().hoVetoEt );
     }
   }
   iEvent.put( handleValid, Prefix + "PatMuonsHandleValid" + Suffix );
@@ -192,7 +302,10 @@ void SusyDESY_Muons::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) 
   iEvent.put( muonTrackD0     , Prefix + "TrackD0"                                  + Suffix );
   iEvent.put( globalTrackNHVIT, Prefix + "GlobalTrackNumberOfValidTrackerHits"      + Suffix );
 
-  //all variables you want to be added to the ntuple by your module
+  iEvent.put( iso03emVetoEt  , Prefix + "IsolationR03emVetoEt"  + Suffix );
+  iEvent.put( iso03hadVetoEt , Prefix + "IsolationR03hadVetoEt" + Suffix );
+  iEvent.put( iso03hoVetoEt  , Prefix + "IsolationR03hoVetoEt"  + Suffix );
+
 }
 
 void SusyDESY_Muons::beginJob(){}
