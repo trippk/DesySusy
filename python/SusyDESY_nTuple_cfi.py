@@ -15,5 +15,9 @@ nTupleSequenceDESY = cms.Sequence(susydesypatelectrons +
                                   susydesypfmuons
                                   )
 
-
+def DESYpatch(process):
+        process.nPat.replace(process.susycafelectron,process.susycafelectron+process.susydesypatelectrons)
+        process.nPat.replace(process.susycafpfelectron,process.susycafpfelectron+process.susydesypfelectrons)
+        process.nPat.replace(process.susycafmuon,process.susycafmuon+process.susydesypatmuons)
+        process.nPat.replace(process.susycafpfmuon,process.susycafpfmuon+process.susydesypfmuons)
 
