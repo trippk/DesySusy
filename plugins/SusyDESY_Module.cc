@@ -11,6 +11,7 @@ SusyDESY_Electrons::SusyDESY_Electrons(const edm::ParameterSet& iConfig)
   produces <bool>                 ( Prefix + "PatElectronsHandleValid" + Suffix );
 
   produces <std::vector<double> > ( Prefix + "SuperClusterEnergy"          + Suffix ); 
+  produces <std::vector<math::XYZPoint> > ( Prefix + "SuperClusterPosition"        + Suffix ); 
   produces <std::vector<double> > ( Prefix + "SuperClusterRawEnergy"       + Suffix ); 
   produces <std::vector<double> > ( Prefix + "SuperClusterEtaWidth"        + Suffix );
   produces <std::vector<double> > ( Prefix + "SuperClusterPhiWidth"        + Suffix );
@@ -61,6 +62,7 @@ void SusyDESY_Electrons::produce(edm::Event& iEvent, const edm::EventSetup& iSet
   std::auto_ptr<bool>                 handleValid       ( new bool(false)           );
 
   std::auto_ptr<std::vector<double> > SCenergy          ( new std::vector<double>() );
+  std::auto_ptr<std::vector<math::XYZPoint> > SCposition( new std::vector<math::XYZPoint>() );
   std::auto_ptr<std::vector<double> > SCrawEnergy       ( new std::vector<double>() );
   std::auto_ptr<std::vector<double> > SCetaWidth        ( new std::vector<double>() );
   std::auto_ptr<std::vector<double> > SCphiWidth        ( new std::vector<double>() );
@@ -113,6 +115,7 @@ void SusyDESY_Electrons::produce(edm::Event& iEvent, const edm::EventSetup& iSet
     for(std::vector<pat::Electron>::const_iterator el = ElColl->begin(); el!=ElColl->end(); el++) {
 
       SCenergy         ->push_back(el->superCluster()->energy()         );
+      SCposition       ->push_back(el->superCluster()->position()       );
       SCrawEnergy      ->push_back(el->superCluster()->rawEnergy()      );
       SCetaWidth       ->push_back(el->superCluster()->etaWidth()       );	
       SCphiWidth       ->push_back(el->superCluster()->phiWidth()       );
@@ -189,6 +192,7 @@ void SusyDESY_Electrons::produce(edm::Event& iEvent, const edm::EventSetup& iSet
   iEvent.put( handleValid       , Prefix + "PatElectronsHandleValid" + Suffix );
 
   iEvent.put( SCenergy          , Prefix + "SuperClusterEnergy"          + Suffix );
+  iEvent.put( SCposition        , Prefix + "SuperClusterPosition"        + Suffix );
   iEvent.put( SCrawEnergy       , Prefix + "SuperClusterRawEnergy"       + Suffix );
   iEvent.put( SCetaWidth        , Prefix + "SuperClusterEtaWidth"        + Suffix );
   iEvent.put( SCphiWidth        , Prefix + "SuperClusterPhiWidth"        + Suffix );
@@ -288,12 +292,12 @@ void SusyDESY_Muons::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) 
       globalTrackNHVIT->push_back( global ? mu->globalTrack()->hitPattern().numberOfValidTrackerHits() : 0);
       muonTrackD0->push_back( tracker ? mu->track()->d0() : 999999999. );
 
-
       iso03emVetoEt ->push_back(mu->isolationR03().emVetoEt );
       iso03hadVetoEt->push_back(mu->isolationR03().hadVetoEt);
       iso03hoVetoEt ->push_back(mu->isolationR03().hoVetoEt );
     }
   }
+
   iEvent.put( handleValid, Prefix + "PatMuonsHandleValid" + Suffix );
 
   iEvent.put( muonEcalIsoDep  , Prefix + "EcalIsoDep"                               + Suffix );
