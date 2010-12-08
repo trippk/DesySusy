@@ -2,6 +2,7 @@
 //   Version 2.0
 //   15.07.2010
 //   19.11.2010 duplicate check in AllRootFilesNoDup
+//   29.11.2010 clash removed in case of multiple opened EasyChains
 //   dirk.kruecker@desy.de
 
 #ifndef NtupleTools2_h
@@ -76,7 +77,6 @@ int GetResult(vector<string>& out, const string& command,bool nodup){
 		cerr<<"Did not work: "<<command<<endl;
 	} else {
 		while (line.Gets(pipe)) if(line!="") {
-			
 			out.push_back(string(line));
 		}
 		gSystem->ClosePipe(pipe);
@@ -112,22 +112,22 @@ int GetResult(vector<string>& out, const string& command,bool nodup){
 //AllRootFilesIn(dir,tree)           // any 'ls'-able directory
 //AllRootFilesIn(dir,tree,10)        // any 'ls'-able directory, first 10 files
 //AllRootFilesIn(dir,tree,"dcls")    // dcache -  needs proxy & dctools !
-//AllRootFilesIn(dir,tree,"dcls",10) //first 10 files in dir                              
+//AllRootFilesIn(dir,tree,"dcls",10) //first 10 files in dir
 int AllRootFilesIn(const string& dir,TChain* chain,const string& LScommand,int max,bool nodup=false){
 	vector<string> files;
 	int n=0;
 	if(LScommand=="dcls"){
 		n=GetResult(files,"dcls "+dir+" | grep \"\\.root\" ",nodup);
-		n=n>max?max:n; 
+		n=n>max?max:n;
 		const string dcache_gate="dcap://dcache-ses-cms.desy.de:22125/";
 		for(int i=0;i<n;++i) chain->Add((dcache_gate+dir+"/"+files[i]).c_str());
 	} else if(LScommand=="rfdir") {
 		n=GetResult(files,LScommand+" "+dir+" | grep \"\\.root\" | awk \'{print $9}\' ",nodup);	
-		n=n>max?max:n; 
+		n=n>max?max:n;
 		for(int i=0;i<n;++i) chain->Add(("rfio:"+dir+"/"+files[i]).c_str());
 	} else {
 		n=GetResult(files,LScommand+" "+dir+" | grep \"\\.root\"",nodup);
-		n=n>max?max:n; 
+		n=n>max?max:n;
 		for(int i=0;i<n;++i) chain->Add((dir+"/"+files[i]).c_str());
 	}
 	return n;
@@ -154,7 +154,7 @@ int AllRootFilesNoDup(const string& dir,TChain* chain,int max){
 }
 
 //---------- chain and tree handling -----------------------------
-// inline is redundant since this in a header files
+// inline is redundant since this is a header files
 class EasyChain: public TChain {
 public:
 	EasyChain(const char* tname) : TChain(tname), localEntry(0), localMax(0), off(0) {};
@@ -162,12 +162,13 @@ public:
 	// here all kinds of variables can be load from the chain
 	// e.g.: vector<LorentzV>* electrons = tree->Get(&electrons,"electronP4Pat");
 	//       electron->size()
-	template<typename T> 
+	template<typename T>
 	inline T* Get(T** ppt, const char* name){
 		TBranch* branch;
-		static  map<string,T*> localByName;
+		// This increases the performance since GetBranch searches the full tree
+		// byNames.find only the used names
 		if( localByName.find(name)==localByName.end() ) {
-			branch=byName[name]= GetBranch( name );
+			branch = byName[name] = GetBranch( name );
 			localByName[name] = 0;
 		}
 		else branch=byName[name];
@@ -175,28 +176,28 @@ public:
 			cerr<<"Branch "<<name<<" is undefined in tree: "<<GetName()<<endl;
 			exit(0);
 		}
-		if(localByName[name]!=0) delete localByName[name];
+		if(localByName[name]!=0){
+			T* toDelete = static_cast<T*>(localByName[name]);
+			delete toDelete;
+		}
 		*ppt=0;
 		branch->SetAddress( ppt );
 		branch->GetEntry(localEntry,1);
 		localByName[name]=*ppt;
 		return *ppt;
 	};
-	template<typename T> 
+	template<typename T>
 	inline T* Get(T** ppt, const string& name){
 		return Get(ppt,name.c_str());
 	}
 	// the same as above but the return type is a reference (same performance)
 	// e.g.: vector<LorentzV>& electrons = tree->Get(&electrons,"electronP4Pat");
 	//       Electron.size()
-	template<typename T> 
+	template<typename T>
 	inline T& Get(T* leaf,const char* name) {
 		TBranch* branch;
-		static  map<string,T*> localByName;
-		// This increases the performance since GetBranch seraches the full tree
-		// byNames.find only the used names
 		if( localByName.find(name)==localByName.end() ) {
-			branch=byName[name]= GetBranch( name );
+			branch = byName[name] = GetBranch( name );
 			localByName[name] = 0;
 		}
 		else branch=byName[name];
@@ -204,21 +205,24 @@ public:
 			cerr<<"Branch "<<name<<" is undefined in tree: "<<GetName()<<endl;
 			exit(0);
 		}
-		if(localByName[name]!=0) delete localByName[name];
+		if(localByName[name]!=0) {
+			T* toDelete = static_cast<T*>(localByName[name]);
+			delete toDelete;
+		}
 		T* pt=0;
 		branch->SetAddress( &pt );
 		branch->GetEntry(localEntry,1);
 		localByName[name]=pt;
 		return *pt;
 	};
-	template<typename T> 
+	template<typename T>
 	inline T& Get(T* leaf, const string& name) {
 		return Get(leaf,name.c_str());
 	}
 	// this is meant for simple data types as int,float,double i.e. splitlevel 0
 	// e.g.: unsigned run = tree->Get(run,"run");
 	//                          note: ^ no &
-	template<typename T> 
+	template<typename T>
 	inline T Get(T& leaf,const char* name) {
 		TBranch* branch;
 		if( byName.find(name)==byName.end() ) branch=byName[name] = GetBranch( name );
@@ -231,7 +235,7 @@ public:
 		branch->GetEntry(localEntry,1);
 		return leaf;
 	};
-	template<typename T> 
+	template<typename T>
 	inline T Get(T& leaf, const string& name) {
 		return Get(leaf,name.c_str() ) ;
 	}
@@ -244,7 +248,7 @@ private:
 
 public:
  	// get entry and check for new tree
-	// sequential give best performance
+	// sequential gives best performance
 	virtual inline Int_t GetEntry(Long64_t  entry, Int_t getall = 0){
 		localEntry=entry-off;
 		if(localEntry>=localMax||localEntry<0){
@@ -262,5 +266,6 @@ private:
 	int off;
 	// acts as booster for tree with many branches
 	map<const string,TBranch*> byName;
+	map<string,void*> localByName;
 };
 #endif
