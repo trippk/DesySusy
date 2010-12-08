@@ -21,3 +21,7 @@ def DESYpatch(process):
         process.nPat.replace(process.susycafmuon,process.susycafmuon+process.susydesypatmuons)
         process.nPat.replace(process.susycafpfmuon,process.susycafpfmuon+process.susydesypfmuons)
 
+	process.nPatJet.remove(process.susycafic5calojet)
+	process.nPatJetMatched.remove(process.susycafic5calojetMatched)
+	process.nPat.remove(process.susycafmetIC5)
+	process.nPat.remove(process.susycafphoton)
