@@ -34,11 +34,13 @@ typedef ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> >            Lor
 typedef ROOT::Math::DisplacementVector3D<ROOT::Math::Cartesian3D<double> > XYZVectorD;
 typedef ROOT::Math::PositionVector3D<ROOT::Math::Cartesian3D<double>  >     XYZPointD;
 
+
 #ifdef __MAKECINT__
 //#pragma link C++ class pair<string,bool>+;
 #pragma link C++ class vector<LorentzV>+;
 #pragma link C++ class map<string,bool>+;
 #endif
+
 
 //---------- simple progress counter and timer -----------------------------
 void progress(ostream& os=cout){
@@ -87,7 +89,7 @@ int GetResult(vector<string>& out, const string& command,bool nodup){
 		unsigned i;
 		for(i=0;i<out.size();i++){
 			//check format
-			if(count(out[i].begin(),out[i].end(),'_')!=4) break;
+			if(count(out[i].begin(),out[i].end(),'_') < 3) break;
 			//let's hope it fits
 			unsigned pos =out[i].rfind("_");
 			unsigned pos2=out[i].substr(0,pos).rfind("_")+1;
