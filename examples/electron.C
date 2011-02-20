@@ -1,3 +1,4 @@
+
 // Usage:  root -l electron.C+
 // ----
 //         dcache access: in that! order
@@ -70,7 +71,7 @@ void electron(){
 	set<int> runs;
 	TStopwatch timer;
 	timer.Start();
-	for(int i=0;i<1000;++i){
+	for(int i=0;i<10000;++i){
 //	for(int i=0;i<N;++i){
 
 		tree->GetEntry(i);
@@ -122,8 +123,9 @@ void electron(){
 		for(unsigned int k=0;k<Electrons.size();k++){
 			if( eleid[k]==0 && eleidLoose[k]==0 ) continue;
 			if(Electrons[k].pt()<elMinPt)               continue;
-			if(fabs(Electrons[k].eta())<elMaxEta)       continue;
+			if(fabs(Electrons[k].eta())>elMaxEta)       continue;
 			double relIso = (trackIso[k]+ecalIso[k]+hcalIso[k])/Electrons[k].pt();
+			int eOK=3;
 			// 0: fails
 			// 1: passes electron ID only
 			// 2: passes electron Isolation only
@@ -132,13 +134,12 @@ void electron(){
 			// 5: passes conversion rejection and ID
 			// 6: passes conversion rejection and Isolation
 			// 7: passes the whole selection
-
-			if( eleid[k]==7) {
+			if( eleid[k]==eOK) {
 				cntE++;
 				m_pt+=Electrons[k].pt();
 				m_relIso += relIso;
 			}
-			if( eleidLoose[k]==7) {
+			if( eleidLoose[k]==eOK) {
 				cntELoose++;
 				m_ptLoose+=Electrons[k].pt();
 				m_relIsoLoose += relIso;

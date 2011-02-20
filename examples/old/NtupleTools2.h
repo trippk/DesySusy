@@ -3,21 +3,14 @@
 //   15.07.2010
 //   19.11.2010 duplicate check in AllRootFilesNoDup
 //   29.11.2010 clash removed in case of multiple opened EasyChains
-//   15.02.2011 conditionals for pure header use if __NTHEADER___ defined.
-//              This aproach allows the use of NtupleTools2.h with command line macros
-//              since the complete implementation is in one file
-//
+//   7.1.2011 EasyChain::Add(string)
 //   dirk.kruecker@desy.de
 
 #ifndef NtupleTools2_h
 #define NtupleTools2_h
 
-#ifdef __GNUC__
-// only visible for the gnu pre-compiler
-//#warning __GNUC__
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 #pragma GCC diagnostic ignored "-Wuninitialized"
-#endif
 
 #include <iostream>
 #include <iomanip>
@@ -43,40 +36,24 @@ typedef ROOT::Math::DisplacementVector3D<ROOT::Math::Cartesian3D<double> > XYZVe
 typedef ROOT::Math::PositionVector3D<ROOT::Math::Cartesian3D<double>  >     XYZPointD;
 
 
-#ifdef __CINT__ 
-// for the command line ACLIC macro 
-// compiled during rootcint
-//#warning __CINT__
+#ifdef __MAKECINT__
+//#pragma link C++ class pair<string,bool>+;
 #pragma link C++ class vector<LorentzV>+;
-#pragma link C++ class vector<XYZVectorD>+;
-#pragma link C++ class vector<XYZPointD>+;
 #pragma link C++ class map<string,bool>+;
-//
-#pragma link C++ class pair<string,bool>+;
-#pragma link C++ class pair<string,string>+;
-//#endif
 #endif
 
 
-#ifndef __CINT__ 
-// following functions should not be processed by rootcint
 //---------- simple progress counter and timer -----------------------------
-void progress(ostream& os=cout,const TString& pref="",const TString& postf="")
-#ifndef __NTHEADER___
-{
+void progress(ostream& os=cout){
         static int cnt(0),step(1),next(1);
         cnt++;
         if(cnt==next){
-                os<<pref<<cnt<<postf<<endl;
+                os<<cnt<<endl;
                 next+=step;
         }
         if((cnt+1)/step==10)step*=10;
-}
-#endif
-;
-void progressT(int flush=0,ostream& os=cout)
-#ifndef __NTHEADER___
-{
+};
+void progressT(int flush=0,ostream& os=cout){
 	static TStopwatch timer;
         static int cnt(0),step(1),next(1);
 	if(cnt==0) timer.Start();
@@ -93,16 +70,12 @@ void progressT(int flush=0,ostream& os=cout)
                 next+=step;
         }
         if((cnt+1)/step==10)step*=10;
-}
-#endif
-;
+};
 
 //---------- file handling -----------------------------
-int GetResult(vector<string>& out, const TString& command,bool nodup)
-#ifndef __NTHEADER___
-{
+int GetResult(vector<string>& out, const string& command,bool nodup){
 	TString line;
-	FILE* pipe= gSystem->OpenPipe(command,"r");
+	FILE* pipe= gSystem->OpenPipe(command.c_str(),"r");
 	if(!pipe){ 
 		cerr<<"Did not work: "<<command<<endl;
 	} else {
@@ -139,80 +112,50 @@ int GetResult(vector<string>& out, const TString& command,bool nodup)
 	}
 	return out.size();
 }
-#endif
-;
 //AllRootFilesIn(dir,tree)           // any 'ls'-able directory
 //AllRootFilesIn(dir,tree,10)        // any 'ls'-able directory, first 10 files
 //AllRootFilesIn(dir,tree,"dcls")    // dcache -  needs proxy & dctools !
 //AllRootFilesIn(dir,tree,"dcls",10) //first 10 files in dir
-int AllRootFilesIn(const TString& dir,TChain* chain,const TString& LScommand,int max,bool nodup=false)
-#ifndef __NTHEADER___
-{
+int AllRootFilesIn(const string& dir,TChain* chain,const string& LScommand,int max,bool nodup=false){
 	vector<string> files;
 	int n=0;
 	if(LScommand=="dcls"){
 		n=GetResult(files,"dcls "+dir+" | grep \"\\.root\" ",nodup);
 		n=n>max?max:n;
 		const string dcache_gate="dcap://dcache-ses-cms.desy.de:22125/";
-		for(int i=0;i<n;++i) chain->Add((dcache_gate+dir+"/"+files[i]));
+		for(int i=0;i<n;++i) chain->Add((dcache_gate+dir+"/"+files[i]).c_str());
 	} else if(LScommand=="rfdir") {
 		n=GetResult(files,LScommand+" "+dir+" | grep \"\\.root\" | awk \'{print $9}\' ",nodup);	
 		n=n>max?max:n;
-		for(int i=0;i<n;++i) chain->Add(("rfio:"+dir+"/"+files[i]));
+		for(int i=0;i<n;++i) chain->Add(("rfio:"+dir+"/"+files[i]).c_str());
 	} else {
 		n=GetResult(files,LScommand+" "+dir+" | grep \"\\.root\"",nodup);
 		n=n>max?max:n;
-		for(int i=0;i<n;++i) chain->Add((dir+"/"+files[i]));
+		for(int i=0;i<n;++i) chain->Add((dir+"/"+files[i]).c_str());
 	}
 	return n;
-}
-#endif
-;
+};
 // no duplicate check
-int AllRootFilesIn(const TString& dir,TChain* chain)
-#ifndef __NTHEADER___
-{
+int AllRootFilesIn(const string& dir,TChain* chain){
 	return AllRootFilesIn(dir,chain,"ls",1000,false);
 }
-#endif
-;
-int AllRootFilesIn(const TString& dir,TChain* chain,const TString& LScommand)
-#ifndef __NTHEADER___
-{
+int AllRootFilesIn(const string& dir,TChain* chain,const string& LScommand){
 	return AllRootFilesIn(dir,chain,LScommand,1000,false);
 }
-#endif
-;
-int AllRootFilesIn(const TString& dir,TChain* chain,int max)
-#ifndef __NTHEADER___
-{
+int AllRootFilesIn(const string& dir,TChain* chain,int max){
 	return AllRootFilesIn(dir,chain,"ls",max,false);
 }
-#endif
-;
 // duplicate check
-int AllRootFilesNoDup(const TString& dir,TChain* chain)
-#ifndef __NTHEADER___
-{
+int AllRootFilesNoDup(const string& dir,TChain* chain){
 	return AllRootFilesIn(dir,chain,"ls",1000,true);
 }
-#endif
-;
-int AllRootFilesNoDup(const TString& dir,TChain* chain,const TString& LScommand)
-#ifndef __NTHEADER___
-{
+int AllRootFilesNoDup(const string& dir,TChain* chain,const string& LScommand){
 	return AllRootFilesIn(dir,chain,LScommand,1000,true);
 }
-#endif
-;
-int AllRootFilesNoDup(const TString& dir,TChain* chain,int max)
-#ifndef __NTHEADER___
-{
+int AllRootFilesNoDup(const string& dir,TChain* chain,int max){
 	return AllRootFilesIn(dir,chain,"ls",max,true);
 }
-#endif
-;
-#endif
+
 //---------- chain and tree handling -----------------------------
 // inline is redundant since this is a header files
 class EasyChain: public TChain {
@@ -247,15 +190,14 @@ public:
 		return *ppt;
 	};
 	template<typename T>
-	inline T* Get(T** ppt, const TString& name){
-		return Get(ppt,name.Data());
+	inline T* Get(T** ppt, const string& name){
+		return Get(ppt,name.c_str());
 	}
 	// the same as above but the return type is a reference (same performance)
 	// e.g.: vector<LorentzV>& electrons = tree->Get(&electrons,"electronP4Pat");
 	//       Electron.size()
 	template<typename T>
 	inline T& Get(T* leaf,const char* name) {
-		leaf=leaf;//just to get rid of unused warning
 		TBranch* branch;
 		if( localByName.find(name)==localByName.end() ) {
 			branch = byName[name] = GetBranch( name );
@@ -277,8 +219,8 @@ public:
 		return *pt;
 	};
 	template<typename T>
-	inline T& Get(T* leaf, const TString& name) {
-		return Get(leaf,name.Data());
+	inline T& Get(T* leaf, const string& name) {
+		return Get(leaf,name.c_str());
 	}
 	// this is meant for simple data types as int,float,double i.e. splitlevel 0
 	// e.g.: unsigned run = tree->Get(run,"run");
@@ -297,8 +239,8 @@ public:
 		return leaf;
 	};
 	template<typename T>
-	inline T Get(T& leaf, const TString& name) {
-		return Get(leaf,name.Data() ) ;
+	inline T Get(T& leaf, const string& name) {
+		return Get(leaf,name.c_str() ) ;
 	}
 
 private:
@@ -311,7 +253,6 @@ public:
  	// get entry and check for new tree
 	// sequential gives best performance
 	virtual inline Int_t GetEntry(Long64_t  entry, Int_t getall = 0){
-		getall=getall;//just to get rid of unused warning
 		localEntry=entry-off;
 		if(localEntry>=localMax||localEntry<0){
 			localEntry=LoadTree(entry);
@@ -321,6 +262,8 @@ public:
 		}
 		return localEntry>=0;
 	}
+	// just for convenience
+	int Add(const string& name) {Add(name.c_str());};
 private:
 	int localEntry;
 	int localMax;
@@ -328,8 +271,5 @@ private:
 	// acts as booster for tree with many branches
 	map<const string,TBranch*> byName;
 	map<string,void*> localByName;
-#ifdef  __NTHEADER___
-	ClassDef(EasyChain, 1);
-#endif
 };
 #endif

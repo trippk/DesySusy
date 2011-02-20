@@ -1,0 +1,12 @@
+# to build up all sym links
+ln -s ../NtupleTools2.h .
+ln -s ../NtupleTools2_h.h .
+cd simple
+ln -s ../NtupleTools2.h .
+ln -s ../NtupleTools2_h.h .
+ln -s ../Linkdef.h .
+cd ../multiple
+ln -s ../NtupleTools2.h .
+ln -s ../NtupleTools2_h.h .
+ln -s ../Linkdef.h .
+cd ..

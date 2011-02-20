@@ -8,7 +8,7 @@
 #include "Math/VectorUtil.h"
 //#include "Math/VectorUtil_Cint.h"
 #include "TStopwatch.h"
-#include "../code/NtupleTools2.h"
+#include "NtupleTools2.h"
 
 using namespace std;
 using namespace ROOT::Math::VectorUtil;
