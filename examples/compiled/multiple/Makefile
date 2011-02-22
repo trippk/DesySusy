@@ -27,7 +27,7 @@ $(info Using the following files: $(SOURCES) )
 #------------------------------------------------------------------------------
 
 ifndef ROOTSYS
-	$(error ROOTSYS is not defined!)
+  $(error ROOTSYS is not defined!)
 endif
 
 ROOTLIBS    = `root-config --libs` -lGenVector $(MORELIBS)
