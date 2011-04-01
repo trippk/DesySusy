@@ -1,5 +1,5 @@
 #include "SUSYBSMAnalysis/DesySusy/interface/SusyDESY_Module.h"
-#include "FWCore/Framework/interface/Event.h"
+//#include "FWCore/Framework/interface/Event.h"
 #include "DataFormats/RecoCandidate/interface/IsoDeposit.h"
 
 SusyDESY_Electrons::SusyDESY_Electrons(const edm::ParameterSet& iConfig)
@@ -218,6 +218,7 @@ void SusyDESY_Electrons::produce(edm::Event& iEvent, const edm::EventSetup& iSet
 }
 
 void SusyDESY_Electrons::beginJob(){}
+
 
 
 

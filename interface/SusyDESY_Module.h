@@ -2,6 +2,9 @@
 #define SUSY_DESY_MODULE
 #include "FWCore/Framework/interface/EDProducer.h"
 #include "FWCore/Framework/interface/Frameworkfwd.h"
+#include "FWCore/Utilities/interface/InputTag.h"
+#include "FWCore/Framework/interface/Event.h"
+#include "FWCore/ParameterSet/interface/ParameterSet.h"
 
 #include "DataFormats/PatCandidates/interface/Electron.h"
 #include "DataFormats/PatCandidates/interface/Muon.h"
@@ -9,6 +12,7 @@
 //include whatever else is needed
 using namespace std;
 
+//template< typename T >
 class SusyDESY_Electrons : public edm::EDProducer {
 public:
      explicit SusyDESY_Electrons(const edm::ParameterSet&);
@@ -20,6 +24,7 @@ private:
      //declare whatever you need to declare
 };
 
+//template< typename T >
 class SusyDESY_Muons : public edm::EDProducer {
 public:
      explicit SusyDESY_Muons(const edm::ParameterSet&);

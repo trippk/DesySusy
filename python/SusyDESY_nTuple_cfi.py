@@ -1,13 +1,21 @@
 import FWCore.ParameterSet.Config as cms
+#import SUSYBSMAnalysis.SusyCAF.SusyCAF_Drop_cfi
 
+from  SUSYBSMAnalysis.SusyCAF.SusyCAF_Drop_cfi import *
 from  SUSYBSMAnalysis.DesySusy.SusyDESY_Module_cfi import *
 
-susyTree = cms.EDAnalyzer("SusyTree",
+TsusyTree = cms.EDAnalyzer("SusyTree",
     outputCommands = cms.untracked.vstring(
     'drop *',
-    'keep *_susycaf*_*_*',
-    'keep *_susydesy*_*_*'
-    ))
+#    'keep *_susycaf*_*_*',
+    'keep *_susy*_*_*',
+    'keep double_susyScan*_*_*') + (
+    ["drop %s"%s for s in drop(False)] +
+    ["keep %s"%s for s in keep()]) +
+    ["drop %s"%s for s in reduce()] )
+
+
+
 
 nTupleSequenceDESY = cms.Sequence(susydesypatelectrons +
                                   susydesypfelectrons +
@@ -16,12 +24,14 @@ nTupleSequenceDESY = cms.Sequence(susydesypatelectrons +
                                   )
 
 def DESYpatch(process):
-        process.nPat.replace(process.susycafelectron,process.susycafelectron+process.susydesypatelectrons)
-        process.nPat.replace(process.susycafpfelectron,process.susycafpfelectron+process.susydesypfelectrons)
-        process.nPat.replace(process.susycafmuon,process.susycafmuon+process.susydesypatmuons)
-        process.nPat.replace(process.susycafpfmuon,process.susycafpfmuon+process.susydesypfmuons)
+        process.p_susyPat.replace(process.susycafelectron,process.susycafelectron+process.susydesypatelectrons)
+        process.p_susyPat.replace(process.susycafpfelectron,process.susycafpfelectron+process.susydesypfelectrons)
+        process.p_susyPat.replace(process.susycafmuon,process.susycafmuon+process.susydesypatmuons)
+        process.p_susyPat.replace(process.susycafpfmuon,process.susycafpfmuon+process.susydesypfmuons)
 
-	process.nPatJet.remove(process.susycafic5calojet)
-	process.nPatJetMatched.remove(process.susycafic5calojetMatched)
-	process.nPat.remove(process.susycafmetIC5)
-	process.nPat.remove(process.susycafphoton)
+	process.p_susyPat.remove(process.susycafic5calojet)
+	process.p_susyPat.remove(process.susycafic5calojetMatched)
+	process.p_susyPat.remove(process.susycafmetIC5)
+	process.p_susyPat.remove(process.susycafphoton)
+	
+	process.p_susyCAF.replace(process.susyTree,process.TsusyTree)
