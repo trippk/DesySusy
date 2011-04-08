@@ -35,10 +35,15 @@
 #include "Math/LorentzVector.h"
 #include "Math/DisplacementVector3D.h"
 #include "Math/GenVector/PositionVector3D.h"
+#include "Math/GenVector/PxPyPzE4D.h"
+#include "Math/GenVector/PtEtaPhiE4D.h"
+#include "Math/GenVector/PxPyPzM4D.h"
+#include "Math/GenVector/PtEtaPhiM4D.h"
 
 using namespace std;
 
 typedef ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> >            LorentzV;
+typedef ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double> >          LorentzM;
 typedef ROOT::Math::DisplacementVector3D<ROOT::Math::Cartesian3D<double> > XYZVectorD;
 typedef ROOT::Math::PositionVector3D<ROOT::Math::Cartesian3D<double>  >     XYZPointD;
 
@@ -48,6 +53,7 @@ typedef ROOT::Math::PositionVector3D<ROOT::Math::Cartesian3D<double>  >     XYZP
 // compiled during rootcint
 //#warning __CINT__
 #pragma link C++ class vector<LorentzV>+;
+#pragma link C++ class vector<LorentzM>+;
 #pragma link C++ class vector<XYZVectorD>+;
 #pragma link C++ class vector<XYZPointD>+;
 #pragma link C++ class map<string,bool>+;
