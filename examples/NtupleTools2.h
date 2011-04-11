@@ -46,6 +46,8 @@ typedef ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> >            Lor
 typedef ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double> >          LorentzM;
 typedef ROOT::Math::DisplacementVector3D<ROOT::Math::Cartesian3D<double> > XYZVectorD;
 typedef ROOT::Math::PositionVector3D<ROOT::Math::Cartesian3D<double>  >     XYZPointD;
+typedef ROOT::Math::DisplacementVector3D<ROOT::Math::Cartesian3D<float> > XYZVectorF;
+typedef ROOT::Math::PositionVector3D<ROOT::Math::Cartesian3D<float>  >     XYZPointF;
 
 
 #ifdef __CINT__ 
