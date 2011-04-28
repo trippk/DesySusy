@@ -6,7 +6,7 @@
 //   15.02.2011 conditionals for pure header use if __NTHEADER___ defined.
 //              This aproach allows the use of NtupleTools2.h with command line macros
 //              since the complete implementation is in one file
-//
+//   27.4.2011 toDo performance in case of multiple acces of branch for same entry
 //   dirk.kruecker@desy.de
 
 #ifndef NtupleTools2_h
@@ -112,6 +112,26 @@ void progressT(int flush=0,ostream& os=cout)
 }
 #endif
 ;
+void timer(ostream& os=cout,int stp=10)
+#ifndef __NTHEADER___
+{
+	static TStopwatch timer;
+        static int cnt(0),step(stp),next(stp);
+	if(cnt==0) timer.Start();
+        cnt++;
+        if(cnt==next){
+        	timer.Stop();
+                os<<"Evts: "<<setw(10)<<right<<cnt
+                  <<" | time [sec] - real: "
+                  <<left<<setprecision(4)<<setw(10)<<timer.RealTime()
+                  <<" \tCPU: "<<setw(10)<<left<<setprecision(4)<<timer.CpuTime()<<endl;
+                timer.Start(false);
+                next+=step;
+        }
+        if((cnt+1)/step==10)step*=10;
+}
+#endif
+;
 
 //---------- file handling -----------------------------
 int GetResult(vector<string>& out, const TString& command,bool nodup)
@@ -119,7 +139,7 @@ int GetResult(vector<string>& out, const TString& command,bool nodup)
 {
 	TString line;
 	FILE* pipe= gSystem->OpenPipe(command,"r");
-	if(!pipe){ 
+	if(!pipe){
 		cerr<<"Did not work: "<<command<<endl;
 	} else {
 		while (line.Gets(pipe)) if(line!="") {
@@ -225,6 +245,23 @@ int AllRootFilesNoDup(const TString& dir,TChain* chain,int max)
 #ifndef __NTHEADER___
 {
 	return AllRootFilesIn(dir,chain,"ls",max,true);
+}
+#endif
+;
+string file_base(const string& nam)
+#ifndef __NTHEADER___
+{
+	int dot=nam.rfind(".");
+	int slash=nam.rfind("/")+1;
+	return nam.substr(slash,dot-slash);
+}
+#endif
+;
+TString file_base(const TString& nam)
+#ifndef __NTHEADER___
+{
+	const string namstr(nam.Data());
+	return file_base(namstr).c_str();
 }
 #endif
 ;
