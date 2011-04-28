@@ -19,8 +19,9 @@ bool jets_RA5(EasyChain* tree,vector<int>& goodJets){
 	jetFlow.autoprint=true;
 
 	vector<int>&       JetID = tree->Get(&JetID,"ak5JetPFPFJetIDloosePat");
-	vector<LorentzM>&   Jets = tree->Get(&Jets, "ak5JetPF2PATCorrectedP4Pat");
+	vector<LorentzM>&   Jets = tree->Get(&Jets, "ak5JetPFCorrectedP4Pat");
 	int cntJets=0;
+
 	for(int k = 0; k<Jets.size(); k++){
 		if( !jetFlow.keepIf("pt>=jet_min",              Jets[k].pt()   >= jet_pt_min  ) && quick) continue;
 		if( !jetFlow.keepIf("eta<=eta_max",        fabs(Jets[k].eta()) <= jet_eta_max ) && quick) continue;

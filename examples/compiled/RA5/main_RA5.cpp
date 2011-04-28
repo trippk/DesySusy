@@ -94,7 +94,7 @@ int main(int argc, char** argv){
 
 		// check delta_R to muons
 		int jetCnt=0;
-		vector<LorentzM>&  Jets = tree->Get(&Jets, "ak5JetPF2PATCorrectedP4Pat");
+		vector<LorentzM>&  Jets = tree->Get(&Jets, "ak5JetPFCorrectedP4Pat");
 		vector<LorentzM>& Muons = tree->Get(&Muons, "muonP4Pat");
 		for(int j=0;j<goodJets.size();++j){
 			bool keep=true;
