@@ -6,7 +6,8 @@
 //   15.02.2011 conditionals for pure header use if __NTHEADER___ defined.
 //              This aproach allows the use of NtupleTools2.h with command line macros
 //              since the complete implementation is in one file
-//   27.4.2011 toDo performance in case of multiple acces of branch for same entry
+//     2.5.2011 - Improved performance in case of multiple acces of a branch for same entry
+//              - new dcache door 
 //   dirk.kruecker@desy.de
 
 #ifndef NtupleTools2_h
@@ -51,7 +52,7 @@ typedef ROOT::Math::PositionVector3D<ROOT::Math::Cartesian3D<float>  >     XYZPo
 
 
 #ifdef __CINT__ 
-// for the command line ACLIC macro 
+// for the command line ACLIC macro
 // compiled during rootcint
 //#warning __CINT__
 #pragma link C++ class vector<LorentzV>+;
@@ -189,7 +190,8 @@ int AllRootFilesIn(const TString& dir,TChain* chain,const TString& LScommand,int
 	if(LScommand=="dcls"){
 		n=GetResult(files,"dcls "+dir+" | grep \"\\.root\" ",nodup);
 		n=n>max?max:n;
-		const string dcache_gate="dcap://dcache-ses-cms.desy.de:22125/";
+//old		const string dcache_gate="dcap://dcache-ses-cms.desy.de:22125/";
+		const string dcache_gate="dcap://dcache-cms-dcap.desy.de:22125/";
 		for(int i=0;i<n;++i) chain->Add((dcache_gate+dir+"/"+files[i]));
 	} else if(LScommand=="rfdir") {
 		n=GetResult(files,LScommand+" "+dir+" | grep \"\\.root\" | awk \'{print $9}\' ",nodup);	
@@ -282,21 +284,25 @@ public:
 		// byNames.find only the used names
 		if( localByName.find(name)==localByName.end() ) {
 			branch = byName[name] = GetBranch( name );
-			localByName[name] = 0;
+			localByName[name].second = 0;
+			localByName[name].first = -1;
 		}
 		else branch=byName[name];
 		if(branch==0) {
 			cerr<<"Branch "<<name<<" is undefined in tree: "<<GetName()<<endl;
 			exit(0);
 		}
-		if(localByName[name]!=0){
-			T* toDelete = static_cast<T*>(localByName[name]);
+		if(localByName[name].first==localEntry && localByName[name].second!=0) return static_cast<T*>(localByName[name].second);
+		if(localByName[name].second!=0){
+			T* toDelete = static_cast<T*>(localByName[name].second);
 			delete toDelete;
+			localByName[name].first=-1;
 		}
 		*ppt=0;
 		branch->SetAddress( ppt );
 		branch->GetEntry(localEntry,1);
-		localByName[name]=*ppt;
+		localByName[name].second=*ppt;
+		localByName[name].first=localEntry;
 		return *ppt;
 	};
 	template<typename T>
@@ -312,21 +318,25 @@ public:
 		TBranch* branch;
 		if( localByName.find(name)==localByName.end() ) {
 			branch = byName[name] = GetBranch( name );
-			localByName[name] = 0;
+			localByName[name].second = 0;
+			localByName[name].first = -1;
 		}
 		else branch=byName[name];
 		if(branch==0) {
 			cerr<<"Branch "<<name<<" is undefined in tree: "<<GetName()<<endl;
 			exit(0);
 		}
-		if(localByName[name]!=0) {
-			T* toDelete = static_cast<T*>(localByName[name]);
+		if(localByName[name].first==localEntry && localByName[name].second!=0) return *static_cast<T*>(localByName[name].second);
+		if(localByName[name].second!=0) {
+			T* toDelete = static_cast<T*>(localByName[name].second);
 			delete toDelete;
+			localByName[name].first=-1;
 		}
 		T* pt=0;
 		branch->SetAddress( &pt );
 		branch->GetEntry(localEntry,1);
-		localByName[name]=pt;
+		localByName[name].second=pt;
+		localByName[name].first=localEntry;
 		return *pt;
 	};
 	template<typename T>
@@ -380,7 +390,7 @@ private:
 	int off;
 	// acts as booster for tree with many branches
 	map<const string,TBranch*> byName;
-	map<string,void*> localByName;
+	map<string, pair<int,void*> > localByName; // a pointer to the branch and the localEntry number for which it had been read
 #ifdef  __NTHEADER___
 	ClassDef(EasyChain, 1);
 #endif
