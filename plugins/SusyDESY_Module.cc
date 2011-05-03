@@ -9,16 +9,16 @@ SusyDESY_Electrons::SusyDESY_Electrons(const edm::ParameterSet& iConfig)
 {
   produces <bool>                 ( Prefix + "PatElectronsHandleValid" + Suffix );
 
-  produces <std::vector<double> > ( Prefix + "SuperClusterEnergy"          + Suffix ); 
-  produces <std::vector<math::XYZPoint> > ( Prefix + "SuperClusterPosition"+ Suffix ); 
-  produces <std::vector<double> > ( Prefix + "SuperClusterRawEnergy"       + Suffix ); 
-  produces <std::vector<double> > ( Prefix + "SuperClusterEtaWidth"        + Suffix );
-  produces <std::vector<double> > ( Prefix + "SuperClusterPhiWidth"        + Suffix );
-  produces <std::vector<double> > ( Prefix + "SuperClusterPreshowerEnergy" + Suffix );
+  produces <std::vector<float> > ( Prefix + "SuperClusterEnergy"          + Suffix ); 
+  produces <std::vector<math::XYZPoint> > ( Prefix +"SuperClusterPosition"+ Suffix ); 
+  produces <std::vector<float> > ( Prefix + "SuperClusterRawEnergy"       + Suffix ); 
+  produces <std::vector<float> > ( Prefix + "SuperClusterEtaWidth"        + Suffix );
+  produces <std::vector<float> > ( Prefix + "SuperClusterPhiWidth"        + Suffix );
+  produces <std::vector<float> > ( Prefix + "SuperClusterPreshowerEnergy" + Suffix );
 
-  produces <std::vector<double> > ( Prefix + "GenMatched"              + Suffix );
-  produces <std::vector<double> > ( Prefix + "GenPdgId"                + Suffix );
-  produces <std::vector<double> > ( Prefix + "GenStatus"               + Suffix );
+  produces <std::vector<bool> > ( Prefix + "GenMatched" + Suffix );
+  produces <std::vector<int> >  ( Prefix + "GenPdgId"   + Suffix );
+  produces <std::vector<int> >  ( Prefix + "GenStatus"  + Suffix );
 
   produces <std::vector<float> > ( Prefix + "SimpleEleId95relIso" + Suffix );
   produces <std::vector<float> > ( Prefix + "SimpleEleId90relIso" + Suffix );
@@ -59,16 +59,16 @@ SusyDESY_Electrons::SusyDESY_Electrons(const edm::ParameterSet& iConfig)
 void SusyDESY_Electrons::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
   std::auto_ptr<bool>                 handleValid       ( new bool(false)           );
 
-  std::auto_ptr<std::vector<double> > SCenergy          ( new std::vector<double>() );
+  std::auto_ptr<std::vector<float> > SCenergy           ( new std::vector<float>() );
   std::auto_ptr<std::vector<math::XYZPoint> > SCposition( new std::vector<math::XYZPoint>() );
-  std::auto_ptr<std::vector<double> > SCrawEnergy       ( new std::vector<double>() );
-  std::auto_ptr<std::vector<double> > SCetaWidth        ( new std::vector<double>() );
-  std::auto_ptr<std::vector<double> > SCphiWidth        ( new std::vector<double>() );
-  std::auto_ptr<std::vector<double> > SCpreshowerEnergy ( new std::vector<double>() );
+  std::auto_ptr<std::vector<float> > SCrawEnergy        ( new std::vector<float>() );
+  std::auto_ptr<std::vector<float> > SCetaWidth         ( new std::vector<float>() );
+  std::auto_ptr<std::vector<float> > SCphiWidth         ( new std::vector<float>() );
+  std::auto_ptr<std::vector<float> > SCpreshowerEnergy  ( new std::vector<float>() );
 
-  std::auto_ptr<std::vector<double> > GenMatched         ( new std::vector<double>() );
-  std::auto_ptr<std::vector<double> > GenPdgId           ( new std::vector<double>() );
-  std::auto_ptr<std::vector<double> > GenStatus          ( new std::vector<double>() );
+  std::auto_ptr<std::vector<bool> > GenMatched         ( new std::vector<bool>() );
+  std::auto_ptr<std::vector<int> >  GenPdgId           ( new std::vector<int>()  );
+  std::auto_ptr<std::vector<int> >  GenStatus          ( new std::vector<int>()  );
 
   std::auto_ptr<std::vector<float> > simpleEleId95relIso ( new std::vector<float>() );
   std::auto_ptr<std::vector<float> > simpleEleId90relIso ( new std::vector<float>() );
@@ -155,12 +155,12 @@ void SusyDESY_Electrons::produce(edm::Event& iEvent, const edm::EventSetup& iSet
       IsGap->push_back(el->isGap());
       
       if(el->genLepton()){
-	GenMatched->push_back(1);
+	GenMatched->push_back(true);
 	GenPdgId->push_back(el->genLepton()->pdgId());
 	GenStatus->push_back(el->genLepton()->status());
       }
       else{
-	GenMatched->push_back(0);
+	GenMatched->push_back(false);
 	GenPdgId->push_back(0);
 	GenStatus->push_back(-1);
       }
@@ -227,33 +227,36 @@ SusyDESY_Muons::SusyDESY_Muons(const edm::ParameterSet& iConfig)
     Suffix( iConfig.getParameter<string> ("Suffix") ),
     PatMuons( iConfig.getParameter<edm::InputTag> ("PatMuons") )
 {
-  produces <bool>                   ( Prefix + "PatMuonsHandleValid"                 + Suffix );
+  produces <bool>                ( Prefix + "PatMuonsHandleValid"                 + Suffix );
 
-  produces <std::vector<double> >   ( Prefix + "HcalIsoDep"                          + Suffix );
-  produces <std::vector<double> >   ( Prefix + "EcalIsoDep"                          + Suffix );
+  produces <std::vector<float> > ( Prefix + "HcalIsoDep"                          + Suffix );
+  produces <std::vector<float> > ( Prefix + "EcalIsoDep"                          + Suffix );
 
-  produces <std::vector<unsigned> > ( Prefix + "GlobalTrackNumberOfValidTrackerHits" + Suffix );
-  produces <std::vector<unsigned> > ( Prefix + "GlobalTrackNumberOfValidMuonHits"    + Suffix ); 
-  produces <std::vector<double> >   ( Prefix + "TrackD0"                             + Suffix );
+  produces <std::vector<int> >   ( Prefix + "GlobalTrackNumberOfValidTrackerHits" + Suffix );
+  produces <std::vector<int> >   ( Prefix + "GlobalTrackNumberOfValidMuonHits"    + Suffix ); 
+  produces <std::vector<float> > ( Prefix + "TrackD0"                             + Suffix );
+  produces <std::vector<int> >   ( Prefix + "InnerTrackPixelLayersWithMeasurement"+ Suffix );
 
-  produces <std::vector<double> >   ( Prefix + "IsolationR03emVetoEt"  + Suffix );
-  produces <std::vector<double> >   ( Prefix + "IsolationR03hadVetoEt" + Suffix );
-  produces <std::vector<double> >   ( Prefix + "IsolationR03hoVetoEt"  + Suffix );
+  produces <std::vector<float> > ( Prefix + "IsolationR03emVetoEt"  + Suffix );
+  produces <std::vector<float> > ( Prefix + "IsolationR03hadVetoEt" + Suffix );
+  produces <std::vector<float> > ( Prefix + "IsolationR03hoVetoEt"  + Suffix );
 }
 
 void SusyDESY_Muons::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
-  std::auto_ptr<bool>                   handleValid ( new bool(false)           );
-  std::auto_ptr<std::vector<unsigned> > globalTrackNHVTH ( new std::vector<unsigned>());
-  std::auto_ptr<std::vector<unsigned> > globalTrackNHVMH ( new std::vector<unsigned>());
-  std::auto_ptr<std::vector<double> >   muonEcalIsoDep   ( new std::vector<double>()  );
-  std::auto_ptr<std::vector<double> >   muonHcalIsoDep   ( new std::vector<double>()  );
+  std::auto_ptr<bool>                handleValid      ( new bool(false)          );
 
-  std::auto_ptr<std::vector<double> > muonTrackD0 ( new std::vector<double>() );
+  std::auto_ptr<std::vector<float> > muonEcalIsoDep   ( new std::vector<float>() );
+  std::auto_ptr<std::vector<float> > muonHcalIsoDep   ( new std::vector<float>() );
 
-  std::auto_ptr<std::vector<double> > iso03emVetoEt  ( new std::vector<double>() );
-  std::auto_ptr<std::vector<double> > iso03hadVetoEt ( new std::vector<double>() );
-  std::auto_ptr<std::vector<double> > iso03hoVetoEt  ( new std::vector<double>() );
+  std::auto_ptr<std::vector<int> >   globalTrackNHVTH ( new std::vector<int>()   );
+  std::auto_ptr<std::vector<int> >   globalTrackNHVMH ( new std::vector<int>()   );
+  std::auto_ptr<std::vector<float> > muonTrackD0      ( new std::vector<float>() );
+  std::auto_ptr<std::vector<int> >   innerTrackPLWM   ( new std::vector<int>()   );
+
+  std::auto_ptr<std::vector<float> > iso03emVetoEt  ( new std::vector<float>() );
+  std::auto_ptr<std::vector<float> > iso03hadVetoEt ( new std::vector<float>() );
+  std::auto_ptr<std::vector<float> > iso03hoVetoEt  ( new std::vector<float>() );
 
   edm::Handle<std::vector<pat::Muon> > MuColl;
   iEvent.getByLabel(PatMuons, MuColl);
@@ -276,6 +279,7 @@ void SusyDESY_Muons::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) 
       globalTrackNHVTH->push_back( global ? mu->globalTrack()->hitPattern().numberOfValidTrackerHits() : 0);
       globalTrackNHVMH->push_back( global ? mu->globalTrack()->hitPattern().numberOfValidMuonHits ()   : 0);
       muonTrackD0->push_back( tracker ? mu->track()->d0() : 999999999. );
+      innerTrackPLWM->push_back( tracker ? mu->innerTrack()->->hitPattern().pixelLayersWithMeasurement() : 0);
 
       iso03emVetoEt ->push_back(mu->isolationR03().emVetoEt );
       iso03hadVetoEt->push_back(mu->isolationR03().hadVetoEt);
@@ -291,6 +295,7 @@ void SusyDESY_Muons::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) 
   iEvent.put( muonTrackD0     , Prefix + "TrackD0"                                  + Suffix );
   iEvent.put( globalTrackNHVTH, Prefix + "GlobalTrackNumberOfValidTrackerHits"      + Suffix );
   iEvent.put( globalTrackNHVMH, Prefix + "GlobalTrackNumberOfValidMuonHits"         + Suffix );
+  iEvent.put( innerTrackPLWM,   Prefix + "InnerTrackPixelLayersWithMeasurement"     + Suffix );
 
   iEvent.put( iso03emVetoEt  , Prefix + "IsolationR03emVetoEt"  + Suffix );
   iEvent.put( iso03hadVetoEt , Prefix + "IsolationR03hadVetoEt" + Suffix );
