@@ -11,6 +11,7 @@
 #include "NtupleTools2.h"
 #include "../tools/ConfigReader.h"
 #include "../tools/CutFlow.h"
+#include "../tools/THTools.h"
 #include "muons_RA5.h"
 #include "triggers_RA5.h"
 #include "vertices_RA5.h"
@@ -46,8 +47,8 @@ int main(int argc, char** argv){
 	CutSet::setTFile(outfile);
 	
 	// histograms for muons_RA5.cpp
-	TH1F* hiso = new TH1F("hiso","RelIso",50,0,6);
-	TH1F* hisomax = new TH1F("hisomax","RelIso max 20",50,0,6);
+	autoSavePtr<TH1F> hisomax = new TH1F("hisomax","RelIso max 20",50,0,6);
+	autoSavePtr<TH1F>    hiso = new TH1F("hiso","RelIso",50,0,6);
 
 	// if quick is true we continue with the next event
 	// at the first condition that is not fullfilled
@@ -120,10 +121,6 @@ int main(int argc, char** argv){
 		vector<int>&      Mu_charge   = tree->Get( &Mu_charge,    "muonChargePat");
 		// to be continued ...
 	}
-
-	// save histogramms
-	hiso->Write();
-	hisomax->Write();
 
 	config.printUsed();
 
