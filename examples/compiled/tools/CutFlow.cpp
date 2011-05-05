@@ -3,6 +3,7 @@
 #include <map>
 #include <algorithm>
 #include <iomanip>
+#include "THTools.h"
 #include "TString.h"
 #include "TDirectory.h"
 #include "TFile.h"
@@ -15,7 +16,7 @@ double CutSet::global_event_weight = 1.;
 TDirectory* CutSet::tdir = 0;
 TFile* CutSet::tfile = 0;
 
-CutSet::CutSet(const TString& n, const char* dlm ): delim(dlm),autoprint(false) {
+CutSet::CutSet(const TString& n, const char* dlm ): delim(dlm), autoprint(false), autodump(false) {
 	Name = n;
 }
 void CutSet::printAll() {
@@ -45,12 +46,9 @@ void CutSet::printAll() {
 	<<setw(12)<<survivors_weighted[allCuts[c]]
 	<<endl;
 	}
-	cout<<endl
+	cout<<endl;
 
-	<<"cut flow survivors:"<<endl;
-//	for(unsigned c=0; c<allCuts.size(); ++c) {
-//		cout<<allCuts[c]<<" "<<survivors[allCuts[c]]<<endl;
-//dk	}
+	if(allFlows.size()>0)cout<<"cut flow survivors:"<<endl;
 	for(unsigned f=0; f<allFlows.size(); ++f) {
 	cout
 	<<">>> "<<allFlowNames[allFlows[f]]<<endl;
@@ -98,21 +96,71 @@ void CutSet::printFlow(const TString& rawCuts) {
 	}
 	cout<<endl;
 
-//dk	i=0;
-//	cout<<"in "<<flowSurvivors[rawCuts][first]+flowRejected[rawCuts][first]<<endl;;
-//	while(rawCuts.Tokenize(cutFlow,i,delim)) {
-//		cout<<cutFlow<<" "<<flowSurvivors[rawCuts][cutFlow]<<endl;
-//	}
-
 };
+
 void CutSet::setTFile(TFile *f){
+	TDirectory* mainDir=0;
+	if(f!=0)        mainDir = f->GetDirectory("/");
+	if(mainDir!=0) 	   tdir = mainDir->mkdir("CutFlow");
+	if(tdir==0) { 
+		cout<<"CutSet::setTFile: cannot create directory in file!"<<endl;
+		exit(0);
+	}
 	tfile=f;
 };
-void CutSet::dumpHist(){
-	cout<<"To be done: histogram cut flow"<<endl;
-/*
-	hi = new TH1I("hi",n);
-	hf = new TH1F("hf",n);
-	for(vector<TH1*>::const_iterator it=histos.begin();it!=histos.end();it++) it->Write()
-*/
+
+void CutSet::dumpToHist(){
+
+	int bins=allCuts.size();
+
+	// remove spaces from name
+	TString hname;
+	for(Ssiz_t i=0;i<Name.Length();i++) hname.Append( Name[i]==' ' ? '_' : Name[i] );
+
+	tdir->cd();
+	autoSavePtr<TH1D> hallCutsWOut = new TH1D(hname+"_WOut",Name+" - single cut out weighted",bins,0,bins);
+	autoSavePtr<TH1I> hallCutsIn   = new TH1I(hname+"_In"  ,Name+" - single cut in"          ,bins,0,bins);
+	autoSavePtr<TH1I> hallCutsOut  = new TH1I(hname+"_Out" ,Name+" - single cut out"         ,bins,0,bins);
+
+	TAxis* axisA =  hallCutsOut->GetXaxis();
+	TAxis* axisR =   hallCutsIn->GetXaxis();
+	TAxis* axisW = hallCutsWOut->GetXaxis();
+	
+	for(unsigned c=0; c<allCuts.size(); ++c) {
+		axisA->SetBinLabel(c+1,allCuts[c]);
+		axisR->SetBinLabel(c+1,allCuts[c]);
+		axisW->SetBinLabel(c+1,allCuts[c]);
+		 hallCutsOut->SetBinContent(c+1, survivors[allCuts[c]]);
+		  hallCutsIn->SetBinContent(c+1, rejected[allCuts[c]]+survivors[allCuts[c]] );
+		hallCutsWOut->SetBinContent(c+1, survivors_weighted[allCuts[c]]);
+        }
+	for(unsigned f=0; f<allFlows.size(); ++f) {
+
+		TString rawCuts=allFlows[f];
+
+		vector<TString> vcuts;
+		TString cutFlow;
+		int i=0;
+		while(rawCuts.Tokenize(cutFlow,i,delim)) vcuts.push_back(cutFlow);
+
+		bins=vcuts.size();
+		autoSavePtr<TH1D> hallCutsWOutFlow = new TH1D(hname+"_WOut_cut_flow",Name+" - cut flow out weighted",bins,0,bins);
+		autoSavePtr<TH1I> hallCutsOutFlow  = new TH1I(hname+"_Out_cut_flow" ,Name+" - cut flow out"         ,bins,0,bins);
+		autoSavePtr<TH1I> hallCutsInFlow   = new TH1I(hname+"_In_cut_flow"  ,Name+" - cut flow in"          ,bins,0,bins);
+
+		TAxis* axisR =   hallCutsInFlow->GetXaxis();
+		TAxis* axisA =  hallCutsOutFlow->GetXaxis();
+		TAxis* axisW = hallCutsWOutFlow->GetXaxis();
+		
+		for(unsigned c=0; c<bins; ++c) {
+			axisR->SetBinLabel(c+1,vcuts[c]);
+			axisA->SetBinLabel(c+1,vcuts[c]);
+			axisW->SetBinLabel(c+1,vcuts[c]);
+			hallCutsOutFlow->SetBinContent(c+1, flowSurvivors[rawCuts][vcuts[c]]);
+			 hallCutsInFlow->SetBinContent(c+1, flowRejected[rawCuts][vcuts[c]]+flowSurvivors[rawCuts][vcuts[c]]);
+		       hallCutsWOutFlow->SetBinContent(c+1, flowSurvivors_weighted[rawCuts][vcuts[c]]);
+		}
+
+	}
+
 }

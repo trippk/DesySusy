@@ -4,6 +4,11 @@
 #ifndef THTools_h
 #define THTools_h
 
+#include <iostream>
+#include "TString.h"
+#include "TDirectory.h"
+
+using namespace std;
 
 // helper function to fetch histogram + check whether it exists
 template<typename T>

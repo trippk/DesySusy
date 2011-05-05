@@ -1,12 +1,14 @@
 // changes to hannes:
-// cut name may contain spaces e.g.:      pt <
-// cut list are comma sepearated e.g.:   "pt <, eta >, theta_good"
 // SplitToWords replaced
-
+// delimiter can be ','
+//  cut name may contain spaces e.g.:      pt <
+//  then cut list are comma sepearated e.g.:   "pt <, eta >, theta_good"
+// but default presently keept as ' ' see below #define delimiter " "
+//
 // code by Hannes Schettler
 // dk 25.4.2011
 /*
-A cutflow with documentation of survivingevents
+A cutflow with documentation of surviving events
 Can also handle weighted samples:
 - before the loop starts you create one or more instances of CutSet.
   For example:
@@ -35,7 +37,7 @@ Use case II : You collect several cuts and do a applyCuts e.g. for n-1 plots
 - at the end you can get a table which lists all defined cuts and cut flows.
             electronSelection.printAll();
   Keep in mind, the meaning of this number depend on your code!
-
+- applyCuts must appear only once per CutSet!
 DK histo store
 */
 
@@ -59,9 +61,10 @@ class CutSet {
 public:
 
 	CutSet(const TString&,const char* delim=delimiter);
-	CutSet(): delim( delimiter ) {CutSet("");}
+	CutSet(): delim( delimiter ), autoprint(false), autodump(false) {CutSet("");}
 	~CutSet(){
 		if(autoprint) printAll();
+		if(autodump)  dumpToHist();
 	}
 	static double global_event_weight;
 
@@ -92,8 +95,9 @@ public:
 
 	void printFlow(const TString&);
 	static void setTFile(TFile *);
-	static void dumpHist();
+	void dumpToHist();
 	bool autoprint;
+	bool autodump;
 private:
 	TString Name;
 	vector<TString>    allCuts;
