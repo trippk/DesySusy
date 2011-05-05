@@ -55,17 +55,6 @@ using namespace std;
 
 #define delimiter " "
 
-// helper function to fetch histogram + check whether it exists
-inline  TH1* fetchHisto(const TString& name){
-
-	TH1* h=static_cast<TH1*>(gDirectory->Get(name));
-	if(h==0) {
-		cout<<"fetchHisto: could not find "<<name<<endl;
-		exit(0);
-	}
-	return h;
-}
-
 class CutSet {
 public:
 

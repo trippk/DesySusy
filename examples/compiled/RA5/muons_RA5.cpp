@@ -1,6 +1,7 @@
 #include "NtupleTools2_h.h"
 #include "../tools/ConfigReader.h"
 #include "../tools/CutFlow.h"
+#include "../tools/THTools.h"
 #include "TDirectory.h"
 
 using namespace std;
@@ -26,9 +27,8 @@ bool muons_RA5(EasyChain* tree,vector<int>& goodNonIsoMuons, vector<double>& rel
 	static float mu_eta_max      = config.getDouble("mu_eta_max",   2.4);
 
 	// fetch histograms defined in main_RA5.cpp
-	// fetchHisto from CutFlow.h 
-	static TH1F* hiso    = (TH1F*) fetchHisto("hiso") ;
-	static TH1F* hisomax = (TH1F*) fetchHisto("hisomax") ;
+        static TH1F* hisomax = fetchHisto<TH1F>("hisomax");
+        static TH1F* hiso    = fetchHisto<TH1F>("hiso");
 
 	// the muon collection
 	vector<LorentzM>& Muons = tree->Get(&Muons, "muonP4Pat");

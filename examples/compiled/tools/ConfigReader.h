@@ -41,7 +41,7 @@ Usage: principle structure of the config file: key = value.
 
             config.printUsed(cout);
 
-       Check the example.cpp for more examples.
+       Check the demoConfigReader.cpp for more examples.
 
        A third way to set values is the command line (No spaces allowed):
 
