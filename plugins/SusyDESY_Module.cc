@@ -20,19 +20,20 @@ SusyDESY_Electrons::SusyDESY_Electrons(const edm::ParameterSet& iConfig)
   produces <std::vector<int> >  ( Prefix + "GenPdgId"   + Suffix );
   produces <std::vector<int> >  ( Prefix + "GenStatus"  + Suffix );
 
-  produces <std::vector<float> > ( Prefix + "SimpleEleId95relIso" + Suffix );
-  produces <std::vector<float> > ( Prefix + "SimpleEleId90relIso" + Suffix );
-  produces <std::vector<float> > ( Prefix + "SimpleEleId85relIso" + Suffix );
-  produces <std::vector<float> > ( Prefix + "SimpleEleId80relIso" + Suffix );
-  produces <std::vector<float> > ( Prefix + "SimpleEleId70relIso" + Suffix );
-  produces <std::vector<float> > ( Prefix + "SimpleEleId60relIso" + Suffix );
-  produces <std::vector<float> > ( Prefix + "SimpleEleId95cIso"   + Suffix );
-  produces <std::vector<float> > ( Prefix + "SimpleEleId90cIso"   + Suffix );
-  produces <std::vector<float> > ( Prefix + "SimpleEleId85cIso"   + Suffix );
-  produces <std::vector<float> > ( Prefix + "SimpleEleId80cIso"   + Suffix );
-  produces <std::vector<float> > ( Prefix + "SimpleEleId70cIso"   + Suffix );
-  produces <std::vector<float> > ( Prefix + "SimpleEleId60cIso"   + Suffix );
-
+  if(Suffix == "Pat") {
+    produces <std::vector<float> > ( Prefix + "SimpleEleId95relIso" + Suffix );
+    produces <std::vector<float> > ( Prefix + "SimpleEleId90relIso" + Suffix );
+    produces <std::vector<float> > ( Prefix + "SimpleEleId85relIso" + Suffix );
+    produces <std::vector<float> > ( Prefix + "SimpleEleId80relIso" + Suffix );
+    produces <std::vector<float> > ( Prefix + "SimpleEleId70relIso" + Suffix );
+    produces <std::vector<float> > ( Prefix + "SimpleEleId60relIso" + Suffix );
+    produces <std::vector<float> > ( Prefix + "SimpleEleId95cIso"   + Suffix );
+    produces <std::vector<float> > ( Prefix + "SimpleEleId90cIso"   + Suffix );
+    produces <std::vector<float> > ( Prefix + "SimpleEleId85cIso"   + Suffix );
+    produces <std::vector<float> > ( Prefix + "SimpleEleId80cIso"   + Suffix );
+    produces <std::vector<float> > ( Prefix + "SimpleEleId70cIso"   + Suffix );
+    produces <std::vector<float> > ( Prefix + "SimpleEleId60cIso"   + Suffix );
+  }
   produces <std::vector<bool> > ( Prefix + "ChargeInfoIsGsfCtfConsistent"      + Suffix );
   produces <std::vector<bool> > ( Prefix + "ChargeInfoIsGsfCtfScPixConsistent" + Suffix );
   produces <std::vector<bool> > ( Prefix + "ChargeInfoIsGsfScPixConsistent"    + Suffix );
@@ -117,19 +118,22 @@ void SusyDESY_Electrons::produce(edm::Event& iEvent, const edm::EventSetup& iSet
       SCphiWidth       ->push_back(el->superCluster()->phiWidth()       );
       SCpreshowerEnergy->push_back(el->superCluster()->preshowerEnergy());
       
-      simpleEleId95relIso->push_back(el->electronID("simpleEleId95relIso"));
-      simpleEleId90relIso->push_back(el->electronID("simpleEleId90relIso"));
-      simpleEleId85relIso->push_back(el->electronID("simpleEleId85relIso"));
-      simpleEleId80relIso->push_back(el->electronID("simpleEleId80relIso"));
-      simpleEleId70relIso->push_back(el->electronID("simpleEleId70relIso"));
-      simpleEleId60relIso->push_back(el->electronID("simpleEleId60relIso"));
-      simpleEleId95cIso  ->push_back(el->electronID("simpleEleId95cIso"  ));
-      simpleEleId90cIso  ->push_back(el->electronID("simpleEleId90cIso"  ));
-      simpleEleId85cIso  ->push_back(el->electronID("simpleEleId85cIso"  ));
-      simpleEleId80cIso  ->push_back(el->electronID("simpleEleId80cIso"  ));
-      simpleEleId70cIso  ->push_back(el->electronID("simpleEleId70cIso"  ));
-      simpleEleId60cIso  ->push_back(el->electronID("simpleEleId60cIso"  ));
-      
+
+      if(Suffix == "Pat") {
+	simpleEleId95relIso->push_back(el->electronID("simpleEleId95relIso"));
+	simpleEleId90relIso->push_back(el->electronID("simpleEleId90relIso"));
+	simpleEleId85relIso->push_back(el->electronID("simpleEleId85relIso"));
+	simpleEleId80relIso->push_back(el->electronID("simpleEleId80relIso"));
+	simpleEleId70relIso->push_back(el->electronID("simpleEleId70relIso"));
+	simpleEleId60relIso->push_back(el->electronID("simpleEleId60relIso"));
+	simpleEleId95cIso  ->push_back(el->electronID("simpleEleId95cIso"  ));
+	simpleEleId90cIso  ->push_back(el->electronID("simpleEleId90cIso"  ));
+	simpleEleId85cIso  ->push_back(el->electronID("simpleEleId85cIso"  ));
+	simpleEleId80cIso  ->push_back(el->electronID("simpleEleId80cIso"  ));
+	simpleEleId70cIso  ->push_back(el->electronID("simpleEleId70cIso"  ));
+	simpleEleId60cIso  ->push_back(el->electronID("simpleEleId60cIso"  ));
+      }
+
       chargeInfoIsGsfCtfConsistent     ->push_back(el->chargeInfo().isGsfCtfConsistent     );
       chargeInfoIsGsfCtfScPixConsistent->push_back(el->chargeInfo().isGsfCtfScPixConsistent);
       chargeInfoIsGsfScPixConsistent   ->push_back(el->chargeInfo().isGsfScPixConsistent   );
@@ -184,18 +188,20 @@ void SusyDESY_Electrons::produce(edm::Event& iEvent, const edm::EventSetup& iSet
   iEvent.put( GenPdgId          , Prefix + "GenPdgId"                + Suffix );
   iEvent.put( GenStatus         , Prefix + "GenStatus"               + Suffix );
 
-  iEvent.put( simpleEleId95relIso, Prefix + "SimpleEleId95relIso"+ Suffix );
-  iEvent.put( simpleEleId90relIso, Prefix + "SimpleEleId90relIso"+ Suffix );
-  iEvent.put( simpleEleId85relIso, Prefix + "SimpleEleId85relIso"+ Suffix );
-  iEvent.put( simpleEleId80relIso, Prefix + "SimpleEleId80relIso"+ Suffix );
-  iEvent.put( simpleEleId70relIso, Prefix + "SimpleEleId70relIso"+ Suffix );
-  iEvent.put( simpleEleId60relIso, Prefix + "SimpleEleId60relIso"+ Suffix );
-  iEvent.put( simpleEleId95cIso  , Prefix + "SimpleEleId95cIso"  + Suffix );
-  iEvent.put( simpleEleId90cIso  , Prefix + "SimpleEleId90cIso"  + Suffix );
-  iEvent.put( simpleEleId85cIso  , Prefix + "SimpleEleId85cIso"  + Suffix );
-  iEvent.put( simpleEleId80cIso  , Prefix + "SimpleEleId80cIso"  + Suffix );
-  iEvent.put( simpleEleId70cIso  , Prefix + "SimpleEleId70cIso"  + Suffix );
-  iEvent.put( simpleEleId60cIso  , Prefix + "SimpleEleId60cIso"  + Suffix );
+  if(Suffix == "Pat") {
+    iEvent.put( simpleEleId95relIso, Prefix + "SimpleEleId95relIso"+ Suffix );
+    iEvent.put( simpleEleId90relIso, Prefix + "SimpleEleId90relIso"+ Suffix );
+    iEvent.put( simpleEleId85relIso, Prefix + "SimpleEleId85relIso"+ Suffix );
+    iEvent.put( simpleEleId80relIso, Prefix + "SimpleEleId80relIso"+ Suffix );
+    iEvent.put( simpleEleId70relIso, Prefix + "SimpleEleId70relIso"+ Suffix );
+    iEvent.put( simpleEleId60relIso, Prefix + "SimpleEleId60relIso"+ Suffix );
+    iEvent.put( simpleEleId95cIso  , Prefix + "SimpleEleId95cIso"  + Suffix );
+    iEvent.put( simpleEleId90cIso  , Prefix + "SimpleEleId90cIso"  + Suffix );
+    iEvent.put( simpleEleId85cIso  , Prefix + "SimpleEleId85cIso"  + Suffix );
+    iEvent.put( simpleEleId80cIso  , Prefix + "SimpleEleId80cIso"  + Suffix );
+    iEvent.put( simpleEleId70cIso  , Prefix + "SimpleEleId70cIso"  + Suffix );
+    iEvent.put( simpleEleId60cIso  , Prefix + "SimpleEleId60cIso"  + Suffix );
+  }
 
   iEvent.put( chargeInfoIsGsfCtfConsistent     , Prefix + "ChargeInfoIsGsfCtfConsistent"      + Suffix );
   iEvent.put( chargeInfoIsGsfCtfScPixConsistent, Prefix + "ChargeInfoIsGsfCtfScPixConsistent" + Suffix );
