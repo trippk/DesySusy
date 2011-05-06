@@ -279,7 +279,7 @@ void SusyDESY_Muons::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) 
       globalTrackNHVTH->push_back( global ? mu->globalTrack()->hitPattern().numberOfValidTrackerHits() : 0);
       globalTrackNHVMH->push_back( global ? mu->globalTrack()->hitPattern().numberOfValidMuonHits ()   : 0);
       muonTrackD0->push_back( tracker ? mu->track()->d0() : 999999999. );
-      innerTrackPLWM->push_back( tracker ? mu->innerTrack()->->hitPattern().pixelLayersWithMeasurement() : 0);
+      innerTrackPLWM->push_back( tracker ? mu->innerTrack()->hitPattern().pixelLayersWithMeasurement() : 0);
 
       iso03emVetoEt ->push_back(mu->isolationR03().emVetoEt );
       iso03hadVetoEt->push_back(mu->isolationR03().hadVetoEt);

@@ -7,8 +7,8 @@ from  SUSYBSMAnalysis.DesySusy.SusyDESY_Module_cfi import *
 TsusyTree = cms.EDAnalyzer("SusyTree",
     outputCommands = cms.untracked.vstring(
     'drop *',
-#    'keep *_susycaf*_*_*',
-    'keep *_susy*_*_*',
+    'keep *_susycaf*_*_*',
+    'keep *_desysusy*_*_*',
     'keep double_susyScan*_*_*') + (
     ["drop %s"%s for s in drop(False)] +
     ["keep %s"%s for s in keep()]) +
@@ -35,3 +35,8 @@ def DESYpatch(process):
 	process.p_susyPat.remove(process.susycafphoton)
 	
 	process.p_susyCAF.replace(process.susyTree,process.TsusyTree)
+
+	
+def runTree(process) :
+	process.load('SUSYBSMAnalysis.DesySusy.SusyDESY_RunTreeMaker_cfi')
+	return cms.Path(process.runTree)
