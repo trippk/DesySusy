@@ -1,0 +1,344 @@
+#! /usr/bin/env python
+
+import sys, os
+import commands 
+import subprocess
+
+dcache_gate='dcap://dcache-cms-dcap.desy.de:22125/'
+indir=''
+
+batch_script = \
+"""
+#!/bin/zsh
+## make sure the right shell will be used
+#$ -S /bin/zsh
+## the cpu time for this job
+#$ -l h_cpu=00:30:00
+## the maximum memory usage of this job
+#$ -l h_vmem=1000M
+## stderr and stdout are merged together to stdout
+#$ -j y
+## define input dir,output dir,executable,config file and LD_LIBRARY_PATH
+#$ -v INDIR=
+#$ -v OUTDIR=
+#$ -v EXECUTABLE=
+#$ -v CONFIG=
+#$ -v LD_LIBRARY_PATH=
+## change into submit dir
+#$ -cwd 
+cd $OUTDIR
+#initialize glite, dctools
+ini glite
+ini dctools
+echo
+echo job start at `date`
+./$EXECUTABLE filename=$INDIR$1
+echo
+date
+"""
+
+
+merge_script = \
+"""
+#!/bin/zsh
+## make sure the right shell will be used
+#$ -S /bin/zsh
+## the cpu time for this job
+#$ -l h_cpu=00:30:00
+## the maximum memory usage of this job
+#$ -l h_vmem=1000M
+## stderr and stdout are merged together to stdout
+#$ -j y
+## define input dir,output dir,executable,config file and LD_LIBRARY_PATH
+#$ -v OUTDIR=
+#$ -v HADD=
+#$ -v FILELIST=
+#$ -v LD_LIBRARY_PATH=
+#$ -cwd 
+save=$PWD
+cd $OUTDIR
+echo start merging at `date`
+$HADD -f out.root $FILELIST
+echo
+date
+"""
+
+def UsageAndExit():
+	print \
+	"""
+	Usage:
+	runOnAll indir [outdir] executable [config] [script] [cleanUp] [noJoin]
+	
+	indir   : input  dir - where the data is
+	outdir  : output dir - where the individual output files and the final root file goes
+	                       default is CWD
+	executable 
+	config  : configuration file for executable - only if  executable needs it
+	script  : batch script - if not given a standard script will be created
+	cleanUp : keyword - if given erase all single root files
+	noJoin  : keyword - if given do not run the file merging step
+
+	Example: ./runOnAll /scratch/hh/current/cms/user/kruecker/ntuples/data2011/Run2011A/DoubleMu/ myAnalysis myConfig.txt
+
+	runOnAll reads $LD_LIBRARY_PATH - It is correctly set if you can run the executable.
+	(ROOT and glib libs)
+	"""
+	sys.exit(0)
+	
+
+def readCommandLine(commandLine):
+	""" read the command line input"""
+
+	global	indir,outdir,executable,batch_filename,config_filename,cleanUp,noJoin
+
+	cleanUp = False
+	noJoin  = False
+	if len(commandLine) < 3 or len(commandLine) > 8: 
+		print 'Wrong number of arguments'
+		UsageAndExit()
+
+	# inputdir
+	indir = commandLine.pop(1)
+
+	# check for ending /
+	if indir[-1]!='/': indir+='/'
+	# check if indir on dcache - if not: check if dir exits
+	if indir.find('/store')!=0 and indir.find('/pnfs')!=0:
+		if not os.path.isdir(indir) :
+			print 'Cannot access '+indir
+			sys.exit(0)
+
+	# next arg - either outdir or executable
+	something  = commandLine.pop(1)
+	# check if 2nd argument is executable
+	if commands.getoutput('file '+something).find('executable') >0:
+		# outdir is not given, assume cwd
+		outdir     = os.getcwd()
+		executable = something
+ 	else:
+ 		outdir     = something
+		executable = commandLine.pop(1)
+
+	#full names
+	outdir = os.path.abspath(outdir)
+
+	# check if output dir exists
+	if not os.path.isdir(outdir) :
+		print 'Cannot access '+outdir
+		sys.exit(0)
+
+	# read the rest of the input line
+	files=[]
+	filenames=[]
+	while len(commandLine)>1:
+		word=commandLine.pop(1)
+		if word=='cleanUp': 
+			cleanUp=True
+			continue
+		if word=='noJoin':
+			noJoin=True
+			continue
+		try:
+			file = open(word, 'r')
+			files.append(file)
+			filenames.append(word)
+		except IOError:
+			print 'Cannot open '+word
+			sys.exit(0)
+
+	if len(filenames)>2:
+		print 'to many files ? ',filenames
+		UsageAndExit()
+
+	if  len(filenames)==2:
+		# decide which is batch script and which config
+		test = open(filenames[0],'r')
+		cnt0=0
+		for line in test:
+			if line.find('#$ ')==0: cnt0+=1
+		test.close()
+		
+		test = open(filenames[1],'r')
+		cnt1=0
+		for line in test:
+			if line.find('#$ ')==0: cnt1+=1
+		test.close()
+		
+		if cnt0==0 and cnt1==0:
+			print 'Is this really a batch script? There are no #$'
+			sys.exit(0)
+
+		if cnt0>cnt1:
+			batch_filename=filenames[0]
+			config_filename=filenames[1]
+		else:	
+			batch_filename=filenames[1]
+			config_filename=filenames[0]
+	else:
+		batch_filename=''
+		config_filename=filenames[0]
+
+	if(batch_filename!=''): batch_filename  = os.path.abspath(batch_filename)
+	return
+
+def checkIndir():
+	""" check number of files in indir
+	    and return list of filenames
+	"""
+	global indir
+	prefix=''
+	lscommand='ls'
+	# check if dcache
+	if indir.find('/store')==0:
+		indir='/pnfs/desy.de/cms/tier2/'+indir
+		lscommand='dcls'
+	if indir.find('/pnfs')==0:
+		lscommand='dcls'
+
+	#full name
+	if lscommand=='ls': indir = os.path.abspath(indir)
+	# check for ending /
+	if indir[-1]!='/': indir+='/'
+	
+	# list directory
+	allfiles=subprocess.Popen([lscommand,indir], stdout=subprocess.PIPE).communicate()[0]
+	if allfiles.find('No valid Proxy found')==0:
+		print 'No valid Proxy found'
+		exit(0)
+	if allfiles.find('The following regular expressions')==0:
+		print 'Cannot: '+lscommand+' '+indir
+		exit(0)
+
+	# add dcache gate
+	if lscommand=='dcls': indir=dcache_gate+indir
+	
+	# filter out *.root
+	ret=[]
+	for line in allfiles.split('\n'):
+		if line.rfind('.root')>0 :ret.append(line)
+	
+	if len(ret)==0:
+		print 'No files found in '+indir
+		allfiles
+		sys.exit(0)
+
+	ret.sort()
+	return ret
+
+def printInputValues():
+	print 'input dir :  '+indir
+	print 'output dir:  '+outdir
+	print 'executable:  '+executable
+	print 'cleanUp:     '+str(cleanUp)
+	print 'noJoin:      '+str(noJoin)
+	print 'batch_file:  '+batch_filename
+	print 'config_file: '+config_filename
+	if ldlp!='': print '$LD_LIBRARY_PATH found'
+	
+def createBatchScript():
+	""" does what the name says"""
+	
+	if batch_filename!='':
+		# if external batch_script is given
+		batchLines = open(batch_filename,'r')
+		add=''
+	else:
+		# use default batch script
+		batchLines = batch_script.split('\n')  
+		add='\n'
+
+	batchfile = open('batch_script','w')
+	for line in batchLines:
+		if len(line)==0: continue
+		if line.find('#$ -v INDIR=')>=0:          line+=indir
+		if line.find('#$ -v OUTDIR=')>=0:         line+=outdir
+		if line.find('#$ -v EXECUTABLE=')>=0:     line+=executable
+		if line.find('#$ -v CONFIG=')>=0:         line+=config_filename
+		if line.find('#$ -v LD_LIBRARY_PATH=')>=0:line+=ldlp
+		batchfile.write(line+add)
+	batchfile.close()
+	if type(batchLines).__name__ == 'file': batchLines.close()
+
+def createMergeScript(jobids,rootfiles):
+	""" does what the name says"""
+	
+	# first get path to hadd
+	hadd=commands.getoutput('which hadd')
+	if hadd.find('not found')>=0:
+		print 'Cannot find hadd',hadd
+		sys.exit(0)
+	
+	filelist=''
+	for file in rootfiles:
+		filelist+=file.replace('.root','_out.root')+' '
+	filelist=filelist[:-1]
+	
+	mergeLines = merge_script.split('\n')  
+
+	mergefile = open('merge_script','w')
+	for line in mergeLines:
+		if len(line)==0: continue
+		if line.find('#$ -v OUTDIR=')>=0:         line+=outdir
+		if line.find('#$ -v HADD=')>=0:           line+=hadd
+		if line.find('#$ -v FILELIST=')>=0:       line+='"'+filelist+'"'
+		if line.find('#$ -v LD_LIBRARY_PATH=')>=0:line+=ldlp
+		mergefile.write(line+'\n')
+	if cleanUp:
+		line='rm '+filelist+'\n'
+		line+='cd $save\n'
+		line+='rm -f runOnAll.log\n'
+		mergefile.write(line)
+		buf=''
+		for id in jobids.split(','):
+			buf+=' batch_script.o'+str(id)
+		line='cat'+buf+' > runOnAll.log\n'
+		line+='rm'+buf+'\n'
+		mergefile.write(line)
+	mergefile.close()
+	return filelist.split(' ')
+
+ldlp=''
+def readLDLP():
+	""" read $LD_LIBRARY_PATH to pick the correct root glibc version  """	
+	ldlp = os.environ.get("LD_LIBRARY_PATH")
+	if ldlp==None:
+		print '$LD_LIBRARY_PATH is not defined - needed to pick the right lib version.'
+		sys.exit(0)
+	return ldlp
+
+#----------------------------------------------------------------------------------
+# dk 8.5.2011
+#
+if __name__ == "__main__":
+
+	readCommandLine(sys.argv)
+
+	# read LD_LIBRARY_PATH env variable
+	ldlp=readLDLP()
+
+	# check number of root files in indir
+	rootfiles = checkIndir()
+
+	printInputValues()
+
+	if noJoin: print 'Going to create '+str(len(rootfiles))+' jobs.'
+	else:      print 'Going to create '+str(len(rootfiles))+'+1 jobs.'
+	createBatchScript()
+
+	#cp executable and config file to outdir
+	out=commands.getoutput('cp '+os.path.abspath(config_filename)+' '+os.path.abspath(executable)+' '+outdir)
+
+	# now we submit the jobs
+	jobids=''
+	for rootfile in rootfiles:
+		out=commands.getoutput('qsub batch_script '+rootfile)
+		if out.find('Your job ') == 0:
+			id=out.split(' ')[2]
+			if id.isdigit(): jobids+=str(id)+','
+			else: print 'Something wrong in submit: ',out
+		else: print 'Somethng wrong in submit: ',out
+	jobids=jobids[:-1]
+
+	outfiles = createMergeScript(jobids,rootfiles)	
+	# the merging job
+	if not noJoin: out=commands.getoutput('qsub -hold_jid '+jobids+' merge_script')
