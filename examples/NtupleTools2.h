@@ -65,6 +65,7 @@ typedef ROOT::Math::PositionVector3D<ROOT::Math::Cartesian3D<float>  >     XYZPo
 //
 #pragma link C++ class pair<string,bool>+;
 #pragma link C++ class pair<string,string>+;
+#pragma link C++ class map<string,int>+;
 //
 #pragma link C++ class ROOT::Math::Cartesian3D<float>+;
 #pragma link C++ class ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> >+;
