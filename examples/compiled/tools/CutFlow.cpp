@@ -117,11 +117,12 @@ void CutSet::dumpToHist(){
 	TString hname;
 	for(Ssiz_t i=0;i<Name.Length();i++) hname.Append( Name[i]==' ' ? '_' : Name[i] );
 
+	TDirectory* keep = gDirectory->GetDirectory("");
 	tdir->cd();
 	autoSavePtr<TH1D> hallCutsWOut = new TH1D(hname+"_WOut",Name+" - single cut out weighted",bins,0,bins);
 	autoSavePtr<TH1I> hallCutsIn   = new TH1I(hname+"_In"  ,Name+" - single cut in"          ,bins,0,bins);
 	autoSavePtr<TH1I> hallCutsOut  = new TH1I(hname+"_Out" ,Name+" - single cut out"         ,bins,0,bins);
-
+	
 	TAxis* axisA =  hallCutsOut->GetXaxis();
 	TAxis* axisR =   hallCutsIn->GetXaxis();
 	TAxis* axisW = hallCutsWOut->GetXaxis();
@@ -162,5 +163,6 @@ void CutSet::dumpToHist(){
 		}
 
 	}
-
+	// go back to original dir
+	keep->cd();
 }

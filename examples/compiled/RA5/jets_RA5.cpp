@@ -15,8 +15,9 @@ bool jets_RA5(EasyChain* tree,vector<int>& goodJets){
 
 	// static to get the cut flow for all events
 	static CutSet jetFlow("good jet selection");
-	// print at end of program
+	// print at end of program and dump into histogram file
 	jetFlow.autoprint=true;
+	jetFlow.autodump=true;
 
 	vector<int>&       JetID = tree->Get(&JetID,"ak5JetPFPFJetIDloosePat");
 	vector<LorentzM>&   Jets = tree->Get(&Jets, "ak5JetPFCorrectedP4Pat");

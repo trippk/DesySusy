@@ -67,10 +67,12 @@ private:
 	struct counter {
 		counter(T* p = 0, unsigned c = 1) : ptr(p), count(c) {
 			if(p!=0) name=p->GetName();
+			if(p!=0) dir=gDirectory->GetDirectory("");
 		}
 		T*          ptr;
 		unsigned    count;
 		TString name;
+		TDirectory* dir; 
 	}* itsCounter;
 
 	void acquire(counter* c){ // increment the count
@@ -85,6 +87,7 @@ private:
 					cout<<"autoSavePtr: pointer gone! for "<< itsCounter->name << "This should not happen!!!" <<endl;
 					// exit(0);
 				}
+				itsCounter->dir->cd();
 				itsCounter->ptr->Write();
 				delete itsCounter->ptr;
 				delete itsCounter;
