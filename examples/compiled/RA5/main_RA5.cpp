@@ -125,7 +125,8 @@ int main(int argc, char** argv){
 	config.printUsed();
 
 	globalFlow.printAll();
-
+        globalFlow.dumpToHist();
+ 
 	return 0;
 }
 
