@@ -24,8 +24,8 @@ batch_script = \
 #$ -v EXECUTABLE=
 #$ -v CONFIG=
 #$ -v LD_LIBRARY_PATH=
-## change into submit dir
-#$ -cwd 
+## define dir for stdout 
+#$ -o 
 cd $OUTDIR
 #initialize glite, dctools
 ini glite
@@ -54,14 +54,15 @@ merge_script = \
 #$ -v HADD=
 #$ -v FILELIST=
 #$ -v LD_LIBRARY_PATH=
-#$ -cwd 
-save=$PWD
+## define dir for stdout 
+#$ -o 
 cd $OUTDIR
 echo start merging at `date`
 $HADD -f out.root $FILELIST
 echo
 date
 """
+# continues in createMergeScript
 
 def UsageAndExit():
 	print \
@@ -252,6 +253,7 @@ def createBatchScript():
 		if len(line)==0: continue
 		if line.find('#$ -v INDIR=')>=0:          line+=indir
 		if line.find('#$ -v OUTDIR=')>=0:         line+=outdir
+		if line.find('#$ -o ')>=0:                line+=outdir
 		if line.find('#$ -v EXECUTABLE=')>=0:     line+=executable
 		if line.find('#$ -v CONFIG=')>=0:         line+=config_filename
 		if line.find('#$ -v LD_LIBRARY_PATH=')>=0:line+=ldlp
@@ -279,13 +281,13 @@ def createMergeScript(jobids,rootfiles):
 	for line in mergeLines:
 		if len(line)==0: continue
 		if line.find('#$ -v OUTDIR=')>=0:         line+=outdir
+		if line.find('#$ -o ')>=0:                line+=outdir
 		if line.find('#$ -v HADD=')>=0:           line+=hadd
 		if line.find('#$ -v FILELIST=')>=0:       line+='"'+filelist+'"'
 		if line.find('#$ -v LD_LIBRARY_PATH=')>=0:line+=ldlp
 		mergefile.write(line+'\n')
 	if cleanUp:
 		line='rm '+filelist+'\n'
-		line+='cd $save\n'
 		line+='rm -f runOnAll.log\n'
 		mergefile.write(line)
 		buf=''
