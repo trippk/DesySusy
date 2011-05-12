@@ -100,7 +100,7 @@ int main(int argc, char** argv){
 		for(int j=0;j<goodJets.size();++j){
 			bool keep=true;
 			for(int m=0;m<goodNonIsoMuons.size();++m){
-				if( relIso[goodNonIsoMuons[m]] >= 0.1 ) continue;
+				if( relIso[m] >= 0.1 ) continue;
 				if( DeltaR(Jets[goodJets[j]],Muons[goodNonIsoMuons[m]]) > 0.4){
 					keep=false;
 					break;
