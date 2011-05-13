@@ -9,6 +9,8 @@
 #include "DataFormats/PatCandidates/interface/Electron.h"
 #include "DataFormats/PatCandidates/interface/Muon.h"
 
+#include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h" 
+
 //include whatever else is needed
 using namespace std;
 
@@ -35,6 +37,18 @@ private:
      const edm::InputTag PatMuons;
      //declare whatever you need to declare
 };
+
+
+class SusyDESY_PileUpInfo : public edm::EDProducer {
+public:
+     explicit SusyDESY_PileUpInfo(const edm::ParameterSet&);
+private:
+     void produce( edm::Event &, const edm::EventSetup & );
+     void beginJob();
+     const std::string Prefix,Suffix;
+     const edm::InputTag PUinfo;
+};
+
 #endif
 
 

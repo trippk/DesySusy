@@ -306,8 +306,49 @@ void SusyDESY_Muons::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) 
   iEvent.put( iso03emVetoEt  , Prefix + "IsolationR03emVetoEt"  + Suffix );
   iEvent.put( iso03hadVetoEt , Prefix + "IsolationR03hadVetoEt" + Suffix );
   iEvent.put( iso03hoVetoEt  , Prefix + "IsolationR03hoVetoEt"  + Suffix );
-
 }
 
 void SusyDESY_Muons::beginJob(){}
 
+
+/////////////////////////////////////
+////PILE UP INFO/////////////////////
+/////////////////////////////////////
+
+SusyDESY_PileUpInfo::SusyDESY_PileUpInfo(const edm::ParameterSet& iConfig)
+  : Prefix( iConfig.getParameter<string> ("Prefix") ),
+    Suffix( iConfig.getParameter<string> ("Suffix") ),
+    PUinfo( iConfig.getParameter<edm::InputTag> ("PUinfo") )
+{
+  produces <bool>                ( Prefix + "PUinfoHandleValid"  + Suffix );
+  produces <std::vector<int> >   ( Prefix + "BuchCrossing"       + Suffix );
+  produces <std::vector<int> >   ( Prefix + "NumInteractions"    + Suffix );
+  //produces <>                ( Prefix + ""                 + Suffix );
+}
+
+void SusyDESY_PileUpInfo::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) 
+{
+
+  std::auto_ptr<bool>                handleValid     ( new bool(false)       );
+  std::auto_ptr<std::vector<int> >   bunchCrossing   ( new std::vector<int>  );
+  std::auto_ptr<std::vector<int> >   NumInteractions ( new std::vector<int>  );
+//   std::auto_ptr<std::vector<> >    ( new std::vector<>  );
+
+
+  edm::Handle<std::vector< PileupSummaryInfo > >  PileUpInfo;
+  iEvent.getByLabel( PUinfo, PileUpInfo);
+
+  if(PileUpInfo.isValid()) {
+    *handleValid.get() = true;
+
+    for(std::vector<PileupSummaryInfo>::const_iterator PVI=PileUpInfo->begin(); PVI!=PileUpInfo->end(); ++PVI) {
+      bunchCrossing  ->push_back( PVI->getBunchCrossing()      );
+      NumInteractions->push_back( PVI->getPU_NumInteractions() );
+    }
+  }
+  iEvent.put( handleValid    , Prefix + "PUinfoHandleValid" + Suffix );
+  iEvent.put( bunchCrossing  , Prefix + "BuchCrossing"      + Suffix );
+  iEvent.put( NumInteractions, Prefix + "NumInteractions"   + Suffix );
+}
+
+void SusyDESY_PileUpInfo::beginJob(){}

@@ -33,3 +33,10 @@ susydesypfmuons = cms.EDProducer("SusyDESY_Muons",
 
                                #any other parameter
                                )
+
+
+susydesypuinfo = cms.EDProducer("SusyDESY_PileUpInfo",
+                                Prefix       = cms.string('DESYPUinfo'),
+                                Suffix       = cms.string(''),
+                                PUinfo       = cms.InputTag('addPileupInfo'),
+                                )
