@@ -36,7 +36,7 @@ endif
 
 ROOTLIBS    = `root-config --libs` -lGenVector
 CXX         = g++
-CXXFLAGS    = `root-config --cflags` -I./
+CXXFLAGS    = `root-config --cflags` -I./ $(MOREINCS)
 LD          = g++
 LDFLAGS     = `root-config --ldflags`
 

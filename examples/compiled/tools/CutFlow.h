@@ -1,3 +1,5 @@
+// to do outdump/print default true
+
 // changes to hannes:
 // SplitToWords replaced
 // delimiter can be ','

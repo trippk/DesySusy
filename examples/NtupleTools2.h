@@ -169,7 +169,7 @@ int GetResult(vector<string>& out, const TString& command,bool nodup)
 			} else singleOut[out[i].substr(0,pos2)]=pair<unsigned,string>(n,out[i].substr(pos2));
 		}
 		if(i==out.size()){
-			cout<< out.size()-singleOut.size() <<" duplicates ignored!"<<endl;;
+			if (out.size()!=singleOut.size()) cout<< out.size()-singleOut.size() <<" duplicates ignored!"<<endl;;
 			out.clear();
 			for(it = singleOut.begin();it!=singleOut.end();it++)
 			 		out.push_back(it->first+it->second.second);
@@ -273,7 +273,7 @@ TString file_base(const TString& nam)
 // inline is redundant since this is a header files
 class EasyChain: public TChain {
 public:
-	EasyChain(const char* tname) : TChain(tname), localEntry(0), localMax(0), off(0) {};
+	EasyChain(const char* tname) : TChain(tname), localEntry(0), localMax(0), off(0), dcache(false) {};
 
 	// here all kinds of variables can be load from the chain
 	// e.g.: vector<LorentzV>* electrons = tree->Get(&electrons,"electronP4Pat");
@@ -315,7 +315,7 @@ public:
 	//       Electron.size()
 	template<typename T>
 	inline T& Get(T* leaf,const char* name) {
-		leaf=leaf;//just to get rid of unused warning
+		leaf=leaf;//just to get rid of the  unused warning
 		TBranch* branch;
 		if( localByName.find(name)==localByName.end() ) {
 			branch = byName[name] = GetBranch( name );
@@ -385,10 +385,41 @@ public:
 		}
 		return localEntry>=0;
 	}
+	// Add single file or all files in directory to this tree
+	// assumes /pnfs or /store indicates dcache
+	// takes trailing / as directory
+	// checks for dir on normal filesystem
+	int AddSmart(const TString& name,int max=10000,bool nodup=true){
+		string dcache_gate="dcap://dcache-cms-dcap.desy.de:22125/";
+		vector<string> files;
+		int n=1;
+		if (name.Index("/pnfs/")==0 || name.Index("/store/")==0){
+			if(name.Index("/store/")==0) dcache_gate+="/pnfs/desy.de/cms/tier2/";
+			if(name.EndsWith("/")){
+				n=GetResult(files,"dcls "+name+" | grep \"\\.root\" ",nodup);
+				n=n>max?max:n;
+				for(int i=0;i<n;++i) Add((dcache_gate+name+"/"+files[i]));
+			} else  Add(dcache_gate+name);
+			dcache=true;
+		} else {
+			if(name.EndsWith("/")){
+				n=GetResult(files,"ls "+name+" | grep \"\\.root\"",nodup);
+				n=n>max?max:n;
+				for(int i=0;i<n;++i) Add((name+"/"+files[i]));
+			} else Add(name);
+		}
+		return n;
+	}
+	void GetAll(){
+		cout<<"EasyChain::GetAll not implemented"<<endl;
+		
+	}
 private:
 	int localEntry;
 	int localMax;
 	int off;
+	// files are from dcache
+	bool dcache;
 	// acts as booster for tree with many branches
 	map<const string,TBranch*> byName;
 	map<string, pair<int,void*> > localByName; // a pointer to the branch and the localEntry number for which it had been read

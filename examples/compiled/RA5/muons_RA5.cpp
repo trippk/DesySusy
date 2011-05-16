@@ -1,7 +1,7 @@
 #include "NtupleTools2_h.h"
-#include "../tools/ConfigReader.h"
-#include "../tools/CutFlow.h"
-#include "../tools/THTools.h"
+#include "ConfigReader.h"
+#include "CutFlow.h"
+#include "THTools.h"
 #include "TDirectory.h"
 
 using namespace std;

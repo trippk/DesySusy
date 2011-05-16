@@ -1,6 +1,6 @@
 #include "NtupleTools2_h.h"
-#include "../tools/ConfigReader.h"
-#include "../tools/CutFlow.h"
+#include "ConfigReader.h"
+#include "CutFlow.h"
 #include <vector>
 
 //check variables code is incomplete
