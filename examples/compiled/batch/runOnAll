@@ -24,8 +24,8 @@ batch_script = \
 #$ -v EXECUTABLE=
 #$ -v CONFIG=
 #$ -v LD_LIBRARY_PATH=
-## define dir for stdout 
-#$ -o 
+## change into submit dir
+#$ -cwd 
 cd $OUTDIR
 #initialize glite, dctools
 ini glite
@@ -54,21 +54,20 @@ merge_script = \
 #$ -v HADD=
 #$ -v FILELIST=
 #$ -v LD_LIBRARY_PATH=
-## define dir for stdout 
-#$ -o 
+#$ -cwd 
+save=$PWD
 cd $OUTDIR
 echo start merging at `date`
 $HADD -f out.root $FILELIST
 echo
 date
 """
-# continues in createMergeScript
 
 def UsageAndExit():
 	print \
 	"""
 	Usage:
-	runOnAll indir [outdir] executable [config] [script] [cleanUp] [noJoin]
+	runOnAll indir [outdir] executable [config] [script] [cleanUp] [noJoin] [noDupRemoval] [nFiles=n]
 	
 	indir   : input  dir - where the data is
 	outdir  : output dir - where the individual output files and the final root file goes
@@ -78,6 +77,8 @@ def UsageAndExit():
 	script  : batch script - if not given a standard script will be created
 	cleanUp : keyword - if given erase all single root files
 	noJoin  : keyword - if given do not run the file merging step
+	noDupRemoval  : keyword - if given do not remove duplicate files
+	nFiles  : if given do create jobs with n files each - default is n=1
 
 	Example: ./runOnAll /scratch/hh/current/cms/user/kruecker/ntuples/data2011/Run2011A/DoubleMu/ myAnalysis myConfig.txt
 
@@ -90,11 +91,14 @@ def UsageAndExit():
 def readCommandLine(commandLine):
 	""" read the command line input"""
 
-	global	indir,outdir,executable,batch_filename,config_filename,cleanUp,noJoin
+	global	indir,outdir,executable,batch_filename,config_filename,cleanUp,noJoin,dupRemoval,nfiles
 
-	cleanUp = False
-	noJoin  = False
-	if len(commandLine) < 3 or len(commandLine) > 8: 
+	cleanUp    = False
+	noJoin     = False
+	dupRemoval = True
+	nfiles     = 1
+	
+	if len(commandLine) < 3 or len(commandLine) > 10: 
 		print 'Wrong number of arguments'
 		UsageAndExit()
 
@@ -133,11 +137,26 @@ def readCommandLine(commandLine):
 	filenames=[]
 	while len(commandLine)>1:
 		word=commandLine.pop(1)
+		if word=='noDupRemoval': 
+			dupRemoval=false
+			continue
 		if word=='cleanUp': 
 			cleanUp=True
 			continue
 		if word=='noJoin':
 			noJoin=True
+			continue
+		if word.find('nFiles')==0:
+			nstr=word[word.find('=')+1:]
+			if not nstr.isdigit():
+				print 'what do you mean by '+word
+				print 'Syntax is nFiles=n (no spaces!) where n=1,2,...'
+				sys.exit(0)
+			nfiles=int(nstr)
+			if nfiles==0:
+				print 'what do you mean by '+word
+				print 'Syntax is nFiles=n (no spaces!) where n=1,2,...'
+				sys.exit(0)
 			continue
 		try:
 			file = open(word, 'r')
@@ -182,6 +201,29 @@ def readCommandLine(commandLine):
 	if(batch_filename!=''): batch_filename  = os.path.abspath(batch_filename)
 	return
 
+def removeDuplicates():
+	# files are sorted!
+	global rootfiles
+	last=''
+	cleaned=[]
+	for file in rootfiles:
+		ir=file.rfind('_')
+		if ir<=3:
+			print 'Warning - file name not well formed: '+filename
+			cleaned.append(file)
+			continue
+		comp=file[:ir-1]
+		if comp.find('_') < 0: 
+			print 'Warning - file name not well formed: '+filename
+			cleaned.append(file)
+			continue
+		if comp==last:
+			killed=cleaned.pop()
+			print 'Duplicate warning: '+killed+' has been removed.'
+		cleaned.append(file)
+		last=comp
+	rootfiles=cleaned			
+		
 def checkIndir():
 	""" check number of files in indir
 	    and return list of filenames
@@ -230,10 +272,12 @@ def printInputValues():
 	print 'input dir :  '+indir
 	print 'output dir:  '+outdir
 	print 'executable:  '+executable
-	print 'cleanUp:     '+str(cleanUp)
-	print 'noJoin:      '+str(noJoin)
 	print 'batch_file:  '+batch_filename
 	print 'config_file: '+config_filename
+	print 'cleanUp:     '+str(cleanUp)
+	print 'noJoin:      '+str(noJoin)
+	print 'dupRemoval:  '+str(dupRemoval)
+	print 'files/job    '+str(nfiles)
 	if ldlp!='': print '$LD_LIBRARY_PATH found'
 	
 def createBatchScript():
@@ -253,7 +297,6 @@ def createBatchScript():
 		if len(line)==0: continue
 		if line.find('#$ -v INDIR=')>=0:          line+=indir
 		if line.find('#$ -v OUTDIR=')>=0:         line+=outdir
-		if line.find('#$ -o ')>=0:                line+=outdir
 		if line.find('#$ -v EXECUTABLE=')>=0:     line+=executable
 		if line.find('#$ -v CONFIG=')>=0:         line+=config_filename
 		if line.find('#$ -v LD_LIBRARY_PATH=')>=0:line+=ldlp
@@ -281,13 +324,13 @@ def createMergeScript(jobids,rootfiles):
 	for line in mergeLines:
 		if len(line)==0: continue
 		if line.find('#$ -v OUTDIR=')>=0:         line+=outdir
-		if line.find('#$ -o ')>=0:                line+=outdir
 		if line.find('#$ -v HADD=')>=0:           line+=hadd
 		if line.find('#$ -v FILELIST=')>=0:       line+='"'+filelist+'"'
 		if line.find('#$ -v LD_LIBRARY_PATH=')>=0:line+=ldlp
 		mergefile.write(line+'\n')
 	if cleanUp:
 		line='rm '+filelist+'\n'
+		line+='cd $save\n'
 		line+='rm -f runOnAll.log\n'
 		mergefile.write(line)
 		buf=''
@@ -321,6 +364,8 @@ if __name__ == "__main__":
 	# check number of root files in indir
 	rootfiles = checkIndir()
 
+	if(dupRemoval): removeDuplicates()
+	
 	printInputValues()
 
 	if noJoin: print 'Going to create '+str(len(rootfiles))+' jobs.'
@@ -333,14 +378,17 @@ if __name__ == "__main__":
 	# now we submit the jobs
 	jobids=''
 	for rootfile in rootfiles:
+		print '.',
+		sys.stdout.flush()
 		out=commands.getoutput('qsub batch_script '+rootfile)
 		if out.find('Your job ') == 0:
 			id=out.split(' ')[2]
 			if id.isdigit(): jobids+=str(id)+','
 			else: print 'Something wrong in submit: ',out
-		else: print 'Somethng wrong in submit: ',out
+		else: print 'Something wrong in submit: ',out
 	jobids=jobids[:-1]
-
+	print
+	
 	outfiles = createMergeScript(jobids,rootfiles)	
 	# the merging job
 	if not noJoin: out=commands.getoutput('qsub -hold_jid '+jobids+' merge_script')
