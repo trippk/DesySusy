@@ -21,6 +21,7 @@
 #endif
 
 #include <iostream>
+#include <sstream>
 #include <iomanip>
 #include <string>
 #include <map>
@@ -29,9 +30,11 @@
 #include <algorithm>
 #include "TTree.h"
 #include "TChain.h"
+#include "TChainElement.h"
 #include "TSystem.h"
 #include "TROOT.h"
 #include "TString.h"
+#include "TObjArray.h"
 #include "TStopwatch.h"
 #include "Math/LorentzVector.h"
 #include "Math/DisplacementVector3D.h"
@@ -385,11 +388,8 @@ public:
 		}
 		return localEntry>=0;
 	}
-	// Add single file or all files in directory to this tree
-	// assumes /pnfs or /store indicates dcache
-	// takes trailing / as directory
-	// checks for dir on normal filesystem
-	int AddSmart(const TString& name,int max=10000,bool nodup=true){
+	// helper function for AddSmart below
+	int AddSmartSingle(const TString& name,int max,bool nodup){
 		string dcache_gate="dcap://dcache-cms-dcap.desy.de:22125/";
 		vector<string> files;
 		int n=1;
@@ -410,9 +410,51 @@ public:
 		}
 		return n;
 	}
+	// Add single file or all files in directory to this tree
+	// assumes /pnfs or /store indicates dcache
+	// takes trailing / as directory
+	// checks for dir on normal filesystem
+	// if name contains ' ' or ',' assume a list of filenames
+	int AddSmart(const TString& longname,int max=10000,bool nodup=true){
+		// check if name contains ' ' or ','
+		TObjArray*  arr = longname.Tokenize(',');
+		if(arr->GetEntries()==1) arr = longname.Tokenize(' ');
+		if(arr->GetEntries()==1)
+			// just one name
+			return  AddSmartSingle(longname,max,nodup);
+		int k=0;
+		for(int idx=0;idx<arr->GetEntries();idx++){
+			TObjString* tok = (TObjString*) (*arr)[idx];
+		        k+=AddSmartSingle(tok->GetName(),max,nodup);
+		        max-=k;
+		}
+		return k;
+	}
+	// return an (almost) unique file name depending on all files added to this chain
+	// if only 1 file use basename
+	string GetUniqeName(){
+		stringstream sstr;
+		sstr<<"SusyCAF_Tree";
+		TObjArray* trees = GetListOfFiles();
+		if(trees==0) {
+			cout<<"EasyChain::GetUniqeName no files in tree"<<endl;
+			exit(0);
+		} else if(trees->GetEntries()==1) {
+			string s((*trees)[0]->GetTitle());
+			return file_base(s)+"_out.root";
+		} else {
+			// we create a hash number depending on all names
+			sstr<<"_n"<<trees->GetEntries();
+			TString longname;
+			TIter next(trees);
+			TChainElement *chEl=0;
+			while (( chEl=(TChainElement*)next() )) longname.Append(chEl->GetTitle());
+			sstr<<"_"<<longname.Hash()<<"_out.root";
+			return sstr.str();
+		}
+	};
 	void GetAll(){
 		cout<<"EasyChain::GetAll not implemented"<<endl;
-		
 	}
 private:
 	int localEntry;

@@ -3,6 +3,7 @@
 import sys, os
 import commands 
 import subprocess
+from time import asctime
 
 dcache_gate='dcap://dcache-cms-dcap.desy.de:22125/'
 indir=''
@@ -18,21 +19,20 @@ batch_script = \
 #$ -l h_vmem=1000M
 ## stderr and stdout are merged together to stdout
 #$ -j y
-## define input dir,output dir,executable,config file and LD_LIBRARY_PATH
-#$ -v INDIR=
+## define output dir,executable,config file and LD_LIBRARY_PATH
 #$ -v OUTDIR=
 #$ -v EXECUTABLE=
 #$ -v CONFIG=
 #$ -v LD_LIBRARY_PATH=
-## change into submit dir
-#$ -cwd 
+## define dir for stdout
+#$ -o
 cd $OUTDIR
 #initialize glite, dctools
 ini glite
 ini dctools
 echo
 echo job start at `date`
-./$EXECUTABLE filename=$INDIR$1
+./$EXECUTABLE filename="$1" outname=$2
 echo
 date
 """
@@ -51,34 +51,37 @@ merge_script = \
 #$ -j y
 ## define input dir,output dir,executable,config file and LD_LIBRARY_PATH
 #$ -v OUTDIR=
+#$ -v OUTNAME=
 #$ -v HADD=
 #$ -v FILELIST=
 #$ -v LD_LIBRARY_PATH=
-#$ -cwd 
+#$ -o
 save=$PWD
 cd $OUTDIR
 echo start merging at `date`
-$HADD -f out.root $FILELIST
+$HADD -f $OUTNAME $FILELIST 
 echo
 date
 """
+# continues in createMergeScript
 
 def UsageAndExit():
 	print \
 	"""
 	Usage:
-	runOnAll indir [outdir] executable [config] [script] [cleanUp] [noJoin] [noDupRemoval] [nFiles=n]
+	runOnAll indir [outdir] executable [config] [script] [cleanUp] [noJoin] [noDupRemoval] [nFiles=n] [outName=afile.root]
 	
 	indir   : input  dir - where the data is
 	outdir  : output dir - where the individual output files and the final root file goes
 	                       default is CWD
 	executable 
-	config  : configuration file for executable - only if  executable needs it
-	script  : batch script - if not given a standard script will be created
-	cleanUp : keyword - if given erase all single root files
-	noJoin  : keyword - if given do not run the file merging step
-	noDupRemoval  : keyword - if given do not remove duplicate files
-	nFiles  : if given do create jobs with n files each - default is n=1
+	config    : configuration file for executable - only if  executable needs it
+	script    : batch script - if not given a standard script will be created
+	cleanUp   : keyword - if given erase all single root files
+	noJoin    : keyword - if given do not run the file merging step
+	noDupRemoval  : keyword - if given then do not ignore duplicate files
+	nFiles=   : if given do create jobs with n files each - default is n=1
+	outName=  : Name for the merged output file - default is out.root
 
 	Example: ./runOnAll /scratch/hh/current/cms/user/kruecker/ntuples/data2011/Run2011A/DoubleMu/ myAnalysis myConfig.txt
 
@@ -91,12 +94,13 @@ def UsageAndExit():
 def readCommandLine(commandLine):
 	""" read the command line input"""
 
-	global	indir,outdir,executable,batch_filename,config_filename,cleanUp,noJoin,dupRemoval,nfiles
+	global	indir,outdir,executable,batch_filename,config_filename,cleanUp,noJoin,dupRemoval,nfiles,outname
 
-	cleanUp    = False
-	noJoin     = False
-	dupRemoval = True
-	nfiles     = 1
+	cleanUp        = False
+	noJoin         = False
+	dupRemoval     = True
+	nfiles         = 1
+	outname        = 'out.root'
 	
 	if len(commandLine) < 3 or len(commandLine) > 10: 
 		print 'Wrong number of arguments'
@@ -145,6 +149,9 @@ def readCommandLine(commandLine):
 			continue
 		if word=='noJoin':
 			noJoin=True
+			continue
+		if word.find('outName')==0:
+			outname=word[word.find('=')+1:]
 			continue
 		if word.find('nFiles')==0:
 			nstr=word[word.find('=')+1:]
@@ -269,15 +276,21 @@ def checkIndir():
 	return ret
 
 def printInputValues():
+	global totfile
 	print 'input dir :  '+indir
 	print 'output dir:  '+outdir
 	print 'executable:  '+executable
-	print 'batch_file:  '+batch_filename
+	if batch_filename=='':
+		print 'batch_file:  internal default'
+	else:
+		print 'batch_file:  '+batch_filename
 	print 'config_file: '+config_filename
 	print 'cleanUp:     '+str(cleanUp)
 	print 'noJoin:      '+str(noJoin)
 	print 'dupRemoval:  '+str(dupRemoval)
-	print 'files/job    '+str(nfiles)
+	print 'files:       '+str(totfiles)
+	print 'files/job:   '+str(nfiles)
+	print 'output name  '+str(outname)
 	if ldlp!='': print '$LD_LIBRARY_PATH found'
 	
 def createBatchScript():
@@ -295,8 +308,8 @@ def createBatchScript():
 	batchfile = open('batch_script','w')
 	for line in batchLines:
 		if len(line)==0: continue
-		if line.find('#$ -v INDIR=')>=0:          line+=indir
 		if line.find('#$ -v OUTDIR=')>=0:         line+=outdir
+		if line.find('#$ -o')>=0:                 line+=' '+outdir
 		if line.find('#$ -v EXECUTABLE=')>=0:     line+=executable
 		if line.find('#$ -v CONFIG=')>=0:         line+=config_filename
 		if line.find('#$ -v LD_LIBRARY_PATH=')>=0:line+=ldlp
@@ -304,7 +317,7 @@ def createBatchScript():
 	batchfile.close()
 	if type(batchLines).__name__ == 'file': batchLines.close()
 
-def createMergeScript(jobids,rootfiles):
+def createMergeScript(jobids,filelist):
 	""" does what the name says"""
 	
 	# first get path to hadd
@@ -312,32 +325,33 @@ def createMergeScript(jobids,rootfiles):
 	if hadd.find('not found')>=0:
 		print 'Cannot find hadd',hadd
 		sys.exit(0)
-	
-	filelist=''
-	for file in rootfiles:
-		filelist+=file.replace('.root','_out.root')+' '
-	filelist=filelist[:-1]
-	
+
 	mergeLines = merge_script.split('\n')  
 
 	mergefile = open('merge_script','w')
 	for line in mergeLines:
 		if len(line)==0: continue
 		if line.find('#$ -v OUTDIR=')>=0:         line+=outdir
+		if line.find('#$ -o')>=0:                 line+=' '+outdir
+		if line.find('#$ -v OUTNAME=')>=0:        line+=outname
 		if line.find('#$ -v HADD=')>=0:           line+=hadd
 		if line.find('#$ -v FILELIST=')>=0:       line+='"'+filelist+'"'
 		if line.find('#$ -v LD_LIBRARY_PATH=')>=0:line+=ldlp
 		mergefile.write(line+'\n')
 	if cleanUp:
+		# root files
 		line='rm '+filelist+'\n'
-		line+='cd $save\n'
+		# old logfile
 		line+='rm -f runOnAll.log\n'
 		mergefile.write(line)
+		# concatenate batch log files into comon log file
 		buf=''
 		for id in jobids.split(','):
 			buf+=' batch_script.o'+str(id)
 		line='cat'+buf+' > runOnAll.log\n'
+		# remove  batch log files
 		line+='rm'+buf+'\n'
+		line+='cd $save\n'
 		mergefile.write(line)
 	mergefile.close()
 	return filelist.split(' ')
@@ -351,6 +365,12 @@ def readLDLP():
 		sys.exit(0)
 	return ldlp
 
+def pack():
+	global rootfiles
+	a=rootfiles
+	rootfiles=[]
+	for i in range(0,len(a),nfiles):
+		rootfiles.append( reduce(lambda a,b: a+' '+b,a[i:i+nfiles]) )
 #----------------------------------------------------------------------------------
 # dk 8.5.2011
 #
@@ -364,7 +384,13 @@ if __name__ == "__main__":
 	# check number of root files in indir
 	rootfiles = checkIndir()
 
-	if(dupRemoval): removeDuplicates()
+	if dupRemoval: removeDuplicates()
+
+	# total number of files
+	totfiles = len(rootfiles)
+		
+	# pack rootfiles to nFile blocks
+	if nfiles>1: pack() 
 	
 	printInputValues()
 
@@ -376,19 +402,34 @@ if __name__ == "__main__":
 	out=commands.getoutput('cp '+os.path.abspath(config_filename)+' '+os.path.abspath(executable)+' '+outdir)
 
 	# now we submit the jobs
+	#
+	# a random str as unique name
+	randstr = str(abs(hash(asctime())))
+	# a string of jobids
 	jobids=''
-	for rootfile in rootfiles:
+	# a string of output file names
+	filelist=''
+	for idx, rootfile in enumerate(rootfiles):
+		outfile='out_'+str(idx)+'_'+randstr+'.root'
+		# add input directory to filenames
+		files=''
+		for f in rootfile.split(' '):
+			files+=indir+f+' '
 		print '.',
 		sys.stdout.flush()
-		out=commands.getoutput('qsub batch_script '+rootfile)
+		out=commands.getoutput('qsub batch_script "'+files+'" '+outfile)
 		if out.find('Your job ') == 0:
 			id=out.split(' ')[2]
-			if id.isdigit(): jobids+=str(id)+','
+			if id.isdigit(): 
+				jobids+=str(id)+','
+				filelist+=outfile+' '
 			else: print 'Something wrong in submit: ',out
 		else: print 'Something wrong in submit: ',out
-	jobids=jobids[:-1]
+	jobids   =   jobids[:-1]
+	filelist = filelist[:-1]
 	print
 	
-	outfiles = createMergeScript(jobids,rootfiles)	
+	createMergeScript(jobids,filelist)	
+
 	# the merging job
 	if not noJoin: out=commands.getoutput('qsub -hold_jid '+jobids+' merge_script')

@@ -27,22 +27,22 @@ int main(int argc, char** argv){
 
 	ConfigReader config("config_RA5.txt",argc,argv);
 
-	// input file name
-	TString filename = config.getTString("filename");
-
 	// the main tree
 	EasyChain* tree = new EasyChain("/susyTree/tree");
-	tree->Add(filename);
 
-	int N = tree->GetEntries();
-	cout<<endl<<N<<" events in "<<filename<<endl<<endl;
+	// input file name(s) - a single file/directory or a list of names
+	TString filename   = config.getTString("filename");
 
-	// output directory and output file name(derived from input name)
-	TString outdir   = config.getTString("outdir","./");
-	TString outname  = outdir+file_base(filename)+"_out.root";
+	// add file(s) or folder(s)
+	int f = tree->AddSmart(filename);
 
+	// output file name - if not given create one
+	TString outname = config.getTString("outname",tree->GetUniqeName());
+
+	// open output file
 	TFile *outfile = TFile::Open(outname,"RECREATE");
 	outfile->cd();
+
 	// set output root file for cut flow (to be done!)
 	CutSet::setTFile(outfile);
 	
@@ -56,6 +56,8 @@ int main(int argc, char** argv){
 
 	// the main cut flow
 	CutSet globalFlow("global flow");
+
+	int N = tree->GetEntries();
 
 	bool OK=false;
 	for(int i=0;i<N;++i){
