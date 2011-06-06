@@ -1,5 +1,4 @@
 #include "SUSYBSMAnalysis/DesySusy/interface/SusyDESY_Module.h"
-//#include "FWCore/Framework/interface/Event.h"
 #include "DataFormats/RecoCandidate/interface/IsoDeposit.h"
 
 SusyDESY_Electrons::SusyDESY_Electrons(const edm::ParameterSet& iConfig)
@@ -321,7 +320,7 @@ SusyDESY_PileUpInfo::SusyDESY_PileUpInfo(const edm::ParameterSet& iConfig)
     PUinfo( iConfig.getParameter<edm::InputTag> ("PUinfo") )
 {
   produces <bool>                ( Prefix + "PUinfoHandleValid"  + Suffix );
-  produces <std::vector<int> >   ( Prefix + "BuchCrossing"       + Suffix );
+  produces <std::vector<int> >   ( Prefix + "BunchCrossing"       + Suffix );
   produces <std::vector<int> >   ( Prefix + "NumInteractions"    + Suffix );
   //produces <>                ( Prefix + ""                 + Suffix );
 }
@@ -347,7 +346,7 @@ void SusyDESY_PileUpInfo::produce(edm::Event& iEvent, const edm::EventSetup& iSe
     }
   }
   iEvent.put( handleValid    , Prefix + "PUinfoHandleValid" + Suffix );
-  iEvent.put( bunchCrossing  , Prefix + "BuchCrossing"      + Suffix );
+  iEvent.put( bunchCrossing  , Prefix + "BunchCrossing"      + Suffix );
   iEvent.put( NumInteractions, Prefix + "NumInteractions"   + Suffix );
 }
 
