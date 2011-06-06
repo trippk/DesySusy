@@ -20,6 +20,7 @@ class SusyCAF(object) :
             'drop *',
             'keep *_susycaf*_*_*',
             'keep *_susydesy*_*_*',
+            'keep double_kt6PFJets_rho_%s'%self.process.name_(),
             'keep double_susyScan*_*_*') + (
             ["drop %s"%s for s in SusyCAF_Drop_cfi.drop(self.options.dropMore)] +
             ["keep %s"%s for s in SusyCAF_Drop_cfi.keep()]) +

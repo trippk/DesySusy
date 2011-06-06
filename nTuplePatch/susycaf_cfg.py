@@ -14,7 +14,7 @@ from SUSYBSMAnalysis.SusyCAF.SusyCAF_nTuple_cfi import SusyCAF
 import SUSYBSMAnalysis.SusyCAF.SusyCAF_ProcessAdjustments_cfi as adjust
 adjust.messageLogger(process,options.quiet)
 adjust.loadAndConfigureHcalSeverityLevelProducer(process, options.isData)
-
+adjust.loadAndConfigureEcalSeverityLevelProducer(process)
 
 from SUSYBSMAnalysis.DesySusy.SusyDESY_nTuple_cfi import runTree 
 
