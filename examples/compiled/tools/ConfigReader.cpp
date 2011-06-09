@@ -153,11 +153,11 @@ void ConfigReader::load(const TString& initFileName) {
         configMap.clear();
         TString fullLine, command;
         TString leftSide, rightSide;
-        char line[256];
+        char line[10000];
         Ssiz_t length;
 	myMapType::const_iterator key;
 
-        while (in.getline(line, 256)) {
+        while (in.getline(line, 10000)) {
 
 		fullLine = line;
 		// if the line starts a # then it is a comment
