@@ -50,7 +50,9 @@ unsigned ConfigReader::ListSize(const TString& property,const TString delim){
 		exit(0);
 	}
 	TObjArray*  arr = key->second.Tokenize( delimiter );
-	return arr->GetEntries();
+	int n =  arr->GetEntries();
+	delete arr;
+	return n;
 }
 
 // We implement functions for reading: string, int, bool, float, double and TString
@@ -70,7 +72,9 @@ TString  ConfigReader::getTString(const TString& property,int idx,const TString 
 		exit(0);
 	}
 	TObjString* tok = (TObjString*) (*arr)[idx];
-	return tok->GetName();
+	TString name =  tok->GetName();
+	delete arr;
+	return name;
 }
 string ConfigReader::getString(const TString& property,const TString& defaultValue){
 	return string(getTString(property,defaultValue));
