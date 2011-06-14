@@ -32,7 +32,7 @@ ini glite
 ini dctools
 echo
 echo job start at `date`
-./$EXECUTABLE filename="$1" outname=$2
+$EXECUTABLE filename="$1" outname=$2
 echo
 date
 """
@@ -130,6 +130,7 @@ def readCommandLine(commandLine):
 
 	#full names
 	outdir = os.path.abspath(outdir)
+	executable = os.path.abspath(executable)
 
 	# check if output dir exists
 	if not os.path.isdir(outdir) :
@@ -206,6 +207,7 @@ def readCommandLine(commandLine):
 		config_filename=filenames[0]
 
 	if(batch_filename!=''): batch_filename  = os.path.abspath(batch_filename)
+	if(config_filename!=''): config_filename  = os.path.abspath(config_filename)
 	return
 
 def removeDuplicates():
