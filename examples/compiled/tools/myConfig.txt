@@ -17,3 +17,5 @@ anotherString   =             12 dfger
 #anotherString is '           12 dfger       '
 
 aBool = true # case insensitive: True TRUE tRuE is all the same
+
+doubleVector   = 1.2 3.1415927 123.4e22 1

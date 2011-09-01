@@ -56,7 +56,7 @@ bool quick=true;
 
 		CutSet::global_event_weight=0.5;
 
-		if( eventSelection.keepIf("quality", q>0.4) ) continue;
+		if( !eventSelection.keepIf("quality", q>0.4) ) continue;
 
 		for(vector<elect>::iterator el=ele.begin();el!=ele.end(); el++){
 			if(electronSelection.keepIf("Pt",       el->pt()   > elePtThreshold)  && quick ) continue;

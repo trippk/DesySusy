@@ -7,6 +7,7 @@
 #include <iostream>
 #include <sstream>
 #include <map>
+#include <vector>
 #include <TString.h>
 
 /*
@@ -71,9 +72,12 @@ public:
 	 float    getFloat( const TString& property, float defaultValue);
 	 double   getDouble(const TString& property);
 	 double   getDouble(const TString& property, double defaultValue);
+	 double   getDouble(const TString& property, const TString& defaultValue);
+	 double   getDouble(const TString& property, int i, const TString delim=delimiter);
+	 unsigned   getDouble(const TString& property, vector<double>&, const TString delim=delimiter);
 	 string	getString(const TString& property);
 	 string	getString(const TString& property, const TString& defaultValue);
-	 string	getString(const TString& property,int i=-1,const TString delim=delimiter){
+	 string	getString(const TString& property,int i,const TString delim=delimiter){
 	 	return string(getTString(property,i,delim).Data());
 	 };
 	//
@@ -81,7 +85,8 @@ public:
 
 	// print used variables
 	void printUsed(ostream& out=cout);
-
+	// config file name
+	TString GetFilename(){return usedFilename;};
 private:
 	TString  getstring(const TString& property, const TString& defaultValue);
 	void load(const TString& initFileName);

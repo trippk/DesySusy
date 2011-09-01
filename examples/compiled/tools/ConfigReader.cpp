@@ -1,5 +1,5 @@
 // see header file for usage
-#include "../tools/ConfigReader.h"
+#include "ConfigReader.h"
 #include <cstdlib>
 #include <fstream>
 #include <sstream>
@@ -136,6 +136,18 @@ double ConfigReader::getDouble(const TString& property) {
 	}
 	return atof(key->second);
 }
+double    ConfigReader::getDouble(const TString& property, const TString& defaultValue){
+	getString(property,defaultValue);
+	return atof( getTString(property,0) );
+};
+double    ConfigReader::getDouble(const TString& property, int i, const TString delim){
+	 return atof( getTString(property,i,delim) );
+};
+unsigned    ConfigReader::getDouble(const TString& property, vector<double>& aVec, const TString delim){
+	unsigned N=ListSize(property);
+	for(int i=0;i<N;i++) aVec.push_back( getDouble(property,i,delim) );
+	return N;
+};
 float ConfigReader::getFloat(const TString& property, float defaultValue) {
 	return getDouble(property,defaultValue);
 }

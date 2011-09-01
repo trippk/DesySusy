@@ -48,6 +48,17 @@ int main(){
 
 	sub();
 
+	//new 1.9.11
+	cout<<"reading in vectors"<<endl;
+	vector<double> aVec;
+	for(int i=0;i<config.ListSize("doubleVector");i++){
+		aVec.push_back( config.getDouble("doubleVector",i) );
+	}
+	// or for the lazy - uses push_back and adds to the end
+	vector<double> aVec2;
+	int N = config.getDouble("doubleVector",aVec2);
+	for(int i=0;i<N;i++) cout<<aVec2[i]<<" ";cout<<endl;
+	
 	cout<<endl<<"A printout of the used configuration:"<<endl;
 	// print used configuration to stdout
 	config.printUsed(cout);
@@ -63,6 +74,7 @@ int main(){
 	cout<<"Now we crash deliberately :)"<<endl;
 	int notdefined2 = config.getInt("notdefined",27);
 	cout<<"notdefined="<<notdefined<<" < this is a default value but the one defined above!"<<endl;
+
 }
 
 void sub(){
@@ -75,6 +87,6 @@ void sub(){
 	cout<<"aBool="<<b<<endl;
 	int i = config.getInt("anInt");
 	cout<<"anInt="<<i<<endl;
-
+	cout<<endl<<"back to main"<<endl;
 
 }
