@@ -2,6 +2,7 @@
 <use name="CommonTools/UtilAlgos"/>
 <use name="DataFormats/PatCandidates"/>
 <use name="SimDataFormats/GeneratorProducts"/>
+<use name="HLTrigger/HLTcore"/>
 
 <library file="*.cc" name="SUSYBSMAnalysisDesySusyPlugins">
     <flags EDM_PLUGIN="1"/>

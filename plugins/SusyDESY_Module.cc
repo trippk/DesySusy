@@ -351,3 +351,73 @@ void SusyDESY_PileUpInfo::produce(edm::Event& iEvent, const edm::EventSetup& iSe
 }
 
 void SusyDESY_PileUpInfo::beginJob(){}
+
+
+/////////////////////////////////////
+////TRIGGER//////////////////////////
+/////////////////////////////////////
+
+SusyDESY_Trigger::SusyDESY_Trigger(const edm::ParameterSet& iConfig)
+  : Prefix( iConfig.getParameter<string> ("Prefix") ),
+    Suffix( iConfig.getParameter<string> ("Suffix") ),
+    inputTag  (iConfig.getParameter<edm::InputTag>("inputTag"))
+  , sourceName(iConfig.getParameter<std::string>  ("SourceName"))
+  , sourceType(NOT_APPLICABLE)
+  , tag_( iConfig.getParameter<edm::InputTag>("TriggerEventInputTag")) 
+				  //  , run_(-1)
+
+{
+
+  produces <bool>                               ( Prefix + "HandleValid"  + Suffix );
+  produces <std::map<std::string,std::string> > ( Prefix + "NameMap"      + Suffix );
+
+}
+
+
+void SusyDESY_Trigger::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) 
+{
+
+  std::auto_ptr<bool>                               handleValid ( new bool(false)                        );
+  std::auto_ptr<std::map<std::string,std::string> > nameMap     ( new std::map<std::string,std::string>  );
+
+  if ( inputTag.process().empty() ) { 
+    edm::Handle<trigger::TriggerEvent> temp;
+    iEvent.getByLabel( tag_, temp );
+    if( temp.isValid() ) { inputTag = edm::InputTag( inputTag.label(), inputTag.instance(), temp.provenance()->processName() ); }
+    else std::cout<<"  not valid  "<<std::endl;
+  }
+
+  bool  hltChanged = false;
+  if (!hltConfig.init(iEvent.getRun(), iSetup, inputTag.process(), hltChanged) ) {
+    std::cout << "HLT config initialization error with process name \"" << inputTag.process() << "\"."<<std::endl;
+  } else if ( hltConfig.size() < 1 ) {
+    std::cout << "HLT config has zero size."<<std::endl;
+  }
+  getDataSource();
+
+
+  edm::Handle<edm::TriggerResults >  Triggers;
+  iEvent.getByLabel( inputTag, Triggers );
+
+  if(Triggers.isValid()) {
+    *handleValid.get() = true;
+    const edm::TriggerNames& names = iEvent.triggerNames(*Triggers);
+
+    for(unsigned i=0; i < Triggers->size(); i++) {
+      if (dataSource.empty() || std::find(dataSource.begin(), dataSource.end(), names.triggerName(i)) != dataSource.end()) {
+
+	std::string tn = names.triggerName(i);
+	size_t usc = tn.find_last_of("_");
+	if( tn.substr(usc+1)[0]=='v' && atoi(tn.substr(usc+2).c_str()) > 0 )
+	  (*nameMap)[tn.substr(0,usc)] = tn;
+	else 
+	  (*nameMap)[tn              ] = tn;
+      }
+    }
+  }
+  iEvent.put( handleValid , Prefix + "HandleValid" + Suffix );
+  iEvent.put( nameMap     , Prefix + "NameMap"     + Suffix );
+}
+
+
+void SusyDESY_Trigger::beginJob(){}

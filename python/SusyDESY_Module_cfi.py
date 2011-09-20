@@ -40,3 +40,12 @@ susydesypuinfo = cms.EDProducer("SusyDESY_PileUpInfo",
                                 Suffix       = cms.string(''),
                                 PUinfo       = cms.InputTag('addPileupInfo'),
                                 )
+
+susydesytrigger = cms.EDProducer("SusyDESY_Trigger",
+                                 Prefix       = cms.string('DESYtrigger'),
+                                 Suffix       = cms.string(''),
+                                 inputTag     = cms.InputTag('TriggerResults'),
+                                 SourceName = cms.string(""),
+                                 TriggerEventInputTag = cms.InputTag('hltTriggerSummaryAOD'),
+
+                                 )
