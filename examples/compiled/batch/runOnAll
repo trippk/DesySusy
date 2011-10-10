@@ -26,14 +26,18 @@ batch_script = \
 #$ -v LD_LIBRARY_PATH=
 ## define dir for stdout
 #$ -o
-cd $OUTDIR
+##dk cd $OUTDIR
+# go to some local temp dir
+cd $TMP
 #initialize glite, dctools
 ini glite
 ini dctools
 echo
 echo job start at `date`
+cp $EXECUTABLE $CONFIG $TMP
 $EXECUTABLE filename="$1" outname=$2
-echo
+cp $2 $OUTDIR
+echo cp $2 $OUTDIR
 date
 """
 
@@ -101,7 +105,7 @@ def readCommandLine(commandLine):
 	dupRemoval     = True
 	nfiles         = 1
 	outname        = 'out.root'
-	
+
 	if len(commandLine) < 3 or len(commandLine) > 10: 
 		print 'Wrong number of arguments'
 		UsageAndExit()
