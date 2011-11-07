@@ -75,9 +75,11 @@ class SusyCAF(object) :
         for module in ['MET','Photon','PFTau'] :
             self.process.load('SUSYBSMAnalysis.SusyCAF.SusyCAF_%s_cfi'%module)
         self.process.load('SUSYBSMAnalysis.DesySusy.SusyDESY_Module_cfi')
+        self.process.load("ElectroWeakAnalysis.WMuNu.WMuNuSelection_cff")
         return ( self.patJet() + self.patLepton('Electron') + self.patLepton('Muon') +
                  self.process.pdfWeights + 
-                 self.evalSequence('susydesy%s', ['patelectrons','pfelectrons','patmuons','pfmuons','puinfo','trigger','pdfweights']) +
+                 self.evalSequence('susydesy%s', ['patelectrons','pfelectrons','patmuons','pfmuons','puinfo','trigger']) +
+                 self.evalSequence('susydesypdfweights%s', ['cteq66','mstw','nnpdf']) +
                  self.evalSequence('susycaf%s',  ['tau','HPStau','pftau','photon']) +
                  self.evalSequence('susycafmet%s', ['AK5','AK5TypeII','PF','TypeIPF','TC'])
                  )
