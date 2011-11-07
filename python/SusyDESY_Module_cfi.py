@@ -49,3 +49,35 @@ susydesytrigger = cms.EDProducer("SusyDESY_Trigger",
                                  TriggerEventInputTag = cms.InputTag('hltTriggerSummaryAOD'),
 
                                  )
+
+pdfWeights = cms.EDProducer("PdfWeightProducer",
+                            # Fix POWHEG if buggy (this PDF set will also appear on output,
+                            # so only two more PDF sets can be added in PdfSetNames if not "")
+                            #FixPOWHEG = cms.untracked.string("cteq66.LHgrid"),
+                            GenTag = cms.untracked.InputTag("genParticles"),
+                            #FixPOWHEG = cms.untracked.bool(False),
+                            PdfInfoTag = cms.untracked.InputTag("generator"),
+                            PdfSetNames = cms.untracked.vstring(
+                                                                "cteq66.LHgrid"
+                                                                , "MRST2008nlo68cl.LHgrid"
+                                                                , "NNPDF10_100.LHgrid"
+                                                                )
+                            )
+
+susydesypdfweightscteq66 = cms.EDProducer("SusyDESY_PDFweights",
+                                          Prefix       = cms.string('DESYpdfWeights'),
+                                          Suffix       = cms.string('CTEQ66'),
+                                          PDFset       = cms.InputTag('pdfWeights:cteq66'),
+                                          )
+
+susydesypdfweightsmstw = cms.EDProducer("SusyDESY_PDFweights",
+                                          Prefix       = cms.string('DESYpdfWeights'),
+                                          Suffix       = cms.string('MSTW'),
+                                          PDFset       = cms.InputTag('pdfWeights:MRST2008nlo68cl'),
+                                          )
+
+susydesypdfweightsnnpdf = cms.EDProducer("SusyDESY_PDFweights",
+                                          Prefix       = cms.string('DESYpdfWeights'),
+                                          Suffix       = cms.string('NNPDF10'),
+                                          PDFset       = cms.InputTag('pdfWeights:NNPDF10'),
+                                          )
