@@ -452,12 +452,12 @@ void SusyDESY_PDFweights::produce(edm::Event& iEvent, const edm::EventSetup& iSe
     *handleValid.get() = true;
     
     std::vector<double> weights = (*PDFweights);
-    std::cout << "Event weight for central PDF:" << weights[0] << std::endl;
+    //std::cout << "Event weight for central PDF:" << weights[0] << std::endl;
     _weights->push_back(weights[0]);
     unsigned int nmembers = weights.size();
     for (unsigned int j=1; j<nmembers; j+=2) {
-      std::cout << "Event weight for PDF variation +" << (j+1)/2 << ": " << weights[j] << std::endl;
-      std::cout << "Event weight for PDF variation -" << (j+1)/2 << ": " << weights[j+1] << std::endl;
+      //std::cout << "Event weight for PDF variation +" << (j+1)/2 << ": " << weights[j] << std::endl;
+      //std::cout << "Event weight for PDF variation -" << (j+1)/2 << ": " << weights[j+1] << std::endl;
       _weights->push_back(weights[j]);
       _weights->push_back(weights[j+1]);
     }
