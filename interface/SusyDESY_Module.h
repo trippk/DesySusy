@@ -79,11 +79,11 @@ private:
 	if (sourceType == NOT_APPLICABLE) return;
 	
 	if (sourceType == STREAM) {
-	  unsigned int  index   = hltConfig.streamIndex(sourceName);
+	  //unsigned int  index   = hltConfig.streamIndex(sourceName);
 	  dataSource    = hltConfig.streamContent(sourceName);
 	}
 	else {
-	  unsigned int  index   = hltConfig.datasetIndex(sourceName);
+	  //unsigned int  index   = hltConfig.datasetIndex(sourceName);
 	  dataSource    = hltConfig.datasetContent(sourceName);
 	}
       }

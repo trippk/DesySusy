@@ -21,6 +21,8 @@ class SusyCAF(object) :
             'keep *_susycaf*_*_*',
             'keep *_susydesy*_*_*',
             'keep double_kt6PFJets_rho_%s'%self.process.name_(),
+            'keep *_ecaldeadcellfilterflag_*_*',
+            'keep *_trackingfailurefilterflag_*_*',
             'keep double_susyScan*_*_*') + (
             ["drop %s"%s for s in SusyCAF_Drop_cfi.drop(self.options.dropMore)] +
             ["keep %s"%s for s in SusyCAF_Drop_cfi.keep()]) +
@@ -42,15 +44,16 @@ class SusyCAF(object) :
         for module in (['HcalNoise%s'%s for s in ['Filter','RBX','Summary']] +
                        ['Event','Track','Triggers','L1Triggers',
                         'BeamSpot','BeamHaloSummary','LogError','Vertex',
-                        'HcalRecHit','EcalRecHit','PFRecHit','MET',
+                        'HcalRecHit','EcalRecHit','PFRecHit','MET','SumP4',
                         'HcalDeadChannels','EcalDeadChannels','CaloTowers'] +
-                       #[['Gen'],['DQMFlags','DCSBits']][self.options.isData]) :
-                       [['Gen'],['DCSBits']][self.options.isData]) :
+                       [['Gen','Scan','PileupSummary'],['DQMFlags','DCSBits']][self.options.isData]) :
             self.process.load('SUSYBSMAnalysis.SusyCAF.SusyCAF_%s_cfi'%module)
 
+        from SUSYBSMAnalysis.SusyCAF.SusyCAF_Scan_cfi import susycafscanFunc as susycafscanFunc
+        self.process.susycafscan = susycafscanFunc(self.options.scan) if self.options.scan else self.empty
         self.process.susycaftriggers.SourceName  = self.options.SourceName
         return ( self.evalSequence('susycafhcalnoise%s', ['filter','rbx','summary']) +
-                 self.evalSequence('susycaf%s', ['event','track','triggers','L1triggers',
+                 self.evalSequence('susycaf%s', ['event','track','triggers','L1triggers','pfsump4',
                                                  'beamspot','beamhalosummary','logerror','vertex','calotowers']) +
                  self.process.susycafmet + self.process.susycafmetnohf +
                  self.evalSequence('susycaf%sdeadchannels', ['ecal','hcal']) +
@@ -58,9 +61,8 @@ class SusyCAF(object) :
                  self.evalSequence('susycafpfrechitcluster%s', ['ecal','hcal','hfem','hfhad','ps']) +
                  self.evalSequence('susycafpfrechit%s',        ['ecal','hcal','hfem','hfhad','ps']) +
                  
-                 self.evalSequence(*[ ('susycafgen%s',['','MetCalo','MetCaloAndNonPrompt','MetTrue']), # Gen
-                                      #('susycaf%s',['dqmflags','dcsbits']) # Data
-                                      ('susycaf%s',['dcsbits']) # Data
+                 self.evalSequence(*[ ('susycaf%s',['gen','genMetCalo','genMetCaloAndNonPrompt','genMetTrue','scan','pileupsummary']), # Gen
+                                      ('susycaf%s',['dqmflags','dcsbits']) # Data
                                       ][self.options.isData])
                  )
 
@@ -75,12 +77,12 @@ class SusyCAF(object) :
         for module in ['MET','Photon','PFTau'] :
             self.process.load('SUSYBSMAnalysis.SusyCAF.SusyCAF_%s_cfi'%module)
         self.process.load('SUSYBSMAnalysis.DesySusy.SusyDESY_Module_cfi')
-        self.process.load("ElectroWeakAnalysis.WMuNu.WMuNuSelection_cff")
-        return ( self.patJet() + self.patLepton('Electron') + self.patLepton('Muon') +
-                 self.process.pdfWeights + 
+        return ( self.patJet() +
+                 self.patLepton('Electron') + self.patLepton('Muon') +
                  self.evalSequence('susydesy%s', ['patelectrons','pfelectrons','patmuons','pfmuons','puinfo','trigger']) +
-                 self.evalSequence('susydesypdfweights%s', ['cteq66','mstw','nnpdf']) +
-                 self.evalSequence('susycaf%s',  ['tau','HPStau','pftau','photon']) +
+                 self.evalSequence('susycaf%s',  ['tau',
+                                                  'HPStau',
+                                                  'pftau','photon']) +
                  self.evalSequence('susycafmet%s', ['AK5','AK5TypeII','PF','TypeIPF','TC'])
                  )
 
@@ -96,7 +98,11 @@ class SusyCAF(object) :
         return selectors + sum(modules, self.empty)
 
     def patJet(self) :
-        self.process.load('SUSYBSMAnalysis.SusyCAF.SusyCAF_Jet_cfi')
+        import SUSYBSMAnalysis.SusyCAF.SusyCAF_Jet_cfi as jets
+        for mod in filter(lambda mod: mod.startswith('susycaf'), dir(jets)) :
+            if mod.endswith('reco') : exec('self.process.%s = jets.%s'%(mod,mod))
+            else : exec('self.process.%s = jets.%s.clone( JetCorrections = [%s])'%(mod,mod,','.join(["'%s'"%s for s in self.options.jetCorrections])))
+                
         modules = [getattr(self.process,('susycaf%sjet'+['Matched',''][self.options.isData])%algo) for algo in self.options.jetCollections]
         from SUSYBSMAnalysis.SusyCAF.SusyCAF_Selection.selectors_cfi import patJetSelector
         selectors = self.process.SusyCAFPatJetSelectors = cms.Sequence()

@@ -15,19 +15,22 @@ import SUSYBSMAnalysis.SusyCAF.SusyCAF_ProcessAdjustments_cfi as adjust
 adjust.messageLogger(process,options.quiet)
 adjust.loadAndConfigureHcalSeverityLevelProducer(process, options.isData)
 adjust.loadAndConfigureEcalSeverityLevelProducer(process)
-
-from SUSYBSMAnalysis.DesySusy.SusyDESY_nTuple_cfi import runTree 
+from SUSYBSMAnalysis.DesySusy.SusyDESY_nTuple_cfi import runTree
 
 process.p_susyPat  = adjust.susyPat(process,options)
-process.p_hbheFlag = adjust.addHbheNoiseFilterResult(process)
+process.p_hbheFlag = adjust.addHbheNoiseFilterResult(process,options)
+process.p_ecalFlag = adjust.addEcalDeadCellFlag(process,options)
+process.p_trackFlag= adjust.addTrackingFailureFlag(process,options)
 process.p_lumi     = adjust.lumiTree(process)
 process.p_run      = runTree(process)
 process.p_susyCAF  = SusyCAF(process,options).path()
 
 schedule = cms.Schedule( process.p_susyPat,
                          process.p_hbheFlag,
-                         process.p_lumi,
+                         process.p_ecalFlag,
+                         process.p_trackFlag,
                          process.p_run,
+                         process.p_lumi,
                          process.p_susyCAF )
 
 # write this config as a single file
