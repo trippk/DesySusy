@@ -15,7 +15,10 @@ import SUSYBSMAnalysis.SusyCAF.SusyCAF_ProcessAdjustments_cfi as adjust
 adjust.messageLogger(process,options.quiet)
 adjust.loadAndConfigureHcalSeverityLevelProducer(process, options.isData)
 adjust.loadAndConfigureEcalSeverityLevelProducer(process)
-from SUSYBSMAnalysis.DesySusy.SusyDESY_nTuple_cfi import runTree
+
+def runTree(process) :
+	process.load('SUSYBSMAnalysis.DesySusy.SusyDESY_RunTreeMaker_cfi')
+	return cms.Path(process.runTree)
 
 process.p_susyPat  = adjust.susyPat(process,options)
 process.p_hbheFlag = adjust.addHbheNoiseFilterResult(process,options)
@@ -25,10 +28,21 @@ process.p_lumi     = adjust.lumiTree(process)
 process.p_run      = runTree(process)
 process.p_susyCAF  = SusyCAF(process,options).path()
 
+####
+##import GeneratorInterface.GenFilters.TotalKinemticsFilter
+#from SUSYBSMAnalysis.DesySusy.SusyDESY_Module_cfi import totalKinematicsFilter
+#process.totalkinematicsfilterflag = totalKinematicsFilter.clone(verbose=True)
+#    return cms.Path(process.ecaldeadcellfilterflag)
+
+
+
+####
+
 schedule = cms.Schedule( process.p_susyPat,
                          process.p_hbheFlag,
                          process.p_ecalFlag,
                          process.p_trackFlag,
+                         #cms.Path(process.totalkinematicsfilterflag),
                          process.p_run,
                          process.p_lumi,
                          process.p_susyCAF )

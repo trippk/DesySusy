@@ -90,17 +90,10 @@ private:
       
 };
 
-class SusyDESY_PDFweights : public edm::EDProducer {
-public:
-     explicit SusyDESY_PDFweights(const edm::ParameterSet&);
-private:
-     void produce( edm::Event &, const edm::EventSetup & );
-     void beginJob();
-     const std::string Prefix,Suffix;
-     const edm::InputTag PDFset;
-};
-
 #endif
+
+
+
 
 
 
