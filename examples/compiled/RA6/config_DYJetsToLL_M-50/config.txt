@@ -1,0 +1,15 @@
+# prelim gen config
+
+isData        = false
+quick         = true
+allowPrescale = false
+
+PU_weightList = 0.323691 0.659034 0.958637 1.18499 1.33358 1.42345 1.4726 1.47079 1.45543 1.42058 1.37816 1.30539 1.21835 1.10969 0.984756 0.851613 0.718362 0.591352 0.474551 0.371236 0.284367 0.213872 0.157368 0.114585 0.0817523 0.0576256 0.0400313 0.0274088 0.0185215 0.0124875 0.00821472 0.00546435 0.0035633 0.00228792 0.00288625 1.05595e-09
+
+filename = /pnfs/desy.de/cms/tier2/store/user/schettle/nTuple11_v4/mc/DYJetsToLL_TuneZ2_M-50_7TeV-madgraph-tauola/Summer11-PU_S4_START42_V11-v1/SusyCAF_Tree_959_0_vJ1.root
+
+trigList = HLT_DoubleMu6 HLT_DoubleMu7 HLT_DoubleMu8 HLT_Mu13_Mu8 HLT_Mu17_Mu8
+trigAltList = HLT_Mu17_Ele8_CaloIdL HLT_Mu17_Ele8_CaloIdT_CaloIsoVL
+trigAltAltList = HLT_Mu8_Ele17_CaloIdL HLT_Mu8_Ele17_CaloIdT_CaloIsoVL
+trigAltAltAltList = HLT_Ele17_CaloIdL_CaloIsoVL_Ele8_CaloIdL_CaloIsoVL HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL
+
