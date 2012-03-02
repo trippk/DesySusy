@@ -1,0 +1,329 @@
+#!/bin/bash
+
+setName=$1
+#target=/afs/naf.desy.de/user/s/schettle/scratch/AnalysisTrees/whole2011_RA6
+target=/scratch/hh/current/cms/user/schettle/AnalysisTrees/whole2011_RA6
+scriptLoc=/afs/naf.desy.de/user/s/schettle/macro/CMSSW_4_2_5/src/SUSYBSMAnalysis/DesySusy/examples/compiled/batch/
+codeLoc=/afs/naf.desy.de/user/s/schettle/macro/CMSSW_4_2_5/src/SUSYBSMAnalysis/DesySusy/examples/compiled/whole2011_RA6
+
+if [ "$setName" = "" ]; then
+	echo "please define setName or cancel [Ctrl c]."
+	read setName
+fi
+
+go="n"
+
+if [ "$go" != "all" ]; then
+    echo "run ${setName}_TTJets? [y/n/all/main]"
+    read go
+fi
+if [ "$go" = "y" -o "$go" = "all" -o "$go" = "main" ]; then
+    mkdir ${target}/${setName}_TTJets
+    cd ${target}/${setName}_TTJets
+    ${scriptLoc}/./runOnAll \
+	/pnfs/desy.de/cms/tier2/store/user/schettle/nTuple11_v4/mc/TTJets_TuneZ2_7TeV-madgraph-tauola/Fall11-PU_S6_START42_V14B-v2_TMP/ \
+	${codeLoc}/myAnalysis ${codeLoc}/config_TTJets/config.txt cleanUp nFiles=10
+fi
+
+if [ "$go" != "all" -a "$go" != "main" ]; then
+    echo "run ${setName}_TT_MCatNLO? [y/n/all]"
+    read go
+fi
+if [ "$go" = "y" -o "$go" = "all" -o "$go" = "main" ]; then
+    mkdir ${target}/${setName}_TT_MCatNLO
+    cd ${target}/${setName}_TT_MCatNLO
+    ${scriptLoc}/./runOnAll \
+	/pnfs/desy.de/cms/tier2/store/user/schettle/nTuple11_v4/mc/TT_TuneZ2_7TeV-mcatnlo/Fall11-PU_S6_START42_V14B-v1/  \
+	${codeLoc}/myAnalysis ${codeLoc}/config_TT_MCatNLO/config.txt cleanUp nFiles=5
+fi
+
+if [ "$go" != "all" -a "$go" != "main" ]; then
+    echo "run ${setName}_DYJetsToLL_M-50? [y/n/all]"
+    read go
+fi
+if [ "$go" = "y" -o "$go" = "all" -o "$go" = "main" ]; then
+    mkdir ${target}/${setName}_DYJetsToLL_M-50
+    cd ${target}/${setName}_DYJetsToLL_M-50
+    ${scriptLoc}/./runOnAll \
+	/pnfs/desy.de/cms/tier2/store/user/schettle/nTuple11_v4/mc/DYJetsToLL_TuneZ2_M-50_7TeV-madgraph-tauola/Fall11-PU_S6_START42_V14B-v1/ \
+	${codeLoc}/myAnalysis ${codeLoc}/config_DYJetsToLL_M-50/config.txt cleanUp nFiles=8
+fi
+
+if [ "$go" != "all" -a "$go" != "main" ]; then
+    echo "run ${setName}_DYJetsToLL_M-10To50? [y/n/all]"
+    read go
+fi
+if [ "$go" = "y" -o "$go" = "all" -o "$go" = "main" ]; then
+    mkdir ${target}/${setName}_DYJetsToLL_M-10To50
+    cd ${target}/${setName}_DYJetsToLL_M-10To50
+    ${scriptLoc}/./runOnAll \
+	/pnfs/desy.de/cms/tier2/store/user/schettle/nTuple11_v4/mc/DYJetsToLL_M-10To50_TuneZ2_7TeV-madgraph/Fall11-PU_S6_START42_V14B-v1/ \
+	${codeLoc}/myAnalysis ${codeLoc}/config_DYJetsToLL_M-10To50/config.txt cleanUp nFiles=7
+fi
+
+if [ "$go" != "all" -a "$go" != "main" ]; then
+    echo "run ${setName}_LM1? [y/n/all]"
+    read go
+fi
+if [ "$go" = "y" -o "$go" = "all" -o "$go" = "main" ]; then
+    mkdir ${target}/${setName}_LM1
+    cd ${target}/${setName}_LM1
+    ${scriptLoc}/./runOnAll \
+	/pnfs/desy.de/cms/tier2/store/user/schettle/nTuple11_v4/mc/LM1_SUSY_sftsht_7TeV-pythia6/Summer11-PU_S4_START42_V11-v2/ \
+	${codeLoc}/myAnalysis ${codeLoc}/config_LM1/config.txt cleanUp nFiles=1
+fi
+
+if [ "$go" != "all" ]; then
+    echo "run ${setName}_WJetsToLNu? [y/n/all]"
+    read go
+fi
+if [ "$go" = "y" -o "$go" = "all" ]; then
+    mkdir ${target}/${setName}_WJetsToLNu
+    cd ${target}/${setName}_WJetsToLNu
+    ${scriptLoc}/./runOnAll \
+	/pnfs/desy.de/cms/tier2/store/user/schettle/nTuple11_v4/mc/WJetsToLNu_TuneZ2_7TeV-madgraph-tauola/Summer11-PU_S4_START42_V11-v1/ \
+	${codeLoc}/myAnalysis ${codeLoc}/config_WJetsToLNu/config.txt cleanUp nFiles=17
+fi
+
+if [ "$go" != "all" ]; then
+    echo "run ${setName}_ZZ? [y/n/all]"
+    read go
+fi
+if [ "$go" = "y" -o "$go" = "all" ]; then
+    mkdir ${target}/${setName}_ZZ
+    cd ${target}/${setName}_ZZ
+    ${scriptLoc}/./runOnAll \
+	/pnfs/desy.de/cms/tier2/store/user/eron/nTuple11_v4/mc/ZZ_TuneZ2_7TeV_pythia6_tauola/Summer11-PU_S4_START42_V11-v1 \
+	${codeLoc}/myAnalysis ${codeLoc}/config_ZZ/config.txt cleanUp nFiles=4
+fi
+
+if [ "$go" != "all" ]; then
+    echo "run ${setName}_WW? [y/n/all]"
+    read go
+fi
+if [ "$go" = "y" -o "$go" = "all" ]; then
+    mkdir ${target}/${setName}_WW
+    cd ${target}/${setName}_WW
+    ${scriptLoc}/./runOnAll \
+	/pnfs/desy.de/cms/tier2/store/user/eron/nTuple11_v4/mc/WW_TuneZ2_7TeV_pythia6_tauola/Summer11-PU_S4_START42_V11-v1 \
+	${codeLoc}/myAnalysis ${codeLoc}/config_WW/config.txt cleanUp nFiles=4
+fi
+
+if [ "$go" != "all" ]; then
+    echo "run ${setName}_WZ? [y/n/all]"
+    read go
+fi
+if [ "$go" = "y" -o "$go" = "all" ]; then
+    mkdir ${target}/${setName}_WZ
+    cd ${target}/${setName}_WZ
+    ${scriptLoc}/./runOnAll \
+	/pnfs/desy.de/cms/tier2/store/user/eron/nTuple11_v4/mc/WZ_TuneZ2_7TeV_pythia6_tauola/Summer11-PU_S4_START42_V11-v1 \
+	${codeLoc}/myAnalysis ${codeLoc}/config_WZ/config.txt cleanUp nFiles=4
+fi
+
+if [ "$go" != "all" ]; then
+    echo "run ${setName}_T_s? [y/n/all]"
+    read go
+fi
+if [ "$go" = "y" -o "$go" = "all" ]; then
+    mkdir ${target}/${setName}_T_s
+    cd ${target}/${setName}_T_s
+    ${scriptLoc}/./runOnAll \
+	/pnfs/desy.de/cms/tier2/store/user/eron/nTuple11_v4/mc/T_TuneZ2_s-channel_7TeV-powheg-tauola/Summer11-PU_S4_START42_V11-v1/ \
+	${codeLoc}/myAnalysis ${codeLoc}/config_T_s/config.txt cleanUp nFiles=1
+fi
+
+if [ "$go" != "all" ]; then
+    echo "run ${setName}_T_t? [y/n/all]"
+    read go
+fi
+if [ "$go" = "y" -o "$go" = "all" ]; then
+    mkdir ${target}/${setName}_T_t
+    cd ${target}/${setName}_T_t
+    ${scriptLoc}/./runOnAll \
+	/pnfs/desy.de/cms/tier2/store/user/eron/nTuple11_v4/mc/T_TuneZ2_t-channel_7TeV-powheg-tauola/Summer11-PU_S4_START42_V11-v1/ \
+	${codeLoc}/myAnalysis ${codeLoc}/config_T_t/config.txt cleanUp nFiles=4
+fi
+
+if [ "$go" != "all" ]; then
+    echo "run ${setName}_T_tW? [y/n/all]"
+    read go
+fi
+if [ "$go" = "y" -o "$go" = "all" ]; then
+    mkdir ${target}/${setName}_T_tW
+    cd ${target}/${setName}_T_tW
+    ${scriptLoc}/./runOnAll \
+	/pnfs/desy.de/cms/tier2/store/user/eron/nTuple11_v4/mc/T_TuneZ2_tW-channel-DS_7TeV-powheg-tauola/Summer11-PU_S4_START42_V11-v1/ \
+	${codeLoc}/myAnalysis ${codeLoc}/config_T_tW/config.txt cleanUp nFiles=2
+fi
+
+if [ "$go" != "all" ]; then
+    echo "run ${setName}_Tbar_s? [y/n/all]"
+    read go
+fi
+if [ "$go" = "y" -o "$go" = "all" ]; then
+    mkdir ${target}/${setName}_Tbar_s
+    cd ${target}/${setName}_Tbar_s
+    ${scriptLoc}/./runOnAll \
+	/pnfs/desy.de/cms/tier2/store/user/eron/nTuple11_v4/mc/Tbar_TuneZ2_s-channel_7TeV-powheg-tauola/Summer11-PU_S4_START42_V11-v1/ \
+	${codeLoc}/myAnalysis ${codeLoc}/config_Tbar_s/config.txt cleanUp nFiles=1
+fi
+
+if [ "$go" != "all" ]; then
+    echo "run ${setName}_Tbar_t? [y/n/all]"
+    read go
+fi
+if [ "$go" = "y" -o "$go" = "all" ]; then
+    mkdir ${target}/${setName}_Tbar_t
+    cd ${target}/${setName}_Tbar_t
+    ${scriptLoc}/./runOnAll \
+	/pnfs/desy.de/cms/tier2/store/user/eron/nTuple11_v4/mc/Tbar_TuneZ2_t-channel_7TeV-powheg-tauola/Summer11-PU_S4_START42_V11-v1/ \
+	${codeLoc}/myAnalysis ${codeLoc}/config_Tbar_t/config.txt cleanUp nFiles=2
+fi
+
+if [ "$go" != "all" ]; then
+    echo "run ${setName}_Tbar_tW? [y/n/all]"
+    read go
+fi
+if [ "$go" = "y" -o "$go" = "all" ]; then
+    mkdir ${target}/${setName}_Tbar_tW
+    cd ${target}/${setName}_Tbar_tW
+    ${scriptLoc}/./runOnAll \
+	/pnfs/desy.de/cms/tier2/store/user/eron/nTuple11_v4/mc/Tbar_TuneZ2_tW-channel-DS_7TeV-powheg-tauola/Summer11-PU_S4_START42_V11-v1/ \
+	${codeLoc}/myAnalysis ${codeLoc}/config_Tbar_tW/config.txt cleanUp nFiles=2
+fi
+
+
+if [ "$go" != "all" ]; then
+    echo "run ${setName}_LM2? [y/n/all]"
+    read go
+fi
+if [ "$go" = "y" -o "$go" = "all" ]; then
+    mkdir ${target}/${setName}_LM2
+    cd ${target}/${setName}_LM2
+    ${scriptLoc}/./runOnAll \
+	/pnfs/desy.de/cms/tier2/store/user/schettle/nTuple11_v4/mc/LM2_SUSY_sftsht_7TeV-pythia6/Summer11-PU_S4_START42_V11-v2/ \
+	${codeLoc}/myAnalysis ${codeLoc}/config_LM2/config.txt cleanUp nFiles=1
+fi
+
+if [ "$go" != "all" ]; then
+    echo "run ${setName}_LM3? [y/n/all]"
+    read go
+fi
+if [ "$go" = "y" -o "$go" = "all" ]; then
+    mkdir ${target}/${setName}_LM3
+    cd ${target}/${setName}_LM3
+    ${scriptLoc}/./runOnAll \
+	/pnfs/desy.de/cms/tier2/store/user/schettle/nTuple11_v4/mc/LM3_SUSY_sftsht_7TeV-pythia6/Summer11-PU_S4_START42_V11-v2/ \
+	${codeLoc}/myAnalysis ${codeLoc}/config_LM3/config.txt cleanUp nFiles=1
+fi
+
+if [ "$go" != "all" ]; then
+    echo "run ${setName}_LM4? [y/n/all]"
+    read go
+fi
+if [ "$go" = "y" -o "$go" = "all" ]; then
+    mkdir ${target}/${setName}_LM4
+    cd ${target}/${setName}_LM4
+    ${scriptLoc}/./runOnAll \
+	/pnfs/desy.de/cms/tier2/store/user/schettle/nTuple11_v4/mc/LM4_SUSY_sftsht_7TeV-pythia6/Summer11-PU_S4_START42_V11-v2/ \
+	${codeLoc}/myAnalysis ${codeLoc}/config_LM4/config.txt cleanUp nFiles=1
+fi
+
+if [ "$go" != "all" ]; then
+    echo "run ${setName}_LM5? [y/n/all]"
+    read go
+fi
+if [ "$go" = "y" -o "$go" = "all" ]; then
+    mkdir ${target}/${setName}_LM5
+    cd ${target}/${setName}_LM5
+    ${scriptLoc}/./runOnAll \
+	/pnfs/desy.de/cms/tier2/store/user/schettle/nTuple11_v4/mc/LM5_SUSY_sftsht_7TeV-pythia6/Summer11-PU_S4_START42_V11-v2/ \
+	${codeLoc}/myAnalysis ${codeLoc}/config_LM5/config.txt cleanUp nFiles=1
+fi
+
+if [ "$go" != "all" ]; then
+    echo "run ${setName}_LM6? [y/n/all]"
+    read go
+fi
+if [ "$go" = "y" -o "$go" = "all" ]; then
+    mkdir ${target}/${setName}_LM6
+    cd ${target}/${setName}_LM6
+    ${scriptLoc}/./runOnAll \
+	/pnfs/desy.de/cms/tier2/store/user/schettle/nTuple11_v4/mc/LM6_SUSY_sftsht_7TeV-pythia6/Summer11-PU_S4_START42_V11-v2/ \
+	${codeLoc}/myAnalysis ${codeLoc}/config_LM6/config.txt cleanUp nFiles=1
+fi
+
+if [ "$go" != "all" ]; then
+    echo "run ${setName}_LM7? [y/n/all]"
+    read go
+fi
+if [ "$go" = "y" -o "$go" = "all" ]; then
+    mkdir ${target}/${setName}_LM7
+    cd ${target}/${setName}_LM7
+    ${scriptLoc}/./runOnAll \
+	/pnfs/desy.de/cms/tier2/store/user/schettle/nTuple11_v4/mc/LM7_SUSY_sftsht_7TeV-pythia6/Summer11-PU_S4_START42_V11-v2/ \
+	${codeLoc}/myAnalysis ${codeLoc}/config_LM7/config.txt cleanUp nFiles=1
+fi
+
+if [ "$go" != "all" ]; then
+    echo "run ${setName}_LM8? [y/n/all]"
+    read go
+fi
+if [ "$go" = "y" -o "$go" = "all" ]; then
+    mkdir ${target}/${setName}_LM8
+    cd ${target}/${setName}_LM8
+    ${scriptLoc}/./runOnAll \
+	/pnfs/desy.de/cms/tier2/store/user/schettle/nTuple11_v4/mc/LM8_SUSY_sftsht_7TeV-pythia6/Summer11-PU_S4_START42_V11-v2/ \
+	${codeLoc}/myAnalysis ${codeLoc}/config_LM8/config.txt cleanUp nFiles=1
+fi
+
+if [ "$go" != "all" ]; then
+    echo "run ${setName}_LM9? [y/n/all]"
+    read go
+fi
+if [ "$go" = "y" -o "$go" = "all" ]; then
+    mkdir ${target}/${setName}_LM9
+    cd ${target}/${setName}_LM9
+    ${scriptLoc}/./runOnAll \
+	/pnfs/desy.de/cms/tier2/store/user/schettle/nTuple11_v4/mc/LM9_SUSY_sftsht_7TeV-pythia6/Summer11-PU_S4_START42_V11-v2/ \
+	${codeLoc}/myAnalysis ${codeLoc}/config_LM9/config.txt cleanUp nFiles=1
+fi
+
+if [ "$go" != "all" ]; then
+    echo "run ${setName}_LM11? [y/n/all]"
+    read go
+fi
+if [ "$go" = "y" -o "$go" = "all" ]; then
+    mkdir ${target}/${setName}_LM11
+    cd ${target}/${setName}_LM11
+    ${scriptLoc}/./runOnAll \
+	/pnfs/desy.de/cms/tier2/store/user/schettle/nTuple11_v4/mc/LM11_SUSY_sftsht_7TeV-pythia6/Summer11-PU_S4_START42_V11-v2/ \
+	${codeLoc}/myAnalysis ${codeLoc}/config_LM11/config.txt cleanUp nFiles=1
+fi
+
+if [ "$go" != "all" ]; then
+    echo "run ${setName}_LM12? [y/n/all]"
+    read go
+fi
+if [ "$go" = "y" -o "$go" = "all" ]; then
+    mkdir ${target}/${setName}_LM12
+    cd ${target}/${setName}_LM12
+    ${scriptLoc}/./runOnAll \
+	/pnfs/desy.de/cms/tier2/store/user/schettle/nTuple11_v4/mc/LM12_SUSY_sftsht_7TeV-pythia6/Summer11-PU_S4_START42_V11-v2/ \
+	${codeLoc}/myAnalysis ${codeLoc}/config_LM12/config.txt cleanUp nFiles=1
+fi
+
+if [ "$go" != "all" ]; then
+    echo "run ${setName}_LM13? [y/n/all]"
+    read go
+fi
+if [ "$go" = "y" -o "$go" = "all" ]; then
+    mkdir ${target}/${setName}_LM13
+    cd ${target}/${setName}_LM13
+    ${scriptLoc}/./runOnAll \
+	/pnfs/desy.de/cms/tier2/store/user/schettle/nTuple11_v4/mc/LM13_SUSY_sftsht_7TeV-pythia6/Summer11-PU_S4_START42_V11-v2/ \
+	${codeLoc}/myAnalysis ${codeLoc}/config_LM13/config.txt cleanUp nFiles=1
+fi
+
+
