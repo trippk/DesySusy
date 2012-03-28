@@ -9,7 +9,7 @@
 #include "../tools/ConfigReader.h"
 #include "../tools/CutFlow.h"
 #include "../tools/THTools.h"
-#include "plotSet.h"
+#include "../tools/plotSet.h"
 
 #include "muons_RA6.h"
 #include "electrons_RA6.h"
@@ -27,6 +27,7 @@ int main(int argc, char** argv){
 
   // input file name
   TString filename = config.getTString("filename","");
+  //TString filedir  = config.getTString("filedir", "");
 
   // the main tree
   EasyChain* tree = new EasyChain("/susyTree/tree");
@@ -37,6 +38,7 @@ int main(int argc, char** argv){
 
   // output directory and output file name(derived from input name)
   TString outdir   = config.getTString("outdir","./");
+  //TString outname  = outdir+file_base(filename)+"_out.root";
   TString outname  = config.getTString("outname",tree->GetUniqeName());
 
   TFile *outfile = TFile::Open(outname,"RECREATE");
@@ -49,8 +51,16 @@ int main(int argc, char** argv){
 
   static bool allowPrescale = config.getBool( "allowPrescale", false );
 
-  static float     HT_min = config.getFloat(      "HT_min",  0. );
-  static float    MET_min = config.getFloat(     "MET_min",  0. );
+  static float          HT_min = config.getFloat(          "HT_min",  0. );
+  static float         MET_min = config.getFloat(         "MET_min",  0. );
+  static int          nJet_min = config.getInt  (        "nJet_min",  0  );
+  static float TCHEbTag_cutVal = config.getFloat( "TCHEbTag_cutVal",  3.3 );
+
+
+  static float lept_pt_min_high = config.getFloat("lept_pt_min_high", 20.);
+  static float lept_invMass_min = config.getFloat("lept_invMass_min", 12.);
+  static int   lept_relCharge   = config.getInt  ("lept_relCharge",   -1 );
+  
 
   typedef LorentzM LOR;
 
@@ -62,7 +72,7 @@ int main(int argc, char** argv){
   CutSet RA6_Vx_selectionCuts("RA6: Vertex Selection");
 
   plotSet ps("control_plots",true);
-  plotSet plotsId("RA6",true);
+  plotSet plotsId("RA6",true,true);
   ps.setTFile(outfile);
   plotsId.setTFile(outfile);
 
@@ -84,7 +94,7 @@ int main(int argc, char** argv){
   //N=10000;
 
   bool OK=false;
-  for(int i=0;i<N;++i){
+  for(int i=3470;i<N;++i){
 
     //cout<<"looper started"<<endl;
 
@@ -165,8 +175,6 @@ int main(int argc, char** argv){
 
     if( !globalFlow.keepIf( "FracOfHPtracks", Ntracks <=10 ? true : (float) NHPtracks/Ntracks >=0.25 ) && quick ) continue;
 
-    //cout<<"fracTrack survived"<<endl;
-
     //csc beam halo
     //ecal beam halo
 
@@ -177,7 +185,6 @@ int main(int argc, char** argv){
     bool bhctFailed = tree->Get( bhctFailed, "beamHaloCSCTightHaloId"    );
     if( !globalFlow.keepIf("beamHaloCSCFilter" ,!bhctFailed ) && quick ) continue;//   stimmt das?? Dass die Flag das Failed angibt?
 
-    //cout<<"filter survived"<<endl;
 
     //trigger-------------------------------------------------------------------------------------
     int run = tree->Get(run, "run");
@@ -191,15 +198,17 @@ int main(int argc, char** argv){
     TString AltAltAltTrigName = "Trigger";   
     bool oneAltTriggerGood  = false;
 
+
     static TString trigList = config.getTString( "trigList", " " );
     static int     trigSize = config.ListSize(   "trigList"      );
-
     if( trigList != " " ) {
       bool oneTriggerFound = false;
       for(int i=0; i<trigSize && !oneTriggerFound; ++i) {
+	//cout<<i<<endl;
 	string trigName = config.getString( "trigList" , i);
+	//cout<<trigName<<endl;
 	string trig = triggerNameMap[trigName];
-
+	//cout<<i<<" "<<trigName<<" "<<trig<<endl;
 	if( triggered.find( trig ) != triggered.end() ) {
 	  if( isData && !allowPrescale && prescaled[trig] > 1 ) continue;
 	  oneTriggerFound = true;
@@ -249,7 +258,6 @@ int main(int argc, char** argv){
 	continue;
       }
     }
-
 
     static TString trigAltAltList = config.getTString( "trigAltAltList", " " );
     static int     trigAltAltSize = config.ListSize(   "trigAltAltList"      );
@@ -326,7 +334,10 @@ int main(int argc, char** argv){
     /////////
 
     muons_RA6    ( tree, RA6_selectedMu, RA6_Mu_selectionCuts );
+    //cout<<"mu defined"<<endl;
     electrons_RA6( tree, RA6_selectedEl, RA6_El_selectionCuts );
+
+    //cout<<"el mu defined"<<endl;
 
     if(  globalFlow.keepIf( "at_least_2_muons"    , RA6_selectedMu.size()    >=2 ) ) isMuMu=true;
     if(  globalFlow.keepIf( "at_least_1_muon_and_1_electron",  
@@ -339,11 +350,86 @@ int main(int argc, char** argv){
     jetsPF_RA6   ( tree, RA6_selectedJetPF, RA6_JetPF_selectionCuts );
 
     ps.addPlot("JetMult", "JetMult(before cut)", 15, 0., 15., RA6_selectedJetPF.size(), "multiplicity of selected jets", "events");
-    if(      !globalFlow.keepIf( "at_least_2_jets"     , RA6_selectedJetPF.size() >=2 ) && quick ) continue;
+    TString nJ_cutString = "nJets>=";
+    nJ_cutString+=nJet_min;
+    if(      !globalFlow.keepIf( nJ_cutString     , RA6_selectedJetPF.size() >= nJet_min ) && quick ) continue;
 
     vector<LOR>& JetsPF    = tree->Get( &JetsPF   , "ak5JetPF2PATCorrectedP4Pat");
+    vector<int>& genJetId  = tree->Get( &genJetId , "ak5JetPF2PATGenJetMatchIndexPat");
+    vector<LOR>& genJetsPF = tree->Get( &genJetsPF, "genak5GenJetsP4"           );
     vector<LOR>& Electrons = tree->Get( &Electrons, "electronP4Pat"             );
     vector<LOR>& Muons     = tree->Get( &Muons    , "muonP4Pat"                 );
+
+    //Jet smearing:
+    //double sumJetET        = 0;
+    //double sumSmearedJetET = 0;
+
+    double sumJetPx = 0;
+    double sumJetPy = 0;
+    double sumSmearedJetPx = 0;
+    double sumSmearedJetPy = 0;
+
+    LOR JetVecSum, smearedJetVecSum;
+
+    map<double,double> smearFac;
+//     smearFac[1.1] = .06177;
+//     smearFac[1.7] = .08352;
+//     smearFac[2.3] = .02911;
+//     smearFac[999] = .15288;
+    smearFac[999] = .1;
+
+    //    cout<<JetsPF.size()<<"   "<<genJetId.size()<<"   "<<genJetsPF.size()<<endl;
+    if(!isData) {
+      for(unsigned j=0; j<JetsPF.size(); ++j) {
+	LOR tmpJet = JetsPF.at(j);
+	double jetPt = JetsPF.at(j).pt();
+	double jetE  = JetsPF.at(j).E();
+	double jetPx = JetsPF.at(j).px();
+	double jetPy = JetsPF.at(j).py();
+
+	sumJetPx  += jetPx;
+	sumJetPy  += jetPy;
+	JetVecSum += tmpJet;
+
+	if( genJetId.at(j)>=0 && genJetId.at(j)<genJetsPF.size() ) {
+	  double sf=0;
+	  for( map<double,double>::iterator mi=smearFac.begin(); mi!=smearFac.end(), sf==0; ++mi ) {
+	    //cout<<" testing "<<mi->first<<"   "<<mi->second<<"  with "<<JetsPF.at(j).Eta()<<endl;
+	    if( fabs(JetsPF.at(j).Eta()) < mi->first ) {
+	      sf=mi->second;
+	    }
+	  }
+	  //sf=.1;
+	  //cout<<" taken"<<endl;
+	  //cout<<"Et: "<<jetEt<<endl;
+	  //cout<<genJetId.at(j)<<"   "<<genJetsPF.size()<<endl;
+	  double SMFactor = 1 + sf*((jetE-genJetsPF.at(genJetId.at(j)).E())/jetE);
+	  tmpJet *= SMFactor;
+	  jetPx  *= SMFactor;
+	  jetPy  *= SMFactor;
+
+	  //cout<<(jetPt-genJetsPF.at(genJetId.at(j)).pt())/jetPt<<"  "<<(jetPx-genJetsPF.at(genJetId.at(j)).px())/jetPx<<"   "<<(jetPy-genJetsPF.at(genJetId.at(j)).py())/jetPy<<endl;;
+	  
+	  //jetPt += sf*(jetEt-genJetsPF.at(genJetId.at(j)).Pt());
+	  plotsId.addPlot("jetPTmatched","jetPT",40,0.,200.,jetPt);
+	  plotsId.addPlot("relDiff",40,-2.,2.,(jetE-genJetsPF.at(genJetId.at(j)).E())/jetE);
+	}
+	else
+	  plotsId.addPlot("jetPTnotmatched","jetPT",40,0.,200.,jetPt);
+	//sumSmearedJetET += jetEt;
+	smearedJetVecSum += tmpJet;
+	sumSmearedJetPx  += jetPx;
+	sumSmearedJetPy  += jetPy;
+
+      }
+    }
+    //cout<<sumJetET<<"   "<<sumSmearedJetET<<endl;
+//     cout<<JetVecSum.Et()<<"   "<<smearedJetVecSum.Et()<<endl;
+//     cout<<"Px "<<JetVecSum.Px()<<"   "<<smearedJetVecSum.Px()<<endl;
+//     cout<<"Py "<<JetVecSum.Py()<<"   "<<smearedJetVecSum.Py()<<endl;
+//     cout<<"Pz "<<JetVecSum.Pz()<<"   "<<smearedJetVecSum.Pz()<<endl;
+//     cout<<"E  "<<JetVecSum.E()<<"   "<<smearedJetVecSum.E()<<endl;
+
 
     for(int j=0; j<RA6_selectedJetPF.size(); ++j) {
       for(int m=0; m<RA6_selectedMu.size(); ++m) {
@@ -360,7 +446,7 @@ int main(int argc, char** argv){
 		       RA6_selectedMu   , RA6_Mu_selectionCuts,
 		       RA6_selectedEl   , RA6_El_selectionCuts,
 		       RA6_selectedJetPF, RA6_JetPF_selectionCuts );
-    //cout<<"cleaning survived."<<endl;
+    //cout<<"Xcleaning survived."<<endl;
 
     for(int j=0; j<RA6_selectedJetPF.size(); ++j) {
       for(int m=0; m<RA6_selectedMu.size(); ++m) {
@@ -386,7 +472,8 @@ int main(int argc, char** argv){
     if( !isMuMu && !isMuEl && !isElEl && quick ) continue;
     ps.addPlot("JetMult_afterCC", "JetMult(before cut, after CC)", 15, 0., 15., RA6_selectedJetPF.size(), "multiplicity of selected jets", "events");
 
-    if(      !globalFlow.keepIf( "at_least_2_jets_CC"     , RA6_selectedJetPF.size() >=2 ) && quick ) continue;
+    nJ_cutString+="_CC";
+    if(      !globalFlow.keepIf( nJ_cutString    , RA6_selectedJetPF.size() >= nJet_min ) && quick ) continue;
 
     //cout<<"mu&elsP2 survived."<<endl;
 
@@ -395,7 +482,12 @@ int main(int argc, char** argv){
     /////////////
     // final cuts
     /////////////
-    LOR* metP4PF   = tree->Get( &metP4PF , "metP4TypeIPF"  );
+    LOR* metP4PF        = tree->Get( &metP4PF       , "metP4PF"       );
+    LOR* metP4TypeIPF   = tree->Get( &metP4TypeIPF  , "metP4TypeIPF"  );
+    LOR* metP4AK5       = tree->Get( &metP4AK5      , "metP4AK5"      );
+    LOR* metP4AK5TypeII = tree->Get( &metP4AK5TypeII, "metP4AK5TypeII");
+    LOR* metP4Calo      = tree->Get( &metP4Calo     , "metP4Calo"     );
+
     double HT_selectedJetPF=0;
 
     double minDPhi_MET_Jet = 100;
@@ -408,17 +500,12 @@ int main(int argc, char** argv){
     TString HT_cutString = "HT>=";
     HT_cutString        += HT_min;
     ps.addPlot(HT_cutString, "HT(before cut)", 80, 0., 800., HT_selectedJetPF, "HT(selected jets) [GeV]", "events");
-    if( !globalFlow.keepIf( HT_cutString , HT_selectedJetPF > HT_min ) && quick ) continue;
+    if( !globalFlow.keepIf( HT_cutString , HT_selectedJetPF >= HT_min ) && quick ) continue;
 
     TString MET_cutString = "MET>=";
     MET_cutString        += MET_min;
     ps.addPlot(MET_cutString, "MET(before cut)", 50, 0., 500., metP4PF->Et(), "MET [GeV]", "events");
-    if( !globalFlow.keepIf( MET_cutString, metP4PF->Et()    > MET_min ) && quick ) continue;
-
-
-    static float lept_pt_min_high = config.getFloat("lept_pt_min_high", 20);
-    static float lept_invMass_min = config.getFloat("lept_invMass_min", 10);
-    static int   lept_relCharge   = config.getInt  ("lept_relCharge",   -1);
+    if( !globalFlow.keepIf( MET_cutString, metP4PF->Et()    >= MET_min ) && quick ) continue;
 
 
     vector<int>& El_charge = tree->Get( &El_charge, "electronChargePat" );
@@ -493,6 +580,7 @@ int main(int argc, char** argv){
 
     //cout<<"directly before final cuts"<<endl;
 
+
     if(quick || globalFlow.applyCuts("RA6 common cuts", 
 		"totalKinFilter trackFailFilter ecalDeadCellFilter beamHaloCSCFilter HBHEnoiseFilter at_least_1_vertex FracOfHPtracks at_least_2_jets_CC "+HT_cutString+" "+MET_cutString ) ) {
       
@@ -508,7 +596,8 @@ int main(int argc, char** argv){
       if(globalFlow.applyCuts("RA6 ElEl",
 			      AltAltAltTrigName+" at_least_1_ElEl_pair highPtOSElElPair")) isRA6highPtElEl=true;
     
-}
+    }
+
     TString top="";
     LOR firstLept, secondLept;
 
@@ -517,7 +606,8 @@ int main(int argc, char** argv){
       firstLept  = Muons.at( highPtOSMuMuPairs[0].first  );
       secondLept = Muons.at( highPtOSMuMuPairs[0].second );
       ps.addPlot(HT_cutString+"MuMu", "HT(after MuMu cuts)", 80, 0., 800., HT_selectedJetPF, "HT(selected jets) [GeV]", "events");
-    } else if ( isRA6highPtElEl ) {
+    }
+    else if ( isRA6highPtElEl ) {
       top = "RA6ElEl";
       firstLept  = Electrons.at( highPtOSElElPairs[0].first  );
       secondLept = Electrons.at( highPtOSElElPairs[0].second );
@@ -539,13 +629,26 @@ int main(int argc, char** argv){
     double cosThetaAngle = cos(thetaAngle);
 
     vector<float>& TCHE_bTag   = tree->Get(&TCHE_bTag  , "ak5JetPF2PATTrkCountingHighEffBJetTagsPat");
-    static float TCHEbTag_cutVal = config.getFloat( "TCHEbTag_cutVal",   3.3 );
+
 
     int numBTags=0;
 
-    for(size_t j=0; j<RA6_selectedJetPF.size(); ++j)
+    double DphiMetClosestJet=1000.;
+    for(size_t j=0; j<RA6_selectedJetPF.size(); ++j) {
       if(TCHE_bTag.at(RA6_selectedJetPF.at(j)) > TCHEbTag_cutVal) ++numBTags;
-
+      if(fabs(DeltaPhi( JetsPF.at(RA6_selectedJetPF.at(j)), *metP4PF ) ) < DphiMetClosestJet )
+	DphiMetClosestJet = fabs(DeltaPhi( JetsPF.at(RA6_selectedJetPF.at(j)), *metP4PF ) );
+    }
+    double DphiMetClosestMuon=1000.;
+    for(size_t m=0; m<RA6_selectedMu.size(); ++m) {
+      if(fabs(DeltaPhi( Muons.at(RA6_selectedMu.at(m)), *metP4PF ) ) < DphiMetClosestMuon )
+	DphiMetClosestMuon = fabs(DeltaPhi( Muons.at(RA6_selectedMu.at(m)), *metP4PF ) );
+    }
+    double DphiMetClosestElectron=1000.;
+    for(size_t el=0; el<RA6_selectedEl.size(); ++el) {
+      if(fabs(DeltaPhi( Electrons.at(RA6_selectedEl.at(el)), *metP4PF ) ) < DphiMetClosestElectron )
+	DphiMetClosestElectron = fabs(DeltaPhi( Electrons.at(RA6_selectedEl.at(el)), *metP4PF ) );
+    }
     unsigned event = tree->Get(event,"event");
     unsigned lumi  = tree->Get(lumi ,"lumiSection");
 
@@ -562,8 +665,35 @@ int main(int argc, char** argv){
     plotsId.addLeaf( top, "numJets",  (int) RA6_selectedJetPF.size()  );
     plotsId.addLeaf( top, "numBtags", (int) numBTags                  );
     plotsId.addLeaf( top, "HT",       HT_selectedJetPF                );
+    plotsId.addLeaf( top, "numElectrons",  (int) RA6_selectedEl.size()  );
+    plotsId.addLeaf( top, "numMuons"    ,  (int) RA6_selectedMu.size()  );
 
+    plotsId.addLeaf( top, "minDphiJetMET",     DphiMetClosestJet        );
+    plotsId.addLeaf( top, "minDphiElMET" ,     DphiMetClosestElectron   );
+    plotsId.addLeaf( top, "minDphiMuMET" ,     DphiMetClosestMuon       );
 
+    plotsId.addLeaf( top, "METTypeIPF"  ,      metP4TypeIPF->Et()     );
+    plotsId.addLeaf( top, "METAK5"      ,      metP4AK5->Et()         );
+    plotsId.addLeaf( top, "METAK5TypeII",      metP4AK5TypeII->Et()   );
+    plotsId.addLeaf( top, "METCalo"     ,      metP4Calo->Et()        );
+
+    //cout<<((*metP4PF)-JetVecSum+smearedJetVecSum).Et()<<endl;
+  
+    //cout<<"met: "<<(*metP4PF).Px()<<"  "<<(*metP4PF).Py()<<"  "<<(*metP4PF).Pz()<<"  "<<(*metP4PF).E()<<endl;
+    //cout<<"dif: "<<(-JetVecSum+smearedJetVecSum).Px()<<"  "<<(-JetVecSum+smearedJetVecSum).Py()<<"  "<<(-JetVecSum+smearedJetVecSum).Pz()<<"  "<<(-JetVecSum+smearedJetVecSum).E()<<endl;
+
+    LOR scaledMET = (*metP4PF)-JetVecSum+smearedJetVecSum;
+    scaledMET.SetPxPyPzE(scaledMET.Px(),scaledMET.Py(),0,sqrt(pow(scaledMET.Px(),2)+pow(scaledMET.Py(),2)));
+    
+    //cout<<"sca: "<<scaledMET.Px()<<"  "<<scaledMET.Py()<<"  "<<scaledMET.Pz()<<"  "<<scaledMET.E()<<endl;
+
+    double smearedMETpt = sqrt( pow(metP4PF->px()+sumJetPx-sumSmearedJetPx,2)+pow(metP4PF->py()+sumJetPy-sumSmearedJetPy,2) );
+
+    if(!isData) {
+      plotsId.addLeaf( top, "METjetSmearCorr" ,  scaledMET.Et() );
+      plotsId.addLeaf( top, "METjetSmearCorr2",  smearedMETpt   );
+
+    }
     //cout<<"before new plots"<<endl;
 
     if(HT_selectedJetPF>100 && metP4PF->Et()>120) {
@@ -579,6 +709,117 @@ int main(int argc, char** argv){
       ps.addPlot_withUnweighted(top+"ps_minDPhiMu" +Zwin,"ps_minDPhiMu" ,25,0., 5., minDPhi_MET_Mu  );
       ps.addPlot_withUnweighted(top+"ps_minDPhiEl" +Zwin,"ps_minDPhiEl" ,25,0., 5., minDPhi_MET_El  );
       ps.addPlot_withUnweighted(top+"ps_minDPhiJet"+Zwin,"ps_minDPhiJet",25,0., 5., minDPhi_MET_Jet );
+
+    }
+
+    // diboson part
+    //cout<<"diboson starting..."<<endl;
+    if( RA6_selectedMu.size()+RA6_selectedEl.size() >=3 ) {
+      //cout<<"... is at least 3 lept"<<endl;
+      TString diBosonCand="";
+      double ZpT;
+      vector<unsigned> Pt20Muons, Pt20Electrons;
+      for( unsigned mu=0; mu<RA6_selectedMu.size(); ++mu )
+	if( Muons.at(RA6_selectedMu.at(mu)).pt() > 20 )
+	  Pt20Muons.push_back(RA6_selectedMu.at(mu));
+      for( unsigned el=0; el<RA6_selectedEl.size(); ++el )
+	if( Electrons.at(RA6_selectedEl.at(el)).pt() > 20 )
+	  Pt20Electrons.push_back(RA6_selectedEl.at(el));      
+      if(Pt20Muons.size()+Pt20Electrons.size() == 3 && metP4PF->Et() > 30 ) {
+	//cout<<"... is WZ cand"<<endl;
+	switch (Pt20Muons.size()) {
+	case 0: {
+	  LOR zCand=(Electrons.at(Pt20Electrons.at(0))+Electrons.at(Pt20Electrons.at(1)));
+	  if( zCand.mass() > 81 && zCand.mass() < 101 ) diBosonCand = "WZ"; ZpT=zCand.pt(); break;
+	  zCand=(Electrons.at(Pt20Electrons.at(0))+Electrons.at(Pt20Electrons.at(2)));
+	  if( zCand.mass() > 81 && zCand.mass() < 101 ) diBosonCand = "WZ"; ZpT=zCand.pt(); break;	  
+	  zCand=(Electrons.at(Pt20Electrons.at(1))+Electrons.at(Pt20Electrons.at(2)));
+	  if( zCand.mass() > 81 && zCand.mass() < 101 ) diBosonCand = "WZ"; ZpT=zCand.pt(); break;
+	}
+	case 1: {
+	  LOR zCand=(Electrons.at(Pt20Electrons.at(0))+Electrons.at(Pt20Electrons.at(1)));
+	  if( zCand.mass() > 81 && zCand.mass() < 101 ) diBosonCand = "WZ"; ZpT=zCand.pt(); break;
+	}
+	case 2: {
+	  LOR zCand=(Muons.at(Pt20Muons.at(0))+Muons.at(Pt20Muons.at(1)));
+	  if( zCand.mass() > 81 && zCand.mass() < 101 ) diBosonCand = "WZ"; ZpT=zCand.pt(); break;
+	}
+	case 3: {
+	  LOR zCand=(Muons.at(Pt20Muons.at(0))+Muons.at(Pt20Muons.at(1)));
+	  if( zCand.mass() > 81 && zCand.mass() < 101 ) diBosonCand = "WZ"; ZpT=zCand.pt(); break;
+	  zCand=(Muons.at(Pt20Muons.at(0))+Muons.at(Pt20Muons.at(2)));
+	  if( zCand.mass() > 81 && zCand.mass() < 101 ) diBosonCand = "WZ"; ZpT=zCand.pt(); break;	  
+	  zCand=(Muons.at(Pt20Muons.at(1))+Muons.at(Pt20Muons.at(2)));
+	  if( zCand.mass() > 81 && zCand.mass() < 101 ) diBosonCand = "WZ"; ZpT=zCand.pt(); break;
+	}
+	}
+      }
+      else if( Pt20Muons.size()+Pt20Electrons.size() == 4 ) {
+	//cout<<"... is ZZ cand"<<endl;
+	switch (Pt20Muons.size()) {
+	case 0: {
+	  LOR zCand=(Electrons.at(Pt20Electrons.at(0))+Electrons.at(Pt20Electrons.at(1)));
+	  if( zCand.mass() > 81 && zCand.mass() < 101 ) diBosonCand = "ZZ"; ZpT=zCand.pt(); break;
+	  zCand=(Electrons.at(Pt20Electrons.at(0))+Electrons.at(Pt20Electrons.at(2)));
+	  if( zCand.mass() > 81 && zCand.mass() < 101 ) diBosonCand = "ZZ"; ZpT=zCand.pt(); break;	  
+	  zCand=(Electrons.at(Pt20Electrons.at(0))+Electrons.at(Pt20Electrons.at(3)));
+	  if( zCand.mass() > 81 && zCand.mass() < 101 ) diBosonCand = "ZZ"; ZpT=zCand.pt(); break;	  
+	  zCand=(Electrons.at(Pt20Electrons.at(1))+Electrons.at(Pt20Electrons.at(2)));
+	  if( zCand.mass() > 81 && zCand.mass() < 101 ) diBosonCand = "ZZ"; ZpT=zCand.pt(); break;	  
+	  zCand=(Electrons.at(Pt20Electrons.at(1))+Electrons.at(Pt20Electrons.at(3)));
+	  if( zCand.mass() > 81 && zCand.mass() < 101 ) diBosonCand = "ZZ"; ZpT=zCand.pt(); break;	  
+	  zCand=(Electrons.at(Pt20Electrons.at(2))+Electrons.at(Pt20Electrons.at(3)));
+	  if( zCand.mass() > 81 && zCand.mass() < 101 ) diBosonCand = "ZZ"; ZpT=zCand.pt(); break;
+	}
+	case 1: {
+	  LOR zCand=(Electrons.at(Pt20Electrons.at(0))+Electrons.at(Pt20Electrons.at(1)));
+	  if( zCand.mass() > 81 && zCand.mass() < 101 ) diBosonCand = "ZZ"; ZpT=zCand.pt(); break;
+	  zCand=(Electrons.at(Pt20Electrons.at(0))+Electrons.at(Pt20Electrons.at(2)));
+	  if( zCand.mass() > 81 && zCand.mass() < 101 ) diBosonCand = "ZZ"; ZpT=zCand.pt(); break;	  
+	  zCand=(Electrons.at(Pt20Electrons.at(1))+Electrons.at(Pt20Electrons.at(2)));
+	  if( zCand.mass() > 81 && zCand.mass() < 101 ) diBosonCand = "ZZ"; ZpT=zCand.pt(); break;	
+	}
+	case 2: {
+	  LOR zCand=(Electrons.at(Pt20Electrons.at(0))+Electrons.at(Pt20Electrons.at(1)));
+	  if( zCand.mass() > 81 && zCand.mass() < 101 ) diBosonCand = "ZZ"; ZpT=zCand.pt(); break;
+	  zCand=(Muons.at(Pt20Muons.at(0))+Muons.at(Pt20Muons.at(1)));
+	  if( zCand.mass() > 81 && zCand.mass() < 101 ) diBosonCand = "ZZ"; ZpT=zCand.pt(); break;
+	}
+	case 3: {
+	  LOR zCand=(Muons.at(Pt20Muons.at(0))+Muons.at(Pt20Muons.at(1)));
+	  if( zCand.mass() > 81 && zCand.mass() < 101 ) diBosonCand = "ZZ"; ZpT=zCand.pt(); break;
+	  zCand=(Muons.at(Pt20Muons.at(0))+Muons.at(Pt20Muons.at(2)));
+	  if( zCand.mass() > 81 && zCand.mass() < 101 ) diBosonCand = "ZZ"; ZpT=zCand.pt(); break;	  
+	  zCand=(Muons.at(Pt20Muons.at(1))+Muons.at(Pt20Muons.at(2)));
+	  if( zCand.mass() > 81 && zCand.mass() < 101 ) diBosonCand = "ZZ"; ZpT=zCand.pt(); break;	
+	}
+	case 4: {
+	  LOR zCand=(Muons.at(Pt20Muons.at(0))+Muons.at(Pt20Muons.at(1)));
+	  if( zCand.mass() > 81 && zCand.mass() < 101 ) diBosonCand = "ZZ"; ZpT=zCand.pt(); break;
+	  zCand=(Muons.at(Pt20Muons.at(0))+Muons.at(Pt20Muons.at(2)));
+	  if( zCand.mass() > 81 && zCand.mass() < 101 ) diBosonCand = "ZZ"; ZpT=zCand.pt(); break;	  
+	  zCand=(Muons.at(Pt20Muons.at(0))+Muons.at(Pt20Muons.at(3)));
+	  if( zCand.mass() > 81 && zCand.mass() < 101 ) diBosonCand = "ZZ"; ZpT=zCand.pt(); break;	  
+	  zCand=(Muons.at(Pt20Muons.at(1))+Muons.at(Pt20Muons.at(2)));
+	  if( zCand.mass() > 81 && zCand.mass() < 101 ) diBosonCand = "ZZ"; ZpT=zCand.pt(); break;	  
+	  zCand=(Muons.at(Pt20Muons.at(1))+Muons.at(Pt20Muons.at(3)));
+	  if( zCand.mass() > 81 && zCand.mass() < 101 ) diBosonCand = "ZZ"; ZpT=zCand.pt(); break;	  
+	  zCand=(Muons.at(Pt20Muons.at(2))+Muons.at(Pt20Muons.at(3)));
+	  if( zCand.mass() > 81 && zCand.mass() < 101 ) diBosonCand = "ZZ"; ZpT=zCand.pt(); break;
+	}
+	}
+      }
+      if(diBosonCand != "") {
+	plotsId.addLeaf( diBosonCand, "weight",   plotSet::global_event_weight    );
+	plotsId.addLeaf( diBosonCand, "event",    (int) event                     );
+	plotsId.addLeaf( diBosonCand, "run",      (int) run                       );
+	plotsId.addLeaf( diBosonCand, "lumi",     (int) lumi                      );
+	plotsId.addLeaf( diBosonCand, "MET",      metP4PF->Et()                   );
+	plotsId.addLeaf( diBosonCand, "numJets",  (int) RA6_selectedJetPF.size()  );
+	plotsId.addLeaf( diBosonCand, "numBtags", (int) numBTags                  );
+	plotsId.addLeaf( diBosonCand, "HT",       HT_selectedJetPF                );
+	plotsId.addLeaf( diBosonCand, "ZPt",      ZpT                             );
+      }
 
     }
     //cout<<"end of loop"<<endl;

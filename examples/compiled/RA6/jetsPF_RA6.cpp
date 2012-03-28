@@ -12,7 +12,7 @@ bool jetsPF_RA6(EasyChain* tree, vector<unsigned>& selJet, CutSet& selCut) {
   ConfigReader config;
   // static since we read only once
   static float jet_pt_min      = config.getFloat("jet_pt_min", 40);
-  static float jet_eta_max      = config.getDouble("jet_eta_max",   2.5);
+  static float jet_eta_max     = config.getDouble("jet_eta_max",   2.5);
   static bool  quick           = config.getBool("quick",false);
   static bool  isOldNtuple     = config.getBool("isOldNtuple",false);
   // the muon collection
@@ -21,7 +21,7 @@ bool jetsPF_RA6(EasyChain* tree, vector<unsigned>& selJet, CutSet& selCut) {
   //if(isOldNtuple) 
   //typedef LorentzV LOR;
   
-  vector<LOR>& JetsPF = tree->Get(&JetsPF, "ak5JetPF2PATCorrectedP4Pat");
+  vector<LOR>& JetsPF    = tree->Get( &JetsPF   , "ak5JetPF2PATCorrectedP4Pat" );
 
   float HTPF = 0; 
   for( unsigned jet=0; jet<JetsPF.size(); ++jet ) {

@@ -3,7 +3,9 @@
 #include "../tools/CutFlow.h"
 #include "../tools/THTools.h"
 #include "TDirectory.h"
+#include "Math/VectorUtil.h"
 
+using namespace ROOT::Math::VectorUtil;
 using namespace std;
 
 
@@ -11,8 +13,8 @@ bool muons_RA6(EasyChain* tree, vector<unsigned>& selMu, CutSet& selCut) {
 
   ConfigReader config;
   // static since we read only once
-  static float mu_pt_min_low   = config.getFloat("mu_pt_min_low",  10);
-  static float mu_pt_min_high  = config.getFloat("mu_pt_min_high", 20);
+  static float mu_pt_min_low   = config.getFloat("mu_pt_min_low",  20);
+  //static float mu_pt_min_high  = config.getFloat("mu_pt_min_high", 20);
   static float mu_eta_max      = config.getDouble("mu_eta_max",   2.4);
   static bool  quick           = config.getBool("quick"      , false );
   static bool  isOldNtuple     = config.getBool("isOldNtuple", false );
@@ -64,7 +66,21 @@ bool muons_RA6(EasyChain* tree, vector<unsigned>& selMu, CutSet& selCut) {
     vector<df>&    HcalVetoDep  = tree->Get( &HcalVetoDep,  "muonHcalVetoDepPat"                            );
     if( !selCut.keepIf("HcalVetoDep<6"    , HcalVetoDep.at(mu)     <   6    ) && quick ) continue;
 
-    if( quick || selCut.applyCuts("RA6 muon selection", ptCut+" "+etaCut+" isGlobal isTracker GTnormChi<10 GTtrackerhits>=11 GTdxy<.02 GTdz<1 EcalVetoDep<4 HcalVetoDep<6 RelIso<.15 GTouterhits>0") )
+    vector<LOR>&  PFMuons = tree->Get(&PFMuons, "muonP4PF");
+    int closestPFmuon=-1;
+    double deltaRtoClosestPFmuon=1000.;
+    for( unsigned pfmu=0; pfmu<PFMuons.size(); ++pfmu ) {
+      double locDR = DeltaR(Muons.at(mu),PFMuons.at(pfmu));
+      if( locDR < deltaRtoClosestPFmuon ) {
+	closestPFmuon         = pfmu;
+	deltaRtoClosestPFmuon = locDR;
+      }
+    }
+
+    if( !selCut.keepIf("PtDiffToNextPFmuon<1", closestPFmuon>=0 && fabs(Muons.at(mu).pt()-PFMuons.at(closestPFmuon).pt())<1 ) && quick ) continue;
+
+
+    if( quick || selCut.applyCuts("RA6 muon selection", ptCut+" "+etaCut+" isGlobal isTracker GTnormChi<10 GTtrackerhits>=11 GTdxy<.02 GTdz<1 EcalVetoDep<4 HcalVetoDep<6 RelIso<.15 GTouterhits>0 PtDiffToNextPFmuon<1") )
       selMu.push_back(mu);
 
     /*missing cuts

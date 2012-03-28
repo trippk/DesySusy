@@ -13,8 +13,8 @@ bool electrons_RA6(EasyChain* tree, vector<unsigned>& selEl, CutSet& selCut) {
 
   ConfigReader config;
   // static since we read only once
-  static float el_pt_min_low   = config.getFloat("el_pt_min_low",  10);
-  static float el_pt_min_high  = config.getFloat("el_pt_min_high", 20);
+  static float el_pt_min_low   = config.getFloat("el_pt_min_low",  20);
+  //static float el_pt_min_high  = config.getFloat("el_pt_min_high", 20);
   static float el_eta_max      = config.getDouble("el_eta_max",   2.5);
   static bool  quick           = config.getBool("quick"      ,false);
   static bool  isOldNtuple     = config.getBool("isOldNtuple",false);
