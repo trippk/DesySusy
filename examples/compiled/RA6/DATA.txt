@@ -1,12 +1,3 @@
-#!/bin/bash
-
-setName=$1
-#target=/afs/naf.desy.de/user/s/schettle/scratch/AnalysisTrees/whole2011_RA6
-target=/scratch/hh/current/cms/user/schettle/AnalysisTrees/whole2011_RA6
-scriptLoc=/afs/naf.desy.de/user/s/schettle/macro/CMSSW_4_2_5/src/SUSYBSMAnalysis/DesySusy/examples/compiled/batch
-codeLoc=/afs/naf.desy.de/user/s/schettle/macro/CMSSW_4_2_5/src/SUSYBSMAnalysis/DesySusy/examples/compiled/RA6
-
-
 ## D I M U O N ##
 sampleCounter=1
 sampleName[$sampleCounter]=DoubleMuMay10
@@ -110,61 +101,3 @@ sampleNfiles[$sampleCounter]=8
 #sampleSource[$sampleCounter]=
 #sampleConfig[$sampleCounter]=
 #sampleNfiles[$sampleCounter]=
-
-
-
-
-if [ "$setName" = "" ]; then
-	echo "please define setName or cancel [Ctrl c]."
-	read setName
-fi
-
-goFor="n"
-
-#echo "num samples ${sampleCounter}"
-
-#for i in {1..$sampleCounter}; do
-for (( i=1; i<=$sampleCounter; ++i )); do
-#    echo $i
-#    echo ${sampleName[$i]}
-#    echo ${sampleSource[$i]}
-#    echo ${sampleConfig[$i]}
-#    echo ${sampleNfiles[$i]}
-
-
-    if [ ! -n "${sampleName[$i]}" -o ! -n "${sampleSource[$i]}" -o ! -n "${sampleConfig[$i]}" -o ! -n "${sampleNfiles[$i]}" ]
-    then
-	echo CHECK YOUR SAMPLE SPECIFICATIONS! SOMTHING MISSING IN SAMPLE $i
-	exit
-    fi
-
-    if [ "$goFor" != "all" ]; then
-	goFor="n"
-    fi
-
-    if [ -d "${target}/${setName}_${sampleName[$i]}" ]; then
-	echo dir ${target}/${setName}_${sampleName[$i]} already exists. Remove dir or choose another set name.
-	goFor="exists"
-    fi
-
-    if [ "$goFor" != "all" -a "$goFor" != "exists" ]; then
-	echo "run ${setName}_${sampleName[$i]}? [y/n/all]"
-	read goFor
-    fi  
-
-    if [ "$goFor" = "y" -o "$goFor" = "all" ]; then
-	mkdir ${target}/${setName}_${sampleName[$i]}
-	cd ${target}/${setName}_${sampleName[$i]}
-	${scriptLoc}/./runOnAll ${sampleSource[$i]} \
-	    ${codeLoc}/myAnalysis ${codeLoc}/${sampleConfig[$i]} \
-	    cleanUp nFiles=${sampleNfiles[$i]}
-	echo
-    fi
-done
-
-
-
-
-
-
-

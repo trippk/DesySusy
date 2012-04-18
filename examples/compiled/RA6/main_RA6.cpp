@@ -9,7 +9,7 @@
 #include "../tools/ConfigReader.h"
 #include "../tools/CutFlow.h"
 #include "../tools/THTools.h"
-#include "../tools/plotSet.h"
+#include "plotSet.h"
 
 #include "muons_RA6.h"
 #include "electrons_RA6.h"
@@ -53,11 +53,12 @@ int main(int argc, char** argv){
 
   static float          HT_min = config.getFloat(          "HT_min",  0. );
   static float         MET_min = config.getFloat(         "MET_min",  0. );
-  static int          nJet_min = config.getInt  (        "nJet_min",  0  );
+  static int          nJet_min = config.getInt  (        "nJet_min",  2  );
   static float TCHEbTag_cutVal = config.getFloat( "TCHEbTag_cutVal",  3.3 );
 
+  static TString JetCollection = config.getTString( "JetCollection", "ak5JetPF" );//ak5JetPF2PAT
 
-  static float lept_pt_min_high = config.getFloat("lept_pt_min_high", 20.);
+  static float lept_pt_min_high = config.getFloat("lept_pt_min_high", 25.);
   static float lept_invMass_min = config.getFloat("lept_invMass_min", 12.);
   static int   lept_relCharge   = config.getInt  ("lept_relCharge",   -1 );
   
@@ -71,8 +72,10 @@ int main(int argc, char** argv){
   CutSet RA6_JetPF_selectionCuts("RA6: Jet Selection");
   CutSet RA6_Vx_selectionCuts("RA6: Vertex Selection");
 
+  static bool createPDF = config.getBool( "createPDF", false );
+
   plotSet ps("control_plots",true);
-  plotSet plotsId("RA6",true,true);
+  plotSet plotsId("RA6",true,createPDF);
   ps.setTFile(outfile);
   plotsId.setTFile(outfile);
 
@@ -94,7 +97,7 @@ int main(int argc, char** argv){
   //N=10000;
 
   bool OK=false;
-  for(int i=3470;i<N;++i){
+  for(int i=0;i<N;++i){
 
     //cout<<"looper started"<<endl;
 
@@ -132,10 +135,10 @@ int main(int argc, char** argv){
 	if( PUbunchCrossing.at(bc) == 0 )
 	  relevantNumPU = PUnumInter.at(bc);
       }
-
       ps.addPlot_withUnweighted( "relevantNumPU", 36,-0.5,35.5, relevantNumPU );
 
       if( PU_weightList == " " ) continue;
+
       if( relevantNumPU >= PU_weightListSIZE ) {
 	plotSet::global_event_weight = 0;
 	CutSet::global_event_weight  = 0;
@@ -160,6 +163,7 @@ int main(int argc, char** argv){
     if( !globalFlow.keepIf( "HBHEnoiseFilter"        , HBHEnoiseFilterResult        ) && quick ) continue;
     //cout<<"hbhe survived."<<endl;
     vertices_RA6 ( tree, RA6_selectedVx   , RA6_Vx_selectionCuts    );
+    //cout<<"vx done"<<endl;
     if( !globalFlow.keepIf( "at_least_1_vertex"      , RA6_selectedVx.size()    >=1 ) && quick ) continue;
     //cout<<"vertex survived."<<endl;
     int Ntracks_lt0p9    = tree->Get( Ntracks_lt0p9   , "tracksNEtaLT0p9AllTracks"    );
@@ -185,6 +189,7 @@ int main(int argc, char** argv){
     bool bhctFailed = tree->Get( bhctFailed, "beamHaloCSCTightHaloId"    );
     if( !globalFlow.keepIf("beamHaloCSCFilter" ,!bhctFailed ) && quick ) continue;//   stimmt das?? Dass die Flag das Failed angibt?
 
+    //cout<<"dev filter"<<endl;
 
     //trigger-------------------------------------------------------------------------------------
     int run = tree->Get(run, "run");
@@ -354,16 +359,15 @@ int main(int argc, char** argv){
     nJ_cutString+=nJet_min;
     if(      !globalFlow.keepIf( nJ_cutString     , RA6_selectedJetPF.size() >= nJet_min ) && quick ) continue;
 
-    vector<LOR>& JetsPF    = tree->Get( &JetsPF   , "ak5JetPF2PATCorrectedP4Pat");
-    vector<int>& genJetId  = tree->Get( &genJetId , "ak5JetPF2PATGenJetMatchIndexPat");
-    vector<LOR>& genJetsPF = tree->Get( &genJetsPF, "genak5GenJetsP4"           );
+    TString JetP4name=JetCollection;
+    JetP4name += "CorrectedP4Pat";
+
+
+    vector<LOR>& JetsPF    = tree->Get( &JetsPF   , JetP4name                   );
     vector<LOR>& Electrons = tree->Get( &Electrons, "electronP4Pat"             );
     vector<LOR>& Muons     = tree->Get( &Muons    , "muonP4Pat"                 );
 
     //Jet smearing:
-    //double sumJetET        = 0;
-    //double sumSmearedJetET = 0;
-
     double sumJetPx = 0;
     double sumJetPy = 0;
     double sumSmearedJetPx = 0;
@@ -371,15 +375,25 @@ int main(int argc, char** argv){
 
     LOR JetVecSum, smearedJetVecSum;
 
-    map<double,double> smearFac;
-//     smearFac[1.1] = .06177;
-//     smearFac[1.7] = .08352;
-//     smearFac[2.3] = .02911;
-//     smearFac[999] = .15288;
-    smearFac[999] = .1;
+    if(!isData) {
+      //double sumJetET        = 0;
+      //double sumSmearedJetET = 0;
+      TString JetGenIxname=JetCollection;
+      JetGenIxname += "GenJetMatchIndexPat";
+      vector<int>& genJetId  = tree->Get( &genJetId , JetGenIxname                );
+      vector<LOR>& genJetsPF = tree->Get( &genJetsPF, "genak5GenJetsP4"           );
+
+
+
+      map<double,double> smearFac;
+      smearFac[1.1] = .06177;
+      smearFac[1.7] = .08352;
+      smearFac[2.3] = .02911;
+      smearFac[999] = .15288;
+    //smearFac[999] = .1;
 
     //    cout<<JetsPF.size()<<"   "<<genJetId.size()<<"   "<<genJetsPF.size()<<endl;
-    if(!isData) {
+    //if(!isData) {
       for(unsigned j=0; j<JetsPF.size(); ++j) {
 	LOR tmpJet = JetsPF.at(j);
 	double jetPt = JetsPF.at(j).pt();
@@ -411,17 +425,33 @@ int main(int argc, char** argv){
 	  //cout<<(jetPt-genJetsPF.at(genJetId.at(j)).pt())/jetPt<<"  "<<(jetPx-genJetsPF.at(genJetId.at(j)).px())/jetPx<<"   "<<(jetPy-genJetsPF.at(genJetId.at(j)).py())/jetPy<<endl;;
 	  
 	  //jetPt += sf*(jetEt-genJetsPF.at(genJetId.at(j)).Pt());
-	  plotsId.addPlot("jetPTmatched","jetPT",40,0.,200.,jetPt);
+	  plotsId.addPlot_withUnweighted("jetPTmatched","jetPT",40,0.,200.,jetPt);
 	  plotsId.addPlot("relDiff",40,-2.,2.,(jetE-genJetsPF.at(genJetId.at(j)).E())/jetE);
 	}
-	else
-	  plotsId.addPlot("jetPTnotmatched","jetPT",40,0.,200.,jetPt);
+	else {
+	  plotsId.addPlot_withUnweighted("jetPTnotmatched","jetPT",40,0.,200.,jetPt);
+	  plotsId.addPlot_withUnweighted("matchIndex",22,-2.,20.,genJetId.at(j));
+	}
 	//sumSmearedJetET += jetEt;
 	smearedJetVecSum += tmpJet;
 	sumSmearedJetPx  += jetPx;
 	sumSmearedJetPy  += jetPy;
 
       }
+      for(int j=0; j<RA6_selectedJetPF.size(); ++j) {
+	int jet = RA6_selectedJetPF.at(j);
+	if( genJetId.at(jet)>=0 && genJetId.at(jet)<genJetsPF.size() )
+	  plotsId.addPlot_withUnweighted("selJetPTmatched","selJetPT",40,0.,200.,JetsPF.at(jet).Pt());
+	else {
+	  plotsId.addPlot_withUnweighted("selJetPTnotmatched","selJetPT",40,0.,200.,JetsPF.at(jet).Pt());
+	  plotsId.addPlot_withUnweighted("selJetMatchIndex",22,-2.,20.,genJetId.at(jet));
+	  double minDR=999.;
+	  for(int gjet=0; gjet<genJetsPF.size(); ++gjet)
+	    if( DeltaR( JetsPF.at(jet), genJetsPF.at(gjet) ) < minDR ) minDR = DeltaR( JetsPF.at(jet), genJetsPF.at(gjet) );
+	  plotsId.addPlot_withUnweighted("selJetMinDRunmatched", 40, 0., 2.,minDR);
+	}
+      }
+
     }
     //cout<<sumJetET<<"   "<<sumSmearedJetET<<endl;
 //     cout<<JetVecSum.Et()<<"   "<<smearedJetVecSum.Et()<<endl;
@@ -432,6 +462,10 @@ int main(int argc, char** argv){
 
 
     for(int j=0; j<RA6_selectedJetPF.size(); ++j) {
+
+
+      
+      
       for(int m=0; m<RA6_selectedMu.size(); ++m) {
 	ps.addPlot("dR_Jet_Mu", 50, 0., 5., 
 		   DeltaR( JetsPF.at(RA6_selectedJetPF.at(j)), Muons.at(RA6_selectedMu.at(m)) ) );
@@ -628,24 +662,28 @@ int main(int argc, char** argv){
     double thetaAngle = Angle(firstLept.Vect(),secondLept.Vect());
     double cosThetaAngle = cos(thetaAngle);
 
-    vector<float>& TCHE_bTag   = tree->Get(&TCHE_bTag  , "ak5JetPF2PATTrkCountingHighEffBJetTagsPat");
+    vector<float>& TCHE_bTag   = tree->Get(&TCHE_bTag  , JetCollection+"TrkCountingHighEffBJetTagsPat");
 
 
     int numBTags=0;
 
     double DphiMetClosestJet=1000.;
+    double selectedPz=0;
     for(size_t j=0; j<RA6_selectedJetPF.size(); ++j) {
+      selectedPz += JetsPF.at(RA6_selectedJetPF.at(j)).Pz();
       if(TCHE_bTag.at(RA6_selectedJetPF.at(j)) > TCHEbTag_cutVal) ++numBTags;
       if(fabs(DeltaPhi( JetsPF.at(RA6_selectedJetPF.at(j)), *metP4PF ) ) < DphiMetClosestJet )
 	DphiMetClosestJet = fabs(DeltaPhi( JetsPF.at(RA6_selectedJetPF.at(j)), *metP4PF ) );
     }
     double DphiMetClosestMuon=1000.;
     for(size_t m=0; m<RA6_selectedMu.size(); ++m) {
+      selectedPz += Muons.at(RA6_selectedMu.at(m)).Pz();
       if(fabs(DeltaPhi( Muons.at(RA6_selectedMu.at(m)), *metP4PF ) ) < DphiMetClosestMuon )
 	DphiMetClosestMuon = fabs(DeltaPhi( Muons.at(RA6_selectedMu.at(m)), *metP4PF ) );
     }
     double DphiMetClosestElectron=1000.;
     for(size_t el=0; el<RA6_selectedEl.size(); ++el) {
+      selectedPz += Electrons.at(RA6_selectedEl.at(el)).Pz();
       if(fabs(DeltaPhi( Electrons.at(RA6_selectedEl.at(el)), *metP4PF ) ) < DphiMetClosestElectron )
 	DphiMetClosestElectron = fabs(DeltaPhi( Electrons.at(RA6_selectedEl.at(el)), *metP4PF ) );
     }
@@ -668,28 +706,30 @@ int main(int argc, char** argv){
     plotsId.addLeaf( top, "numElectrons",  (int) RA6_selectedEl.size()  );
     plotsId.addLeaf( top, "numMuons"    ,  (int) RA6_selectedMu.size()  );
 
-    plotsId.addLeaf( top, "minDphiJetMET",     DphiMetClosestJet        );
-    plotsId.addLeaf( top, "minDphiElMET" ,     DphiMetClosestElectron   );
-    plotsId.addLeaf( top, "minDphiMuMET" ,     DphiMetClosestMuon       );
+//     plotsId.addLeaf( top, "minDphiJetMET",     DphiMetClosestJet        );
+//     plotsId.addLeaf( top, "minDphiElMET" ,     DphiMetClosestElectron   );
+//     plotsId.addLeaf( top, "minDphiMuMET" ,     DphiMetClosestMuon       );
 
-    plotsId.addLeaf( top, "METTypeIPF"  ,      metP4TypeIPF->Et()     );
-    plotsId.addLeaf( top, "METAK5"      ,      metP4AK5->Et()         );
-    plotsId.addLeaf( top, "METAK5TypeII",      metP4AK5TypeII->Et()   );
-    plotsId.addLeaf( top, "METCalo"     ,      metP4Calo->Et()        );
+//     plotsId.addLeaf( top, "METTypeIPF"  ,      metP4TypeIPF->Et()     );
+//     plotsId.addLeaf( top, "METAK5"      ,      metP4AK5->Et()         );
+//     plotsId.addLeaf( top, "METAK5TypeII",      metP4AK5TypeII->Et()   );
+//     plotsId.addLeaf( top, "METCalo"     ,      metP4Calo->Et()        );
 
+    plotsId.addLeaf( top, "selectedPz"  ,      selectedPz        );
     //cout<<((*metP4PF)-JetVecSum+smearedJetVecSum).Et()<<endl;
   
     //cout<<"met: "<<(*metP4PF).Px()<<"  "<<(*metP4PF).Py()<<"  "<<(*metP4PF).Pz()<<"  "<<(*metP4PF).E()<<endl;
     //cout<<"dif: "<<(-JetVecSum+smearedJetVecSum).Px()<<"  "<<(-JetVecSum+smearedJetVecSum).Py()<<"  "<<(-JetVecSum+smearedJetVecSum).Pz()<<"  "<<(-JetVecSum+smearedJetVecSum).E()<<endl;
 
-    LOR scaledMET = (*metP4PF)-JetVecSum+smearedJetVecSum;
-    scaledMET.SetPxPyPzE(scaledMET.Px(),scaledMET.Py(),0,sqrt(pow(scaledMET.Px(),2)+pow(scaledMET.Py(),2)));
-    
-    //cout<<"sca: "<<scaledMET.Px()<<"  "<<scaledMET.Py()<<"  "<<scaledMET.Pz()<<"  "<<scaledMET.E()<<endl;
 
-    double smearedMETpt = sqrt( pow(metP4PF->px()+sumJetPx-sumSmearedJetPx,2)+pow(metP4PF->py()+sumJetPy-sumSmearedJetPy,2) );
 
     if(!isData) {
+      LOR scaledMET = (*metP4PF)-JetVecSum+smearedJetVecSum;
+      scaledMET.SetPxPyPzE(scaledMET.Px(),scaledMET.Py(),0,sqrt(pow(scaledMET.Px(),2)+pow(scaledMET.Py(),2)));
+    
+      //cout<<"sca: "<<scaledMET.Px()<<"  "<<scaledMET.Py()<<"  "<<scaledMET.Pz()<<"  "<<scaledMET.E()<<endl;
+      
+      double smearedMETpt = sqrt( pow(metP4PF->px()+sumJetPx-sumSmearedJetPx,2)+pow(metP4PF->py()+sumJetPy-sumSmearedJetPy,2) );
       plotsId.addLeaf( top, "METjetSmearCorr" ,  scaledMET.Et() );
       plotsId.addLeaf( top, "METjetSmearCorr2",  smearedMETpt   );
 

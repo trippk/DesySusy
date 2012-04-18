@@ -16,6 +16,7 @@ bool crossCleaning_RA6(EasyChain* tree,
   ConfigReader config;
   static bool  quick           = config.getBool( "quick"      , false );
   static bool  isOldNtuple     = config.getBool( "isOldNtuple", false );
+  static TString JetCollection = config.getTString( "JetCollection", "ak5JetPF" );//ak5JetPF2PAT
 
   typedef LorentzM LOR;
   //if(isOldNtuple) 
@@ -42,7 +43,9 @@ bool crossCleaning_RA6(EasyChain* tree,
   }
   selEl = new_selEl;
   
-  vector<LOR>& JetsPF = tree->Get(&JetsPF, "ak5JetPF2PATCorrectedP4Pat");
+  TString JetP4name=JetCollection;
+  JetP4name += "CorrectedP4Pat";
+  vector<LOR>& JetsPF = tree->Get(&JetsPF, JetP4name);
 
   vector<unsigned> new_selJet;
   for( unsigned j=0; j<selJet.size(); ++j) {

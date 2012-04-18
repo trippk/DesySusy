@@ -8,7 +8,6 @@ using namespace std;
 
 bool vertices_RA6(EasyChain* tree, vector<unsigned>& selVx, CutSet& selCut) {
 
-
   ConfigReader config;
   static bool  quick           = config.getBool("quick",false);
   static bool  isOldNtuple     = config.getBool("isOldNtuple",false);
@@ -37,5 +36,4 @@ bool vertices_RA6(EasyChain* tree, vector<unsigned>& selVx, CutSet& selCut) {
 
   }
 
-    
 }

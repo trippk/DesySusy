@@ -11,6 +11,8 @@ using namespace std;
 
 bool muons_RA6(EasyChain* tree, vector<unsigned>& selMu, CutSet& selCut) {
 
+  //cout<<"mu start"<<endl;
+
   ConfigReader config;
   // static since we read only once
   static float mu_pt_min_low   = config.getFloat("mu_pt_min_low",  20);
@@ -92,6 +94,7 @@ from AN2011-464_v3:
 
   }// muon loop
 
+  //cout<<"mu end"<<endl;
 
 }//main
 

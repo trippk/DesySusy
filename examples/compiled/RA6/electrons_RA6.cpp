@@ -9,7 +9,7 @@ using namespace std;
 
 bool electrons_RA6(EasyChain* tree, vector<unsigned>& selEl, CutSet& selCut) {
 
-  //  cout<<"electrons"<<endl;
+  //cout<<"electrons"<<endl;
 
   ConfigReader config;
   // static since we read only once
@@ -18,6 +18,7 @@ bool electrons_RA6(EasyChain* tree, vector<unsigned>& selEl, CutSet& selCut) {
   static float el_eta_max      = config.getDouble("el_eta_max",   2.5);
   static bool  quick           = config.getBool("quick"      ,false);
   static bool  isOldNtuple     = config.getBool("isOldNtuple",false);
+
 
   typedef LorentzM LOR;
   typedef float df;
@@ -67,7 +68,8 @@ bool electrons_RA6(EasyChain* tree, vector<unsigned>& selEl, CutSet& selCut) {
 //     if( !selCut.keepIf("EcalDrivenSeed"    , El_EcalDrivenSeed.at(el)                ) && quick ) continue;
 
     vector<float>&    idVBTF90r        = tree->Get( &idVBTF90r, "DESYelectronSimpleEleId90relIsoPat" );
-    if( !selCut.keepIf("VBTF90==7"       , idVBTF90r.at(el)           ==  7   ) && quick ) continue;
+//     if( !selCut.keepIf("VBTF90==7"       , idVBTF90r.at(el)           ==  7   ) && quick ) continue;
+    if( !selCut.keepIf("VBTF90==5or7"       , idVBTF90r.at(el)  ==  5 || idVBTF90r.at(el)  ==  7  ) && quick ) continue;
     //additional cuts to meet trigger requ:
     vector<float>&    HoverE           = tree->Get( &HoverE,    "electronHcalOverEcalPat"                  );
     vector<float>&    sIetaIeta        = tree->Get( &sIetaIeta, "electronSigmaIetaIetaPat"                 );
@@ -96,10 +98,10 @@ bool electrons_RA6(EasyChain* tree, vector<unsigned>& selEl, CutSet& selCut) {
 
 
 
-    if( quick || selCut.applyCuts("RA6 electron selection", ptCut+" "+etaCut+" VBTF90==7 HoverE<0.1(0.075) sIeatIeat<0.011(0.031) dphi<0.01(0.01) deta<0.15(0.1) |d0|<0.02 |dz|<1.00 numMisHits<2 RelIso<.15" ))
+    if( quick || selCut.applyCuts("RA6 electron selection", ptCut+" "+etaCut+" VBTF90==5or7 HoverE<0.1(0.075) sIeatIeat<0.011(0.031) dphi<0.01(0.01) deta<0.15(0.1) |d0|<0.02 |dz|<1.00 numMisHits<2 RelIso<.15" ))
       selEl.push_back(el);
 
   }// electron loop
 
-
+  //cout<<"el end"<<endl;
 }//main
