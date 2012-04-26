@@ -66,7 +66,8 @@ void SusyDESY_TotalKinematicsFilterResult::produce(edm::Event& iEvent,const edm:
     bool pass = true;
     if ( std::abs(p4tot[0]) > tolerance_ || std::abs(p4tot[1]) > tolerance_ || std::abs(p4tot[2]) > tolerance_ || std::abs(p4tot[3]-nEcms) > tolerance_ ) 
       { pass = false; 
-	std::cout<<"totalKinematics failed"<<std::endl;
+	if ( verbose_ )
+	   std::cout<<"totalKinematics failed"<<std::endl;
       }
     *passed.get() = pass;
   }

@@ -241,6 +241,7 @@ SusyDESY_Muons::SusyDESY_Muons(const edm::ParameterSet& iConfig)
   produces <std::vector<int> >   ( Prefix + "GlobalTrackNumberOfValidMuonHits"    + Suffix ); 
   produces <std::vector<float> > ( Prefix + "TrackD0"                             + Suffix );
   produces <std::vector<int> >   ( Prefix + "InnerTrackPixelLayersWithMeasurement"+ Suffix );
+  produces <std::vector<float> > ( Prefix + "InnerTrackPtError"                   + Suffix );
 
   produces <std::vector<float> > ( Prefix + "IsolationR03emVetoEt"  + Suffix );
   produces <std::vector<float> > ( Prefix + "IsolationR03hadVetoEt" + Suffix );
@@ -258,6 +259,7 @@ void SusyDESY_Muons::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) 
   std::auto_ptr<std::vector<int> >   globalTrackNHVMH ( new std::vector<int>()   );
   std::auto_ptr<std::vector<float> > muonTrackD0      ( new std::vector<float>() );
   std::auto_ptr<std::vector<int> >   innerTrackPLWM   ( new std::vector<int>()   );
+  std::auto_ptr<std::vector<float> > innerTrackPtErr  ( new std::vector<float>() );
 
   std::auto_ptr<std::vector<float> > iso03emVetoEt  ( new std::vector<float>() );
   std::auto_ptr<std::vector<float> > iso03hadVetoEt ( new std::vector<float>() );
@@ -285,6 +287,7 @@ void SusyDESY_Muons::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) 
       globalTrackNHVMH->push_back( global ? mu->globalTrack()->hitPattern().numberOfValidMuonHits ()   : 0);
       muonTrackD0->push_back( tracker ? mu->track()->d0() : 999999999. );
       innerTrackPLWM->push_back( tracker ? mu->innerTrack()->hitPattern().pixelLayersWithMeasurement() : 0);
+      innerTrackPtErr->push_back( tracker ? mu->innerTrack()->ptError() : -1);
 
       iso03emVetoEt ->push_back(mu->isolationR03().emVetoEt );
       iso03hadVetoEt->push_back(mu->isolationR03().hadVetoEt);
@@ -301,6 +304,7 @@ void SusyDESY_Muons::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) 
   iEvent.put( globalTrackNHVTH, Prefix + "GlobalTrackNumberOfValidTrackerHits"      + Suffix );
   iEvent.put( globalTrackNHVMH, Prefix + "GlobalTrackNumberOfValidMuonHits"         + Suffix );
   iEvent.put( innerTrackPLWM,   Prefix + "InnerTrackPixelLayersWithMeasurement"     + Suffix );
+  iEvent.put( innerTrackPtErr,  Prefix + "InnerTrackPtError"                        + Suffix );
 
   iEvent.put( iso03emVetoEt  , Prefix + "IsolationR03emVetoEt"  + Suffix );
   iEvent.put( iso03hadVetoEt , Prefix + "IsolationR03hadVetoEt" + Suffix );
