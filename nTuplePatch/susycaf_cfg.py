@@ -19,32 +19,23 @@ adjust.loadAndConfigureEcalSeverityLevelProducer(process)
 def runTree(process) :
 	process.load('SUSYBSMAnalysis.DesySusy.SusyDESY_RunTreeMaker_cfi')
 	return cms.Path(process.runTree)
-
+    
+process.p_tauReco  = adjust.tauReco(process,options)
 process.p_susyPat  = adjust.susyPat(process,options)
 process.p_hbheFlag = adjust.addHbheNoiseFilterResult(process,options)
-process.p_ecalFlag = adjust.addEcalDeadCellFlag(process,options)
-process.p_trackFlag= adjust.addTrackingFailureFlag(process,options)
+process.p_fltrFlgs = adjust.addMetFilterFlags(process,options)
+#process.p_rho25    = adjust.rho25(process)
 process.p_lumi     = adjust.lumiTree(process)
 process.p_run      = runTree(process)
 process.p_susyCAF  = SusyCAF(process,options).path()
 
-####
-##import GeneratorInterface.GenFilters.TotalKinemticsFilter
-#from SUSYBSMAnalysis.DesySusy.SusyDESY_Module_cfi import totalKinematicsFilter
-#process.totalkinematicsfilterflag = totalKinematicsFilter.clone(verbose=True)
-#    return cms.Path(process.ecaldeadcellfilterflag)
-
-
-
-####
-
-schedule = cms.Schedule( process.p_susyPat,
+schedule = cms.Schedule( process.p_tauReco,
+                         process.p_susyPat,
                          process.p_hbheFlag,
-                         process.p_ecalFlag,
-                         process.p_trackFlag,
-                         #cms.Path(process.totalkinematicsfilterflag),
-                         process.p_run,
-                         process.p_lumi,
+                         process.p_fltrFlgs,
+                         #process.p_lumi,
+                         #process.p_run,
+                         #process.p_rho25,
                          process.p_susyCAF )
 
 # write this config as a single file
