@@ -20,6 +20,7 @@ class SusyCAF(object) :
             'drop *',
             'keep *_susycaf*_*_*',
             'keep *_susydesy*_*_*',
+            'keep *_filterResult*_*_*',
             'keep double_kt6PFJets_rho_%s'%self.process.name_(),
             'keep *_*FilterFlag__*',
             'keep double_susyScan*_*_*') + (
@@ -91,14 +92,16 @@ class SusyCAF(object) :
     def pat(self) :
         for module in ['MET','Photon','PFTau'] :
             self.process.load('SUSYBSMAnalysis.SusyCAF.SusyCAF_%s_cfi'%module)
-        for module in ['Module','TotalKinematicsFilter'] :
+        for module in ['Module','TotalKinematicsFilter','FilterResultProducer','Filter'] :
             self.process.load('SUSYBSMAnalysis.DesySusy.SusyDESY_%s_cfi'%module)
         return ( self.patJet() +
                  self.process.susydesytotakinematicsfilter +
                  self.patLepton('Electron') + self.patLepton('Muon') +
                  self.evalSequence('susydesy%s', ['patelectrons','pfelectrons','patmuons','pfmuons','puinfo','trigger']) +
                  self.evalSequence('susycaf%s',  ['photon']+(['tau','HPStau','pftau'] if self.options.taus else [])) +
-                 self.evalSequence('susycafmet%s', ['AK5','AK5TypeII','PF','TypeIPF','TC'])
+                 self.evalSequence('susycafmet%s', ['AK5','AK5TypeII','PF','TypeIPF','TC']) +
+                 self.evalSequence('filterResult%s', ['OneLepton']) #+
+                 #self.evalSequence('filter%s'      , ['OneLepton'])
                  )
 
     def patLepton(self,lepton) :
