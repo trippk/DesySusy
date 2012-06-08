@@ -21,7 +21,6 @@ class SusyCAF(object) :
             'keep *_susycaf*_*_*',
             'keep *_susydesy*_*_*',
             'keep *_filterResult*_*_*',
-            'keep double_kt6PFJets_rho_%s'%self.process.name_(),
             'keep *_*FilterFlag__*',
             'keep double_susyScan*_*_*') + (
             ["drop %s"%s for s in SusyCAF_Drop_cfi.drop(self.options.dropMore)] +
@@ -45,31 +44,17 @@ class SusyCAF(object) :
                        ['Event','Track','Triggers','L1Triggers', 'L1Extra',
                         'BeamSpot','BeamHaloSummary','LogError','Vertex',
                         'HcalRecHit','EcalRecHit','PFRecHit','MET','SumP4',
-                        'HcalDeadChannels','EcalDeadChannels','CaloTowers'] +
+                        'HcalDeadChannels','EcalDeadChannels','CaloTowers','Double'] +
                        [['Gen','Scan','PileupSummary'],['DQMFlags','DCSBits']][self.options.isData]) :
             self.process.load('SUSYBSMAnalysis.SusyCAF.SusyCAF_%s_cfi'%module)
 
         from SUSYBSMAnalysis.SusyCAF.SusyCAF_Scan_cfi import susycafscanFunc as susycafscanFunc
         self.process.susycafscan = susycafscanFunc(self.options.scan) if self.options.scan else self.empty
         self.process.susycaftriggers.SourceName  = self.options.SourceName
-        if self.options.beamHaloVars :
-           return ( self.evalSequence('susycafhcalnoise%s', ['filter','filternoiso','rbx','summary']) +
-                 self.evalSequence('susycaf%s', (['event','track','pfsump4','beamspot','beamhalosummary','logerror','vertex','calotowers'] +
-                                                 (['triggers','L1triggers','l1extra'] if self.options.triggers else [])) ) +
-                 self.process.susycafmet + self.process.susycafmetnohf +
-                 self.evalSequence('susycaf%sdeadchannels', ['ecal','hcal']) +
-                 self.evalSequence('susycaf%srechit', [ 'hbhe', 'hf', 'eb', 'ee' ]) +
-                 self.evalSequence('susycafpfrechitcluster%s', ['ecal','hcal','hfem','hfhad','ps']) +
-                 self.evalSequence('susycafpfrechit%s',        ['ecal','hcal','hfem','hfhad','ps']) +
-                 
-                 self.evalSequence(*[ ('susycaf%s',['gen','genMetCalo','genMetCaloAndNonPrompt','genMetTrue','scan','pileupsummary']), # Gen
-                                      ('susycaf%s',['dqmflags','dcsbits'][(not self.options.dqm):]) # Data
-                                      ][self.options.isData])
-                 )
-        else:
-           #introduced to remove the beam halo variables which are problematic with fastsim scans
-           return ( self.evalSequence('susycafhcalnoise%s', ['filter','filternoiso','rbx','summary']) +
-                 self.evalSequence('susycaf%s', (['event','track','pfsump4','beamspot','logerror','vertex','calotowers'] +
+
+        return ( self.evalSequence('susycafhcalnoise%s', ['filter','filternoiso','rbx','summary']) +
+                 self.evalSequence('susycaf%s', (['event','track','pfsump4','beamspot','logerror','vertex','calotowers','rho','rho25'] +
+                                                 (['beamhalosummary'] if self.options.beamHaloVars else [] ) +
                                                  (['triggers','L1triggers','l1extra'] if self.options.triggers else [])) ) +
                  self.process.susycafmet + self.process.susycafmetnohf +
                  self.evalSequence('susycaf%sdeadchannels', ['ecal','hcal']) +
@@ -95,11 +80,11 @@ class SusyCAF(object) :
         for module in ['Module','TotalKinematicsFilter','FilterResultProducer','Filter'] :
             self.process.load('SUSYBSMAnalysis.DesySusy.SusyDESY_%s_cfi'%module)
         return ( self.patJet() +
-                 self.process.susydesytotakinematicsfilter +
                  self.patLepton('Electron') + self.patLepton('Muon') +
-                 self.evalSequence('susydesy%s', ['patelectrons','pfelectrons','patmuons','pfmuons','puinfo','trigger']) +
                  self.evalSequence('susycaf%s',  ['photon']+(['tau','HPStau','pftau'] if self.options.taus else [])) +
                  self.evalSequence('susycafmet%s', ['AK5','AK5TypeII','PF','TypeIPF','TC']) +
+                 self.process.susydesytotakinematicsfilter +
+                 self.evalSequence('susydesy%s', ['patelectrons','pfelectrons','patmuons','pfmuons','puinfo','trigger']) +
                  self.evalSequence('filterResult%s', ['OneLepton']) #+
                  #self.evalSequence('filter%s'      , ['OneLepton'])
                  )
