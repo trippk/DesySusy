@@ -21,7 +21,7 @@ using namespace std;
 using namespace ROOT::Math::VectorUtil;
 
 int main(int argc, char** argv){
-
+  cout<<"starting main"<<endl;
 
   ConfigReader config("config.txt",argc,argv);
 
@@ -48,12 +48,14 @@ int main(int argc, char** argv){
   static bool isData      = config.getBool( "isData",      false );
   static bool quick       = config.getBool( "quick",       false );
   static bool isOldNtuple = config.getBool( "isOldNtuple", false );
+  static bool isScan      = config.getBool( "isScan",      false );
+  static bool isLeptScan  = config.getBool( "isLeptScan",  false );
 
   static bool allowPrescale = config.getBool( "allowPrescale", false );
 
   static float          HT_min = config.getFloat(          "HT_min",  0. );
   static float         MET_min = config.getFloat(         "MET_min",  0. );
-  static int          nJet_min = config.getInt  (        "nJet_min",  2  );
+  static int          nJet_min = config.getInt  (        "nJet_min",  -1  );
   static float TCHEbTag_cutVal = config.getFloat( "TCHEbTag_cutVal",  3.3 );
 
   static TString JetCollection = config.getTString( "JetCollection", "ak5JetPF" );//ak5JetPF2PAT
@@ -75,9 +77,12 @@ int main(int argc, char** argv){
   static bool createPDF = config.getBool( "createPDF", false );
 
   plotSet ps("control_plots",true);
-  plotSet plotsId("RA6",true,createPDF);
   ps.setTFile(outfile);
-  plotsId.setTFile(outfile);
+
+  plotSet *plotsId;//("bla",true,false);
+  plotSet TMP("RA6",true,createPDF);
+  plotsId = &TMP;
+  plotsId->setTFile(outfile);
 
   //Pile-up handling
   vector<float> PUweights;
@@ -95,6 +100,10 @@ int main(int argc, char** argv){
   vector<int> runsWithTriggerProb, runsWithAltTriggerProb, runsWithAltAltTriggerProb, runsWithAltAltAltTriggerProb;
 
   //N=10000;
+
+  map< pair<float,float>, unsigned > scanPointCounter;
+  map< pair<float,float>, plotSet  > scanPlotSets;
+
 
   bool OK=false;
   for(int i=0;i<N;++i){
@@ -122,6 +131,68 @@ int main(int argc, char** argv){
     /////////
 
     if(!isData) {
+      
+      if(isScan) {
+	bool susyScanHandleValid   = tree->Get( susyScanHandleValid  , "susyScanHandleValid" );
+	float susyScanM0           = tree->Get( susyScanM0           , "susyScanM0"          );
+	float susyScanM12          = tree->Get( susyScanM12          , "susyScanM12"         );
+
+	//if(susyScanM0 != 1240 || susyScanM12 != 660) continue;
+	if( isLeptScan ) {
+	  float susyScanSelectionEff = tree->Get( susyScanSelectionEff , "susyScanSelectionEff");
+	  float susyScanXSection     = tree->Get( susyScanXSection     , "susyScanXSection"    );
+	    ps.addPlot("selEff", 
+		       149, 40., 3020., susyScanM0,
+		       46, 100., 1020., susyScanM12, susyScanSelectionEff );
+	    ps.addPlot("xSec", 
+		       149, 40., 3020., susyScanM0,
+		       46, 100., 1020., susyScanM12, susyScanXSection );
+
+	}
+	ps.addPlot("allEv", 
+		   149, 40., 3020., susyScanM0,
+		   46, 100., 1020., susyScanM12, 1 );
+       
+	++scanPointCounter[make_pair(susyScanM0,susyScanM12)];
+	if( scanPlotSets.find(make_pair(susyScanM0,susyScanM12)) == scanPlotSets.end() ) {
+	  TString PSname = "RA6";
+	  PSname += "_";
+	  PSname += susyScanM0;
+	  PSname += "_";
+	  PSname += susyScanM12;
+
+	  plotSet TMP(PSname,true,false);
+	  TMP.setTFile(outfile);
+	  scanPlotSets[make_pair(susyScanM0,susyScanM12)] = TMP;
+
+// 	  if( isLeptScan ) {
+	  float susyScanSelectionEff = tree->Get( susyScanSelectionEff , "susyScanSelectionEff");
+	  float susyScanXSection     = tree->Get( susyScanXSection     , "susyScanXSection"    );
+
+ 	    cout<< susyScanM0<<"  "<<susyScanM12<<": eff = "<<susyScanSelectionEff<<endl;
+ 	    cout<< "                   : xsec = "<<susyScanXSection<<endl;
+
+// 	    ps.addPlot("selEff", 
+// 		       149, 40., 3020., susyScanM0,
+// 		       46, 100., 1020., susyScanM12,
+// 		       1
+// 		       );
+// 	    ps.Get("selEff")->SetBinContent(ps.Get("selEff")->GetXaxis()->FindBin(susyScanM0),ps.Get("selEff")->GetYaxis()->FindBin(susyScanM12),susyScanSelectionEff);
+// 	    ps.addPlot("xSec", 
+// 		       149, 40., 3020., susyScanM0,
+// 		       46, 100., 1020., susyScanM12,
+// 		       1
+// 		       );
+// 	    ps.Get("xSec")->SetBinContent(ps.Get("xSec")->GetXaxis()->FindBin(susyScanM0),ps.Get("xSec")->GetYaxis()->FindBin(susyScanM12),susyScanXSection);
+// 	  }
+	  //plotsId = &TMP;	  
+	}
+	//else
+	plotsId = &scanPlotSets[make_pair(susyScanM0,susyScanM12)];
+	//cout<<susyScanM0<<"   "<<susyScanM12<<endl;
+	
+      }
+
 
       vector<int>& PUnumInter      = tree->Get( &PUnumInter      , "DESYPUinfoNumInteractions");
       vector<int>& PUbunchCrossing = tree->Get( &PUbunchCrossing , "DESYPUinfoBunchCrossing"  );
@@ -175,16 +246,23 @@ int main(int argc, char** argv){
     int NHPtracks_gt1p5    = tree->Get( NHPtracks_gt1p5   , "tracksNEtaGT1p5HighPurityTracks"    );
 
     int Ntracks   = Ntracks_lt0p9 + Ntracks_0p9to1p5 + Ntracks_gt1p5;
-    int NHPtracks = NHPtracks_lt0p9 + NHPtracks_0p9to1p5 + NHPtracks_gt1p5;
+   int NHPtracks = NHPtracks_lt0p9 + NHPtracks_0p9to1p5 + NHPtracks_gt1p5;
 
     if( !globalFlow.keepIf( "FracOfHPtracks", Ntracks <=10 ? true : (float) NHPtracks/Ntracks >=0.25 ) && quick ) continue;
+
+    //int Ntracks    = tree->Get( Ntracks   , "nTracksAll"        );
+    //int NHPtracks  = tree->Get( NHPtracks , "nTracksHighPurity" );
+    //if( !globalFlow.keepIf( "FracOfHPtracks", Ntracks <=10 ? true : (float) NHPtracks/Ntracks >=0.25 ) && quick ) continue;
 
     //csc beam halo
     //ecal beam halo
 
+    //2011:
     bool tffPassed  = tree->Get( tffPassed , "trackingfailurefilterflag" );
-    if( !globalFlow.keepIf("trackFailFilter"   ,  tffPassed ) && quick ) continue;
     bool edcfPassed = tree->Get( edcfPassed, "ecaldeadcellfilterflag"    );
+    //bool tffPassed  = tree->Get( tffPassed , "trackingFailureFilterFlag" );
+    if( !globalFlow.keepIf("trackFailFilter"   ,  tffPassed ) && quick ) continue;
+    //bool edcfPassed = tree->Get( edcfPassed, "ecalDeadCellTPFilterFlag"    );
     if( !globalFlow.keepIf("ecalDeadCellFilter", edcfPassed ) && quick ) continue;
     bool bhctFailed = tree->Get( bhctFailed, "beamHaloCSCTightHaloId"    );
     if( !globalFlow.keepIf("beamHaloCSCFilter" ,!bhctFailed ) && quick ) continue;//   stimmt das?? Dass die Flag das Failed angibt?
@@ -357,7 +435,7 @@ int main(int argc, char** argv){
     ps.addPlot("JetMult", "JetMult(before cut)", 15, 0., 15., RA6_selectedJetPF.size(), "multiplicity of selected jets", "events");
     TString nJ_cutString = "nJets>=";
     nJ_cutString+=nJet_min;
-    if(      !globalFlow.keepIf( nJ_cutString     , RA6_selectedJetPF.size() >= nJet_min ) && quick ) continue;
+    if(      !globalFlow.keepIf( nJ_cutString     , int(RA6_selectedJetPF.size()) >= nJet_min ) && quick ) continue;
 
     TString JetP4name=JetCollection;
     JetP4name += "CorrectedP4Pat";
@@ -425,12 +503,12 @@ int main(int argc, char** argv){
 	  //cout<<(jetPt-genJetsPF.at(genJetId.at(j)).pt())/jetPt<<"  "<<(jetPx-genJetsPF.at(genJetId.at(j)).px())/jetPx<<"   "<<(jetPy-genJetsPF.at(genJetId.at(j)).py())/jetPy<<endl;;
 	  
 	  //jetPt += sf*(jetEt-genJetsPF.at(genJetId.at(j)).Pt());
-	  plotsId.addPlot_withUnweighted("jetPTmatched","jetPT",40,0.,200.,jetPt);
-	  plotsId.addPlot("relDiff",40,-2.,2.,(jetE-genJetsPF.at(genJetId.at(j)).E())/jetE);
+	  plotsId->addPlot_withUnweighted("jetPTmatched","jetPT",40,0.,200.,jetPt);
+	  plotsId->addPlot("relDiff",40,-2.,2.,(jetE-genJetsPF.at(genJetId.at(j)).E())/jetE);
 	}
 	else {
-	  plotsId.addPlot_withUnweighted("jetPTnotmatched","jetPT",40,0.,200.,jetPt);
-	  plotsId.addPlot_withUnweighted("matchIndex",22,-2.,20.,genJetId.at(j));
+	  plotsId->addPlot_withUnweighted("jetPTnotmatched","jetPT",40,0.,200.,jetPt);
+	  plotsId->addPlot_withUnweighted("matchIndex",22,-2.,20.,genJetId.at(j));
 	}
 	//sumSmearedJetET += jetEt;
 	smearedJetVecSum += tmpJet;
@@ -441,14 +519,14 @@ int main(int argc, char** argv){
       for(int j=0; j<RA6_selectedJetPF.size(); ++j) {
 	int jet = RA6_selectedJetPF.at(j);
 	if( genJetId.at(jet)>=0 && genJetId.at(jet)<genJetsPF.size() )
-	  plotsId.addPlot_withUnweighted("selJetPTmatched","selJetPT",40,0.,200.,JetsPF.at(jet).Pt());
+	  plotsId->addPlot_withUnweighted("selJetPTmatched","selJetPT",40,0.,200.,JetsPF.at(jet).Pt());
 	else {
-	  plotsId.addPlot_withUnweighted("selJetPTnotmatched","selJetPT",40,0.,200.,JetsPF.at(jet).Pt());
-	  plotsId.addPlot_withUnweighted("selJetMatchIndex",22,-2.,20.,genJetId.at(jet));
+	  plotsId->addPlot_withUnweighted("selJetPTnotmatched","selJetPT",40,0.,200.,JetsPF.at(jet).Pt());
+	  plotsId->addPlot_withUnweighted("selJetMatchIndex",22,-2.,20.,genJetId.at(jet));
 	  double minDR=999.;
 	  for(int gjet=0; gjet<genJetsPF.size(); ++gjet)
 	    if( DeltaR( JetsPF.at(jet), genJetsPF.at(gjet) ) < minDR ) minDR = DeltaR( JetsPF.at(jet), genJetsPF.at(gjet) );
-	  plotsId.addPlot_withUnweighted("selJetMinDRunmatched", 40, 0., 2.,minDR);
+	  plotsId->addPlot_withUnweighted("selJetMinDRunmatched", 40, 0., 2.,minDR);
 	}
       }
 
@@ -507,7 +585,7 @@ int main(int argc, char** argv){
     ps.addPlot("JetMult_afterCC", "JetMult(before cut, after CC)", 15, 0., 15., RA6_selectedJetPF.size(), "multiplicity of selected jets", "events");
 
     nJ_cutString+="_CC";
-    if(      !globalFlow.keepIf( nJ_cutString    , RA6_selectedJetPF.size() >= nJet_min ) && quick ) continue;
+    if(      !globalFlow.keepIf( nJ_cutString    , int(RA6_selectedJetPF.size()) >= nJet_min ) && quick ) continue;
 
     //cout<<"mu&elsP2 survived."<<endl;
 
@@ -690,32 +768,37 @@ int main(int argc, char** argv){
     unsigned event = tree->Get(event,"event");
     unsigned lumi  = tree->Get(lumi ,"lumiSection");
 
-    plotsId.addLeaf( top, "cos",      cosThetaAngle                   );
-    plotsId.addLeaf( top, "p1p2",     absmultp1p2                     );
-    plotsId.addLeaf( top, "p1",       sqrt( firstLept.Vect().mag2() ) );
-    plotsId.addLeaf( top, "p2",       sqrt( secondLept.Vect().mag2()) );
-    plotsId.addLeaf( top, "invM",     (firstLept + secondLept).mass() );
-    plotsId.addLeaf( top, "weight",   plotSet::global_event_weight    );
-    plotsId.addLeaf( top, "event",    (int) event                     );
-    plotsId.addLeaf( top, "run",      (int) run                       );
-    plotsId.addLeaf( top, "lumi",     (int) lumi                      );
-    plotsId.addLeaf( top, "MET",      metP4PF->Et()                   );
-    plotsId.addLeaf( top, "numJets",  (int) RA6_selectedJetPF.size()  );
-    plotsId.addLeaf( top, "numBtags", (int) numBTags                  );
-    plotsId.addLeaf( top, "HT",       HT_selectedJetPF                );
-    plotsId.addLeaf( top, "numElectrons",  (int) RA6_selectedEl.size()  );
-    plotsId.addLeaf( top, "numMuons"    ,  (int) RA6_selectedMu.size()  );
+    plotsId->addLeaf( top, "cos",      cosThetaAngle                   );
+    plotsId->addLeaf( top, "p1p2",     absmultp1p2                     );
+    plotsId->addLeaf( top, "p1",       sqrt( firstLept.Vect().mag2() ) );
+    plotsId->addLeaf( top, "p2",       sqrt( secondLept.Vect().mag2()) );
+    plotsId->addLeaf( top, "invM",     (firstLept + secondLept).mass() );
+    plotsId->addLeaf( top, "weight",   plotSet::global_event_weight    );
+    plotsId->addLeaf( top, "event",    (int) event                     );
+    plotsId->addLeaf( top, "run",      (int) run                       );
+    plotsId->addLeaf( top, "lumi",     (int) lumi                      );
+    plotsId->addLeaf( top, "MET",      metP4PF->Et()                   );
+    plotsId->addLeaf( top, "numJets",  (int) RA6_selectedJetPF.size()  );
+    plotsId->addLeaf( top, "numBtags", (int) numBTags                  );
+    plotsId->addLeaf( top, "HT",       HT_selectedJetPF                );
+    plotsId->addLeaf( top, "numElectrons",  (int) RA6_selectedEl.size()  );
+    plotsId->addLeaf( top, "numMuons"    ,  (int) RA6_selectedMu.size()  );
 
-//     plotsId.addLeaf( top, "minDphiJetMET",     DphiMetClosestJet        );
-//     plotsId.addLeaf( top, "minDphiElMET" ,     DphiMetClosestElectron   );
-//     plotsId.addLeaf( top, "minDphiMuMET" ,     DphiMetClosestMuon       );
+//     plotsId->addLeaf( top, "minDphiJetMET",     DphiMetClosestJet        );
+//     plotsId->addLeaf( top, "minDphiElMET" ,     DphiMetClosestElectron   );
+//     plotsId->addLeaf( top, "minDphiMuMET" ,     DphiMetClosestMuon       );
 
-//     plotsId.addLeaf( top, "METTypeIPF"  ,      metP4TypeIPF->Et()     );
-//     plotsId.addLeaf( top, "METAK5"      ,      metP4AK5->Et()         );
-//     plotsId.addLeaf( top, "METAK5TypeII",      metP4AK5TypeII->Et()   );
-//     plotsId.addLeaf( top, "METCalo"     ,      metP4Calo->Et()        );
+     plotsId->addLeaf( top, "METTypeIPF"  ,      metP4TypeIPF->Et()     );
+     plotsId->addLeaf( top, "METAK5"      ,      metP4AK5->Et()         );
+     plotsId->addLeaf( top, "METAK5TypeII",      metP4AK5TypeII->Et()   );
+     plotsId->addLeaf( top, "METCalo"     ,      metP4Calo->Et()        );
 
-    plotsId.addLeaf( top, "selectedPz"  ,      selectedPz        );
+     if((firstLept + secondLept).mass() > 80 && (firstLept + secondLept).mass() < 100) {
+       plotsId->addLeaf( top+"ZWIN", "METTypeIPF_Zwindow"  ,      metP4TypeIPF->Et()     );
+       plotsId->addLeaf( top+"ZWIN", "METPF_Zwindow"  ,      metP4PF->Et()     );
+     }
+
+    plotsId->addLeaf( top, "selectedPz"  ,      selectedPz        );
     //cout<<((*metP4PF)-JetVecSum+smearedJetVecSum).Et()<<endl;
   
     //cout<<"met: "<<(*metP4PF).Px()<<"  "<<(*metP4PF).Py()<<"  "<<(*metP4PF).Pz()<<"  "<<(*metP4PF).E()<<endl;
@@ -730,8 +813,8 @@ int main(int argc, char** argv){
       //cout<<"sca: "<<scaledMET.Px()<<"  "<<scaledMET.Py()<<"  "<<scaledMET.Pz()<<"  "<<scaledMET.E()<<endl;
       
       double smearedMETpt = sqrt( pow(metP4PF->px()+sumJetPx-sumSmearedJetPx,2)+pow(metP4PF->py()+sumJetPy-sumSmearedJetPy,2) );
-      plotsId.addLeaf( top, "METjetSmearCorr" ,  scaledMET.Et() );
-      plotsId.addLeaf( top, "METjetSmearCorr2",  smearedMETpt   );
+      plotsId->addLeaf( top, "METjetSmearCorr" ,  scaledMET.Et() );
+      plotsId->addLeaf( top, "METjetSmearCorr2",  smearedMETpt   );
 
     }
     //cout<<"before new plots"<<endl;
@@ -850,21 +933,23 @@ int main(int argc, char** argv){
 	}
       }
       if(diBosonCand != "") {
-	plotsId.addLeaf( diBosonCand, "weight",   plotSet::global_event_weight    );
-	plotsId.addLeaf( diBosonCand, "event",    (int) event                     );
-	plotsId.addLeaf( diBosonCand, "run",      (int) run                       );
-	plotsId.addLeaf( diBosonCand, "lumi",     (int) lumi                      );
-	plotsId.addLeaf( diBosonCand, "MET",      metP4PF->Et()                   );
-	plotsId.addLeaf( diBosonCand, "numJets",  (int) RA6_selectedJetPF.size()  );
-	plotsId.addLeaf( diBosonCand, "numBtags", (int) numBTags                  );
-	plotsId.addLeaf( diBosonCand, "HT",       HT_selectedJetPF                );
-	plotsId.addLeaf( diBosonCand, "ZPt",      ZpT                             );
+	plotsId->addLeaf( diBosonCand, "weight",   plotSet::global_event_weight    );
+	plotsId->addLeaf( diBosonCand, "event",    (int) event                     );
+	plotsId->addLeaf( diBosonCand, "run",      (int) run                       );
+	plotsId->addLeaf( diBosonCand, "lumi",     (int) lumi                      );
+	plotsId->addLeaf( diBosonCand, "MET",      metP4PF->Et()                   );
+	plotsId->addLeaf( diBosonCand, "numJets",  (int) RA6_selectedJetPF.size()  );
+	plotsId->addLeaf( diBosonCand, "numBtags", (int) numBTags                  );
+	plotsId->addLeaf( diBosonCand, "HT",       HT_selectedJetPF                );
+	plotsId->addLeaf( diBosonCand, "ZPt",      ZpT                             );
       }
 
     }
     //cout<<"end of loop"<<endl;
   } // event loop
 
+  for(map< pair<float,float>, unsigned >::iterator pt=scanPointCounter.begin(); pt!=scanPointCounter.end(); ++pt)
+    cout<<pt->first.first<<"  "<<pt->first.second<<"  "<<pt->second<<endl;
 
   RA6_Mu_selectionCuts.printAll();
   RA6_El_selectionCuts.printAll();

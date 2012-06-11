@@ -12,7 +12,7 @@
 
 setName=$1
 #target=/afs/naf.desy.de/user/s/schettle/scratch/AnalysisTrees/whole2011_RA6
-target=/scratch/hh/current/cms/user/schettle/AnalysisTrees/whole2011_RA6
+target=/scratch/hh/current/cms/user/schettle/AnalysisTrees/first2012_RA6
 scriptLoc=/afs/naf.desy.de/user/s/schettle/macro/CMSSW_4_2_5/src/SUSYBSMAnalysis/DesySusy/examples/compiled/batch
 codeLoc=/afs/naf.desy.de/user/s/schettle/macro/CMSSW_4_2_5/src/SUSYBSMAnalysis/DesySusy/examples/compiled/RA6
 
