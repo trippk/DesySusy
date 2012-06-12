@@ -118,6 +118,9 @@ int main(int argc, char** argv){
     bool isRA6highPtMuMu = false;
     bool isRA6highPtMuEl = false;
     bool isRA6highPtElEl = false;
+
+    bool isDiBJet = false;
+
     vector<unsigned> RA6_selectedEl;
     vector<unsigned> RA6_selectedMu;
     vector<unsigned> RA6_selectedJetPF;
@@ -194,19 +197,19 @@ int main(int argc, char** argv){
       }
 
 
-      vector<int>& PUnumInter      = tree->Get( &PUnumInter      , "DESYPUinfoNumInteractions");
-      vector<int>& PUbunchCrossing = tree->Get( &PUbunchCrossing , "DESYPUinfoBunchCrossing"  );
+      vector<float>& PUnumInter      = tree->Get( &PUnumInter      , "pileupTrueNumInteractions");
+      vector<int>& PUbunchCrossing = tree->Get( &PUbunchCrossing , "pileupBX"  );
 
       int relevantNumPU=-1;
       int sumNumInter=0;
       for( size_t bc=0; bc<PUnumInter.size(); ++bc ) {
 	TString plna = "pu";
 	plna        += PUbunchCrossing.at(bc);
-	ps.addPlot_withUnweighted( plna ,36,-0.5,35.5, PUnumInter.at(bc));
+	ps.addPlot_withUnweighted( plna ,100,0.,100., PUnumInter.at(bc));
 	if( PUbunchCrossing.at(bc) == 0 )
 	  relevantNumPU = PUnumInter.at(bc);
       }
-      ps.addPlot_withUnweighted( "relevantNumPU", 36,-0.5,35.5, relevantNumPU );
+      ps.addPlot_withUnweighted( "relevantNumPU", 100,0.,100., relevantNumPU );
 
       if( PU_weightList == " " ) continue;
 
@@ -218,7 +221,7 @@ int main(int argc, char** argv){
 	CutSet::global_event_weight  = PUweights.at( relevantNumPU );
       }
       //ps.addPlot_withUnweighted( "PU__after_weighting" ,26,-0.5,25.5, relevantNumPU );
-      ps.addPlot_withUnweighted( "PU__after_weighting" ,36,-0.5,35.5, relevantNumPU );
+      ps.addPlot_withUnweighted( "PU__after_weighting" ,100,0.,100., relevantNumPU );
     }
 
     //cout<<"PU stuff survived."<<endl;
@@ -237,32 +240,17 @@ int main(int argc, char** argv){
     //cout<<"vx done"<<endl;
     if( !globalFlow.keepIf( "at_least_1_vertex"      , RA6_selectedVx.size()    >=1 ) && quick ) continue;
     //cout<<"vertex survived."<<endl;
-    int Ntracks_lt0p9    = tree->Get( Ntracks_lt0p9   , "tracksNEtaLT0p9AllTracks"    );
-    int Ntracks_0p9to1p5 = tree->Get( Ntracks_0p9to1p5, "tracksNEta0p9to1p5AllTracks" );
-    int Ntracks_gt1p5    = tree->Get( Ntracks_gt1p5   , "tracksNEtaGT1p5AllTracks"    );
-    
-    int NHPtracks_lt0p9    = tree->Get( NHPtracks_lt0p9   , "tracksNEtaLT0p9HighPurityTracks"    );
-    int NHPtracks_0p9to1p5 = tree->Get( NHPtracks_0p9to1p5, "tracksNEta0p9to1p5HighPurityTracks" );
-    int NHPtracks_gt1p5    = tree->Get( NHPtracks_gt1p5   , "tracksNEtaGT1p5HighPurityTracks"    );
 
-    int Ntracks   = Ntracks_lt0p9 + Ntracks_0p9to1p5 + Ntracks_gt1p5;
-   int NHPtracks = NHPtracks_lt0p9 + NHPtracks_0p9to1p5 + NHPtracks_gt1p5;
-
+    int Ntracks    = tree->Get( Ntracks   , "nTracksAll"        );
+    int NHPtracks  = tree->Get( NHPtracks , "nTracksHighPurity" );
     if( !globalFlow.keepIf( "FracOfHPtracks", Ntracks <=10 ? true : (float) NHPtracks/Ntracks >=0.25 ) && quick ) continue;
-
-    //int Ntracks    = tree->Get( Ntracks   , "nTracksAll"        );
-    //int NHPtracks  = tree->Get( NHPtracks , "nTracksHighPurity" );
-    //if( !globalFlow.keepIf( "FracOfHPtracks", Ntracks <=10 ? true : (float) NHPtracks/Ntracks >=0.25 ) && quick ) continue;
 
     //csc beam halo
     //ecal beam halo
 
-    //2011:
-    bool tffPassed  = tree->Get( tffPassed , "trackingfailurefilterflag" );
-    bool edcfPassed = tree->Get( edcfPassed, "ecaldeadcellfilterflag"    );
-    //bool tffPassed  = tree->Get( tffPassed , "trackingFailureFilterFlag" );
+    bool tffPassed  = tree->Get( tffPassed , "trackingFailureFilterFlag" );
     if( !globalFlow.keepIf("trackFailFilter"   ,  tffPassed ) && quick ) continue;
-    //bool edcfPassed = tree->Get( edcfPassed, "ecalDeadCellTPFilterFlag"    );
+    bool edcfPassed = tree->Get( edcfPassed, "ecalDeadCellTPFilterFlag"  );
     if( !globalFlow.keepIf("ecalDeadCellFilter", edcfPassed ) && quick ) continue;
     bool bhctFailed = tree->Get( bhctFailed, "beamHaloCSCTightHaloId"    );
     if( !globalFlow.keepIf("beamHaloCSCFilter" ,!bhctFailed ) && quick ) continue;//   stimmt das?? Dass die Flag das Failed angibt?
@@ -692,6 +680,14 @@ int main(int argc, char** argv){
 
     //cout<<"directly before final cuts"<<endl;
 
+    vector<float>& TCHE_bTag   = tree->Get(&TCHE_bTag  , JetCollection+"TrkCountingHighEffBJetTagsPat");
+
+    vector<unsigned> bTagedJets;
+    for(size_t j=0; j<RA6_selectedJetPF.size(); ++j) 
+      if(TCHE_bTag.at(RA6_selectedJetPF.at(j)) > TCHEbTag_cutVal)
+	bTagedJets.push_back(RA6_selectedJetPF.at(j));
+    
+    globalFlow.keepIf("exact2bTags", bTagedJets.size()==2 );
 
     if(quick || globalFlow.applyCuts("RA6 common cuts", 
 		"totalKinFilter trackFailFilter ecalDeadCellFilter beamHaloCSCFilter HBHEnoiseFilter at_least_1_vertex FracOfHPtracks at_least_2_jets_CC "+HT_cutString+" "+MET_cutString ) ) {
@@ -707,6 +703,10 @@ int main(int argc, char** argv){
       //ElEl:
       if(globalFlow.applyCuts("RA6 ElEl",
 			      AltAltAltTrigName+" at_least_1_ElEl_pair highPtOSElElPair")) isRA6highPtElEl=true;
+
+      //bb:
+      if(globalFlow.applyCuts("diBtag", "exact2bTags") ) isDiBJet=true;
+
     
     }
 
@@ -740,7 +740,7 @@ int main(int argc, char** argv){
     double thetaAngle = Angle(firstLept.Vect(),secondLept.Vect());
     double cosThetaAngle = cos(thetaAngle);
 
-    vector<float>& TCHE_bTag   = tree->Get(&TCHE_bTag  , JetCollection+"TrkCountingHighEffBJetTagsPat");
+    //vector<float>& TCHE_bTag   = tree->Get(&TCHE_bTag  , JetCollection+"TrkCountingHighEffBJetTagsPat");
 
 
     int numBTags=0;
@@ -945,6 +945,25 @@ int main(int argc, char** argv){
       }
 
     }
+
+
+    if( isDiBJet ) {
+
+      double bbAngle = Angle( JetsPF.at(bTagedJets.at(0)).Vect() , 
+			      JetsPF.at(bTagedJets.at(1)).Vect() );
+      double bbP1P2  = sqrt( JetsPF.at(bTagedJets.at(0)).Vect().mag2() * 
+			     JetsPF.at(bTagedJets.at(1)).Vect().mag2() );
+
+
+      plotsId->addLeaf("diBtag", "weight",   plotSet::global_event_weight  );
+      plotsId->addLeaf("diBtag", "cos",      cos(bbAngle)                  );
+      plotsId->addLeaf("diBtag", "p1p2",     bbP1P2                        );
+      plotsId->addLeaf("diBtag", "numElectrons",  (int) RA6_selectedEl.size()  );
+      plotsId->addLeaf("diBtag", "numMuons"    ,  (int) RA6_selectedMu.size()  );
+    }
+
+
+
     //cout<<"end of loop"<<endl;
   } // event loop
 
