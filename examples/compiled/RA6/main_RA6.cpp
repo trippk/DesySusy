@@ -23,7 +23,7 @@ using namespace ROOT::Math::VectorUtil;
 int main(int argc, char** argv){
   cout<<"starting main"<<endl;
 
-  ConfigReader config("config.txt",argc,argv);
+  ConfigReader config("config_data/config.txt",argc,argv);
 
   // input file name
   TString filename = config.getTString("filename","");
