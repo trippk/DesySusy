@@ -34,9 +34,10 @@ class SusyDESY_FilterResultProducerOneLepton : public edm::EDProducer {
 
       // ----------member data ---------------------------
       const int Prescale;
-      const vector<string> StdMuCollection, AltMuCollection;
-      const vector<string> StdElCollection, AltElCollection;
-
+      const vector<string> StdMuCollection,   AltMuCollection;
+      const vector<string> StdElCollection,   AltElCollection;
+      const vector<string> StdMuCollectionPF, AltMuCollectionPF;
+      const vector<string> StdElCollectionPF, AltElCollectionPF;
       TRandom3* rnd;
 
       // collGetter: meant to replace the 'iEvent.getByLabel(...)' in the code.

@@ -84,9 +84,9 @@ class SusyCAF(object) :
                  self.evalSequence('susycaf%s',  ['photon']+(['tau','HPStau','pftau'] if self.options.taus else [])) +
                  self.evalSequence('susycafmet%s', ['AK5','AK5TypeII','PF','TypeIPF','TC']) +
                  self.process.susydesytotakinematicsfilter +
-                 self.evalSequence('susydesy%s', ['patelectrons','pfelectrons','patmuons','pfmuons','puinfo','trigger']) +
-                 self.evalSequence('filterResult%s', ['OneLepton']) #+
-                 #self.evalSequence('filter%s'      , ['OneLepton'])
+                 self.evalSequence('susydesy%s', ['patelectrons','pfelectrons','patmuons','pfmuons','trigger']) +
+                 self.evalSequence('filterResult%s', ['OneLepton']) +
+                 self.evalSequence('filter%s'      , ['OneLepton'])
                  )
 
     def patLepton(self,lepton) :
