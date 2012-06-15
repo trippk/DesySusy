@@ -205,6 +205,15 @@ SusyDESY_Muons::SusyDESY_Muons(const edm::ParameterSet& iConfig)
   produces <std::vector<float> > ( Prefix + "TrackD0"                             + Suffix );
   produces <std::vector<float> > ( Prefix + "InnerTrackPtError"                   + Suffix );
   produces <std::vector<float> > ( Prefix + "IsolationR03hoVetoEt"                + Suffix );
+
+  produces <std::vector<float> > (  Prefix + "PfIsolationR03ChgHadPt" + Suffix);
+  produces <std::vector<float> > (  Prefix + "PfIsolationR03ChgParPt" + Suffix);
+  produces <std::vector<float> > (  Prefix + "PfIsolationR03NeuHadEt" + Suffix);
+  produces <std::vector<float> > (  Prefix + "PfIsolationR03GamEt" + Suffix);
+  produces <std::vector<float> > (  Prefix + "PfIsolationR03NeuHadHiThrEt" + Suffix);
+  produces <std::vector<float> > (  Prefix + "PfIsolationR03GamHiThrEt" + Suffix);
+  produces <std::vector<float> > (  Prefix + "PfIsolationR03PUPt" + Suffix);
+  produces <std::vector<float> > (  Prefix + "PfIsolationR03DeltaBCorrected" + Suffix);
 }
 
 void SusyDESY_Muons::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
@@ -217,6 +226,15 @@ void SusyDESY_Muons::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) 
   std::auto_ptr<std::vector<float> > muonTrackD0      ( new std::vector<float>() );
   std::auto_ptr<std::vector<float> > innerTrackPtErr  ( new std::vector<float>() );
   std::auto_ptr<std::vector<float> > iso03hoVetoEt  ( new std::vector<float>() );
+
+  std::auto_ptr<std::vector<float> >  pfIsolationR03ChgHadPt	( new std::vector<float>() ) ;
+  std::auto_ptr<std::vector<float> >  pfIsolationR03ChgParPt	( new std::vector<float>() ) ;
+  std::auto_ptr<std::vector<float> >  pfIsolationR03NeuHadEt	( new std::vector<float>() ) ;
+  std::auto_ptr<std::vector<float> >  pfIsolationR03GamEt	( new std::vector<float>() ) ;
+  std::auto_ptr<std::vector<float> >  pfIsolationR03NeuHadHiThrEt	( new std::vector<float>() ) ;
+  std::auto_ptr<std::vector<float> >  pfIsolationR03GamHiThrEt	( new std::vector<float>() ) ;
+  std::auto_ptr<std::vector<float> >  pfIsolationR03PUPt	( new std::vector<float>() ) ;
+  std::auto_ptr<std::vector<float> >  pfIsolationR03DeltaB	( new std::vector<float>() ) ;
 
   edm::Handle<std::vector<pat::Muon> > MuColl;
   iEvent.getByLabel(PatMuons, MuColl);
@@ -239,6 +257,28 @@ void SusyDESY_Muons::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) 
       muonTrackD0->push_back( tracker ? mu->track()->d0() : 999999999. );
       innerTrackPtErr->push_back( tracker ? mu->innerTrack()->ptError() : -1);
       iso03hoVetoEt ->push_back(mu->isolationR03().hoVetoEt );
+
+      {
+	const reco::MuonPFIsolation& pfIso03 = mu->pfIsolationR03();
+	float sumChgHadPt = pfIso03.sumChargedHadronPt;
+	float sumNeuHadEt = pfIso03.sumNeutralHadronEt;
+	float sumGamEt    = pfIso03.sumPhotonEt;
+	float sumPUPt     = pfIso03.sumPUPt;
+	float isoDelB     = (sumChgHadPt + std::max(0., (sumNeuHadEt + sumGamEt - 0.5*sumPUPt)))/(mu->p4()).Pt();
+
+	pfIsolationR03ChgHadPt->push_back(sumChgHadPt);
+	pfIsolationR03ChgParPt->push_back(pfIso03.sumChargedParticlePt);
+
+	pfIsolationR03GamEt->push_back(sumGamEt);
+	pfIsolationR03GamHiThrEt->push_back(pfIso03.sumPhotonEtHighThreshold);
+
+	pfIsolationR03NeuHadEt->push_back(sumNeuHadEt);
+	pfIsolationR03NeuHadHiThrEt->push_back(pfIso03.sumNeutralHadronEtHighThreshold);
+	pfIsolationR03PUPt->push_back(sumPUPt);
+	pfIsolationR03DeltaB->push_back(isoDelB);
+      }
+
+
     }
   }
 
@@ -249,6 +289,15 @@ void SusyDESY_Muons::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) 
   iEvent.put( muonTrackD0     , Prefix + "TrackD0"              + Suffix );
   iEvent.put( innerTrackPtErr , Prefix + "InnerTrackPtError"    + Suffix );
   iEvent.put( iso03hoVetoEt   , Prefix + "IsolationR03hoVetoEt" + Suffix );
+
+  iEvent.put( pfIsolationR03ChgHadPt, Prefix + "PfIsolationR03ChgHadPt" + Suffix);
+  iEvent.put( pfIsolationR03ChgParPt, Prefix + "PfIsolationR03ChgParPt" + Suffix);
+  iEvent.put( pfIsolationR03NeuHadEt, Prefix + "PfIsolationR03NeuHadEt" + Suffix);
+  iEvent.put( pfIsolationR03GamEt, Prefix + "PfIsolationR03GamEt" + Suffix);
+  iEvent.put( pfIsolationR03NeuHadHiThrEt, Prefix + "PfIsolationR03NeuHadHiThrEt" + Suffix);
+  iEvent.put( pfIsolationR03GamHiThrEt, Prefix + "PfIsolationR03GamHiThrEt" + Suffix);
+  iEvent.put( pfIsolationR03PUPt, Prefix + "PfIsolationR03PUPt" + Suffix);
+  iEvent.put( pfIsolationR03DeltaB, Prefix + "PfIsolationR03DeltaBCorrected" + Suffix);
 }
 
 void SusyDESY_Muons::beginJob(){}
