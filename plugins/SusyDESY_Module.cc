@@ -1,5 +1,6 @@
 #include "SUSYBSMAnalysis/DesySusy/interface/SusyDESY_Module.h"
 #include "DataFormats/RecoCandidate/interface/IsoDeposit.h"
+#include "EGamma/EGammaAnalysisTools/interface/EGammaCutBasedEleId.h"
 
 SusyDESY_Electrons::SusyDESY_Electrons(const edm::ParameterSet& iConfig)
   : Prefix( iConfig.getParameter<string> ("Prefix") ),
@@ -45,6 +46,7 @@ SusyDESY_Electrons::SusyDESY_Electrons(const edm::ParameterSet& iConfig)
   produces <std::vector<bool> > ( Prefix + "IsEE"  + Suffix );
   produces <std::vector<bool> > ( Prefix + "IsGap" + Suffix );
 
+  produces <std::vector<int> >  ( Prefix + "IdTriggerTight" + Suffix);
 
 //   produces <std::vector<> > ( Prefix + ""   + Suffix );
 }
@@ -87,12 +89,14 @@ void SusyDESY_Electrons::produce(edm::Event& iEvent, const edm::EventSetup& iSet
   std::auto_ptr<std::vector<bool> > IsEE  ( new std::vector<bool>() );
   std::auto_ptr<std::vector<bool> > IsGap ( new std::vector<bool>() );
 
+  std::auto_ptr<std::vector<int> > idTrigTight(  new std::vector<int>() );
+
   edm::Handle<std::vector<pat::Electron> > ElColl;
   iEvent.getByLabel(PatElectrons, ElColl);
 
   if(ElColl.isValid()){
     *handleValid.get() = true;
-
+    
     for(std::vector<pat::Electron>::const_iterator el = ElColl->begin(); el!=ElColl->end(); el++) {
 
       SCenergy         ->push_back(el->superCluster()->energy()         );
@@ -139,6 +143,15 @@ void SusyDESY_Electrons::produce(edm::Event& iEvent, const edm::EventSetup& iSet
 	GenPdgId->push_back(0);
 	GenStatus->push_back(-1);
       }
+
+      bool trigtight = EgammaCutBasedEleId::PassTriggerCuts(EgammaCutBasedEleId::TRIGGERTIGHT, el->isEB(), 
+							    el->pt(), //el->superCluster()->eta(),
+							    el->deltaEtaSuperClusterTrackAtVtx(), el->deltaPhiSuperClusterTrackAtVtx(),
+							    el->sigmaIetaIeta(), el->hadronicOverEm(),
+							    el->dr03TkSumPt(), el->dr03EcalRecHitSumEt(), el->dr03HcalTowerSumEt());
+
+      idTrigTight->push_back(trigtight);
+
       //cout<<"genMatched.back() = " << genMatched << endl;
       //cout<<"genPdgId.back()   = " << genPdgId.back() << endl;
       //cout<<"genStatus.back()  = " << genStatus.back() << endl;
@@ -184,6 +197,9 @@ void SusyDESY_Electrons::produce(edm::Event& iEvent, const edm::EventSetup& iSet
   iEvent.put( IsEB , Prefix + "IsEB"  + Suffix );
   iEvent.put( IsEE , Prefix + "IsEE"  + Suffix );
   iEvent.put( IsGap, Prefix + "IsGap" + Suffix );
+
+  iEvent.put( idTrigTight, Prefix + "IdTriggerTight" + Suffix);
+
 }
 
 void SusyDESY_Electrons::beginJob(){}
