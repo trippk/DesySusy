@@ -5,6 +5,8 @@ susydesypatelectrons = cms.EDProducer("SusyDESY_Electrons",
                                       Suffix       = cms.string('Pat'),
                                       
                                       PatElectrons = cms.InputTag('cleanPatElectrons'),
+                                      beamSpotInputTag = cms.InputTag('offlineBeamSpot'),
+                                      conversionsInputTag = cms.InputTag('allConversions')
                                       )
 
 susydesypfelectrons = cms.EDProducer("SusyDESY_Electrons",
@@ -12,6 +14,8 @@ susydesypfelectrons = cms.EDProducer("SusyDESY_Electrons",
                                      Suffix       = cms.string('PF'),
                                      
                                      PatElectrons = cms.InputTag('patAllElectronsPF'),
+                                     beamSpotInputTag = cms.InputTag('offlineBeamSpot'),
+                                     conversionsInputTag = cms.InputTag('allConversions')
                                      )
 
 susydesypatmuons = cms.EDProducer("SusyDESY_Muons",
