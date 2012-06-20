@@ -27,6 +27,8 @@ private:
      void beginJob();
      const std::string Prefix,Suffix;
      const edm::InputTag PatElectrons;
+     const edm::InputTag conversionsInputTag_;
+     const edm::InputTag beamSpotInputTag_;
 };
 
 class SusyDESY_Muons : public edm::EDProducer {

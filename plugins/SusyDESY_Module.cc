@@ -1,11 +1,14 @@
 #include "SUSYBSMAnalysis/DesySusy/interface/SusyDESY_Module.h"
 #include "DataFormats/RecoCandidate/interface/IsoDeposit.h"
 #include "EGamma/EGammaAnalysisTools/interface/EGammaCutBasedEleId.h"
+#include "RecoEgamma/EgammaTools/interface/ConversionTools.h"
 
 SusyDESY_Electrons::SusyDESY_Electrons(const edm::ParameterSet& iConfig)
   : Prefix( iConfig.getParameter<string> ("Prefix") ),
     Suffix( iConfig.getParameter<string> ("Suffix") ),
-    PatElectrons( iConfig.getParameter<edm::InputTag> ("PatElectrons") )
+    PatElectrons( iConfig.getParameter<edm::InputTag> ("PatElectrons") ),
+    conversionsInputTag_( iConfig.getParameter<edm::InputTag> ("conversionsInputTag") ),
+    beamSpotInputTag_( iConfig.getParameter<edm::InputTag> ("beamSpotInputTag") )
 {
   produces <bool>                 ( Prefix + "PatElectronsHandleValid" + Suffix );
 
@@ -48,6 +51,7 @@ SusyDESY_Electrons::SusyDESY_Electrons(const edm::ParameterSet& iConfig)
 
   produces <std::vector<int> >  ( Prefix + "IdTriggerTight" + Suffix);
 
+  produces <std::vector<bool> > ( Prefix + "HasMatchedConversions" + Suffix );
 //   produces <std::vector<> > ( Prefix + ""   + Suffix );
 }
 
@@ -90,6 +94,15 @@ void SusyDESY_Electrons::produce(edm::Event& iEvent, const edm::EventSetup& iSet
   std::auto_ptr<std::vector<bool> > IsGap ( new std::vector<bool>() );
 
   std::auto_ptr<std::vector<int> > idTrigTight(  new std::vector<int>() );
+
+  std::auto_ptr<std::vector<bool> > matchedConv(  new std::vector<bool>() );
+
+  edm::Handle<reco::ConversionCollection> conversions_h;
+  iEvent.getByLabel(conversionsInputTag_, conversions_h);
+
+  edm::Handle<reco::BeamSpot> beamspot_h;
+  iEvent.getByLabel(beamSpotInputTag_, beamspot_h);
+  const reco::BeamSpot &beamSpot = *(beamspot_h.product());
 
   edm::Handle<std::vector<pat::Electron> > ElColl;
   iEvent.getByLabel(PatElectrons, ElColl);
@@ -152,6 +165,9 @@ void SusyDESY_Electrons::produce(edm::Event& iEvent, const edm::EventSetup& iSet
 
       idTrigTight->push_back(trigtight);
 
+      bool vtxFitConversion = ConversionTools::hasMatchedConversion((const reco::GsfElectron) *el, conversions_h, beamSpot.position());
+      matchedConv->push_back(vtxFitConversion);
+
       //cout<<"genMatched.back() = " << genMatched << endl;
       //cout<<"genPdgId.back()   = " << genPdgId.back() << endl;
       //cout<<"genStatus.back()  = " << genStatus.back() << endl;
@@ -199,6 +215,8 @@ void SusyDESY_Electrons::produce(edm::Event& iEvent, const edm::EventSetup& iSet
   iEvent.put( IsGap, Prefix + "IsGap" + Suffix );
 
   iEvent.put( idTrigTight, Prefix + "IdTriggerTight" + Suffix);
+
+  iEvent.put( matchedConv, Prefix + "HasMatchedConversions" + Suffix);
 
 }
 
