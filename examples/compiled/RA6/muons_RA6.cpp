@@ -33,6 +33,8 @@ bool muons_RA6(EasyChain* tree, vector<unsigned>& selMu, CutSet& selCut) {
   vector<LOR>& Muons = tree->Get(&Muons, "muonP4Pat");
 
   for( unsigned mu=0; mu<Muons.size(); ++mu ) {
+
+    //Eta, Pt
     TString etaCut ="|eta|<";
     etaCut+=mu_eta_max;
     if( !selCut.keepIf(etaCut          , fabs(Muons.at(mu).eta())  <  mu_eta_max    ) && quick ) continue;
@@ -40,57 +42,56 @@ bool muons_RA6(EasyChain* tree, vector<unsigned>& selMu, CutSet& selCut) {
     ptCut+=mu_pt_min_low;
     if( !selCut.keepIf(ptCut           , Muons.at(mu).pt()         >  mu_pt_min_low ) && quick ) continue;
 
-    vector<float>& ecalIso      = tree->Get( &ecalIso,      "muonEcalIsoPat"                                );
-    vector<float>& hcalIso      = tree->Get( &hcalIso,      "muonHcalIsoPat"                                );
-    vector<float>& trackIso     = tree->Get( &trackIso,     "muonTrackIsoPat"                               );
-    double RelIso_max20 = (ecalIso.at(mu) + hcalIso.at(mu) + trackIso.at(mu))/max((float)20.,(float)Muons.at(mu).Pt());
-    if( !selCut.keepIf("RelIso<.15"       , RelIso_max20           <    .15 ) && quick ) continue;
-
+    //IsoCut
+    vector<float>& pfIso      = tree->Get( &pfIso,      "muonPfIsolationR04DeltaBCorrectedPat"                                );
+    double RelIso_max20 = pfIso.at(mu) / max((float)20.,(float)Muons.at(mu).Pt());
+    if( !selCut.keepIf("RelIso<.12"       , RelIso_max20           <    .12 ) && quick ) continue;
+    TString cutList = etaCut+" "+ptCut+" RelIso<.12";
+   
+    //Tight muon (defined by POG Twiki: SWGuidMuonId)
     vector<int>&   IsGlobal     = tree->Get( &IsGlobal,     "muonIsGlobalMuonPat"                           );
     if( !selCut.keepIf("isGlobal"         , IsGlobal.at(mu)                 ) && quick ) continue;
-    vector<int>&   IsTracker    = tree->Get( &IsTracker,    "muonIsTrackerMuonPat"                          );
-    if( !selCut.keepIf("isTracker"        , IsTracker.at(mu)                ) && quick ) continue;
+    cutList+=" "+"isGlobal";
 
+    vector<int>&   IsPf         = tree->Get( &IsPf,     "muonIsPFMuonPat"                           );
+    if( !selCut.keepIf("isPf"             , IsPf.at(mu)                 ) && quick ) continue;
+    cutList+=" "+"isPf";
+
+    //Tracking cuts
     vector<df>&    GT_nChi2     = tree->Get( &GT_nChi2,     "muonGlobalTracknormalizedChi2Pat"              );
     if( !selCut.keepIf("GTnormChi<10"     , GT_nChi2.at(mu)        <  10    ) && quick ) continue;
-    vector<ui>&    GT_nValTHits = tree->Get( &GT_nValTHits, "DESYmuonGlobalTrackNumberOfValidTrackerHitsPat");
-    if( !selCut.keepIf("GTtrackerhits>=11", GT_nValTHits.at(mu)    >= 11    ) && quick ) continue;
-    vector<ui>&    GT_nValOHits = tree->Get( &GT_nValOHits, "DESYmuonGlobalTrackNumberOfValidMuonHitsPat"   );
-    if( !selCut.keepIf("GTouterhits>0"    , GT_nValOHits.at(mu)    >   0    ) && quick ) continue;
+    cutList+=" "+"GTnormChi<10";
 
+    vector<ui>&    GT_nValOHits = tree->Get( &GT_nValOHits, "muonGlobalTracknumberOfValidMuonHitsPat"   );
+    if( !selCut.keepIf("GTouterhits>0"    , GT_nValOHits.at(mu)    >   0    ) && quick ) continue;
+    cutList+=" "+"GTouterhits>0";
+
+    vector<unsigned int>&    GT_nMatchedStat = tree->Get( &GT_nMatchedStat, "muonNumberOfMatchedStationsPat"   );
+    if( !selCut.keepIf("GTnMatchedStat>1"    , GT_nMatchedStat.at(mu)    >   1    ) && quick ) continue;
+    cutList+=" "+"GTnMatchedStat>1";
+
+    //This is a tighter cut that given by the POG. Assume this is 0.2mm, not 2mm
     vector<df>&    GT_Dxy       = tree->Get( &GT_Dxy,       "muonGlobalTrackDxyPat"                         );
     if( !selCut.keepIf("GTdxy<.02"        , fabs(GT_Dxy.at(mu))    <    .02 ) && quick ) continue;
+    cutList+=" "+"GTdxy<.02";
+
+    //Using the 5mm recommended, but other groups seem to use looser cuts, e.g. 1cm
     vector<df>&    GT_Dz        = tree->Get( &GT_Dz,        "muonGlobalTrackDzPat"                          );
-    if( !selCut.keepIf("GTdz<1"           , fabs(GT_Dz.at(mu))     <   1.0  ) && quick ) continue;
+    if( !selCut.keepIf("GTdz<0.5"           , fabs(GT_Dz.at(mu))     <   0.5  ) && quick ) continue;
+    cutList+=" "+"GTdz<0.5";
 
-    vector<df>&    EcalVetoDep  = tree->Get( &EcalVetoDep,  "muonEcalVetoDepPat"                            );
-    if( !selCut.keepIf("EcalVetoDep<4"    , EcalVetoDep.at(mu)     <   4    ) && quick ) continue;
-    vector<df>&    HcalVetoDep  = tree->Get( &HcalVetoDep,  "muonHcalVetoDepPat"                            );
-    if( !selCut.keepIf("HcalVetoDep<6"    , HcalVetoDep.at(mu)     <   6    ) && quick ) continue;
+    vector<unsigned int>& GT_nPixelHits = tree->Get( &GT_nPixelHits, "muonNumberOfValidPixelHitsPat"   );
+    if( !selCut.keepIf("GTnPixelHits>0"           , GT_nPixelHits.at(mu)     >   0  ) && quick ) continue;
+    cutList+=" "+"GTnPixelHits>0";
 
-    vector<LOR>&  PFMuons = tree->Get(&PFMuons, "muonP4PF");
-    int closestPFmuon=-1;
-    double deltaRtoClosestPFmuon=1000.;
-    for( unsigned pfmu=0; pfmu<PFMuons.size(); ++pfmu ) {
-      double locDR = DeltaR(Muons.at(mu),PFMuons.at(pfmu));
-      if( locDR < deltaRtoClosestPFmuon ) {
-	closestPFmuon         = pfmu;
-	deltaRtoClosestPFmuon = locDR;
-      }
-    }
-
-    if( !selCut.keepIf("PtDiffToNextPFmuon<1", closestPFmuon>=0 && fabs(Muons.at(mu).pt()-PFMuons.at(closestPFmuon).pt())<1 ) && quick ) continue;
+    vector<unsigned int>& GT_nTrkLayers = tree->Get( &GT_nTrkLayers, "muonNumberOfTrackerLayersWithMeasurementPat"   );
+    if( !selCut.keepIf("GTnTrkLayers>5"           , GT_nTrkLayers.at(mu)     >   5  ) && quick ) continue;
+    cutList+=" "+"GTnTrkLayers>5";
 
 
-    if( quick || selCut.applyCuts("RA6 muon selection", ptCut+" "+etaCut+" isGlobal isTracker GTnormChi<10 GTtrackerhits>=11 GTdxy<.02 GTdz<1 EcalVetoDep<4 HcalVetoDep<6 RelIso<.15 GTouterhits>0 PtDiffToNextPFmuon<1") )
-      selMu.push_back(mu);
+    //cutList=ptCut+" "+etaCut+" isGlobal isTracker GTnormChi<10 GTtrackerhits>=11 GTdxy<.02 GTdz<1 EcalVetoDep<4 HcalVetoDep<6 RelIso<.15 GTouterhits>0 PtDiffToNextPFmuon<1"; //Old list
+    if( quick || selCut.applyCuts("RA6 muon selection", cutList) ) selMu.push_back(mu);
 
-    /*missing cuts
-from AN2011-464_v3:
-- Relative transverse momentum error of silicon track used for muon fit is delta(pT )/pT < 0.1
-- The muon is required to be a PF muon whose pT is no more than 1 GeV different than the reco muon (to ensure consistency with PF MET)
-
-    */
 
   }// muon loop
 
