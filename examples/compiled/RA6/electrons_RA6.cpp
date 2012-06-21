@@ -26,8 +26,8 @@ bool electrons_RA6(EasyChain* tree, vector<unsigned>& selEl, CutSet& selCut) {
   //if isOldNtuple:
     //typedef LorentzV LOR;
     //typedef double df;
-    
 
+  //Get branches
   vector<LOR>& Electrons = tree->Get(&Electrons, "electronP4Pat");
 
   for( unsigned el=0; el<Electrons.size(); ++el ) {
@@ -65,6 +65,7 @@ bool electrons_RA6(EasyChain* tree, vector<unsigned>& selEl, CutSet& selCut) {
     float relPfIso = (iso_ch + iso_n) / Electrons.at(el).Pt(); 
     if( !selCut.keepIf("RelIso<.15"        , relPfIso                      <    .15 ) && quick ) continue;
     TString cutList = etaCut+" "+ptCut+" RelIso<.15";
+
     /////////////////////////////////
     //Cut based electron ID, medium WP
     ////////////////////////////////
@@ -94,12 +95,14 @@ bool electrons_RA6(EasyChain* tree, vector<unsigned>& selEl, CutSet& selCut) {
     if( !selCut.keepIf("|d0|<0.02"         , fabs(El_GsfTrackDxy.at(el))    <   0.02 ) && quick ) continue;
     if( !selCut.keepIf("|dz|<0.10"         , fabs(El_GsfTrackDz.at(el))     <   0.10 ) && quick ) continue;
     cutList +=" |d0|<0.02 |dz|<0.10";
+
     //For fabs(1/E-1/p)
     vector<float>&    ecalEnergy         = tree->Get( &ecalEnergy, "electronEcalEnergyPat"                 );
     vector<float>&    eSuperClusterOverP = tree->Get( &eSuperClusterOverP, "electronESuperClusterOverPPat" );
     float iE_minus_iP = fabs(1.0/ecalEnergy.at(el) - eSuperClusterOverP.at(el) / ecalEnergy.at(el) );
     if( !selCut.keepIf("|1/E-1/p|<0.05"     , iE_minus_iP              <   0.05    ) && quick ) continue;
     cutList +=" |1/E-1/p|<0.05"
+
     //Conversion Rejection
     vector<bool>& matchedConversions      = tree->Get( &matchedConversions,   "DESYelectronHasMatchedConversionsPat");
     if( !selCut.keepIf("NoMatchedConversions"     , !matchedConversions.at(el)    ) && quick ) continue;
@@ -107,6 +110,11 @@ bool electrons_RA6(EasyChain* tree, vector<unsigned>& selEl, CutSet& selCut) {
     vector<int>& missingHits              = tree->Get( &missingHits,   "electronConversionMissingHitsPat");
     if( !selCut.keepIf("numMisHits<2"     , missingHits.at(el)              <   2    ) && quick ) continue;
     cutList +=" numMisHits<2";
+
+    //Tight trigger requirement
+    vector<int>& idTightTrig = tree->Get( &idTightTrig,   "DESYelectronIdTriggerTightPat");
+    if( !selCut.keepIf("idTightTrig"     , idTightTrig.at(el) ) && quick ) continue;
+    cutList +=" idTightTrig";
 
     if( quick || selCut.applyCuts("RA6 electron selection", cutList))
       selEl.push_back(el);
