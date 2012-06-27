@@ -79,10 +79,13 @@ class SusyCAF(object) :
             self.process.load('SUSYBSMAnalysis.SusyCAF.SusyCAF_%s_cfi'%module)
         for module in ['Module','TotalKinematicsFilter','FilterResultProducer','Filter'] :
             self.process.load('SUSYBSMAnalysis.DesySusy.SusyDESY_%s_cfi'%module)
+        self.process.load('RecoMET.METFilters.eeBadScFilter_cfi')
+        self.process.eeBadScFilterFlag = self.process.eeBadScFilter.clone(taggingMode = True)
         return ( self.patJet() +
                  self.patLepton('Electron') + self.patLepton('Muon') +
                  self.evalSequence('susycaf%s',  ['photon']+(['tau','HPStau','pftau'] if self.options.taus else [])) +
                  self.evalSequence('susycafmet%s', ['AK5','AK5TypeII','PF','TypeIPF','TC']) +
+                 self.process.eeBadScFilterFlag +
                  self.process.susydesytotakinematicsfilter +
                  self.evalSequence('susydesy%s', ['patelectrons','pfelectrons','patmuons','pfmuons','trigger']) +
                  self.evalSequence('filterResult%s', ['OneLepton']) +
