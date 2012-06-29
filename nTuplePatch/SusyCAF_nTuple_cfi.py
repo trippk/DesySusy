@@ -77,7 +77,7 @@ class SusyCAF(object) :
     def pat(self) :
         for module in ['MET','Photon','PFTau'] :
             self.process.load('SUSYBSMAnalysis.SusyCAF.SusyCAF_%s_cfi'%module)
-        for module in ['Module','TotalKinematicsFilter','FilterResultProducer','Filter'] :
+        for module in ['Module','FilterResultProducer','Filter'] :
             self.process.load('SUSYBSMAnalysis.DesySusy.SusyDESY_%s_cfi'%module)
         self.process.load('RecoMET.METFilters.eeBadScFilter_cfi')
         self.process.eeBadScFilterFlag = self.process.eeBadScFilter.clone(taggingMode = True)
@@ -86,7 +86,6 @@ class SusyCAF(object) :
                  self.evalSequence('susycaf%s',  ['photon']+(['tau','HPStau','pftau'] if self.options.taus else [])) +
                  self.evalSequence('susycafmet%s', ['AK5','AK5TypeII','PF','TypeIPF','TC']) +
                  self.process.eeBadScFilterFlag +
-                 self.process.susydesytotakinematicsfilter +
                  self.evalSequence('susydesy%s', ['patelectrons','pfelectrons','patmuons','pfmuons','trigger']) +
                  self.evalSequence('filterResult%s', ['OneLepton']) +
                  self.evalSequence('filter%s'      , ['OneLepton'])
