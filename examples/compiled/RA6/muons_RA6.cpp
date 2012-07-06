@@ -65,7 +65,7 @@ bool muons_RA6(EasyChain* tree, vector<unsigned>& selMu, CutSet& selCut) {
     if( !selCut.keepIf("nMatchedStations>1"  , nMatchedSt.at(mu)     >   1    ) && quick ) continue;
 
     vector<float>&   IT_dxy       = tree->Get( &IT_dxy,       "muonInnerTrackDxyPat"                       );
-    if( !selCut.keepIf("ITdxy<.02"             , fabs(IT_dxy.at(mu)) <    .02 ) && quick ) continue;
+    if( !selCut.keepIf("ITdxy<.2"              , fabs(IT_dxy.at(mu)) <    .2  ) && quick ) continue;
 
     vector<float>&   IT_dz        = tree->Get( &IT_dz ,       "muonInnerTrackDzPat"                        );
     if( !selCut.keepIf("ITdz<.5"               , fabs(IT_dz.at(mu))  <    .5  ) && quick ) continue;
@@ -77,7 +77,7 @@ bool muons_RA6(EasyChain* tree, vector<unsigned>& selMu, CutSet& selCut) {
     if( !selCut.keepIf("ITtrLayWithMeas>5"     , IT_trLayMeas.at(mu) >   5    ) && quick ) continue;
 
 
-    if( quick || selCut.applyCuts("RA6 muon selection", ptCut+" "+etaCut+" isGlobal isPF GTnormChi<10 GTvalMuonHits>0 nMatchedStations>1 ITdxy<.02 ITdz<.5 ITnPixHits>0 ITtrLayWithMeas>5") )
+    if( quick || selCut.applyCuts("RA6 muon selection", ptCut+" "+etaCut+" combRelPFIso<.12 isGlobal isPF GTnormChi<10 GTvalMuonHits>0 nMatchedStations>1 ITdxy<.2 ITdz<.5 ITnPixHits>0 ITtrLayWithMeas>5") )
       selMu.push_back(mu);
 
 
