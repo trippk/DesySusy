@@ -31,7 +31,6 @@
 #include "cschalo_RA4b.h"
 #include "trackingFailure_RA4b.h"
 #include "THTools.h"
-#include "timing.h"
 #include "TStopwatch.h"
 #include "Electron.h"
 #include "Muon.h"
@@ -63,9 +62,6 @@ int main(int argc, char** argv){
   const double PI = 4.0*atan(1.0);  
   pcp=false;
   //pcp=true;
-
-  timing Cronos;
-   Cronos.Start("beforeloop"); 
 
 
 
@@ -135,9 +131,10 @@ int main(int argc, char** argv){
   //======================================================
   //WEIGHTS
   //======================================================
-  /*waiting for ozgur for this
+
   bool DoOnlineRW=false;
   double InitialEventWeight=1.0;             //Event weight do to Lumi and xsec.
+  /*waiting for ozgur for this
   if(DoOnlineRW){
     cout<<"GOING TO REWEIGHT THE MC SAMPLE TO THE DATA LUMI "<<endl;
     double xsecMC=1.0;                         //Monte Carlo Cross Section
@@ -349,9 +346,7 @@ int main(int argc, char** argv){
   //LOOP OVER EVENTS
   //=============================================================================
   //=============================================================================
-  Cronos.Start("intheloop");
-  Cronos.Start("x5iterations");
-  int nextiter=1;
+
   //N=1000;
   for(int i=0;i<N;++i){
 
@@ -1021,9 +1016,6 @@ int main(int argc, char** argv){
      
 
 
-  Cronos.Stop("intheloop");
-  Cronos.Stop("x5iterations");
-  Cronos.Start("writing file");
 
 
 
@@ -1037,7 +1029,6 @@ int main(int argc, char** argv){
 
   //==================================================
   outfile->cd();
-  gDirectory->ls();
   TListIter* list = new TListIter(gDirectory->GetList()); //-->iterates over list of objects in memory
   TObject *nobj=(TObject*) list->Next(); //nobj now points to the first object in memory
   while(nobj){
@@ -1073,9 +1064,6 @@ int main(int argc, char** argv){
   //PROGRAM END
  EndOfProgram:
   
-  Cronos.Stop("writing file");
-  Cronos.PrintReport("writing file");
-
   
 
   return 0;
