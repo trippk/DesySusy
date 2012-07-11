@@ -2,7 +2,7 @@
 # prelim RA4b_config
 
 isData      = true
-filename    = /pnfs/desy.de/cms/tier2/store/user/eron/nTuple12_v2/mc/TTJets_MassiveBinDECAY_TuneZ2star_8TeV-madgraph-tauola/Summer12-PU_S6_START52_V9-v1/SusyCAF_Tree_100_0_Jp6.root
+filename    = /scratch/hh/current/cms/user/eron/nTuples/testdir/
 quick       = true
 SampleName = MuHad
 SubSampleName = Run2012A-PromptReco-v1
