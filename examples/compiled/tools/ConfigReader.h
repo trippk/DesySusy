@@ -64,17 +64,19 @@ public:
 
 	 TString  getTString(const TString& property ,int i=-1,const TString delim=delimiter);
 	 TString  getTString(const TString& property, const TString& defaultValue);
-	 int      getInt(   const TString& property);
-	 int      getInt(   const TString& property, int defaultValue);
-	 bool     getBool(  const TString& property);
-	 bool     getBool(  const TString& property, bool defaultValue);
-	 float    getFloat( const TString& property);
-	 float    getFloat( const TString& property, float defaultValue);
-	 double   getDouble(const TString& property);
-	 double   getDouble(const TString& property, double defaultValue);
-	 double   getDouble(const TString& property, const TString& defaultValue);
-	 double   getDouble(const TString& property, int i, const TString delim=delimiter);
-	 unsigned   getDouble(const TString& property, vector<double>&, const TString delim=delimiter);
+	 int      getInt(    const TString& property);
+	 int      getInt(    const TString& property, int defaultValue);
+	 long     getLong(   const TString& property);
+	 long     getLong(   const TString& property, long defaultValue);
+	 bool     getBool(   const TString& property);
+	 bool     getBool(   const TString& property, bool defaultValue);
+	 float    getFloat(  const TString& property);
+	 float    getFloat(  const TString& property, float defaultValue);
+	 double   getDouble( const TString& property);
+	 double   getDouble( const TString& property, double defaultValue);
+	 double   getDouble( const TString& property, const TString& defaultValue);
+	 double   getDouble( const TString& property, int i, const TString delim=delimiter);
+	 unsigned  getDouble(const TString& property, vector<double>&, const TString delim=delimiter);
 	 string	getString(const TString& property);
 	 string	getString(const TString& property, const TString& defaultValue);
 	 string	getString(const TString& property,int i,const TString delim=delimiter){
@@ -86,10 +88,11 @@ public:
 	// print used variables
 	void printUsed(ostream& out=cout);
 	// config file name
-	TString GetFilename(){return usedFilename;};
+  TString GetFilename(){return usedFilename;};
+  void   Add(const TString& name){ load(name,false); };
 private:
 	TString  getstring(const TString& property, const TString& defaultValue);
-	void load(const TString& initFileName);
+  void load(const TString& initFileName, bool newmap=true);
 	template<typename T> TString toString(T val){
 		stringstream sstr;
 		sstr.precision(10);

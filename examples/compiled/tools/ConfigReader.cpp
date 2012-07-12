@@ -93,6 +93,17 @@ int ConfigReader::getInt(const TString& property) {
 		}
 		return atoi(key->second);
 }
+long ConfigReader::getLong(const TString& property, long defaultValue) {
+	return atol(getTString(property,toString(defaultValue)));
+}
+long ConfigReader::getLong(const TString& property) {
+		myMapType::const_iterator key = configMap.find(property);
+		if(key == configMap.end()) {
+			cout<<"ConfigReader::getLong - '"<<property<<"' is not defined in "<<usedFilename<<endl;
+			exit(0);
+		}
+		return atol(key->second);
+}
 bool ConfigReader::getBool(const TString& property,bool defaultValue){
 	TString def = defaultValue ? "true" : "false";
 	myMapType::const_iterator key = configMap.find(property);
@@ -156,7 +167,7 @@ float ConfigReader::getFloat(const TString& property) {
 }
 
 // config file reading
-void ConfigReader::load(const TString& initFileName) {
+void ConfigReader::load(const TString& initFileName, bool newmap) {
 
 	ifstream in( initFileName );
 
@@ -166,7 +177,7 @@ void ConfigReader::load(const TString& initFileName) {
         }
 	usedFilename=initFileName;
 
-        configMap.clear();
+        if(newmap) configMap.clear();
         TString fullLine, command;
         TString leftSide, rightSide;
         char line[10000];
