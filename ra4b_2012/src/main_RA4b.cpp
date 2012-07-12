@@ -520,8 +520,8 @@ int main(int argc, char** argv){
     //====================================================================
     // TRIGGERS
     //====================================================================
-    //OK = triggers_RA4b(tree, triggernames,EventWeight);
-    OK=true;
+    OK = triggers_RA4b(tree, triggernames,EventWeight);
+    //OK=true;
     //================================================
     if(pcp)cout<<"check point triggers called"<<endl;
     //

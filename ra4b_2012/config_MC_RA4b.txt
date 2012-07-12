@@ -8,4 +8,4 @@ isolation_cut = 0.1
 SampleName = SingleTop
 SubSampleName = Tbar-tW-channel
 Estimation = RA4b-mu
-Tail = NoTightNoVetoReq
+Tail = NoTail
