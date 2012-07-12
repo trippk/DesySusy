@@ -37,6 +37,8 @@
 #include "Jet.h"
 #include "makeJets.h"
 #include "HistoMaker.h"
+#include "GetSampleValues.h"
+
 
 using namespace std;
 using namespace ROOT::Math::VectorUtil;
@@ -70,6 +72,7 @@ int main(int argc, char** argv){
   
   string MainDir="./";
   ConfigReader config(MainDir+"config.txt",argc,argv);
+  config.Add(MainDir+"para_config.txt");
   TString filename = config.getTString("filename"); 
 
   EasyChain* tree = new EasyChain("/susyTree/tree");
@@ -132,9 +135,9 @@ int main(int argc, char** argv){
   //WEIGHTS
   //======================================================
 
-  bool DoOnlineRW=false;
+  bool DoOnlineRW=true;
   double InitialEventWeight=1.0;             //Event weight do to Lumi and xsec.
-  /*waiting for ozgur for this
+  //waiting for ozgur for this
   if(DoOnlineRW){
     cout<<"GOING TO REWEIGHT THE MC SAMPLE TO THE DATA LUMI "<<endl;
     double xsecMC=1.0;                         //Monte Carlo Cross Section
@@ -158,10 +161,10 @@ int main(int argc, char** argv){
 	cout<<"Leaving the program "<<endl;
 	return 0;
       }
-      cout<< " THE EVENT WEIGHT DUE TO FilterEff*xSec = "<< InitialEventWeight<<endl;
+      cout<< " THE EVENT WEIGHT DUE TO FilterEff*xSec(*Lumi/TNoE) = "<< InitialEventWeight<<endl;
     }
   }
-  */
+ 
   //========================================================
 
 
