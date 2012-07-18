@@ -1,4 +1,4 @@
-#/usr/bin/python
+#!/usr/bin/python
 import sys, os
 import commands as com
 from SetUpSample import SetUpSampleAndScript
