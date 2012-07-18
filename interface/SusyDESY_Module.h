@@ -5,9 +5,11 @@
 #include "FWCore/Utilities/interface/InputTag.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
-
+#include "TH1D.h"
 #include "DataFormats/PatCandidates/interface/Electron.h"
 #include "DataFormats/PatCandidates/interface/Muon.h"
+#include "FWCore/ServiceRegistry/interface/Service.h"
+#include "CommonTools/UtilAlgos/interface/TFileService.h"
 
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h" 
 
@@ -77,6 +79,18 @@ private:
 /*       } */
       
 };
+
+class SusyDESY_PU : public edm::EDProducer {
+public:
+     explicit SusyDESY_PU(const edm::ParameterSet&);
+private:
+     void produce( edm::Event &, const edm::EventSetup & );
+     void beginJob();
+  // const std::string Prefix,Suffix;
+     const edm::InputTag PileUp;
+  TH1F * pu;
+};
+
 
 #endif
 

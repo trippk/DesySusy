@@ -50,7 +50,6 @@ SusyDESY_Electrons::SusyDESY_Electrons(const edm::ParameterSet& iConfig)
   produces <std::vector<bool> > ( Prefix + "IsGap" + Suffix );
 
   produces <std::vector<int> >  ( Prefix + "IdTriggerTight" + Suffix);
-
   produces <std::vector<bool> > ( Prefix + "HasMatchedConversions" + Suffix );
 //   produces <std::vector<> > ( Prefix + ""   + Suffix );
 }
@@ -380,5 +379,24 @@ void SusyDESY_Trigger::produce(edm::Event& iEvent, const edm::EventSetup& iSetup
 
 
 void SusyDESY_Trigger::beginJob(){}
+
+SusyDESY_PU::SusyDESY_PU(const edm::ParameterSet& iConfig)
+  :PileUp  (iConfig.getParameter<edm::InputTag>("PileUp"))
+{
+}
+
+void SusyDESY_PU::beginJob(){
+  edm::Service<TFileService> fs;
+  pu= fs->make<TH1F>("pu","pu dist",100,0,100);
+}
+
+void SusyDESY_PU::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
+
+  edm::Handle<float> pileup ;
+  iEvent.getByLabel( PileUp, pileup );
+  pu->Fill(*pileup.product());
+
+}
+
 
 

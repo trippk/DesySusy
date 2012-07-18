@@ -16,3 +16,4 @@ DEFINE_FWK_MODULE(SusyDESY_PDFweights);
 DEFINE_FWK_MODULE(SusyDESY_TotalKinematicsFilterResult);
 DEFINE_FWK_MODULE(SusyDESY_FilterResultProducerOneLepton);
 DEFINE_FWK_MODULE(SusyDESY_Filter);
+DEFINE_FWK_MODULE(SusyDESY_PU);

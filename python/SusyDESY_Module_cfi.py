@@ -40,3 +40,8 @@ susydesytrigger = cms.EDProducer("SusyDESY_Trigger",
                                  )
 
 
+susydesypu = cms.EDProducer("SusyDESY_PU",
+                            PileUp     = cms.InputTag('susycafpileupsummary:pileupTrueNumInteractionsBX0')
+                            )
+
+
