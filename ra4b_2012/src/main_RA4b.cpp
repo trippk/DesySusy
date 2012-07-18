@@ -37,7 +37,6 @@
 #include "Jet.h"
 #include "makeJets.h"
 #include "HistoMaker.h"
-#include "GetSampleValues.h"
 
 
 using namespace std;
@@ -134,22 +133,32 @@ int main(int argc, char** argv){
   //======================================================
   //WEIGHTS
   //======================================================
-
-  bool DoOnlineRW=true;
+  //PU
+  vector<double> PUmc;
+  vector<double> PUdata;
+  int nobinsmc, nobinsdata;
+  if(!isData){
+    nobinsmc = config.getDouble("PU_"+WhatSample+"_"+WhatSubSample+"_mc",PUmc," ");
+    nobinsdata = config.getDouble("PU_data",PUdata," ");
+  } 
+  if(nobinsmc!=nobinsdata){
+    cout << "problem in pu inf in para_config" << endl;
+    return 0;
+  }
+  //
+  bool DoOnlineRW=false;
   double InitialEventWeight=1.0;             //Event weight do to Lumi and xsec.
-  //waiting for ozgur for this
   if(DoOnlineRW){
     cout<<"GOING TO REWEIGHT THE MC SAMPLE TO THE DATA LUMI "<<endl;
     double xsecMC=1.0;                         //Monte Carlo Cross Section
     double Lumidata=5097.2;                    //Luminosity of the data
     double FilterEff=1.0;                      //Filter Efficiency
     long   Ntotal_MC=-1;                       //Total events in Monte Carlo
-    
+   
     if(!isData){
-      FilterEff=GetFilterEfficiency(WhatSample,WhatSubSample);
-      xsecMC=GetCrossSection(WhatSample,WhatSubSample);
-      cout<<"retrieving the number of entries with "<<WhatSample<<" and "<<WhatSubSample<<endl;
-      Ntotal_MC=GetTotalNumberOfEntries(WhatSample,WhatSubSample);
+      FilterEff=config.getDouble("FE_"+WhatSample+"_"+WhatSubSample);
+      xsecMC=config.getDouble("xs_"+WhatSample+"_"+WhatSubSample);
+      Ntotal_MC=config.getLong("TNoE_"+WhatSample+"_"+WhatSubSample);
       cout<<"FILTER EFFICIENCY FOR THIS SUBSAMPLE  "<<FilterEff<<endl;
       cout<<"CROSS SECTION OF THIS SUBSAMPLE "<<xsecMC<<endl;
       cout<<"TOTAL NUMBER OF ENTRIES "<<Ntotal_MC<<endl;
@@ -338,9 +347,8 @@ int main(int argc, char** argv){
 
   bool isquick=config.getBool("quick",true);
   bool quick=false;
-
-
-
+ 
+ 
 
 
 
@@ -389,7 +397,19 @@ int main(int argc, char** argv){
     // PILE UP RW
     //==============================================
 
+    if(!isData) {
+      float PUnumInter    = tree->Get( PUnumInter, "pileupTrueNumInteractionsBX0");
+      int relevantNumPU = PUnumInter;
+      //      ps.addPlot_withUnweighted( "relevantNumPU", 100,0.,100., relevantNumPU ); //this line makes the plot with the PU distribution in the MC sample, can be commented out.
+      ///if( PU_weightList == " " ) continue; // here the loop stops if there are no weights in the config file (intended for the first run, to get only the PU distribution in the sample
+      if( relevantNumPU >= nobinsmc ) {
+	cout << "something wrong with the pile up info!!! - exceed max number of vertex: " << nobinsmc <<endl;
+	return 0; 
+      } else {
+	EventWeight *= PUdata.at( relevantNumPU )/PUmc.at( relevantNumPU );
 
+      }
+    }
 
 
 
@@ -637,10 +657,10 @@ int main(int argc, char** argv){
     //====================================================================    
     // check Mu BEfilter
     //====================================================================    
-//     bool ECAL_TP = tree->Get(ECAL_TP,"ecaldeadcellfilterflag");
-//     OK=ECAL_TP;
-//     if(i==0 && isquick){OK=OK&&OKold; OKold=OK;}
-//     if( !globalFlow.keepIf("ECAL_TP", OK, EventWeight)          && quick ) continue;
+    //     bool ECAL_TP = tree->Get(ECAL_TP,"ecaldeadcellfilterflag");
+    //     OK=ECAL_TP;
+    //     if(i==0 && isquick){OK=OK&&OKold; OKold=OK;}
+    //     if( !globalFlow.keepIf("ECAL_TP", OK, EventWeight)          && quick ) continue;
     //====================================================================
 
 
