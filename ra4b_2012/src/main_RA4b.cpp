@@ -72,6 +72,7 @@ int main(int argc, char** argv){
   string MainDir="./";
   ConfigReader config(MainDir+"config.txt",argc,argv);
   config.Add(MainDir+"para_config.txt");
+  config.Add(MainDir+"pu_config.txt");
   TString filename = config.getTString("filename"); 
 
   EasyChain* tree = new EasyChain("/susyTree/tree");
@@ -134,14 +135,19 @@ int main(int argc, char** argv){
   //WEIGHTS
   //======================================================
   //PU
+  bool oldpuw = true; //the obselete method and values
   vector<double> PUmc;
   vector<double> PUdata;
   int nobinsmc, nobinsdata;
-  if(!isData){
+  if(!isData && !oldpuw){
     nobinsmc = config.getDouble("PU_"+WhatSample+"_"+WhatSubSample+"_mc",PUmc," ");
     nobinsdata = config.getDouble("PU_data",PUdata," ");
   } 
-  if(nobinsmc!=nobinsdata){
+  else if(!isData && oldpuw){
+    nobinsmc = config.getDouble("oldPU_"+WhatSample+"_"+WhatSubSample+"_mc",PUmc," ");
+   } 
+
+  if(nobinsmc!=nobinsdata && !oldpuw){
     cout << "problem in pu inf in para_config" << endl;
     return 0;
   }
@@ -249,15 +255,7 @@ int main(int argc, char** argv){
   num_entries_weighted->SetBinContent(1,N,EventWeight);
   //================================================================
 
-
   if(pcp)cout<<"check point before histos"<<endl;
-
-
-  
-
-
-
-
 
 
 
@@ -273,8 +271,6 @@ int main(int argc, char** argv){
   CutSet globalFlow("global flow");
   CutSet* p2globalFlow= &globalFlow;
   //===========================================
-
-
 
     
   //===========================================
@@ -400,15 +396,15 @@ int main(int argc, char** argv){
     if(!isData) {
       float PUnumInter    = tree->Get( PUnumInter, "pileupTrueNumInteractionsBX0");
       int relevantNumPU = PUnumInter;
-      //      ps.addPlot_withUnweighted( "relevantNumPU", 100,0.,100., relevantNumPU ); //this line makes the plot with the PU distribution in the MC sample, can be commented out.
-      ///if( PU_weightList == " " ) continue; // here the loop stops if there are no weights in the config file (intended for the first run, to get only the PU distribution in the sample
       if( relevantNumPU >= nobinsmc ) {
-	cout << "something wrong with the pile up info!!! - exceed max number of vertex: " << nobinsmc <<endl;
+	cout << "something wrong with the pile up info!!! - exceed max number of vertex:     " << nobinsmc <<endl;
 	return 0; 
-      } else {
-	EventWeight *= PUdata.at( relevantNumPU )/PUmc.at( relevantNumPU );
-
       }
+
+      else if( oldpuw) EventWeight *= PUmc.at( relevantNumPU );
+
+      else EventWeight *= PUdata.at( relevantNumPU )/PUmc.at( relevantNumPU );
+      
     }
 
 
@@ -741,12 +737,6 @@ int main(int argc, char** argv){
 
 
 
-
-
-
-
-
-
     //===================================
     //JETS
     //===================================
@@ -755,13 +745,6 @@ int main(int argc, char** argv){
     if(!globalFlow.keepIf("Jet_Cuts",OK) && quick) continue;    
     if(DoControlPlots)ControlPlots.MakePlots("Jet_Cuts", SignalMuons, SignalElectrons, CleanedJets, PFmet); 
     //===================================
-
-
-
-
-
-
-
 
 
 
@@ -777,22 +760,22 @@ int main(int argc, char** argv){
     //    }
     
     /*
-    double TCHE_bTag_cutVal=config.getFloat("Btag_CutValue",3.3);
-    int NOfbtags=0;
-    vector<float>& TCHE_bTag   = tree->Get(&TCHE_bTag  , "ak5JetPFTrkCountingHighEffBJetTagsPat"); 
-    for(int ijet=0;ijet<(int)selectedJets.size();++ijet){
+      double TCHE_bTag_cutVal=config.getFloat("Btag_CutValue",3.3);
+      int NOfbtags=0;
+      vector<float>& TCHE_bTag   = tree->Get(&TCHE_bTag  , "ak5JetPFTrkCountingHighEffBJetTagsPat"); 
+      for(int ijet=0;ijet<(int)selectedJets.size();++ijet){
       int m=selectedJets.at(ijet)->GetIndexInTree();
       if(TCHE_bTag.at(m) > TCHE_bTag_cutVal ){
-	selectedJets.at(ijet)->SetBtag(true);
-	//if i==0, be careful
-	if(i==0 && OK && OKold){NOfbtags++; }
-	if(i!=1){NOfbtags++;}
+      selectedJets.at(ijet)->SetBtag(true);
+      //if i==0, be careful
+      if(i==0 && OK && OKold){NOfbtags++; }
+      if(i!=1){NOfbtags++;}
       }
-    }
+      }
     */
     //===================================================================
-     
-     
+    
+    
     //===================================================================
     //Requirements on the number of btags
     //===================================================================
@@ -802,13 +785,6 @@ int main(int argc, char** argv){
     //===================================================================
     //    if(pcp)cout<<"number of btags imposed "<<endl;
     int NOfbtags=0;
-
-
-
-
-
-
-
 
 
 
@@ -834,10 +810,6 @@ int main(int argc, char** argv){
       if(pcp)cout<<"check point after resonances"<<endl;
     }
     //======================================================
-
-
-
-
 
 
 
