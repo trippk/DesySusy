@@ -61,7 +61,7 @@ int main(int argc, char** argv){
 
 
   const double PI = 4.0*atan(1.0);  
-  pcp=false;
+    pcp=false;
   //pcp=true;
 
 
@@ -148,7 +148,7 @@ int main(int argc, char** argv){
    } 
 
   if(nobinsmc!=nobinsdata && !oldpuw){
-    cout << "problem in pu inf in para_config" << endl;
+    cout << "problem in pu inf in para_config - number of bins in MC PU dist is different than data!" << endl;
     return 0;
   }
   //
@@ -386,7 +386,7 @@ int main(int argc, char** argv){
     //================================================
     EventWeight=InitialEventWeight;
     //================================================
-
+    //  cout << "weight before PUrw -> " << EventWeight << endl;
 
 
     //==============================================
@@ -407,8 +407,8 @@ int main(int argc, char** argv){
       
     }
 
-
-
+    //    cout << "weight before PUrw -> " << EventWeight << endl;
+    CutSet::global_event_weight  = EventWeight;
 
     //==============================================
 
