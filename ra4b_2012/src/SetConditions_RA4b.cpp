@@ -22,16 +22,17 @@ void SetConditions_RA4b(SampleInformation mySampleInformation){
 
   if(mySampleInformation.GetEstimation()=="RA4b-mu" ){
     
-    //============================================
-    //ELECTRONS
-    //============================================
-    SetOfCuts::SignalElectrons.NUM.Set(0,"equal","no signal electron");
-    SetOfCuts::WideElectrons.NUM.Set(0,"equal","no wider electrons");
+
     //============================================
     // MUONS
     //============================================
     SetOfCuts::SignalMuons.NUM.Set(1,"equal","one signal muon");
     SetOfCuts::WideMuons.NUM.Set(0,"equal","no wider muons");
+    //============================================
+    //ELECTRONS
+    //============================================
+    SetOfCuts::SignalElectrons.NUM.Set(0,"equal","no signal electron");
+    SetOfCuts::WideElectrons.NUM.Set(0,"equal","no wider electrons");
     //============================================
     //JETS
     //============================================
@@ -46,17 +47,17 @@ void SetConditions_RA4b(SampleInformation mySampleInformation){
 
   }  
   else if(mySampleInformation.GetEstimation()=="RA4b-el" ){
-    
+
+    //============================================
+    // MUONS
+    //============================================
+    SetOfCuts::SignalMuons.NUM.Set(0,"equal","no muons");
+    SetOfCuts::WideMuons.NUM.Set(0,"equal","no wider muons");    
     //============================================
     //ELECTRONS
     //============================================
     SetOfCuts::SignalElectrons.NUM.Set(1,"equal","one signal electron");
     SetOfCuts::WideElectrons.NUM.Set(0,"equal","no wider electrons");
-    //============================================
-    // MUONS
-    //============================================
-    SetOfCuts::SignalMuons.NUM.Set(0,"equal","no muons");
-    SetOfCuts::WideMuons.NUM.Set(0,"equal","no wider muons");
     //============================================
     //JETS
     //============================================
