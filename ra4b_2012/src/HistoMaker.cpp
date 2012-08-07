@@ -4,6 +4,8 @@
 
 using namespace std;
 
+extern double EventWeight;
+
 HistoMaker::HistoMaker(const TString& pre, const char* dlm ):  delim(dlm), autodump(true), prefix(pre){
 
   //TH1::AddDirectory(kFALSE);
@@ -110,27 +112,27 @@ void HistoMaker::MakePlots( const TString& cutName, vector<Muon*> muons, vector<
     //cutName;
     
     
-    MuPt[cutName] = new TH1D(hname+"MuPt",cutName+"MuPt",50,0,500);
-    MuEta[cutName] = new TH1D(hname+"MuEta",cutName+"MuEta",60,-3.,3.);
+    MuPt[cutName] = new TH1D(hname+"MuPt","Pt of the Muon",50,0,500);
+    MuEta[cutName] = new TH1D(hname+"MuEta","Pseudorapidity of the muon",60,-3.,3.);
 
-    ElePt[cutName] = new TH1D(hname+"ElePt",cutName+"ElePt",50,0,500);
-    EleEta[cutName] = new TH1D(hname+"ElEta",cutName+"EleEta",60,-3.,3.);
+    ElePt[cutName] = new TH1D(hname+"ElePt","Pt of the electron",50,0,500);
+    EleEta[cutName] = new TH1D(hname+"ElEta","Pseudorapidity of the electron",60,-3.,3.);
 
-    NJets[cutName]= new TH1D(hname+"NJets",cutName+"NJets",15,0,15);
-    PtAllJets[cutName]= new TH1D(hname+"PtAllJets",cutName+"PtAllJets",150,0,1500);
-    for(int i=0; i<NMonitorJets; i++) (PtJet[i])[cutName]= new TH1D(hname+"PtJet"+(long)i,cutName+"PtJet"+(long)i,50,0,500);
+    NJets[cutName]= new TH1D(hname+"NJets","Number of Jets",15,0,15);
+    PtAllJets[cutName]= new TH1D(hname+"PtAllJets","Pt of all the jets",150,0,1500);
+    for(int i=0; i<NMonitorJets; i++) (PtJet[i])[cutName]= new TH1D(hname+"PtJet"+(long)i,"Pt of the Jet "+(long)i,50,0,500);
 
-    NBJets[cutName]= new TH1D(hname+"NBJets",cutName+"NBJets",15,0,15);
-    PtAllBJets[cutName]= new TH1D(hname+"PtAllBJets",cutName+"PtAllBJets",150,0,1500);
-    for(int i=0; i<NMonitorJets; i++) (PtBJet[i])[cutName]= new TH1D(hname+"PtBJet"+(long)i,cutName+"PtBJet"+(long)i,50,0,500);
-    BDisc[cutName]= new TH1D(hname+"BDiscriminator",cutName+"BTagDiscriminator",50,-10,10);
+    NBJets[cutName]= new TH1D(hname+"NBJets","Number of b-tagged jets",15,0,15);
+    PtAllBJets[cutName]= new TH1D(hname+"PtAllBJets","Pt of all the b-tagged jets",150,0,1500);
+    for(int i=0; i<NMonitorJets; i++) (PtBJet[i])[cutName]= new TH1D(hname+"PtBJet"+(long)i,"Pt of the b-tagged jet "+(long)i,50,0,500);
+    BDisc[cutName]= new TH1D(hname+"BDiscriminator",cutName+"BTag Discriminator",50,-10,10);
 
     HT[cutName]= new TH1D(hname+"HT",cutName+" HT",250,0,2500);
     MHT[cutName]= new TH1D(hname+"MHT",cutName+" MHT",150,0,1500);
     MET[cutName]= new TH1D(hname+"MET",cutName+" MET",100,0,1000);
     YMET[cutName]= new TH1D(hname+"YMET",cutName+" YMET",80,0,40);
 
-    HT_YMET[cutName]= new TH2D(hname+"HT_YMET",cutName+" HT_YMET",100,0.,2500.,80,0.,40.);
+    HT_YMET[cutName]= new TH2D(hname+"HT_YMET",cutName+" HT YMET scatter plot",100,0.,2500.,80,0.,40.);
      
     TString region[4]={"A","B","C","D"};
     for (int idx=0; idx<4; idx++) {
@@ -142,14 +144,16 @@ void HistoMaker::MakePlots( const TString& cutName, vector<Muon*> muons, vector<
     
   }
 
+  //cout<<"EventWeight in HistoMaker"<<EventWeight<<" in "<<cutName<<endl;
+
   for(int k=0;k< muons.size();++k){
-    MuPt[cutName]->Fill(muons.at(k)->pt());
-    MuEta[cutName]->Fill(muons.at(k)->Eta());
+    MuPt[cutName]->Fill(muons.at(k)->pt(),EventWeight);
+    MuEta[cutName]->Fill(muons.at(k)->Eta(),EventWeight);
   }
 
   for(int k=0;k< electrons.size();++k){
-    ElePt[cutName]->Fill(electrons.at(k)->pt());
-    EleEta[cutName]->Fill(electrons.at(k)->Eta());
+    ElePt[cutName]->Fill(electrons.at(k)->pt(),EventWeight);
+    EleEta[cutName]->Fill(electrons.at(k)->Eta(),EventWeight);
   }
 
   double hx=0.;
@@ -158,27 +162,27 @@ void HistoMaker::MakePlots( const TString& cutName, vector<Muon*> muons, vector<
   int nBJets=0;
   
   for(int k=0;k< jets.size();++k){
-    PtAllJets[cutName]->Fill(jets.at(k)->pt());
-    if (k<NMonitorJets) (PtJet[k])[cutName]->Fill(jets.at(k)->pt());
+    PtAllJets[cutName]->Fill(jets.at(k)->pt(),EventWeight);
+    if (k<NMonitorJets) (PtJet[k])[cutName]->Fill(jets.at(k)->pt(),EventWeight);
     hx += jets.at(k)->pP4()->px();
     hy += jets.at(k)->pP4()->py();
     ht += jets.at(k)->pt();
 
     if(jets.at(k)->IsBJet("CVS","Medium") ) {
       nBJets++;
-      PtAllBJets[cutName]->Fill(jets.at(k)->pt());
-      BDisc[cutName]->Fill(jets.at(k)->BJetDisc("CVS"));
-      if (nBJets<NMonitorJets) (PtBJet[nBJets])[cutName]->Fill(jets.at(k)->pt());
+      PtAllBJets[cutName]->Fill(jets.at(k)->pt(),EventWeight);
+      BDisc[cutName]->Fill(jets.at(k)->BJetDisc("CVS"),EventWeight);
+      if (nBJets<NMonitorJets) (PtBJet[nBJets])[cutName]->Fill(jets.at(k)->pt(),EventWeight);
     }
     
   }
   
-  NJets[cutName]->Fill(jets.size());
+  NJets[cutName]->Fill(jets.size(),EventWeight);
   NBJets[cutName]->Fill(nBJets);
 
   HT[cutName]->Fill(ht);
-  MHT[cutName]->Fill(sqrt(hx*hx+hy*hy));
-  MET[cutName]->Fill(met.pt());
+  MHT[cutName]->Fill(sqrt(hx*hx+hy*hy),EventWeight);
+  MET[cutName]->Fill(met.pt(),EventWeight);
   double ymet=met.pt()/sqrt(ht);
   YMET[cutName]->Fill(ymet);
 
@@ -197,11 +201,11 @@ void HistoMaker::MakePlots( const TString& cutName, vector<Muon*> muons, vector<
   if(D) regionID=3;
   
   if (regionID>-1) {
-    (NJets_ABCD[regionID])[cutName]->Fill(jets.size());
-    (MET_ABCD[regionID])[cutName]->Fill(met.pt());
+    (NJets_ABCD[regionID])[cutName]->Fill(jets.size(),EventWeight);
+    (MET_ABCD[regionID])[cutName]->Fill(met.pt(),EventWeight);
     for(int k=0;k< jets.size();++k){
-      (PtAllJets_ABCD[regionID])[cutName]->Fill(jets.at(k)->pt());
-      if(k<NMonitorJets) (PtJet_ABCD[k][regionID])[cutName]->Fill(jets.at(k)->pt());
+      (PtAllJets_ABCD[regionID])[cutName]->Fill(jets.at(k)->pt(),EventWeight);
+      if(k<NMonitorJets) (PtJet_ABCD[k][regionID])[cutName]->Fill(jets.at(k)->pt(),EventWeight);
     }
   }
  

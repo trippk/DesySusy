@@ -32,6 +32,18 @@ void SetTriggers_RA4b(SampleInformation mySampleInformation, vector<const char*>
     }
   }
 
+  else if(mySampleInformation.GetSample()=="SingleMu"){
+    if(mySampleInformation.GetSubSample()=="Run2012A-PromptReco-v1"){
+
+    }
+    else if(mySampleInformation.GetSubSample()=="Run2012B-PromptReco-v1"){
+      triggernames.push_back("HLT_IsoMu17_eta2p1_TriCentralPFNoPUJet30_30_20_v1");
+      triggernames.push_back("HLT_IsoMu17_eta2p1_TriCentralPFNoPUJet30_v1");
+    }
+  }
+
+
+
   else if(mySampleInformation.GetSample()=="ElectronHad"){
 
     if(mySampleInformation.GetSubSample()=="Run2012A-PromptReco-v1" ){

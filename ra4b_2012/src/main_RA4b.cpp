@@ -39,6 +39,7 @@
 #include "HistoMaker.h"
 
 
+
 using namespace std;
 using namespace ROOT::Math::VectorUtil;
 //===================================================================
@@ -63,7 +64,7 @@ int main(int argc, char** argv){
   const double PI = 4.0*atan(1.0);  
     pcp=false;
   //pcp=true;
-
+    EventWeight=1.0;
 
 
   //CONFIG. The program will always take the file config.txt in the output directory
@@ -134,6 +135,9 @@ int main(int argc, char** argv){
   //======================================================
   //WEIGHTS
   //======================================================
+
+  bool DoOnlineRW=false;
+
   //PU
   bool oldpuw = true; //the obselete method and values
   vector<double> PUmc;
@@ -152,7 +156,9 @@ int main(int argc, char** argv){
     return 0;
   }
   //
-  bool DoOnlineRW=false;
+  //bool DoOnlineRW=false;
+  //>>>>>>> 1.5
+
   double InitialEventWeight=1.0;             //Event weight do to Lumi and xsec.
   if(DoOnlineRW){
     cout<<"GOING TO REWEIGHT THE MC SAMPLE TO THE DATA LUMI "<<endl;
@@ -180,6 +186,7 @@ int main(int argc, char** argv){
     }
   }
  
+  //CutSet::global_event_weight  = InitialEventWeight;
   //========================================================
 
 
@@ -287,6 +294,8 @@ int main(int argc, char** argv){
 
 
   TH1D* EW_AfterTrigger= new TH1D("EW_AfterTrigger","Event weight after the trigger",30,0.0,100.0);
+  TH1D* EW_AfterPU=new TH1D("EW_AfterPU","Event Weight after PU RW",100,0.0,10.0);
+  TH1D* triggers_prescale= new TH1D("trigger_prescale","the prescale of the trigger",50,0.0,10.0);
 
   static double HTmin=config.getFloat("ABDCHTmin",375);
   static double HTmax=config.getFloat("ABDCHTmax",650);
@@ -337,6 +346,8 @@ int main(int argc, char** argv){
 
 
 
+  //
+  //
   if(pcp)cout<<"check point before the event loop"<<endl;
 
 
@@ -392,7 +403,6 @@ int main(int argc, char** argv){
     //==============================================
     // PILE UP RW
     //==============================================
-
     if(!isData) {
       float PUnumInter    = tree->Get( PUnumInter, "pileupTrueNumInteractionsBX0");
       int relevantNumPU = PUnumInter;
@@ -406,8 +416,8 @@ int main(int argc, char** argv){
       else EventWeight *= PUdata.at( relevantNumPU )/PUmc.at( relevantNumPU );
       
     }
-
-    //    cout << "weight before PUrw -> " << EventWeight << endl;
+    //cout << "weight before PUrw -> " << EventWeight << endl;
+    EW_AfterPU->Fill(EventWeight);
     CutSet::global_event_weight  = EventWeight;
 
     //==============================================
@@ -536,16 +546,17 @@ int main(int argc, char** argv){
 
 
 
+    //
     //====================================================================
     // TRIGGERS
     //====================================================================
-    OK = triggers_RA4b(tree, triggernames,EventWeight);
+    OK = triggers_RA4b(tree, triggernames,EventWeight,triggers_prescale);
     //OK=true;
     //================================================
     if(pcp)cout<<"check point triggers called"<<endl;
     //
     if(i==0 && isquick){ OK=OK&&OKold; OKold=OK;}
-    if( !globalFlow.keepIf("triggers", OK, EventWeight )  && quick ) continue;    
+    if( !globalFlow.keepIf("triggers", OK )  && quick ) continue;    
     EW_AfterTrigger->Fill(EventWeight);
     //
     ControlPlots.MakePlots("Triggers", TightMuons, TightElectrons, CleanedJets, PFmet); 
@@ -569,9 +580,9 @@ int main(int argc, char** argv){
     }
 
     if(i==0 && isquick){ OK=OK&&OKold; OKold=OK;}
-    if(  !globalFlow.keepIf("Scraping_Veto", OK, EventWeight ) && quick ) continue;
+    if(  !globalFlow.keepIf("Scraping_Veto", OK ) && quick ) continue;
     if(pcp)cout<<"pure tracks passed"<<endl;
-    if(DoControlPlots)ControlPlots.MakePlots("Scraping_Veto", TightMuons, TightElectrons, CleanedJets, PFmet); 
+    if(DoControlPlots && OK)ControlPlots.MakePlots("Scraping_Veto", TightMuons, TightElectrons, CleanedJets, PFmet); 
     //====================================================================    
 
 
@@ -586,10 +597,10 @@ int main(int argc, char** argv){
     if(pcp)cout<<"check point calling vertex"<<endl;     
     OK = vertices_RA4b(tree,goodVert);
     if(i==0 && isquick){ OK=OK&&OKold; OKold=OK;}
-    if(  !globalFlow.keepIf("PV", OK,EventWeight )    && quick ) continue;
+    if(  !globalFlow.keepIf("PV", OK)    && quick ) continue;
     if(pcp)cout<<"check point  vertex called"<<endl;
     NVertices=(int)goodVert.size();
-    if(DoControlPlots)ControlPlots.MakePlots("PV", TightMuons, TightElectrons, CleanedJets, PFmet); 
+    if(DoControlPlots && OK)ControlPlots.MakePlots("PV", TightMuons, TightElectrons, CleanedJets, PFmet); 
     //====================================================================
 
 
@@ -602,9 +613,9 @@ int main(int argc, char** argv){
     OK = evtqual_RA4b(tree);
     if(i==0 && isquick){OK=OK&&OKold; OKold=OK;}
     if(pcp)cout<<"check point calling event quality"<<endl;
-    if( !globalFlow.keepIf("HBHE", OK, EventWeight)          && quick ) continue;
+    if( !globalFlow.keepIf("HBHE", OK)          && quick ) continue;
     if(pcp)cout<<"noise passed"<<endl;
-    if(DoControlPlots)ControlPlots.MakePlots("HBHE", TightMuons, TightElectrons, CleanedJets, PFmet); 
+    if(DoControlPlots && OK)ControlPlots.MakePlots("HBHE", TightMuons, TightElectrons, CleanedJets, PFmet); 
     //====================================================================
 
 
@@ -617,8 +628,8 @@ int main(int argc, char** argv){
     //it only checks hbheNoiseFilterResult
     OK = cschalo_RA4b(tree);
     if(i==0 && isquick){OK=OK&&OKold; OKold=OK;}
-    if( !globalFlow.keepIf("CSC_HALO", OK, EventWeight)          && quick ) continue;
-    if(DoControlPlots)ControlPlots.MakePlots("CSC_HALO", TightMuons, TightElectrons, CleanedJets, PFmet); 
+    if( !globalFlow.keepIf("CSC_HALO", OK)          && quick ) continue;
+    if(DoControlPlots && OK)ControlPlots.MakePlots("CSC_HALO", TightMuons, TightElectrons, CleanedJets, PFmet); 
     //====================================================================
 
 
@@ -630,8 +641,8 @@ int main(int argc, char** argv){
     //it only checks hbheNoiseFilterResult
     OK = trackingFailure_RA4b(tree);
     if(i==0 && isquick){OK=OK&&OKold; OKold=OK;}
-    if( !globalFlow.keepIf("trackingFailure", OK, EventWeight)          && quick ) continue;
-    if(DoControlPlots)ControlPlots.MakePlots("trackingFailure", TightMuons, TightElectrons, CleanedJets, PFmet); 
+    if( !globalFlow.keepIf("trackingFailure", OK)          && quick ) continue;
+    if(DoControlPlots && OK)ControlPlots.MakePlots("trackingFailure", TightMuons, TightElectrons, CleanedJets, PFmet); 
     //====================================================================
 
 
@@ -645,8 +656,8 @@ int main(int argc, char** argv){
     bool ECAL_TP = tree->Get(ECAL_TP,"ecalDeadCellTPFilterFlag");
     OK=ECAL_TP;
     if(i==0 && isquick){OK=OK&&OKold; OKold=OK;}
-    if( !globalFlow.keepIf("ECAL_TP", OK, EventWeight)          && quick ) continue;
-    if(DoControlPlots)ControlPlots.MakePlots("ECAL_TP", TightMuons, TightElectrons, CleanedJets, PFmet); 
+    if( !globalFlow.keepIf("ECAL_TP", OK)          && quick ) continue;
+    if(DoControlPlots && OK)ControlPlots.MakePlots("ECAL_TP", TightMuons, TightElectrons, CleanedJets, PFmet); 
     //====================================================================
 
 
@@ -656,7 +667,7 @@ int main(int argc, char** argv){
     //     bool ECAL_TP = tree->Get(ECAL_TP,"ecaldeadcellfilterflag");
     //     OK=ECAL_TP;
     //     if(i==0 && isquick){OK=OK&&OKold; OKold=OK;}
-    //     if( !globalFlow.keepIf("ECAL_TP", OK, EventWeight)          && quick ) continue;
+    //     if( !globalFlow.keepIf("ECAL_TP", OK)          && quick ) continue;
     //====================================================================
 
 
@@ -694,13 +705,13 @@ int main(int argc, char** argv){
     OK=SetOfCuts::SignalMuons.NUM.Examine(SignalMuons.size());
     if(i==0 && isquick){OK=OK&&OKold; OKold=OK;}
     if(!globalFlow.keepIf("Signal_Muons",OK) && quick) continue;
-    if(DoControlPlots)ControlPlots.MakePlots("Signal_Muons", SignalMuons, TightElectrons, CleanedJets, PFmet); 
+    if(DoControlPlots && OK)ControlPlots.MakePlots("Signal_Muons", SignalMuons, TightElectrons, CleanedJets, PFmet); 
     //
     //
     OK=SetOfCuts::WideMuons.NUM.Examine(WideMuons.size());
     if(i==0 && isquick){OK=OK&&OKold; OKold=OK;}
     if(!globalFlow.keepIf("Wide_Muons",OK) && quick) continue;    
-    if(DoControlPlots)ControlPlots.MakePlots("Wide_Muons", WideMuons, TightElectrons, CleanedJets, PFmet); 
+    if(DoControlPlots && OK)ControlPlots.MakePlots("Wide_Muons", WideMuons, TightElectrons, CleanedJets, PFmet); 
     //
     //
     //=================================
@@ -724,13 +735,13 @@ int main(int argc, char** argv){
     OK=SetOfCuts::SignalElectrons.NUM.Examine(SignalElectrons.size());
     if(i==0 && isquick){OK=OK&&OKold; OKold=OK;}
     if(!globalFlow.keepIf("Signal_Electrons",OK) && quick) continue;
-    if(DoControlPlots)ControlPlots.MakePlots("Signal_Electrons", SignalMuons, SignalElectrons, CleanedJets, PFmet); 
+    if(DoControlPlots && OK)ControlPlots.MakePlots("Signal_Electrons", SignalMuons, SignalElectrons, CleanedJets, PFmet); 
     //
     //
     OK=SetOfCuts::WideElectrons.NUM.Examine(WideElectrons.size());
     if(i==0 && isquick){OK=OK&&OKold; OKold=OK;}
     if(!globalFlow.keepIf("Wide_Electrons",OK) && quick) continue;    
-    if(DoControlPlots)ControlPlots.MakePlots("Wide_Electrons", SignalMuons, WideElectrons, CleanedJets, PFmet); 
+    if(DoControlPlots && OK)ControlPlots.MakePlots("Wide_Electrons", SignalMuons, WideElectrons, CleanedJets, PFmet); 
     //
     //===================================
 
@@ -743,7 +754,7 @@ int main(int argc, char** argv){
     //
     OK=SetOfCuts::Jets.NUM.Examine(CleanedJets.size());
     if(!globalFlow.keepIf("Jet_Cuts",OK) && quick) continue;    
-    if(DoControlPlots)ControlPlots.MakePlots("Jet_Cuts", SignalMuons, SignalElectrons, CleanedJets, PFmet); 
+    if(DoControlPlots && OK)ControlPlots.MakePlots("Jet_Cuts", SignalMuons, SignalElectrons, CleanedJets, PFmet); 
     //===================================
 
 
@@ -824,8 +835,8 @@ int main(int argc, char** argv){
 
     OK=SetOfCuts::Event.HT.Examine(HT);
     if(i==0 && isquick){ OK=OK&&OKold; OKold=OK;}
-    if(!globalFlow.keepIf("HT", OK, EventWeight ) && quick ) continue;
-    if(DoControlPlots)ControlPlots.MakePlots("HT", SignalMuons, SignalElectrons, CleanedJets, PFmet); 
+    if(!globalFlow.keepIf("HT", OK ) && quick ) continue;
+    if(DoControlPlots && OK)ControlPlots.MakePlots("HT", SignalMuons, SignalElectrons, CleanedJets, PFmet); 
     //===================================================================
 
 
@@ -841,9 +852,9 @@ int main(int argc, char** argv){
     OK = metAndHT_RA4b(tree);
     if(pcp)cout<<"check point MET"<<endl;
     if(i==0 && isquick){ OK=OK&&OKold; OKold=OK;}
-    if(  !globalFlow.keepIf("MET", OK, EventWeight ) && quick ) continue;
+    if(  !globalFlow.keepIf("MET", OK ) && quick ) continue;
     if(pcp)cout<<"check point out of MET_HT"<<endl;
-    if(DoControlPlots)ControlPlots.MakePlots("MET", SignalMuons, SignalElectrons, CleanedJets, PFmet); 
+    if(DoControlPlots && OK)ControlPlots.MakePlots("MET", SignalMuons, SignalElectrons, CleanedJets, PFmet); 
     //====================================================================
 
 
