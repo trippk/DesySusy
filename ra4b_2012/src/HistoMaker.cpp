@@ -136,8 +136,8 @@ void HistoMaker::MakePlots( const TString& cutName, vector<Muon*> muons, vector<
      
     TString region[4]={"A","B","C","D"};
     for (int idx=0; idx<4; idx++) {
-      (NJets_ABCD[idx])[cutName]= new TH1D(hname+"NJets"+(region[idx]),cutName+"NJets"+(region[idx]),15,0,15);
-      (PtAllJets_ABCD[idx])[cutName]= new TH1D(hname+"PtAllJets"+(region[idx]),cutName+"PtAllJets"+(region[idx]),150,0,1500);
+      (NJets_ABCD[idx])[cutName]= new TH1D(hname+"NJets"+(region[idx]),cutName+"Number of Jets in the region"+(region[idx]),15,0,15);
+      (PtAllJets_ABCD[idx])[cutName]= new TH1D(hname+"PtAllJets"+(region[idx]),cutName+"Pt of all the jets in the region"+(region[idx]),150,0,1500);
       (MET_ABCD[idx])[cutName]= new TH1D(hname+"MET"+(region[idx]),cutName+"MET"+region[idx],100,0,1000);
       for(int i=0; i<NMonitorJets; i++) (PtJet_ABCD[i][idx])[cutName]= new TH1D(hname+"PtJet"+(long)i+region[idx],cutName+"PtJet"+(long)i+region[idx],50,0,500);
     }

@@ -295,7 +295,7 @@ int main(int argc, char** argv){
 
   TH1D* EW_AfterTrigger= new TH1D("EW_AfterTrigger","Event weight after the trigger",30,0.0,100.0);
   TH1D* EW_AfterPU=new TH1D("EW_AfterPU","Event Weight after PU RW",100,0.0,10.0);
-  TH1D* triggers_prescale= new TH1D("trigger_prescale","the prescale of the trigger",50,0.0,10.0);
+  //TH1D* triggers_prescale= new TH1D("trigger_prescale","the prescale of the trigger",50,0.0,10.0);
 
   static double HTmin=config.getFloat("ABDCHTmin",375);
   static double HTmax=config.getFloat("ABDCHTmax",650);
@@ -550,7 +550,7 @@ int main(int argc, char** argv){
     //====================================================================
     // TRIGGERS
     //====================================================================
-    OK = triggers_RA4b(tree, triggernames,EventWeight,triggers_prescale);
+    OK = triggers_RA4b(tree, triggernames,EventWeight);
     //OK=true;
     //================================================
     if(pcp)cout<<"check point triggers called"<<endl;
