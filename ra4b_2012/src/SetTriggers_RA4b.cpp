@@ -47,10 +47,10 @@ void SetTriggers_RA4b(SampleInformation mySampleInformation, vector<const char*>
   else if(mySampleInformation.GetSample()=="ElectronHad"){
 
     if(mySampleInformation.GetSubSample()=="Run2012A-PromptReco-v1" ){
-      triggernames.push_back("");
+      triggernames.push_back("HLT_CleanPFHT300_Ele15_CaloIdT_CaloIsoVL_TrkIdT_TrkIsoVL_PFMET45");
     }
     else if(mySampleInformation.GetSubSample()=="Run2012B-PromptReco-v1"){
-      triggernames.push_back("");
+      triggernames.push_back("HLT_CleanPFHT300_Ele15_CaloIdT_CaloIsoVL_TrkIdT_TrkIsoVL_PFMET45");
     }
     
     //TTJETS

@@ -139,7 +139,10 @@ int main(int argc, char** argv){
   bool DoOnlineRW=false;
 
   //PU
-  bool oldpuw = true; //the obselete method and values
+
+  bool oldpuw = false; //the obselete method and values
+  if(WhatSample=='TTJets')oldpuw=true;
+
   vector<double> PUmc;
   vector<double> PUdata;
   int nobinsmc, nobinsdata;
@@ -157,7 +160,6 @@ int main(int argc, char** argv){
   }
   //
   //bool DoOnlineRW=false;
-  //>>>>>>> 1.5
 
   double InitialEventWeight=1.0;             //Event weight do to Lumi and xsec.
   if(DoOnlineRW){
@@ -753,6 +755,7 @@ int main(int argc, char** argv){
     //===================================
     //
     OK=SetOfCuts::Jets.NUM.Examine(CleanedJets.size());
+    if(i==0 && isquick){OK=OK&&OKold; OKold=OK;}
     if(!globalFlow.keepIf("Jet_Cuts",OK) && quick) continue;    
     if(DoControlPlots && OK)ControlPlots.MakePlots("Jet_Cuts", SignalMuons, SignalElectrons, CleanedJets, PFmet); 
     //===================================
