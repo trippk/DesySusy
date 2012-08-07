@@ -71,6 +71,34 @@ def ElectronHad():
     cleanUpDir('./'+Sample+'/'+SubSample)
     Scripts.append(script)        
 
+
+def SingleMu():
+
+    Scripts=[]
+    #Sample='SingleMu'
+    #SubSample='Run2012A-PromptReco-v1'
+    #FilesDir='/pnfs/desy.de/cms/tier2/store/user/eron/nTuple12_v2/data/SingleMu/Run2012A-PromptReco-v1/190456-196531'
+    #Config='config_DATA_RA4b.txt'
+    #nFiles=3
+
+    #
+    #script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
+    #cleanUpDir('./'+Sample+'/'+SubSample)    
+    #Scripts.append(script)
+
+
+    Sample='SingleMu'
+    SubSample='Run2012B-PromptReco-v1'
+    FilesDir='/pnfs/desy.de/cms/tier2/store/user/msahin/nTuple12_v2/data/SingleMu/Run2012B-PromptReco-v1/'
+    Config='config_DATA_RA4b.txt'
+    nFiles=7
+
+    #
+    script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
+    cleanUpDir('./'+Sample+'/'+SubSample)    
+    Scripts.append(script)
+
+
 def TTJets():
 
     Scripts=[]
@@ -196,8 +224,10 @@ if __name__=='__main__':
 
     MuHad()
     ElectronHad()
+    SingleMu()
     TTJets()
     #TTJetsBUG()    
     DYJetsToLL()
     WJetsToLNu()
     SingleTop()
+    

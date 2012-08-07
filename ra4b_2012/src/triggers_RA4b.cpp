@@ -16,7 +16,7 @@ using namespace std;
 
 
 
-bool triggers_RA4b(EasyChain* tree, vector<const char*>& triggernames, double& EventWeight, TH1D* triggers_prescale){
+bool triggers_RA4b(EasyChain* tree, vector<const char*>& triggernames, double& EventWeight){
 
   //extern vector<string>triggernames_short;
   extern bool pcp;
@@ -76,9 +76,9 @@ bool triggers_RA4b(EasyChain* tree, vector<const char*>& triggernames, double& E
 
     //check the trigger prescale, now it works with
     //only one trigger
-    if(TriggerFlow.keepIf(tname, HLTtrigger[tname])){
-      triggers_prescale->Fill(HLTprescaled[tname]);
-    }
+    //if(TriggerFlow.keepIf(tname, HLTtrigger[tname])){
+    //triggers_prescale->Fill(HLTprescaled[tname]);
+    //}
     //
     if(TriggerFlow.keepIf(tname, HLTtrigger[tname] && HLTprescaled[tname]==1 )){
 	//if(HLTprescaled[triggernames.at(itr)] > 1.)cout <<"the prescale of the trigger "<<HLTprescaled[triggernames.at(itr)]<<endl;
