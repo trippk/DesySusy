@@ -20,6 +20,8 @@ TNoE_SingleTop_T-tW-channel    = 497658
 TNoE_SingleTop_Tbar-s-channel  = 139974
 TNoE_SingleTop_Tbar-t-channel  = 1755072
 TNoE_SingleTop_Tbar-tW-channel = 493460
+TNoE_LM6_NoSub                 = 1000080
+TNoE_LM9_NoSub                 = 1000080
 
 #(F)ilter (E)fficiency
 FE_TTJets_SUMMER12           = 1
@@ -31,3 +33,5 @@ FE_SingleTop_T-tW-channel    = 1
 FE_SingleTop_Tbar-s-channel  = 1
 FE_SingleTop_Tbar-t-channel  = 1
 FE_SingleTop_Tbar-tW-channel = 1
+FE_LM6_NoSub                 = 1
+FE_LM9_NoSub                 = 1
