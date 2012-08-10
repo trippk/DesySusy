@@ -1,10 +1,11 @@
-
 # prelim RA4b_config
 
-isData      = true
-filename    = /scratch/hh/current/cms/user/eron/nTuples/testdir/
+isData      = false
+filename    = /pnfs/desy.de/cms/tier2/store/user/msahin/nTuple12_v2/mc/TTJets_MassiveBinDECAY_TuneZ2star_8TeV-madgraph-tauola/Summer12-PU_S6_START52_V9-v1/SusyCAF_Tree_300_1_uHJ.root
 quick       = true
-SampleName = MuHad
-SubSampleName = Run2012A-PromptReco-v1
+resonance_cut = 8.0
+isolation_cut = 0.1
+SampleName = WJetsToLNu
+SubSampleName = NoSub
 Estimation = RA4b-el
-Tail = NoTail
+Tail = histo
