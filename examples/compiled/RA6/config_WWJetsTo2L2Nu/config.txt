@@ -4,14 +4,13 @@ isData        = false
 quick         = true
 allowPrescale = false
 
-PU_weightList = 0.323702 0.660147 0.927094 1.1371 1.3658 1.48178 1.44769 1.48049 1.44516 1.42031 1.34566 1.2828 1.23164 1.12821 1.01159 0.861141 0.724251 0.597325 0.479798 0.37234 0.281595 0.212154 0.158291 0.114293 0.0808281 0.05721 0.0394578 0.0264095 0.0183807 0.01241 0.00830559 0.00552617 0.00351894 0.00223174 0.00295729 1.07893e-09
+PU_weightList = 0.0522207 0.135964 0.352198 35.122 2.37592 0.76591 3.10776 5.8743 9.45522 12.6697 12.985 13.8296 11.6723 10.5944 9.4308 7.68038 5.27618 3.36735 2.24103 1.5988 1.24726 1.02299 0.860639 0.745497 0.642226 0.551477 0.468949 0.391842 0.325976 0.265737 0.21627 0.175632 0.142562 0.115425 0.0929072 0.0744999 0.060513 0.0489072 0.0394959 0.0324369 0.0265853 0.0221643 0.0190611 0.0162187 0.0144438 0.0133234 0.0121449 0.0120469 0.0119835 0.0117004 0.0135536 0.0149692 0.0147585 0.019373 0.0196274 0.11202 0.0173683 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
 
 filename = /pnfs/desy.de/cms/tier2/store/user/schettle/nTuple11_v4/mc/TTJets_TuneZ2_7TeV-madgraph-tauola/Summer11-PU_S4_START42_V11-v1/SusyCAF_Tree_1_1_lX6.root #/pnfs/desy.de/cms/tier2/store/user/schettle/nTuple11_v4/mc/TTJets_TuneZ2_7TeV-madgraph-tauola/Summer11-PU_S4_START42_V11-v1/SusyCAF_Tree_2_0_qAU.root /pnfs/desy.de/cms/tier2/store/user/schettle/nTuple11_v4/mc/TTJets_TuneZ2_7TeV-madgraph-tauola/Summer11-PU_S4_START42_V11-v1/SusyCAF_Tree_3_0_wsK.root /pnfs/desy.de/cms/tier2/store/user/schettle/nTuple11_v4/mc/TTJets_TuneZ2_7TeV-madgraph-tauola/Summer11-PU_S4_START42_V11-v1/SusyCAF_Tree_4_0_4GI.root /pnfs/desy.de/cms/tier2/store/user/schettle/nTuple11_v4/mc/TTJets_TuneZ2_7TeV-madgraph-tauola/Summer11-PU_S4_START42_V11-v1/SusyCAF_Tree_5_0_xaT.root /pnfs/desy.de/cms/tier2/store/user/schettle/nTuple11_v4/mc/TTJets_TuneZ2_7TeV-madgraph-tauola/Summer11-PU_S4_START42_V11-v1/SusyCAF_Tree_6_0_LmS.root /pnfs/desy.de/cms/tier2/store/user/schettle/nTuple11_v4/mc/TTJets_TuneZ2_7TeV-madgraph-tauola/Summer11-PU_S4_START42_V11-v1/SusyCAF_Tree_7_0_q6G.root /pnfs/desy.de/cms/tier2/store/user/schettle/nTuple11_v4/mc/TTJets_TuneZ2_7TeV-madgraph-tauola/Summer11-PU_S4_START42_V11-v1/SusyCAF_Tree_8_0_Xza.root /pnfs/desy.de/cms/tier2/store/user/schettle/nTuple11_v4/mc/TTJets_TuneZ2_7TeV-madgraph-tauola/Summer11-PU_S4_START42_V11-v1/SusyCAF_Tree_9_0_KIH.root /pnfs/desy.de/cms/tier2/store/user/schettle/nTuple11_v4/mc/TTJets_TuneZ2_7TeV-madgraph-tauola/Summer11-PU_S4_START42_V11-v1/SusyCAF_Tree_10_0_Yxs.root /pnfs/desy.de/cms/tier2/store/user/schettle/nTuple11_v4/mc/TTJets_TuneZ2_7TeV-madgraph-tauola/Summer11-PU_S4_START42_V11-v1/SusyCAF_Tree_11_0_9uP.root
 
 #filename = /pnfs/desy.de/cms/tier2/store/user/schettle/nTuple11_v4/mc/DYJetsToLL_TuneZ2_M-50_7TeV-madgraph-tauola/Summer11-PU_S4_START42_V11-v1/SusyCAF_Tree_959_0_vJ1.root
 
 trigList = HLT_DoubleMu6 HLT_DoubleMu7 HLT_DoubleMu8 HLT_Mu13_Mu8 HLT_Mu17_Mu8
-trigAltList = HLT_Mu17_Ele8_CaloIdL HLT_Mu17_Ele8_CaloIdT_CaloIsoVL
-trigAltAltList = HLT_Mu8_Ele17_CaloIdL HLT_Mu8_Ele17_CaloIdT_CaloIsoVL
+trigAltList = HLT_Mu17_Ele8_CaloIdL HLT_Mu17_Ele8_CaloIdT_CaloIsoVL HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL
+trigAltAltList = HLT_Mu8_Ele17_CaloIdL HLT_Mu8_Ele17_CaloIdT_CaloIsoVL HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL
 trigAltAltAltList = HLT_Ele17_CaloIdL_CaloIsoVL_Ele8_CaloIdL_CaloIsoVL HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL
-

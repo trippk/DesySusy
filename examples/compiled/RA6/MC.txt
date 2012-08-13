@@ -61,39 +61,39 @@ sampleNfiles[$sampleCounter]=4
 
 let sampleCounter=$sampleCounter+1
 sampleName[$sampleCounter]=ZZJetsTo4L
-sampleSource[$sampleCounter]=/pnfs/desy.de/cms/tier2/store/user/schettle/nTuple11_v4/mc/ZZJetsTo4L_TuneZ2_7TeV-madgraph-tauola/Fall11-PU_S6_START42_V14B-v1/
+sampleSource[$sampleCounter]=/pnfs/desy.de/cms/tier2/store/user/schettle/nTuple12_v2/mc/ZZJetsTo4L_TuneZ2star_8TeV-madgraph-tauola/Summer12-PU_S7_START52_V9-v3/
 sampleConfig[$sampleCounter]=config_ZZJetsTo4L/config.txt
-sampleNfiles[$sampleCounter]=1
+sampleNfiles[$sampleCounter]=3
 
 let sampleCounter=$sampleCounter+1
 sampleName[$sampleCounter]=ZZJetsTo2L2Nu
-sampleSource[$sampleCounter]=/pnfs/desy.de/cms/tier2/store/user/schettle/nTuple11_v4/mc/ZZJetsTo2L2Nu_TuneZ2_7TeV-madgraph-tauola/Fall11-PU_S6_START42_V14B-v1/
+sampleSource[$sampleCounter]=/pnfs/desy.de/cms/tier2/store/user/schettle/nTuple12_v2/mc/ZZJetsTo2L2Nu_TuneZ2star_8TeV-madgraph-tauola/Summer12-PU_S7_START52_V9-v3
 sampleConfig[$sampleCounter]=config_ZZJetsTo2L2Nu/config.txt
-sampleNfiles[$sampleCounter]=1
+sampleNfiles[$sampleCounter]=3
 
 let sampleCounter=$sampleCounter+1
 sampleName[$sampleCounter]=ZZJetsTo2L2Q
-sampleSource[$sampleCounter]=/pnfs/desy.de/cms/tier2/store/user/schettle/nTuple11_v4/mc/ZZJetsTo2L2Q_TuneZ2_7TeV-madgraph-tauola/Fall11-PU_S6_START42_V14B-v1/
+sampleSource[$sampleCounter]=/pnfs/desy.de/cms/tier2/store/user/schettle/nTuple12_v2/mc/ZZJetsTo2L2Q_TuneZ2star_8TeV-madgraph-tauola/Summer12-PU_S7_START52_V9-v3
 sampleConfig[$sampleCounter]=config_ZZJetsTo2L2Q/config.txt
-sampleNfiles[$sampleCounter]=1
+sampleNfiles[$sampleCounter]=3
 
 let sampleCounter=$sampleCounter+1
 sampleName[$sampleCounter]=WZJetsTo3LNu
-sampleSource[$sampleCounter]=/pnfs/desy.de/cms/tier2/store/user/schettle/nTuple11_v4/mc/WZJetsTo3LNu_TuneZ2_7TeV-madgraph-tauola/Fall11-PU_S6_START42_V14B-v1/
+sampleSource[$sampleCounter]=/pnfs/desy.de/cms/tier2/store/user/schettle/nTuple12_v2/mc/WZJetsTo3LNu_TuneZ2_8TeV-madgraph-tauola/Summer12-PU_S7_START52_V9-v2/
 sampleConfig[$sampleCounter]=config_WZJetsTo3LNu/config.txt
-sampleNfiles[$sampleCounter]=1
+sampleNfiles[$sampleCounter]=3
 
 let sampleCounter=$sampleCounter+1
 sampleName[$sampleCounter]=WZJetsTo2L2Q
-sampleSource[$sampleCounter]=/pnfs/desy.de/cms/tier2/store/user/schettle/nTuple11_v4/mc/WZJetsTo2L2Q_TuneZ2_7TeV-madgraph-tauola/Fall11-PU_S6_START42_V14B-v1/
+sampleSource[$sampleCounter]=/pnfs/desy.de/cms/tier2/store/user/schettle/nTuple12_v2/mc/WZJetsTo2L2Q_TuneZ2star_8TeV-madgraph-tauola/Summer12-PU_S7_START52_V9-v1/
 sampleConfig[$sampleCounter]=config_WZJetsTo2L2Q/config.txt
-sampleNfiles[$sampleCounter]=1
+sampleNfiles[$sampleCounter]=3
 
 let sampleCounter=$sampleCounter+1
 sampleName[$sampleCounter]=WWJetsTo2L2Nu
-sampleSource[$sampleCounter]=/pnfs/desy.de/cms/tier2/store/user/schettle/nTuple11_v4/mc/WWJetsTo2L2Nu_TuneZ2_7TeV-madgraph-tauola/Fall11-PU_S6_START42_V14B-v1/
+sampleSource[$sampleCounter]=/pnfs/desy.de/cms/tier2/store/user/schettle/nTuple12_v2/mc/WWJetsTo2L2Nu_TuneZ2star_8TeV-madgraph-tauola/Summer12-PU_S7_START52_V9-v1/
 sampleConfig[$sampleCounter]=config_WWJetsTo2L2Nu/config.txt
-sampleNfiles[$sampleCounter]=1
+sampleNfiles[$sampleCounter]=3
 
 let sampleCounter=$sampleCounter+1
 sampleName[$sampleCounter]=T_s

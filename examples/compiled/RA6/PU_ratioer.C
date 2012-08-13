@@ -13,7 +13,7 @@ usage:
 #include "TLegend.h"
 #include "TLatex.h"
 
-void PU_ratioer(TString mf="whole2011_RA6/SusyCAF_Tree_n11_3363707705_out.root", TString df="PU_data_160404-180252.root") {
+void PU_ratioer(TString mf="whole2011_RA6/SusyCAF_Tree_n11_3363707705_out.root", TString df="dataPU_195016_true_69300_100bins.root") {
 
   TFile* dataF = new TFile(df);
   TFile* mcF   = new TFile(mf);
@@ -28,7 +28,7 @@ void PU_ratioer(TString mf="whole2011_RA6/SusyCAF_Tree_n11_3363707705_out.root",
   }
 
   TH1D* dataH = (TH1D*) dataF->Get("pileup");
-  TH1D* mcH   = (TH1D*) mcF  ->Get("control_plots/pu0_unweighted");
+  TH1D* mcH   = (TH1D*) mcF  ->Get("histo");
 
 
   dataH->Scale(1/dataH->Integral());

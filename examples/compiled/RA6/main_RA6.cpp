@@ -96,7 +96,6 @@ int main(int argc, char** argv){
   map< pair<float,float>, unsigned > scanPointCounter;
   map< pair<float,float>, plotSet  > scanPlotSets;
 
-
   bool OK=false;
   for(int i=0;i<N;++i){
 
@@ -706,20 +705,35 @@ int main(int argc, char** argv){
 
     if( isRA6highPtMuMu ) {
       top = "RA6MuMu";
-      firstLept  = Muons.at( highPtOSMuMuPairs[0].first  );
-      secondLept = Muons.at( highPtOSMuMuPairs[0].second );
+      if( Mu_charge.at(highPtOSMuMuPairs[0].first) == -1 ) {
+	firstLept  = Muons.at( highPtOSMuMuPairs[0].first  );
+	secondLept = Muons.at( highPtOSMuMuPairs[0].second );
+      } else {
+	firstLept  = Muons.at( highPtOSMuMuPairs[0].second );
+	secondLept = Muons.at( highPtOSMuMuPairs[0].first  );
+      }
       ps.addPlot(HT_cutString+"MuMu", "HT(after MuMu cuts)", 80, 0., 800., HT_selectedJet, "HT(selected jets) [GeV]", "events");
     }
     else if ( isRA6highPtElEl ) {
       top = "RA6ElEl";
-      firstLept  = Electrons.at( highPtOSElElPairs[0].first  );
-      secondLept = Electrons.at( highPtOSElElPairs[0].second );
+      if( El_charge.at(highPtOSElElPairs[0].first) == -1 ) {
+	firstLept  = Electrons.at( highPtOSElElPairs[0].first  );
+	secondLept = Electrons.at( highPtOSElElPairs[0].second );
+      } else {
+	firstLept  = Electrons.at( highPtOSElElPairs[0].second );
+	secondLept = Electrons.at( highPtOSElElPairs[0].first  );
+      }
       ps.addPlot(HT_cutString+"ElEl", "HT(after ElEl cuts)", 80, 0., 800., HT_selectedJet, "HT(selected jets) [GeV]", "events");
     }
     else if ( isRA6highPtMuEl ) {
       top = "RA6MuEl";
-      firstLept  = Muons    .at( highPtOSMuElPairs[0].first  );
-      secondLept = Electrons.at( highPtOSMuElPairs[0].second );
+      if( Mu_charge.at(highPtOSMuElPairs[0].first) == -1 ) {
+	firstLept  = Muons    .at( highPtOSMuElPairs[0].first  );
+	secondLept = Electrons.at( highPtOSMuElPairs[0].second );
+      } else {
+	firstLept  = Electrons.at( highPtOSMuElPairs[0].second );
+	secondLept = Muons    .at( highPtOSMuElPairs[0].first  );
+      }
       ps.addPlot(HT_cutString+"MuEl", "HT(after MuEl cuts)", 80, 0., 800., HT_selectedJet, "HT(selected jets) [GeV]", "events");
     }
 
@@ -774,6 +788,15 @@ int main(int argc, char** argv){
     plotsId->addLeaf( top, "HT",       HT_selectedJet                  );
     plotsId->addLeaf( top, "numElectrons",  (int) RA6_selectedEl.size()  );
     plotsId->addLeaf( top, "numMuons"    ,  (int) RA6_selectedMu.size()  );
+
+    plotsId->addLeaf( top, "pt1",       firstLept.pt()     );
+    plotsId->addLeaf( top, "eta1",      firstLept.eta()    );   
+    plotsId->addLeaf( top, "phi1",      firstLept.phi()    );
+    plotsId->addLeaf( top, "energy1",   firstLept.energy() );
+    plotsId->addLeaf( top, "pt2",       secondLept.pt()     );
+    plotsId->addLeaf( top, "eta2",      secondLept.eta()    );   
+    plotsId->addLeaf( top, "phi2",      secondLept.phi()    );
+    plotsId->addLeaf( top, "energy2",   secondLept.energy() );
 
 //     plotsId->addLeaf( top, "minDphiJetMET",     DphiMetClosestJet        );
 //     plotsId->addLeaf( top, "minDphiElMET" ,     DphiMetClosestElectron   );
@@ -945,12 +968,21 @@ int main(int argc, char** argv){
       double bbP1P2  = sqrt( JetsPF.at(bTagedJets.at(0)).Vect().mag2() * 
 			     JetsPF.at(bTagedJets.at(1)).Vect().mag2() );
 
-
       plotsId->addLeaf("diBtag", "weight",   plotSet::global_event_weight  );
       plotsId->addLeaf("diBtag", "cos",      cos(bbAngle)                  );
       plotsId->addLeaf("diBtag", "p1p2",     bbP1P2                        );
       plotsId->addLeaf("diBtag", "numElectrons",  (int) RA6_selectedEl.size()  );
       plotsId->addLeaf("diBtag", "numMuons"    ,  (int) RA6_selectedMu.size()  );
+
+      plotsId->addLeaf("diBtag", "pt1"    ,  JetsPF.at(bTagedJets.at(0)).pt()    );
+      plotsId->addLeaf("diBtag", "eta1"   ,  JetsPF.at(bTagedJets.at(0)).eta()   );
+      plotsId->addLeaf("diBtag", "phi1"   ,  JetsPF.at(bTagedJets.at(0)).phi()   );
+      plotsId->addLeaf("diBtag", "energy1",  JetsPF.at(bTagedJets.at(0)).energy());
+      plotsId->addLeaf("diBtag", "pt2"    ,  JetsPF.at(bTagedJets.at(1)).pt()    );
+      plotsId->addLeaf("diBtag", "eta2"   ,  JetsPF.at(bTagedJets.at(1)).eta()   );
+      plotsId->addLeaf("diBtag", "phi2"   ,  JetsPF.at(bTagedJets.at(1)).phi()   );
+      plotsId->addLeaf("diBtag", "energy2",  JetsPF.at(bTagedJets.at(1)).energy());
+
     }
 
 
@@ -973,4 +1005,6 @@ int main(int argc, char** argv){
   RA6_El_selectionCuts.dumpToHist();
   RA6_Jet_selectionCuts.dumpToHist();
   RA6_Vx_selectionCuts.dumpToHist();
+
+
 }
