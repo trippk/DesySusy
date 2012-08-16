@@ -20,30 +20,57 @@ void SetTriggers_RA4b(SampleInformation mySampleInformation, vector<const char*>
 
   static ConfigReader config;
   static bool isData=config.getBool("isData");
+  vector<const char *>El_HighPtMenu;
+  vector<const char *>El_LowPtMenu;
+  El_HighPtMenu.push_back("HLT_Ele25_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_TriCentralPFJet30");
+  El_HighPtMenu.push_back("HLT_Ele25_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_TriCentralPFNoPUJet30");
+  El_HighPtMenu.push_back("HLT_Ele25_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_TriCentralPFNoPUJet30_30_20");
+  El_LowPtMenu.push_back("HLT_CleanPFHT300_Ele15_CaloIdT_CaloIsoVL_TrkIdT_TrkIsoVL_PFMET45");
 
-  if(mySampleInformation.GetSample()=="MuHad"){
-    if(mySampleInformation.GetSubSample()=="Run2012A-PromptReco-v1"){
-      triggernames.push_back("HLT_IsoMu17_eta2p1_TriCentralPFJet30");
-      triggernames.push_back("HLT_IsoMu17_eta2p1_TriCentralPFNoPUJet30_30_20");
-    }
-    else if(mySampleInformation.GetSubSample()=="Run2012B-PromptReco-v1"){
-      triggernames.push_back("HLT_IsoMu17_eta2p1_TriCentralPFJet30");
-      triggernames.push_back("HLT_IsoMu17_eta2p1_TriCentralPFNoPUJet30_30_20");
-    }
+  if(mySampleInformation.GetEstimation()=="RA4b-mu"){
+    triggernames.push_back("HLT_IsoMu17_eta2p1_TriCentralPFJet30");
+    triggernames.push_back("HLT_IsoMu17_eta2p1_TriCentralPFNoPUJet30");
+    triggernames.push_back("HLT_IsoMu17_eta2p1_TriCentralPFNoPUJet30_30_20");
+    
+  }else if (mySampleInformation.GetEstimation()=="RA4b-mu-HighPt"){
+    triggernames.push_back("HLT_IsoMu17_eta2p1_TriCentralPFJet30");
+    triggernames.push_back("HLT_IsoMu17_eta2p1_TriCentralPFNoPUJet30");
+    triggernames.push_back("HLT_IsoMu17_eta2p1_TriCentralPFNoPUJet30_30_20");
+  
+
+
   }
 
-  else if(mySampleInformation.GetSample()=="SingleMu"){
-    if(mySampleInformation.GetSubSample()=="Run2012A-PromptReco-v1"){
+  else if(mySampleInformation.GetEstimation()=="RA4b-el-HighPt"){
+    cout<<"setting triggers allright"<<endl;
+    for (int i=0; i<El_HighPtMenu.size(); ++i){
+      triggernames.push_back(El_HighPtMenu.at(i));
+    }
 
-    }
-    else if(mySampleInformation.GetSubSample()=="Run2012B-PromptReco-v1"){
-      triggernames.push_back("HLT_IsoMu17_eta2p1_TriCentralPFNoPUJet30_30_20_v1");
-      triggernames.push_back("HLT_IsoMu17_eta2p1_TriCentralPFNoPUJet30_v1");
-    }
   }
+  else if(mySampleInformation.GetEstimation()=="RA4b-el"){
+    for (int i=0; i<El_LowPtMenu.size(); ++i){
+      triggernames.push_back(El_LowPtMenu.at(i));
+    }
+    
+    
+  }else{
+    cout <<"triggers HAVE NOT been set. Warning"<<endl;
+  }
+  
+}
 
 
 
+
+
+
+
+
+
+
+
+  /*
   else if(mySampleInformation.GetSample()=="ElectronHad"){
 
     if(mySampleInformation.GetSubSample()=="Run2012A-PromptReco-v1" ){
@@ -90,9 +117,5 @@ void SetTriggers_RA4b(SampleInformation mySampleInformation, vector<const char*>
     }else if(mySampleInformation.GetEstimation()=="RA4b-el"){
       triggernames.push_back("HLT_CleanPFHT300_Ele15_CaloIdT_CaloIsoVL_TrkIdT_TrkIsoVL_PFMET45");
     }
-    
-  }else{
-    cout <<"triggers HAVE NOT been set. Warning"<<endl;
-  }
-  
-}
+  */
+
