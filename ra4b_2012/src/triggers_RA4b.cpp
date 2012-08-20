@@ -1,3 +1,4 @@
+
 #include <map>
 #include <string>
 #include <iostream>
@@ -65,14 +66,14 @@ bool triggers_RA4b(EasyChain* tree, vector<const char*>& triggernames, double& E
 
   string dummytrigger;  
   string tname;
+
   for (unsigned itr=0;itr<triggernames.size(); ++itr){
     if(pcp)cout<<"checking if the trigger "<< triggernames.at(itr)<<endl;
 
 
     //tname=triggernames.at(itr);
     tname=TriggerMap[triggernames.at(itr)];
-    
-    //cout<<"the map for "<<triggernames.at(itr)<<" is "<<tname<<endl;
+    //cout<<"the fucking trigger is"<<tname<<endl;
 
     //check the trigger prescale, now it works with
     //only one trigger

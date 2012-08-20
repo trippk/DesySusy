@@ -15,7 +15,6 @@ extern bool pcp;
 
 
 vector<Jet> makeJets(EasyChain* tree ){
-//bool <Jet> makeJets(EasyChain* tree ){
 
   vector<Jet> Jets;
   Jet dummyJet;
