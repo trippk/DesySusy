@@ -104,7 +104,7 @@ def TTJets():
     Scripts=[]
     Sample='TTJets'
     SubSample='SUMMER12'
-    FilesDir='/pnfs/desy.de/cms/tier2/store/user/eron/nTuple12_v2/mc/TTJets_MassiveBinDECAY_TuneZ2star_8TeV-madgraph-tauola/Summer12-PU_S6_START52_V9-v1'
+    FilesDir='/pnfs/desy.de/cms/tier2/store/user/msahin/nTuple12_v2/mc/TTJets_MassiveBinDECAY_TuneZ2star_8TeV-madgraph-tauola/Summer12-PU_S6_START52_V9-v1'
     Config='config_MC_RA4b.txt'
     nFiles=3
     #
@@ -133,7 +133,7 @@ def DYJetsToLL():
     Scripts=[]
     Sample='DYJets'
     SubSample='M-50'
-    FilesDir='/pnfs/desy.de/cms/tier2/store/user/schettle/nTuple12_v2/mc/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/Summer12-PU_S7_START52_V9-v2/'
+    FilesDir='/pnfs/desy.de/cms/tier2/store/user/msahin/nTuple12_v2/mc/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/Summer12-PU_S7_START52_V9-v2/'
     Config='config_MC_RA4b.txt'
     nFiles=3
     cleanUpDir('./'+Sample+'/'+SubSample)
@@ -147,7 +147,7 @@ def SingleTop():
     Scripts=[]
     Sample='SingleTop'
     SubSample='T-s-channel'
-    FilesDir='/pnfs/desy.de/cms/tier2/store/user/eron/nTuple12_v2/mc/T_s-channel_TuneZ2star_8TeV-powheg-tauola/Summer12-PU_S7_START52_V9-v1'
+    FilesDir='/pnfs/desy.de/cms/tier2/store/user/msahin/nTuple12_v2/mc/T_s-channel_TuneZ2star_8TeV-powheg-tauola/Summer12-PU_S7_START52_V9-v1'
     Config='config_MC_RA4b.txt'
     nFiles=3
     script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
@@ -155,7 +155,7 @@ def SingleTop():
     Scripts.append(script)
     #============================================
     SubSample='T-t-channel'
-    FilesDir='/pnfs/desy.de/cms/tier2/store/user/eron/nTuple12_v2/mc/T_t-channel_TuneZ2star_8TeV-powheg-tauola/Summer12-PU_S7_START52_V9-v1'
+    FilesDir='/pnfs/desy.de/cms/tier2/store/user/msahin/nTuple12_v2/mc/T_t-channel_TuneZ2star_8TeV-powheg-tauola/Summer12-PU_S7_START52_V9-v1'
     Config='config_MC_RA4b.txt'
     nFiles=3
     script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
@@ -163,7 +163,7 @@ def SingleTop():
     Scripts.append(script)                    
     #============================================
     SubSample='T-tW-channel'
-    FilesDir='/pnfs/desy.de/cms/tier2/store/user/eron/nTuple12_v2/mc/T_tW-channel-DR_TuneZ2star_8TeV-powheg-tauola/Summer12-PU_S7_START52_V9-v1'
+    FilesDir='/pnfs/desy.de/cms/tier2/store/user/msahin/nTuple12_v2/mc/T_tW-channel-DR_TuneZ2star_8TeV-powheg-tauola/Summer12-PU_S7_START52_V9-v1'
     Config='config_MC_RA4b.txt'
     nFiles=3
     script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
@@ -171,7 +171,7 @@ def SingleTop():
     Scripts.append(script)
     #============================================
     SubSample='Tbar-s-channel'
-    FilesDir='/pnfs/desy.de/cms/tier2/store/user/eron/nTuple12_v2/mc/Tbar_s-channel_TuneZ2star_8TeV-powheg-tauola/Summer12-PU_S7_START52_V9-v1'
+    FilesDir='/pnfs/desy.de/cms/tier2/store/user/msahin/nTuple12_v2/mc/Tbar_s-channel_TuneZ2star_8TeV-powheg-tauola/Summer12-PU_S7_START52_V9-v1'
     Config='config_MC_RA4b.txt'
     nFiles=3
     script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
@@ -187,7 +187,7 @@ def SingleTop():
     Scripts.append(script)
     #============================================
     SubSample='Tbar-tW-channel'
-    FilesDir='/pnfs/desy.de/cms/tier2/store/user/eron/nTuple12_v2/mc/Tbar_tW-channel-DR_TuneZ2star_8TeV-powheg-tauola/Summer12-PU_S7_START52_V9-v1' 
+    FilesDir='/pnfs/desy.de/cms/tier2/store/user/msahin/nTuple12_v2/mc/Tbar_tW-channel-DR_TuneZ2star_8TeV-powheg-tauola/Summer12-PU_S7_START52_V9-v1' 
     Config='config_MC_RA4b.txt'
     nFiles=3
     script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
@@ -208,7 +208,7 @@ def WJetsToLNu():
     Scripts=[]
     Sample='WJetsToLNu'
     SubSample='NoSub'
-    FilesDir='/pnfs/desy.de/cms/tier2/store/user/eron/nTuple12_v2/mc/WJetsToLNu_TuneZ2Star_8TeV-madgraph-tarball/Summer12-PU_S7_START52_V9-v1'
+    FilesDir='/pnfs/desy.de/cms/tier2/store/user/msahin/nTuple12_v2/mc/WJetsToLNu_TuneZ2Star_8TeV-madgraph-tarball/Summer12-PU_S7_START52_V9-v1'
     Config='config_MC_RA4b.txt'
     nFiles=3
     #
