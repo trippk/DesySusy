@@ -179,7 +179,7 @@ bool makeTightElectrons(EasyChain* tree, vector<Electron>& AllElectrons, vector<
 
     //ETA
     OK=fabs(AllElectrons.at(iel).Eta()) < ETAMAX;
-    if(!ElectronFlow.keepIf(OK, "eta max "))continue;
+    if(!ElectronFlow.keepIf("eta max", OK))continue;
     //
     OK=fabs(El_SuperClusterPositionETA.at(indx))<1.4442 || fabs(El_SuperClusterPositionETA.at(indx))>1.566;
     if(!ElectronFlow.keepIf("notinetagap",OK && quick))continue;    
@@ -282,10 +282,10 @@ bool makeVetoElectrons(EasyChain* tree, vector<Electron>& AllElectrons, vector<E
     
     //
     OK=AllElectrons.at(iel).Pt() > PTMIN;
-    if(!ElectronFlow.keepIf(OK, "ptmin "))continue;
+    if(!ElectronFlow.keepIf("ptmin ",OK))continue;
     //
     OK=fabs(AllElectrons.at(iel).Eta()) < ETAMAX;
-    if(!ElectronFlow.keepIf(OK, "eta max "))continue;
+    if(!ElectronFlow.keepIf("eta max ",OK))continue;
     //
     OK=fabs(El_SuperClusterPositionETA.at(indx))<1.4442 || fabs(El_SuperClusterPositionETA.at(indx))>1.566;
     if(!ElectronFlow.keepIf("notinetagap",OK && quick))continue;    
