@@ -231,6 +231,7 @@ int main(int argc, char** argv){
   CutSet::setTFile(outfile);
 
 
+  
   string replacestring=".root";
   string treeFileName="";
   int pos = outname_string.find(replacestring);
@@ -364,14 +365,20 @@ int main(int argc, char** argv){
   TwoplusBtag_2DPlots["HT_METSig"]= new TH2D("HT_METSig","HT vs METSig",50,HTmin,2000.,50,METSig_min,40.);  
 
 
+
+
+
+
+
+
+
+  //==========SUB TREE========================
+  //
+  //
   treeFile->cd();
   TTree* mytree = new TTree("subTree","a subTree");
   outfile->cd();
 
-
-  //vector< vector <double> > treeMuons;
-  //vector< vector <double> > treeElectrons;
-  //vector< vector <double > > treeJets;
   int treeEvent=0;
   int treeRun=0;
   double treeMET=0.0;
@@ -382,38 +389,24 @@ int main(int argc, char** argv){
   double treeMT2=0.0;
   double treeMT2W=0.0;
   double treeWeight=0.0;
-  
+  double treePUWeight=0.0;
   int treeNJets=0;
-
-  /*
-  double treeEl[4]={0,0,0,0};
-  double treeMu[4]={0,0,0,0};
-  double jet1[4]={0,0,0,0};
-  double jet2[4]={0,0,0,0};
-  double jet3[4]={0,0,0,0};
-  double jet4[4]={0,0,0,0};
-  double jet5[4]={0,0,0,0};
-  double jet6[4]={0,0,0,0};
-  double jet7[4]={0,0,0,0};
-  */
 
 
   vector<double> treeEl(4,0.);
   vector<double> treeMu(4,0.);
-  vector<double> jet1(4,0.);
-  vector<double> jet2(4,0.);
-  vector<double> jet3(4,0.);
-  vector<double> jet4(4,0.);
-  vector<double> jet5(4,0.);
-  vector<double> jet6(4,0.);
-  vector<double> jet7(4,0.);
+  static int jet_ncomp=5;
+  vector<double> jet1(jet_ncomp,0.);
+  vector<double> jet2(jet_ncomp,0.);
+  vector<double> jet3(jet_ncomp,0.);
+  vector<double> jet4(jet_ncomp,0.);
+  vector<double> jet5(jet_ncomp,0.);
+  vector<double> jet6(jet_ncomp,0.);
+  vector<double> jet7(jet_ncomp,0.);
 
   //map < const char* , bool> treeCuts;
   //  vector< double > leptonvalues(8,0);
 
-  //  mytree->Branch("muons",&treeMuons);
-  //  mytree->Branch("electrons",&treeElectrons);
-  //  mytree->Branch("jets",&treeJets);
   mytree->Branch("Event",&treeEvent,"treeEvent/I");
   mytree->Branch("Run",&treeRun,"treeRun/I");
   mytree->Branch("MET",&treeMET,"treeMET/D");
@@ -424,6 +417,7 @@ int main(int argc, char** argv){
   mytree->Branch("MT2",&treeMT2,"treeMT2/D");
   mytree->Branch("MT2W",&treeMT2W,"treeMT2W/D");
   mytree->Branch("Weight",&treeWeight,"treeWeight/D");
+  mytree->Branch("PUWeight",&treePUWeight,"treePUWeight/D");
   mytree->Branch("treeEl",&treeEl);
   mytree->Branch("treeMu",&treeMu);
   mytree->Branch("NJets",&treeNJets,"treeNJets/I");
@@ -434,8 +428,13 @@ int main(int argc, char** argv){
   mytree->Branch("jet5",&jet5);
   mytree->Branch("jet6",&jet6);
   mytree->Branch("jet7",&jet7);
+  //======================================================
 
-  //mytree->Branch("leptonvalues",&leptonvalues);
+
+
+
+
+
 
   //
   //
@@ -498,6 +497,7 @@ int main(int argc, char** argv){
     //==============================================
     // PILE UP RW
     //==============================================
+    double PUWeight=0;
     if(!isData) {
       float PUnumInter    = tree->Get( PUnumInter, "pileupTrueNumInteractionsBX0");
       int relevantNumPU = PUnumInter;
@@ -506,10 +506,14 @@ int main(int argc, char** argv){
 	return 0; 
       }
 
-      else if( oldpuw) EventWeight *= PUmc.at( relevantNumPU );
-
-      else EventWeight *= PUdata.at( relevantNumPU )/PUmc.at( relevantNumPU );
+      else if( oldpuw) {
+	PUWeight= PUmc.at( relevantNumPU );
+      }
+      else {
+	PUWeight= PUdata.at( relevantNumPU )/PUmc.at( relevantNumPU );
+      }
       
+      EventWeight *= PUWeight;
     }
     //cout << "weight before PUrw -> " << EventWeight << endl;
     EW_AfterPU->Fill(EventWeight);
@@ -983,9 +987,8 @@ int main(int argc, char** argv){
 
 
 
-
     //avoid having the first iteration entering here:
-    if(!OK)continue;
+    if(i==0 && !OK)continue;
 
 
 
@@ -1023,12 +1026,97 @@ int main(int argc, char** argv){
 
 
     
-    
     //randvector.push_back(
 
 
     //LorentzM& PFmet = tree->Get(&PFmet, "metP4PF");
     METSig = PFmet.Et() / sqrt(HT); 
+
+
+
+
+
+    //FOR THE REDUCED TREE========================
+    bool doSmallTree=true;
+    if(doSmallTree){
+      
+      treeEvent=(int)Event;
+      treeRun=(int)Run;
+      treeMET=PFmet.Et();
+      treeHT=HT;
+      treeMHT=MHT;
+      treeY=METSig;
+      treeMT=0;
+      treeWeight=EventWeight;
+      treePUWeight=PUWeight;
+      if (SignalElectrons.size() != 0){
+	treeEl[0]=SignalElectrons.at(0)->Pt();
+	treeEl[1]=SignalElectrons.at(0)->Eta();
+	treeEl[2]=SignalElectrons.at(0)->Phi();
+	treeEl[3]=SignalElectrons.at(0)->p4.M();
+      }
+
+      if (SignalMuons.size() != 0){
+	treeMu[0]=SignalMuons.at(0)->Pt();
+	treeMu[1]=SignalMuons.at(0)->Eta();
+	treeMu[2]=SignalMuons.at(0)->Phi();
+	treeMu[3]=SignalMuons.at(0)->p4.M();
+      }
+
+      jet1[0]=CleanedJets.at(0)->Pt();
+      jet1[1]=CleanedJets.at(0)->Eta();
+      jet1[2]=CleanedJets.at(0)->Phi();
+      jet1[3]=CleanedJets.at(0)->p4.M();
+      jet1[4]=CleanedJets.at(0)->BJetDisc("CSV");
+
+      jet2[0]=CleanedJets.at(1)->Pt();
+      jet2[1]=CleanedJets.at(1)->Eta();
+      jet2[2]=CleanedJets.at(1)->Phi();
+      jet2[3]=CleanedJets.at(1)->p4.M();
+      jet2[4]=CleanedJets.at(1)->BJetDisc("CSV");
+
+      jet3[0]=CleanedJets.at(2)->Pt();
+      jet3[1]=CleanedJets.at(2)->Eta();
+      jet3[2]=CleanedJets.at(2)->Phi();
+      jet3[3]=CleanedJets.at(2)->p4.M();
+      jet3[4]=CleanedJets.at(2)->BJetDisc("CSV");
+
+      jet4[0]=CleanedJets.at(3)->Pt();
+      jet4[1]=CleanedJets.at(3)->Eta();
+      jet4[2]=CleanedJets.at(3)->Phi();
+      jet4[3]=CleanedJets.at(3)->p4.M();
+      jet4[4]=CleanedJets.at(3)->BJetDisc("CSV");
+
+      if (CleanedJets.size()>4){
+	jet5[0]=CleanedJets.at(4)->Pt();
+	jet5[1]=CleanedJets.at(4)->Eta();
+	jet5[2]=CleanedJets.at(4)->Phi();
+	jet5[3]=CleanedJets.at(4)->p4.M();
+	jet5[4]=CleanedJets.at(4)->BJetDisc("CSV");
+      }
+
+      if( CleanedJets.size()>5){
+	jet6[0]=CleanedJets.at(5)->Pt();
+	jet6[1]=CleanedJets.at(5)->Eta();
+	jet6[2]=CleanedJets.at(5)->Phi();
+	jet6[3]=CleanedJets.at(5)->p4.M();
+	jet7[4]=CleanedJets.at(5)->BJetDisc("CSV");
+      }
+      if( CleanedJets.size()>6){
+	jet7[0]=CleanedJets.at(6)->Pt();
+	jet7[1]=CleanedJets.at(6)->Eta();
+	jet7[2]=CleanedJets.at(6)->Phi();
+	jet7[3]=CleanedJets.at(6)->p4.M();
+	jet7[4]=CleanedJets.at(6)->BJetDisc("CSV");
+      }
+     
+      mytree->Fill();
+    }
+
+
+
+
+
 
     if(HT< HTmin)continue;
     if(METSig <METSig_min)continue;
@@ -1126,95 +1214,13 @@ int main(int argc, char** argv){
     }
 
 
-
-
-
-
-
-
-
-
-
-    //FOR THE REDUCED TREE========================
-    bool doSmallTree=true;
-    if(doSmallTree){
-      
-      treeEvent=(int)Event;
-      treeRun=(int)Run;
-      treeMET=PFmet.Et();
-      treeHT=HT;
-      treeMHT=MHT;
-      treeY=METSig;
-      treeMT=0;
-      treeWeight=EventWeight;
-      if (SignalElectrons.size() != 0){
-	treeEl[0]=SignalElectrons.at(0)->Pt();
-	treeEl[1]=SignalElectrons.at(0)->Eta();
-	treeEl[2]=SignalElectrons.at(0)->Phi();
-	treeEl[3]=SignalElectrons.at(0)->p4.M();
-      }
-
-      if (SignalMuons.size() != 0){
-	treeMu[0]=SignalMuons.at(0)->Pt();
-	treeMu[1]=SignalMuons.at(0)->Eta();
-	treeMu[2]=SignalMuons.at(0)->Phi();
-	treeMu[3]=SignalMuons.at(0)->p4.M();
-      }
-
-      jet1[0]=CleanedJets.at(0)->Pt();
-      jet1[1]=CleanedJets.at(0)->Eta();
-      jet1[2]=CleanedJets.at(0)->Phi();
-      jet1[3]=CleanedJets.at(0)->p4.M();
-
-      jet2[0]=CleanedJets.at(1)->Pt();
-      jet2[1]=CleanedJets.at(1)->Eta();
-      jet2[2]=CleanedJets.at(1)->Phi();
-      jet2[3]=CleanedJets.at(1)->p4.M();
-
-      jet3[0]=CleanedJets.at(2)->Pt();
-      jet3[1]=CleanedJets.at(2)->Eta();
-      jet3[2]=CleanedJets.at(2)->Phi();
-      jet3[3]=CleanedJets.at(2)->p4.M();
-
-      jet4[0]=CleanedJets.at(3)->Pt();
-      jet4[1]=CleanedJets.at(3)->Eta();
-      jet4[2]=CleanedJets.at(3)->Phi();
-      jet4[3]=CleanedJets.at(3)->p4.M();
-
-      if (CleanedJets.size()>4){
-	jet5[0]=CleanedJets.at(4)->Pt();
-	jet5[1]=CleanedJets.at(4)->Eta();
-	jet5[2]=CleanedJets.at(4)->Phi();
-	jet5[3]=CleanedJets.at(4)->p4.M();
-      }
-
-      if( CleanedJets.size()>5){
-	jet6[0]=CleanedJets.at(5)->Pt();
-	jet6[1]=CleanedJets.at(5)->Eta();
-	jet6[2]=CleanedJets.at(5)->Phi();
-	jet6[3]=CleanedJets.at(5)->p4.M();
-      }
-      if( CleanedJets.size()>6){
-	jet7[0]=CleanedJets.at(6)->Pt();
-	jet7[1]=CleanedJets.at(6)->Eta();
-	jet7[2]=CleanedJets.at(6)->Phi();
-	jet7[3]=CleanedJets.at(6)->p4.M();
-      }
-      
-      mytree->Fill();
-    }
-
+  
 
 
 
 
   }//End of the event loop
      
-
-
-
-
-
   if(pcp)cout<<"out of the event loop"<<endl;
 
 
@@ -1235,6 +1241,7 @@ int main(int argc, char** argv){
     }
     nobj=list->Next();   //nobj point now to the next object
   }
+
   //==================================================
 
 
