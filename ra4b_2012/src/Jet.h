@@ -41,8 +41,8 @@ class Jet: public AnalysisObject {
   bool   IsMatch();
   double ScaleCorrFactor();
   string Type();
-  bool IsBJet(const char* key="CVS", double disc_cut=0.679);
-  bool IsBJet(const char* key="CVS", const char* WP="Medium");
+  bool IsBJet(const char* key="CSV", double disc_cut=0.679);
+  bool IsBJet(const char* key="CSV", const char* WP="Medium");
 
   void SetGenFlavor(string genFlavor_In);
   void SetIsMatch(bool isMatch_In);

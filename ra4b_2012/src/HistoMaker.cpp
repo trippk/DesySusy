@@ -110,8 +110,10 @@ void HistoMaker::MakePlots( const TString& cutName, vector<Muon*> muons, vector<
     for(Ssiz_t i=0;i<cutName.Length();i++) hname.Append( cutName[i]==' ' ? '_' : cutName[i] );
     hname="";
     //cutName;
-    
-    
+
+    mt2wEle[cutName] = new TH1D(hname+"mt2wEle","mt2wEle",100,0,500);
+    mt2wMu[cutName]  = new TH1D(hname+"mt2wMu", "mt2wMu" ,100,0,500);
+
     MuPt[cutName] = new TH1D(hname+"MuPt","Pt of the Muon",50,0,500);
     MuEta[cutName] = new TH1D(hname+"MuEta","Pseudorapidity of the muon",60,-3.,3.);
 
@@ -146,6 +148,9 @@ void HistoMaker::MakePlots( const TString& cutName, vector<Muon*> muons, vector<
 
   //cout<<"EventWeight in HistoMaker"<<EventWeight<<" in "<<cutName<<endl;
 
+  mt2wEle[cutName]->Fill(mt2w_calc.get_mt2w(electrons, jets, met),EventWeight);
+  mt2wMu[cutName] ->Fill(mt2w_calc.get_mt2w(    muons, jets, met),EventWeight);
+
   for(int k=0;k< muons.size();++k){
     MuPt[cutName]->Fill(muons.at(k)->pt(),EventWeight);
     MuEta[cutName]->Fill(muons.at(k)->Eta(),EventWeight);
@@ -168,10 +173,10 @@ void HistoMaker::MakePlots( const TString& cutName, vector<Muon*> muons, vector<
     hy += jets.at(k)->pP4()->py();
     ht += jets.at(k)->pt();
 
-    if(jets.at(k)->IsBJet("CVS","Medium") ) {
+    if(jets.at(k)->IsBJet("CSV","Medium") ) {
       nBJets++;
       PtAllBJets[cutName]->Fill(jets.at(k)->pt(),EventWeight);
-      BDisc[cutName]->Fill(jets.at(k)->BJetDisc("CVS"),EventWeight);
+      BDisc[cutName]->Fill(jets.at(k)->BJetDisc("CSV"),EventWeight);
       if (nBJets<NMonitorJets) (PtBJet[nBJets])[cutName]->Fill(jets.at(k)->pt(),EventWeight);
     }
     

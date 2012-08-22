@@ -38,6 +38,15 @@ public:
   double Phi();
   double phi();
 
+  double E();
+  double e();
+  double Px();
+  double px();
+  double Py();
+  double py();
+  double Pz();
+  double pz();
+
   int GetIndexInTree();
 
   bool IsID(string id);

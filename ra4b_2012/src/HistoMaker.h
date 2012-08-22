@@ -17,6 +17,7 @@
 #include "Electron.h"
 #include "Jet.h"
 #include "TFile.h"
+#include "mt2w_interface.h"
 
 using namespace std;
 
@@ -41,6 +42,11 @@ class HistoMaker {
   vector<TString> allCuts;
   TString prefix;
   TString delim;
+
+  mt2w_bisect::mt2w_interface mt2w_calc;
+
+  map<TString, TH1D*> mt2wEle;
+  map<TString, TH1D*> mt2wMu;
 
   map<TString, TH1D*> MuPt;
   map<TString, TH1D*> MuEta;

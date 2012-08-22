@@ -8,12 +8,21 @@ using namespace ROOT::Math::VectorUtil;
 LorentzM AnalysisObject::P4(){return p4;}
 LorentzM* AnalysisObject::pP4(){return pp4;}
 
-double AnalysisObject::Pt(){return pp4->Pt();}
-double AnalysisObject::pt(){return pp4->Pt();}
+double AnalysisObject::Pt() {return pp4->Pt();}
+double AnalysisObject::pt() {return pp4->Pt();}
 double AnalysisObject::Eta(){return pp4->Eta();}
 double AnalysisObject::eta(){return pp4->Eta();}
 double AnalysisObject::Phi(){return pp4->Phi();}
 double AnalysisObject::phi(){return pp4->Phi();}
+
+double AnalysisObject::E() {return pp4->E();}
+double AnalysisObject::e() {return pp4->E();}
+double AnalysisObject::Px(){return pp4->Px();}
+double AnalysisObject::px(){return pp4->Px();}
+double AnalysisObject::Py(){return pp4->Py();}
+double AnalysisObject::py(){return pp4->Py();}
+double AnalysisObject::Pz(){return pp4->Pz();}
+double AnalysisObject::pz(){return pp4->Pz();}
 
 bool AnalysisObject::IsID(string key){
 

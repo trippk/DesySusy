@@ -38,7 +38,7 @@
 #include "Jet.h"
 #include "makeJets.h"
 #include "HistoMaker.h"
-
+#include "mt2w_interface.h"
 
 
 using namespace std;
@@ -59,7 +59,7 @@ double EventWeight;
 //================================================================================
 int main(int argc, char** argv){
 
-
+  mt2w_bisect::mt2w_interface mt2w_calc;
 
 
   const double PI = 4.0*atan(1.0);  
@@ -387,7 +387,8 @@ int main(int argc, char** argv){
   double treeY=0.0;
   double treeMT=0.0;
   double treeMT2=0.0;
-  double treeMT2W=0.0;
+  double treeMT2WEle=0.0;
+  double treeMT2WMu=0.0;
   double treeWeight=0.0;
   double treePUWeight=0.0;
   int treeNJets=0;
@@ -415,7 +416,8 @@ int main(int argc, char** argv){
   mytree->Branch("Y",&treeY,"treeY/D");
   mytree->Branch("MT",&treeMT,"treeMT/D");
   mytree->Branch("MT2",&treeMT2,"treeMT2/D");
-  mytree->Branch("MT2W",&treeMT2W,"treeMT2W/D");
+  mytree->Branch("MT2WEle",&treeMT2WEle,"treeMT2WEle/D");
+  mytree->Branch("MT2WMu",&treeMT2WMu,"treeMT2WMu/D");
   mytree->Branch("Weight",&treeWeight,"treeWeight/D");
   mytree->Branch("PUWeight",&treePUWeight,"treePUWeight/D");
   mytree->Branch("treeEl",&treeEl);
@@ -1109,7 +1111,10 @@ int main(int argc, char** argv){
 	jet7[3]=CleanedJets.at(6)->p4.M();
 	jet7[4]=CleanedJets.at(6)->BJetDisc("CSV");
       }
-     
+
+      treeMT2WEle=mt2w_calc.get_mt2w( SignalElectrons, CleanedJets, PFmet);
+      treeMT2WMu=mt2w_calc.get_mt2w( SignalMuons, CleanedJets, PFmet);
+
       mytree->Fill();
     }
 

@@ -17,7 +17,7 @@ extern bool pcp;
 vector<Jet> makeJets(EasyChain* tree ){
 
   vector<Jet> Jets;
-  Jet dummyJet;
+  Jets.clear();
 
   static CutSet jetFlow("good jet selection");
   jetFlow.autodump=true;
@@ -52,6 +52,8 @@ vector<Jet> makeJets(EasyChain* tree ){
 
   for(int ijet = 0; ijet<Jets_p4.size(); ijet++){
 
+    Jet dummyJet;
+
     OK=false;
 
     if(pcp)cout<<"pt,eta and id -->"<<Jets_p4.at(ijet).pt()<<" "<<Jets_p4.at(ijet).eta()<<" "<<Jets_ID[ijet]<<endl;
@@ -68,6 +70,7 @@ vector<Jet> makeJets(EasyChain* tree ){
     if( !jetFlow.keepIf("ak5JetPFPFJetIDloosePat", Jets_ID[ijet]!=0 )) continue;
 
     dummyJet.Set(ijet, &Jets_p4.at(ijet), Jets_CorrFactor.at(ijet), "AK5");
+    dummyJet.SetBJetDisc("CSV", Jets_CSV.at(ijet));
     dummyJet.SetID("Loose",1);
     Jets.push_back(dummyJet);
 
@@ -100,7 +103,7 @@ void makeCleanedJets(vector<Jet*>& Jets_In, vector<Jet*>& Jets_Out, vector<Muon*
       }
     }
 
-    if (dumpJet) continue; 
+    if (dumpJet) continue;
 
     for(int iel=0; iel<(int)Electrons.size();++iel){
       if(pcp)cout<<"distance from jet "<<ijet<<" to lepton "<<iel<< " = "<<

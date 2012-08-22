@@ -8,8 +8,6 @@ using namespace ROOT::Math::VectorUtil;
 
 map<const char*, map<const char*, double> >* Jet::pbJetWP=0;
 
-
-
 double Jet::BJetDisc(const char* key){return bJetDisc[key];};
 
 string Jet::GenFlavor()      {return genFlavor;};
@@ -18,18 +16,25 @@ double Jet::ScaleCorrFactor(){return scaleCorrFactor;};
 string Jet::Type()           {return type;};
 
 bool   Jet::IsBJet(const char* key, double disc_cut){
-  if( find(allBTags.begin(),allBTags.end(),key) == allBTags.end() ) return bJetDisc[key]>disc_cut;
-  return false;
+  if( find(allBTags.begin(),allBTags.end(),key) == allBTags.end() ) {
+    std::cout<<"Btagging discriminator not found!"<<std::endl;
+    return false;
+  }
+  return bJetDisc[key]>disc_cut;
 };
 
 bool   Jet::IsBJet(const char* key, const char* WP){
-  if (pbJetWP==0) {
+  if(pbJetWP==0) {
     std::cout<<"BTagging WP table not set!"<<std::endl;
     return false;
-    }
-  if( find(allBTags.begin(),allBTags.end(),key) == allBTags.end() ) return this->IsBJet(key,(*pbJetWP)[key][WP]);
+  }
+  if((*pbJetWP)[key][WP]==0) {
+  std::cout<<"BTagging WP not set!"<<std::endl;
   return false;
+  }
+  return this->IsBJet(key,(*pbJetWP)[key][WP]);
 };
+
 void Jet::SetGenFlavor(string genFlavor_In){
   genFlavor=genFlavor_In;
 };
@@ -47,10 +52,6 @@ void Jet::SetBJetDisc(const char* key, double value){
   if( find(allBTags.begin(),allBTags.end(),key) == allBTags.end() ) allBTags.push_back(key);
   bJetDisc[key]=value;
 };
-
-
-//map<const char*, map<const char*, double> > Jet::bjetWP;
-
 
 void Jet::SetWP(const char* cme, map<const char*, map<const char*, double> >* bJetWP){
   pbJetWP=bJetWP;
@@ -75,9 +76,9 @@ void Jet::SetWP(const char* cme, map<const char*, map<const char*, double> >* bJ
     (*pbJetWP)["TCHP"]["Medium"]=1.93;
     (*pbJetWP)["TCHP"]["Tight"] =3.41;
 
-    (*pbJetWP)["CVS"]["Loose"] =0.244;
-    (*pbJetWP)["CVS"]["Medium"]=0.679;
-    (*pbJetWP)["CVS"]["Tight"] =0.898;
+    (*pbJetWP)["CSV"]["Loose"] =0.244;
+    (*pbJetWP)["CSV"]["Medium"]=0.679;
+    (*pbJetWP)["CSV"]["Tight"] =0.898;
 
     (*pbJetWP)["JP"]["Loose"] =0.275;
     (*pbJetWP)["JP"]["Medium"]=0.545;
