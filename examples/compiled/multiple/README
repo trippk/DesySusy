@@ -1,9 +1,0 @@
-First set up the links defined with ../pleaseExecuteMe.
-
-This example shows how a complex project with multiple files can be compiled
-	make
-	./myAnalysis
-
-#-----------------------------------------------------------------------------!!!!
-The main program uses (here all functions are implemented):   NtupleTools2.h
-while all other functions use the pure header version:        NtupleTools2_h.h
