@@ -39,7 +39,9 @@
 #include "makeJets.h"
 #include "HistoMaker.h"
 #include "mt2w_interface.h"
-
+#include "subTree.h"
+#include "subTreeFactory.h"
+#include "EventInfo.h"
 
 using namespace std;
 using namespace ROOT::Math::VectorUtil;
@@ -61,7 +63,6 @@ int main(int argc, char** argv){
 
   mt2w_bisect::mt2w_interface mt2w_calc;
 
-
   const double PI = 4.0*atan(1.0);  
     pcp=false;
   //pcp=true;
@@ -75,7 +76,10 @@ int main(int argc, char** argv){
   ConfigReader config(MainDir+"config.txt",argc,argv);
   config.Add(MainDir+"para_config.txt");
   config.Add(MainDir+"pu_config.txt");
-  TString filename = config.getTString("filename"); 
+  TString filename = config.getTString("filename");
+  
+  TString treeType = config.getTString("treeType"); 
+  subTree* subTree= subTreeFactory::NewTree(treeType);
 
   EasyChain* tree = new EasyChain("/susyTree/tree");
   // add file(s) or folder(s)
@@ -226,7 +230,8 @@ int main(int argc, char** argv){
   // output directory and output file name(derived from input name)
   cout<<"the output file name is "<<outname<<endl;;
   TFile *outfile = TFile::Open(outname,"RECREATE");
-  
+  //TFile *outprovafile = TFile::Open("outprovafile.root","RECREATE");
+
   // set output root file for cut flow (to be done!)
   CutSet::setTFile(outfile);
 
@@ -363,79 +368,6 @@ int main(int argc, char** argv){
   TwoplusBtag_1DPlots["RegionC"]= new TH1D("RegionC", "Number of entries in C with twoplus btag",1,0.5,1.5);
   TwoplusBtag_1DPlots["RegionD"]= new TH1D("RegionD", "Number of entries in D with twoplus btag",1,0.5,1.5);
   TwoplusBtag_2DPlots["HT_METSig"]= new TH2D("HT_METSig","HT vs METSig",50,HTmin,2000.,50,METSig_min,40.);  
-
-
-
-
-
-
-
-
-
-  //==========SUB TREE========================
-  //
-  //
-  treeFile->cd();
-  TTree* mytree = new TTree("subTree","a subTree");
-  outfile->cd();
-
-  int treeEvent=0;
-  int treeRun=0;
-  double treeMET=0.0;
-  double treeHT=0.0;
-  double treeMHT=0.0;
-  double treeY=0.0;
-  double treeMT=0.0;
-  double treeMT2=0.0;
-  double treeMT2WEle=0.0;
-  double treeMT2WMu=0.0;
-  double treeWeight=0.0;
-  double treePUWeight=0.0;
-  int treeNJets=0;
-
-
-  vector<double> treeEl(4,0.);
-  vector<double> treeMu(4,0.);
-  static int jet_ncomp=5;
-  vector<double> jet1(jet_ncomp,0.);
-  vector<double> jet2(jet_ncomp,0.);
-  vector<double> jet3(jet_ncomp,0.);
-  vector<double> jet4(jet_ncomp,0.);
-  vector<double> jet5(jet_ncomp,0.);
-  vector<double> jet6(jet_ncomp,0.);
-  vector<double> jet7(jet_ncomp,0.);
-
-  //map < const char* , bool> treeCuts;
-  //  vector< double > leptonvalues(8,0);
-
-  mytree->Branch("Event",&treeEvent,"treeEvent/I");
-  mytree->Branch("Run",&treeRun,"treeRun/I");
-  mytree->Branch("MET",&treeMET,"treeMET/D");
-  mytree->Branch("HT",&treeHT,"treeHT/D");
-  mytree->Branch("MHT",&treeMHT,"treeMHT/D");
-  mytree->Branch("Y",&treeY,"treeY/D");
-  mytree->Branch("MT",&treeMT,"treeMT/D");
-  mytree->Branch("MT2",&treeMT2,"treeMT2/D");
-  mytree->Branch("MT2WEle",&treeMT2WEle,"treeMT2WEle/D");
-  mytree->Branch("MT2WMu",&treeMT2WMu,"treeMT2WMu/D");
-  mytree->Branch("Weight",&treeWeight,"treeWeight/D");
-  mytree->Branch("PUWeight",&treePUWeight,"treePUWeight/D");
-  mytree->Branch("treeEl",&treeEl);
-  mytree->Branch("treeMu",&treeMu);
-  mytree->Branch("NJets",&treeNJets,"treeNJets/I");
-  mytree->Branch("jet1",&jet1);
-  mytree->Branch("jet2",&jet2);
-  mytree->Branch("jet3",&jet3);
-  mytree->Branch("jet4",&jet4);
-  mytree->Branch("jet5",&jet5);
-  mytree->Branch("jet6",&jet6);
-  mytree->Branch("jet7",&jet7);
-  //======================================================
-
-
-
-
-
 
 
   //
@@ -1035,92 +967,16 @@ int main(int argc, char** argv){
     METSig = PFmet.Et() / sqrt(HT); 
 
 
+    EventInfo info;
+    info.Event=Event;
+    info.Run=Run;
+    info.EventWeight=EventWeight;
+    info.PUWeight=PUWeight;
 
-
-
-    //FOR THE REDUCED TREE========================
     bool doSmallTree=true;
     if(doSmallTree){
-      
-      treeEvent=(int)Event;
-      treeRun=(int)Run;
-      treeMET=PFmet.Et();
-      treeHT=HT;
-      treeMHT=MHT;
-      treeY=METSig;
-      treeMT=0;
-      treeWeight=EventWeight;
-      treePUWeight=PUWeight;
-      if (SignalElectrons.size() != 0){
-	treeEl[0]=SignalElectrons.at(0)->Pt();
-	treeEl[1]=SignalElectrons.at(0)->Eta();
-	treeEl[2]=SignalElectrons.at(0)->Phi();
-	treeEl[3]=SignalElectrons.at(0)->p4.M();
-      }
-
-      if (SignalMuons.size() != 0){
-	treeMu[0]=SignalMuons.at(0)->Pt();
-	treeMu[1]=SignalMuons.at(0)->Eta();
-	treeMu[2]=SignalMuons.at(0)->Phi();
-	treeMu[3]=SignalMuons.at(0)->p4.M();
-      }
-
-      jet1[0]=CleanedJets.at(0)->Pt();
-      jet1[1]=CleanedJets.at(0)->Eta();
-      jet1[2]=CleanedJets.at(0)->Phi();
-      jet1[3]=CleanedJets.at(0)->p4.M();
-      jet1[4]=CleanedJets.at(0)->BJetDisc("CSV");
-
-      jet2[0]=CleanedJets.at(1)->Pt();
-      jet2[1]=CleanedJets.at(1)->Eta();
-      jet2[2]=CleanedJets.at(1)->Phi();
-      jet2[3]=CleanedJets.at(1)->p4.M();
-      jet2[4]=CleanedJets.at(1)->BJetDisc("CSV");
-
-      jet3[0]=CleanedJets.at(2)->Pt();
-      jet3[1]=CleanedJets.at(2)->Eta();
-      jet3[2]=CleanedJets.at(2)->Phi();
-      jet3[3]=CleanedJets.at(2)->p4.M();
-      jet3[4]=CleanedJets.at(2)->BJetDisc("CSV");
-
-      jet4[0]=CleanedJets.at(3)->Pt();
-      jet4[1]=CleanedJets.at(3)->Eta();
-      jet4[2]=CleanedJets.at(3)->Phi();
-      jet4[3]=CleanedJets.at(3)->p4.M();
-      jet4[4]=CleanedJets.at(3)->BJetDisc("CSV");
-
-      if (CleanedJets.size()>4){
-	jet5[0]=CleanedJets.at(4)->Pt();
-	jet5[1]=CleanedJets.at(4)->Eta();
-	jet5[2]=CleanedJets.at(4)->Phi();
-	jet5[3]=CleanedJets.at(4)->p4.M();
-	jet5[4]=CleanedJets.at(4)->BJetDisc("CSV");
-      }
-
-      if( CleanedJets.size()>5){
-	jet6[0]=CleanedJets.at(5)->Pt();
-	jet6[1]=CleanedJets.at(5)->Eta();
-	jet6[2]=CleanedJets.at(5)->Phi();
-	jet6[3]=CleanedJets.at(5)->p4.M();
-	jet7[4]=CleanedJets.at(5)->BJetDisc("CSV");
-      }
-      if( CleanedJets.size()>6){
-	jet7[0]=CleanedJets.at(6)->Pt();
-	jet7[1]=CleanedJets.at(6)->Eta();
-	jet7[2]=CleanedJets.at(6)->Phi();
-	jet7[3]=CleanedJets.at(6)->p4.M();
-	jet7[4]=CleanedJets.at(6)->BJetDisc("CSV");
-      }
-
-      treeMT2WEle=mt2w_calc.get_mt2w( SignalElectrons, CleanedJets, PFmet);
-      treeMT2WMu=mt2w_calc.get_mt2w( SignalMuons, CleanedJets, PFmet);
-
-      mytree->Fill();
+      subTree->Fill( &info, tree, SignalMuons, SignalElectrons, CleanedJets, PFmet);
     }
-
-
-
-
 
 
     if(HT< HTmin)continue;
@@ -1271,12 +1127,10 @@ int main(int argc, char** argv){
   
 
   treeFile->cd();
-  mytree->Write();
-  
+  subTree->Write();
 
   //PROGRAM END
- EndOfProgram:
-  
+  //EndOfProgram:
   
 
   return 0;
