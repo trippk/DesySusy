@@ -78,7 +78,7 @@ int main(int argc, char** argv){
   config.Add(MainDir+"pu_config.txt");
   TString filename = config.getTString("filename");
   
-  TString treeType = config.getTString("treeType"); 
+  TString treeType = config.getTString("treeType","default"); 
   subTree* subTree= subTreeFactory::NewTree(treeType);
 
   EasyChain* tree = new EasyChain("/susyTree/tree");
