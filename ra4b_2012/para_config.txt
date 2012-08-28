@@ -9,6 +9,8 @@ xs_SingleTop_T-tW-channel    = 11.1
 xs_SingleTop_Tbar-s-channel  = 1.76
 xs_SingleTop_Tbar-t-channel  = 30.7
 xs_SingleTop_Tbar-tW-channel = 11.1
+xs_LM6_NoSub                 = 0.70658
+xs_LM9_NoSub                 = 13.0018
 
 #(T)otal (N)umber (o)f (E)vents 
 TNoE_TTJets_SUMMER12           = 7256324
