@@ -88,6 +88,7 @@ void defaultTree::Fill( EventInfo* info, EasyChain* tree, vector<Muon*> muons, v
     el[2]=electrons.at(0)->Phi();
     el[3]=electrons.at(0)->p4.M();
   }
+  else {this->SetToZero(&el);}
 
   if (muons.size() != 0){
     mu[0]=muons.at(0)->Pt();
@@ -95,7 +96,8 @@ void defaultTree::Fill( EventInfo* info, EasyChain* tree, vector<Muon*> muons, v
     mu[2]=muons.at(0)->Phi();
     mu[3]=muons.at(0)->p4.M();
   }
-  
+  else {this->SetToZero(&mu);}
+
   jet1[0]=jets.at(0)->Pt();
   jet1[1]=jets.at(0)->Eta();
   jet1[2]=jets.at(0)->Phi();
@@ -121,7 +123,8 @@ void defaultTree::Fill( EventInfo* info, EasyChain* tree, vector<Muon*> muons, v
     jet4[3]=jets.at(3)->p4.M();
     jet4[4]=jets.at(3)->BJetDisc("CSV");
   }
-  
+  else {this->SetToZero(&jet4);}
+
   if (jets.size()>4){
     jet5[0]=jets.at(4)->Pt();
     jet5[1]=jets.at(4)->Eta();
@@ -129,6 +132,7 @@ void defaultTree::Fill( EventInfo* info, EasyChain* tree, vector<Muon*> muons, v
     jet5[3]=jets.at(4)->p4.M();
     jet5[4]=jets.at(4)->BJetDisc("CSV");
   }
+  else {this->SetToZero(&jet5);}
 
   if( jets.size()>5){
     jet6[0]=jets.at(5)->Pt();
@@ -137,6 +141,8 @@ void defaultTree::Fill( EventInfo* info, EasyChain* tree, vector<Muon*> muons, v
     jet6[3]=jets.at(5)->p4.M();
     jet7[4]=jets.at(5)->BJetDisc("CSV");
   }
+  else {this->SetToZero(&jet6);}
+
   if( jets.size()>6){
     jet7[0]=jets.at(6)->Pt();
     jet7[1]=jets.at(6)->Eta();
@@ -144,9 +150,18 @@ void defaultTree::Fill( EventInfo* info, EasyChain* tree, vector<Muon*> muons, v
     jet7[3]=jets.at(6)->p4.M();
     jet7[4]=jets.at(6)->BJetDisc("CSV");
   }
+  else {this->SetToZero(&jet7);}
 
   MT2WEle=mt2w_calc.get_mt2w( electrons, jets, met);
   MT2WMu=mt2w_calc.get_mt2w( muons, jets, met);
 
   mytree->Fill();
+};
+
+void defaultTree::SetToZero(vector<double>* vec){
+
+  for(int i=0; i<vec->size(); i++){
+    vec->at(i)=0.;
+  }
+  
 };

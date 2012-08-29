@@ -25,7 +25,8 @@ class defaultTree: public subTree {
    virtual void Fill(EventInfo* info, EasyChain* tree, vector<Muon*> muons, vector<Electron*> electrons, vector<Jet*> jets, LorentzM& met);
    virtual void Write();
   protected:
-     
+
+   void SetToZero(vector<double>* vec);
    TTree* mytree;
    mt2w_bisect::mt2w_interface mt2w_calc;
 
