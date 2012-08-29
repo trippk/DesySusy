@@ -64,7 +64,7 @@ int main(int argc, char** argv){
   mt2w_bisect::mt2w_interface mt2w_calc;
 
   const double PI = 4.0*atan(1.0);  
-  pcp=false;
+    pcp=false;
   //pcp=true;
     EventWeight=1.0;
 
@@ -78,126 +78,23 @@ int main(int argc, char** argv){
   config.Add(MainDir+"pu_config.txt");
   TString filename = config.getTString("filename");
   
+  TString treeType = config.getTString("treeType","default"); 
+  subTree* subTree= subTreeFactory::NewTree(treeType);
+
   EasyChain* tree = new EasyChain("/susyTree/tree");
   // add file(s) or folder(s)
   int f = tree->AddSmart(filename);
 
-
   TString outname = config.getTString("outname",tree->GetUniqeName());
   string outname_string=(string)outname;
-  // output directory and output file name(derived from input name)
-  cout<<"the output file name is "<<outname<<endl;;
-  TFile *outfile = TFile::Open(outname,"RECREATE");
-  //TFile *outprovafile = TFile::Open("outprovafile.root","RECREATE");
-  // set output root file for cut flow (to be done!)
-  CutSet::setTFile(outfile);
   
-
- 
-  string replacestring=".root";
-  string treeFileName="";
-  int pos = outname_string.find(replacestring);
-  size_t thelength=replacestring.length();
-  if (pos != string::npos){
-    treeFileName= outname_string.replace(pos,thelength,"_tree.root");
-  }
-  //
-  TFile* treeFile=TFile::Open((TString)treeFileName,"RECREATE");
-  treeFile->cd();
-  TString treeType = config.getTString("treeType","default"); 
-  subTree* subTree= subTreeFactory::NewTree(treeType);
-  outfile->cd();  
-
-
-
-
 
   //data or monte carlo?
   bool isData=config.getBool("isData");
   //=================================================================
  
 
-  /*
 
-  tree->SetBranchStatus("*",0);
-
-  tree->SetBranchStatus("event",1);
-  tree->SetBranchStatus("run",1);
-  tree->SetBranchStatus("metP4PF",1);
-  tree->SetBranchStatus("nTracksAll",1);
-  tree->SetBranchStatus("nTracksHighPurity",1);
-  tree->SetBranchStatus("ecalDeadCellTPFilterFlag",1);
-  tree->SetBranchStatus("ak5JetPFTrkCountingHighEffBJetTagsPat",1);
-  tree->SetBranchStatus("electronP4Pat",1);
-  tree->SetBranchStatus("electronChargePat",1);
-  tree->SetBranchStatus("electronDr03EcalRecHitSumEtPat",1);
-  tree->SetBranchStatus("electronDr03HcalTowerSumEtPat",1);
-  tree->SetBranchStatus("electronDr03TkSumPtPat",1);
-  tree->SetBranchStatus("electronP4Pat",1);
-  tree->SetBranchStatus("electronESuperClusterEtaPat",1);
-  tree->SetBranchStatus("electronGsfTrackDxyPat",1);
-  tree->SetBranchStatus("electronGsfTrackDzPat",1);
-  tree->SetBranchStatus("electronFbremPat",1);
-  tree->SetBranchStatus("electronESuperClusterOverPPat",1);
-  tree->SetBranchStatus("electronIdTightPat",1);
-  tree->SetBranchStatus("electronIdMediumPat",1);
-  tree->SetBranchStatus("DESYelectronIdTriggerTightPat",1);
-  tree->SetBranchStatus("electronESuperClusterEtaPat",1);
-  tree->SetBranchStatus("ak5JetPFPFJetIDloosePat",1);
-  tree->SetBranchStatus("ak5JetPFCorrectedP4Pat",1);
-  tree->SetBranchStatus("ak5JetPFCorrFactorPat",1);
-  tree->SetBranchStatus("ak5JetPFCombinedSecondaryVertexBJetTagsPat",1);
-  tree->SetBranchStatus("ak5JetPFCombinedSecondaryVertexMVABJetTagsPat",1);
-  tree->SetBranchStatus("muonP4Pat",1);
-  tree->SetBranchStatus("muonChargePat",1);
-  tree->SetBranchStatus("muonPfIsolationR04DeltaBCorrectedPat",1);
-  tree->SetBranchStatus("muonIsPFMuonPat",1);
-  tree->SetBranchStatus("muonIsGlobalMuonPat",1);
-  tree->SetBranchStatus("muonIsTrackerMuonPat",1);
-  tree->SetBranchStatus("muonP4Pat",1);
-  tree->SetBranchStatus("muonIsGlobalMuonPat",1);
-  tree->SetBranchStatus("muonIsTrackerMuonPat",1);
-  tree->SetBranchStatus("muonTMOneStationTightPat",1);
-  tree->SetBranchStatus("muonNumberOfTrackerLayersWithMeasurementPat",1);
-  tree->SetBranchStatus("muonInnerTrackNormalizedChi2Pat",1);
-  tree->SetBranchStatus("muonInnerTrackDxyPat",1);
-  tree->SetBranchStatus("muonInnerTrackDzPat",1);
-  tree->SetBranchStatus("muonNumberOfValidPixelHitsPat",1);
-  tree->SetBranchStatus("muonP4Pat",1);
-  tree->SetBranchStatus("muonChargePat",1);
-  tree->SetBranchStatus("muonIsGlobalMuonPat",1);
-  tree->SetBranchStatus("muonGlobalTrackDxyBSPat",1);
-  tree->SetBranchStatus("muonGlobalTrackDzPat",1);
-  tree->SetBranchStatus("muonEcalIsoPat",1);
-  tree->SetBranchStatus("muonHcalIsoPat",1);
-  tree->SetBranchStatus("muonTrackIsoPat",1);
-  tree->SetBranchStatus("muonIDGlobalMuonPromptTightPat",1);
-  tree->SetBranchStatus("muonGlobalTracknumberOfValidHitsPat",1);
-  tree->SetBranchStatus("muonGlobalTracknormalizedChi2Pat",1);
-  tree->SetBranchStatus("muonGlobalTracknumberOfValidMuonHitsPat",1);
-  tree->SetBranchStatus("muonNumberOfMatchedStationsPat",1);
-  tree->SetBranchStatus("muonInnerTrackDxyPat",1);
-  tree->SetBranchStatus("muonInnerTrackDzPat",1);
-  tree->SetBranchStatus("muonNumberOfValidPixelHitsPat",1);
-  tree->SetBranchStatus("muonNumberOfTrackerLayersWithMeasurementPat",1);
-  tree->SetBranchStatus("muonIsPFMuonPat",1);
-  tree->SetBranchStatus("muonIsGlobalMuonPat",1);
-  tree->SetBranchStatus("muonSelectedPF",1);
-  tree->SetBranchStatus("metP4PF",1);
-  tree->SetBranchStatus("metP4TC",1);
-  tree->SetBranchStatus("trackingFailureFilterFlag",1);
-  tree->SetBranchStatus("prescaled",1);
-  tree->SetBranchStatus("triggered",1);
-  tree->SetBranchStatus("DESYtriggerNameMap",1);
-  tree->SetBranchStatus("vertexPosition",1);
-  tree->SetBranchStatus("vertexIsFake",1);
-  tree->SetBranchStatus("vertexNdof",1);
-  tree->SetBranchStatus("vertexNtrks",1);
-  if(!isData){
-      tree->SetBranchStatus("pileupTrueNumInteractionsBX0",1);
-  }
-
-  */
 
   //===========================================================================
   // SET THE INFORMATION ABOUT THE SAMPLE
@@ -326,13 +223,32 @@ int main(int argc, char** argv){
   cout<<"THERE ARE "<<N<<" EVENTS IN "<<filename<<endl;
   
 
+  //================================================================
+  //OUTPUT FILE
+  //================================================================
+
+  // output directory and output file name(derived from input name)
+  cout<<"the output file name is "<<outname<<endl;;
+  TFile *outfile = TFile::Open(outname,"RECREATE");
+  //TFile *outprovafile = TFile::Open("outprovafile.root","RECREATE");
+
+  // set output root file for cut flow (to be done!)
+  CutSet::setTFile(outfile);
 
 
+  
+  string replacestring=".root";
+  string treeFileName="";
+  int pos = outname_string.find(replacestring);
+  size_t thelength=replacestring.length();
+  if (pos != string::npos){
+    treeFileName= outname_string.replace(pos,thelength,"_tree.root");
+  }
 
+  TFile* treeFile=TFile::Open((TString)treeFileName,"RECREATE");
+  treeFile->cd();
 
-
-
-
+  //  outfile->cd();
   //================================================================
 
 

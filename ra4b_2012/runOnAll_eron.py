@@ -15,9 +15,9 @@ batch_script = \
 ## make sure the right shell will be used
 #$ -S /bin/zsh
 ## the cpu time for this job
-#$ -l h_cpu=00:40:00
+#$ -l h_cpu=00:30:00
 ## the maximum memory usage of this job
-#$ -l h_vmem=1500M
+#$ -l h_vmem=1000M
 ## stderr and stdout are merged together to stdout
 #$ -j y
 ##(send mail on job's end and abort)
@@ -80,42 +80,6 @@ echo
 #
 echo merging job done at `date`
 """
-
-
-
-treeMerge_script = \
-"""
-#!/bin/zsh
-## make sure the right shell will be used
-#$ -S /bin/zsh
-## the cpu time for this job
-#$ -l h_cpu=00:03:00
-## the maximum memory usage of this job
-#$ -l h_vmem=700M
-## stderr and stdout are merged together to stdout
-#$ -j y
-## define input dir,output dir,executable,config file and LD_LIBRARY_PATH
-#$ -v OUTDIR=
-#$ -v OUTNAME=
-#$ -v HADD=
-#$ -v FILELIST=
-#$ -v LD_LIBRARY_PATH=
-#$ -o
-save=$PWD
-#
-cd $OUTDIR
-echo start merging at `date`
-$HADD -f $OUTNAME $FILELIST 
-echo "done merging, now remove"
-rm -rf $FILELIST
-#
-#
-#
-#
-echo merging job done at `date`
-"""
-
-
 # continues in createMergeScript
 
 cronos_script = \
@@ -260,13 +224,12 @@ def InfoToConfig(config_filename):
 	#
 	#print 'executing now '+'mv '+config_mod+'_'+config_filename
 	out=commands.getoutput('mv '+config_mod+' '+config_filename)
-	return Sample,SubSample
+	
 
 def readCommandLine(commandLine):
 	""" read the command line input"""
 
 	global	indir,outdir,executable,batch_filename,config_filename,cleanUp,noJoin,dupRemoval,nfiles,outname,reloutdir,Estimation,Tail
-	global Sample,SubSample
 
 	cleanUp        = False
 	noJoin         = False
@@ -409,7 +372,7 @@ def readCommandLine(commandLine):
 
 	#now read the sample and sub-sample from the name of the out file and put them into
 	#the config file
-	Sample,SubSample=InfoToConfig(config_filename)
+	InfoToConfig(config_filename)
 	#now copy the config file to the output directory
 	out=commands.getoutput('cp '+config_filename+' '+outdir+'/config.txt')
 	out=commands.getoutput('cp para_config.txt '+outdir+'/para_config.txt')
@@ -526,8 +489,6 @@ def createBatchScript():
 	
 	batchfile.close()
 	if type(batchLines).__name__ == 'file': batchLines.close()
-
-
 
 def AddCreationTimeToBatchScript(CreationTime):
 
@@ -698,7 +659,7 @@ def createMergeScript(jobids,filelist,outmergename,outname,nlistsize):
 				line='rm'+buf+'\n'
 				mergefile.write(line+'\n')
 			else:
-				line='rm out_*[0-9]_merge.root\n'
+				line='rm out*_merge_*.root\n'
 				mergefile.write(line+'\n')			
 				line='rm  runOnAll_'+outname+'.log\n'
 				mergefile.write(line+'\n')			
@@ -720,48 +681,6 @@ def createMergeScript(jobids,filelist,outmergename,outname,nlistsize):
 	return filelist.split(' ')
 
 ldlp=''
-
-
-
-
-
-def createTreeMergeScript(StringTreeFiles,OutTreeMergeName):
-	"""
-	creates a script to merge the tree root files
-	"""
-
-	# first get path to hadd
-	hadd=commands.getoutput('which hadd')
-	if hadd.find('not found')>=0:
-		print 'Cannot find hadd',hadd
-		sys.exit(0)
-
-	#treelist=''
-	#for files in TreeFiles:
-	#	modfiles=files.replace('.root','_tree.root')
-	#	treelist+=str(modfiles)+' '
-	#
-	#
-	#
-	lines=treeMerge_script.split('\n')
-	#
-	#
-	#
-	treefile=open('treeMerge_script','w')
-	for line in lines:
-		if len(line)==0:
-			continue
-		if line.find('#$ -v OUTDIR=')>=0:         line+=outdir
-		if line.find('#$ -o')>=0:                 line+=' '+outdir
-		if line.find('#$ -v OUTNAME=')>=0:        line+=OutTreeMergeName
-		if line.find('#$ -v HADD=')>=0:           line+=hadd 		
-		if line.find('#$ -v FILELIST=')>=0:
-			line+='"'+StringTreeFiles+'"'
-			#print 'in the script writing ',StringTreeFiles
-		if line.find('#$ -v LD_LIBRARY_PATH=')>=0:line+=ldlp
-		treefile.write(line+'\n')
-	#
-	#
 
 def createCronosScript(outname,cronosdir,reloutdir):
 	""" does what the name says"""
@@ -850,18 +769,12 @@ if __name__ == "__main__":
 	jobids=''
 	# a string of output file names
 	filelist=''
-
-	#
-	treejobids=''
-	treefilelist=''
 	chunksize=30
 	listoffiles=[]
 	listofjobids=[]
-	ListOfOutFiles=[]
 	modulus=0
 	for idx, rootfile in enumerate(rootfiles):
 		outfile='out_'+str(idx)+'_'+randstr+'.root'
-		ListOfOutFiles.append(outfile)
 		batchsendtime=commands.getoutput('date --rfc-3339=ns | awk \'{print $2}\'')
 
 		batchfind=batchsendtime.find('+')
@@ -879,9 +792,6 @@ if __name__ == "__main__":
 			files+=indir+f+' '
 		print '.',
 		sys.stdout.flush()
-
-		#print 'going to send qsub -l  site=hh  batch_script "'+files+'" '+outfile
-		#raw_input()
 		out=commands.getoutput('qsub -l  site=hh  batch_script "'+files+'" '+outfile)
 
 		if out.find('Your job ') == 0:
@@ -911,6 +821,8 @@ if __name__ == "__main__":
 	#filelist = filelist[:-1]
 	#remove the last character of all the strings in the list
 
+	#print batchsendtimes
+	
 	nlist=range(modulus+1)
 	for idx in nlist:
 		listoffiles[idx]=listoffiles[idx][:-1]
@@ -928,9 +840,7 @@ if __name__ == "__main__":
 		outrandfile='out_'+str(idx)+'_merge.root'
 
 		outmergefile=outrandfile
-		#If there are less than chunksize files,
-		#then don't bother doing a final step
-		#(the last element of nlist will be 0)
+		#If there are less than chunksize files, then don't bother (the last element of nlist will be 0)
 		if nlist[-1]==0:
 			outmergefile=outname
 			dofinalmerge=False
@@ -938,7 +848,8 @@ if __name__ == "__main__":
 		print "outmergefile is "+outmergefile	
 		createMergeScript(listofjobids[idx],listoffiles[idx],outmergefile,outname,nlist[-1])
 
-		# send the merging job
+		# the merging job
+		
 		if not noJoin: out=commands.getoutput('qsub -l site=hh -m a -hold_jid '+listofjobids[idx]+' merge_script')
 
 		#record the jobs sent at this step
@@ -950,48 +861,6 @@ if __name__ == "__main__":
 		        else: print 'Something wrong in submit: ',out
 		else: print 'Something wrong in submit: ',out
 
-
-
-		#
-		#
-		#
-		#now for the tree files merger:
-		#put the tree in the names
-		
-		thefiles=listoffiles[idx].split(',')
-		listoftreefiles=''
-		for file in thefiles:
-			newfile=file.replace('.root','_tree.root')
-			listoftreefiles+=newfile+','
-		#remove the last comma
-		listoftreefiles=listoftreefiles[:-1]
-
-
-		outmergetreefile=outmergefile.replace('_merge.root','_tree_merge.root')
-		#if only one merging is necessary, then its different:
-		if nlist[-1]==0:
-			outmergetreefile=outname.replace('.root',+'_'+Estimation+'_'+Tail+'_Tree.root')
-		#
-		#
-		#
-		#print 'going to create the tree merger with ',listoftreefiles
-		#print 'and merge it to ',outmergetreefile
-		createTreeMergeScript(listoftreefiles,outmergetreefile)
-		if not noJoin:
-			out=commands.getoutput('qsub -l site=hh -m a -hold_jid '+listofjobids[idx]+' treeMerge_script')
-		#
-
-		if out.find('Your job ') == 0:
-			id=out.split(' ')[2]
-			if id.isdigit():
-				treejobids+=str(id)+','
-				treefilelist+=outmergetreefile+' '
-		        else: print 'Something wrong in submit: ',out
-		else: print 'Something wrong in submit: ',out
-
-		
-
-		
 		##if only one mergin was necessary, send the cronos script after it
 		if nlist[-1]==0:
 	                #cp the python script in the outdir
@@ -1008,21 +877,13 @@ if __name__ == "__main__":
 				    #out=commands.getoutput('qsub -l site=hh -m a hold_jid '+lastid+' completion_script')
 			print "the submission is ",out
 
-			#OutTreeMergeName=Sample+'_'+SubSample+'_'+Estimation+'_'+Tail+'_Tree.root'
-			#createTreeMergeScript(ListOfOutFiles,OutTreeMergeName)
-			#out=commands.getoutput('rm -f treeMerge_script.o\*')
-			#out=commands.getoutput('qsub -l site=hh -m a -hold_jid '+id+' treeMerge_script')
-
-
 			#set the completion of the job now
 		
 			
 	#REMOVE THE LAST CHARACTER
 	jobids   =   jobids[:-1]
 	filelist = filelist[:-1]
-	treejobids = treejobids[:-1]
-	treefilelist=treefilelist[:-1]
-	print 'the tree file list is ',treefilelist
+
         #=============================================
 	#Create and send the LAST merging job (if necessary)
 	#=============================================
@@ -1033,15 +894,6 @@ if __name__ == "__main__":
 		id=out.split(' ')[2]
 		if id.isdigit():
 			lastjobid=id
-
-
-		outmergetreefile=outname.replace('.root','_'+Estimation+'_'+Tail+'_Tree.root')
-		print 'on the final merge, the files are ',treefilelist
-		createTreeMergeScript(treefilelist,outmergetreefile)
-		if not noJoin:
-			out=commands.getoutput('qsub -l site=hh -m a -hold_jid '+treejobids+' treeMerge_script')
-		#
-		#
 		#Send the cronos script
 		#out=commands.getoutput('cp ./CronosExtractInfo.py ' +outdir)
 		if doCronos:
@@ -1058,11 +910,6 @@ if __name__ == "__main__":
 		#print 'executing the command ' + 'qsub -l site=hh -m a -hold_jid '+lastjobid+' completion_script'
 		#out=commands.getoutput('rm -f completion_script.o\*')
 		#out=commands.getoutput('qsub -l site=hh -m a -hold_jid '+lastjobid+' completion_script')
-
-		#OutTreeMergeName=Sample+'_'+SubSample+'_'+Estimation+'_'+Tail+'_Tree.root'
-		#createTreeMergeScript(ListOfOutFiles,OutTreeMergeName)
-		#out=commands.getoutput('rm -f treeMerge_script.o\*')
-		#out=commands.getoutput('qsub -l site=hh -m a -hold_jid '+lastjobid+' treeMerge_script')
 			
 	
 		

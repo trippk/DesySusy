@@ -36,6 +36,8 @@ void SetTriggers_RA4b(SampleInformation mySampleInformation, vector<const char*>
     triggernames.push_back("HLT_IsoMu17_eta2p1_TriCentralPFJet30");
     triggernames.push_back("HLT_IsoMu17_eta2p1_TriCentralPFNoPUJet30");
     triggernames.push_back("HLT_IsoMu17_eta2p1_TriCentralPFNoPUJet30_30_20");
+  
+
 
   }
 

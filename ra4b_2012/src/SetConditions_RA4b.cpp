@@ -121,11 +121,8 @@ void SetConditions_RA4b(SampleInformation mySampleInformation){
     SetOfCuts::Event.HT.Set(300.0,"above","HT above 300");
     SetOfCuts::Event.MET.Set(60.,"above","MET above 100");
     //============================================
-    
-  }
-  else{
-    cout<<"The estimation "<<mySampleInformation.GetEstimation()<<" does not exist"<<endl;
-    exit(1);
+
+
   }
 }
 

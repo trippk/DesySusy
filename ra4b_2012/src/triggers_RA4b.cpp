@@ -74,7 +74,7 @@ bool triggers_RA4b(EasyChain* tree, vector<const char*>& triggernames, double& E
     //tname=triggernames.at(itr);
     tname=TriggerMap[triggernames.at(itr)];
     //cout<<"the fucking trigger is"<<tname<<endl;
-    //cout<<"which is associated to "<<triggernames.at(itr)<<endl;
+
     //check the trigger prescale, now it works with
     //only one trigger
     //if(TriggerFlow.keepIf(tname, HLTtrigger[tname])){
