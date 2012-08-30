@@ -217,17 +217,43 @@ def WJetsToLNu():
     Scripts.append(script)
 
 
+def LM6():
+    Scripts=[]
+    Sample='LM6'
+    SubSample='NoSub'
+    FilesDir='/pnfs/desy.de/cms/tier2/store/user/msahin/nTuple12_v2/mc/SUSY_LM6_sftsht_8TeV-pythia6/Summer12-PU_S7_START52_V9-v1/'
+    Config='config_MC_RA4b.txt'
+    nFiles=3
+    #
+    script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
+    cleanUpDir('./'+Sample+'/'+SubSample)
+    Scripts.append(script)
+
+
+
+def LM9():
+    Scripts=[]
+    Sample='LM9'
+    SubSample='NoSub'
+    FilesDir=' /pnfs/desy.de/cms/tier2/store/user/msahin/nTuple12_v2/mc/SUSY_LM9_sftsht_8TeV-pythia6/Summer12-PU_S7_START52_V9-v1/'
+    Config='config_MC_RA4b.txt'
+    nFiles=3
+    #
+    script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
+    cleanUpDir('./'+Sample+'/'+SubSample)
+    Scripts.append(script)
 
 
     
 if __name__=='__main__':
 
-    MuHad()
-    ElectronHad()
-    SingleMu()
-    TTJets()
-    #TTJetsBUG()    
-    DYJetsToLL()
-    WJetsToLNu()
-    SingleTop()
-    
+    #MuHad()
+    #ElectronHad()
+    #SingleMu()
+    #TTJets()
+    ######TTJetsBUG()    
+    #DYJetsToLL()
+    #WJetsToLNu()
+    #SingleTop()
+    LM6()
+    LM9()
