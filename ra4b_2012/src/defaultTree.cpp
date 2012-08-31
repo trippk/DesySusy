@@ -73,11 +73,15 @@ void defaultTree::Fill( EventInfo* info, EasyChain* tree, vector<Muon*> muons, v
 
   double HTx=0;
   double HTy=0;
+  HT=0;
   for(int ijet=0;ijet<(int)jets.size();++ijet){
     HT+=jets.at(ijet)->Pt();
     HTx+=jets.at(ijet)->p4.Px();
     HTy+=jets.at(ijet)->p4.Py();
   }
+  //cout<<"the number of jets is "<<jets.size()<<endl;
+  //cout<<"and the resulting HT is "<<HT<<endl;
+    
   MHT=sqrt(HTx*HTx + HTy*HTy);
   
   Y = met.Et() / sqrt(HT);
