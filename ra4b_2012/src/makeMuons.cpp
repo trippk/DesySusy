@@ -136,7 +136,7 @@ bool makeSoftMuons(EasyChain* tree, vector<Muon>& AllMuons, vector<Muon*>& SoftM
   static float  PTMIN          =  config.getFloat("SoftMuons_PTMIN",  15. ); //
   static float  ETAMAX         = config.getFloat("SoftMuons_ETAMAX", 2.4 );  //
   static int NValidPixelHitsMIN=config.getInt("SoftMuons_NValidPixelHitsMIN",1); //
-  static int PFIsoCut          =config.getInt("SoftPFIsoCutMIN",0.2); //
+  static float PFIsoCut          =config.getInt("SoftPFIsoCutMIN",0.2); //
 
   //====================================================================
 
