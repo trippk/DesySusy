@@ -957,6 +957,7 @@ int main(int argc, char** argv){
     //===================================================================
     //HT
     //===================================================================
+    HT=0.0;
     for(int ijet=0;ijet<(int)CleanedJets.size();++ijet){
       HT=HT+CleanedJets.at(ijet)->Pt();	
     }
