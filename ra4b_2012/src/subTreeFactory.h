@@ -4,7 +4,6 @@
 #include "TString.h" 
 #include "subTree.h"
 #include "defaultTree.h"
-#include "Nminus1Tree.h"
 
 #include <iostream>
 
@@ -19,14 +18,7 @@ class subTreeFactory
   
   static subTree *NewTree(TString &description)
     {
-      if(description == "default") {
-	std::cout<<"default subTree will be filled."<<std::endl;
-	return new defaultTree;
-      }
-      if(description == "Nminus1") {
- 	std::cout<<"Nminus1 subTree will be filled."<<std::endl;
-	return new Nminus1Tree;
-      }
+      if(description == "default") return new defaultTree;
       std::cout<<"No matching for subTreeType: defaultTree will be used"<<std::endl;
       return new defaultTree;
     }
