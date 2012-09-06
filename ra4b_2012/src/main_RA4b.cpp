@@ -250,7 +250,7 @@ int main(int argc, char** argv){
   //PU
 
   bool oldpuw = false; //the obselete method and values
-  if(WhatSample=="TTJets")oldpuw=true;
+  //if(WhatSample=="TTJets")oldpuw=true;
 
   vector<double> PUmc;
   vector<double> PUdata;
