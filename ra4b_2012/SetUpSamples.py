@@ -247,13 +247,13 @@ def LM9():
     
 if __name__=='__main__':
 
-    #MuHad()
-    #ElectronHad()
-    #SingleMu()
-    #TTJets()
+    MuHad()
+    ElectronHad()
+    SingleMu()
+    TTJets()
     ######TTJetsBUG()    
-    #DYJetsToLL()
-    #WJetsToLNu()
-    #SingleTop()
+    DYJetsToLL()
+    WJetsToLNu()
+    SingleTop()
     LM6()
     LM9()
