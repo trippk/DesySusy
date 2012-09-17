@@ -1,6 +1,7 @@
 # xs_<sample name>_<sub sample name> -> Cross Section  of the
 #corresponding <sample name><sub sample name>
 xs_TTJets_SUMMER12           = 225.97
+xs_TTJets_SUMMER12v2         = 225.97
 xs_DYJets_M-50               = 3503.2
 xs_WJetsToLNu_NoSub          = 36527.2
 xs_SingleTop_T-s-channel     = 3.79
@@ -14,6 +15,7 @@ xs_LM9_NoSub                 = 13.0018
 
 #(T)otal (N)umber (o)f (E)vents 
 TNoE_TTJets_SUMMER12           = 7256324
+TNoE_TTJets_SUMMER12v2         = 6923750
 TNoE_DYJets_M-50               = 30461028
 TNoE_WJetsToLNu_NoSub          = 18393090
 TNoE_SingleTop_T-s-channel     = 259961
@@ -27,6 +29,7 @@ TNoE_LM9_NoSub                 = 1000080
 
 #(F)ilter (E)fficiency
 FE_TTJets_SUMMER12           = 1
+FE_TTJets_SUMMER12v2         = 1
 FE_DYJets_M-50               = 1
 FE_WJetsToLNu_NoSub          = 1
 FE_SingleTop_T-s-channel     = 1
