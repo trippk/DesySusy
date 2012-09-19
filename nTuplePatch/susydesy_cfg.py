@@ -10,7 +10,7 @@ process.GlobalTag.globaltag = options.GlobalTag
 process.source = cms.Source('PoolSource', fileNames = cms.untracked.vstring(options.files) )
 process.add_( cms.Service( "TFileService", fileName = cms.string( options.output ), closeFileFast = cms.untracked.bool(True) ) )
 
-from SUSYBSMAnalysis.DesySusy.SusyDESY_nTuple_cfi import SusyCAF
+from SUSYBSMAnalysis.SusyCAF.SusyDESY_nTuple_cfi import SusyCAF
 import SUSYBSMAnalysis.SusyCAF.SusyCAF_ProcessAdjustments_cfi as adjust
 adjust.messageLogger(process,options.quiet)
 adjust.loadAndConfigureHcalSeverityLevelProducer(process, options.isData)
