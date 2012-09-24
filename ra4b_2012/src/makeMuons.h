@@ -9,4 +9,5 @@ bool makeSoftMuons(EasyChain* tree, vector<Muon>& Muons, vector<Muon*>& SoftMuon
 bool makeLooseMuons(EasyChain* tree, vector<Muon>& Muons, vector<Muon*>& LooseMuons );
 bool makeTightMuons(EasyChain* tree, vector<Muon>& Muons, vector<Muon*>& TightMuons);
 bool makeVetoMuons(EasyChain* tree,  vector<Muon>& Muons, vector<Muon*>& VetoMuons);
+float Consistency( LorentzM vRef, EasyChain* tree, const char* name);
 #endif

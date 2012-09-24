@@ -80,11 +80,14 @@ vector<Jet> makeJets(EasyChain* tree ){
   //retun true;
 };
 
-void makeCleanedJets(vector<Jet*>& Jets_In, vector<Jet*>& Jets_Out, vector<Muon*>& Muons, vector<Electron*>& Electrons){
+void makeCleanedJets(vector<Jet*>& Jets_In, vector<Jet*>& Jets_Out, vector<Muon> Muons, vector<Electron> Electrons){
   
   Jets_Out.clear();
   
   //Distance between the jet and the iso leptons
+
+  static CutSet CrossCleaning("Cleaned Jets");
+  CrossCleaning.autodump=true;
   
   for(int ijet = 0; ijet<Jets_In.size(); ijet++){
 
@@ -93,32 +96,32 @@ void makeCleanedJets(vector<Jet*>& Jets_In, vector<Jet*>& Jets_Out, vector<Muon*
     for(int imu=0; imu<(int)Muons.size(); ++imu){
       if(pcp)cout<<"distance from jet "<<ijet<<" to lepton "<<imu<< " = "<<
 	
-	DeltaR(Jets_In.at(ijet)->P4(), Muons.at(imu)->P4())<<" lep= "<<Muons.at(imu)->Flavor()<<endl;
-      
-      if ( !Muons.at(imu)->IsID("Tight"))continue;
+	DeltaR(Jets_In.at(ijet)->P4(), Muons.at(imu).P4())<<" lep= "<<Muons.at(imu).Flavor()<<endl;
 
-      if(DeltaR(Jets_In.at(ijet)->P4(),Muons.at(imu)->P4())<0.3) {
+      if ( !Muons.at(imu).IsID("Tight") &&  !Muons.at(imu).IsID("Veto"))continue;
+
+      if(DeltaR(Jets_In.at(ijet)->P4(),Muons.at(imu).P4())<0.3) {
 	dumpJet=true;
 	break;
       }
     }
 
-    if (dumpJet) continue;
+    if (!CrossCleaning.keepIf("CrossCleaning Muons",!dumpJet)) continue;
 
     for(int iel=0; iel<(int)Electrons.size();++iel){
       if(pcp)cout<<"distance from jet "<<ijet<<" to lepton "<<iel<< " = "<<
 	
-	DeltaR(Jets_In.at(ijet)->P4(), Electrons.at(iel)->P4())<<" lep= "<<Electrons.at(iel)->Flavor()<<endl;
-      
-      if ( !Electrons.at(iel)->IsID("Tight"))continue;
+	DeltaR(Jets_In.at(ijet)->P4(), Electrons.at(iel).P4())<<" lep= "<<Electrons.at(iel).Flavor()<<endl;
+      //      if (Electrons.at(iel).IsID("Veto")) cout << "warning" << endl;      
+      if ( !Electrons.at(iel).IsID("Tight") &&  !Electrons.at(iel).IsID("Veto"))continue;
 
-      if(DeltaR(Jets_In.at(ijet)->P4(),Electrons.at(iel)->P4())<0.3) {
+      if(DeltaR(Jets_In.at(ijet)->P4(),Electrons.at(iel).P4())<0.3) {
 	dumpJet=true;
 	break;
       }
     }
-    
-    if (dumpJet) continue; 
+    if (!CrossCleaning.keepIf("CrossCleaning Electrons",!dumpJet)) continue;
+
 
     //WE want this jet, keep it.
     Jets_Out.push_back(Jets_In.at(ijet));

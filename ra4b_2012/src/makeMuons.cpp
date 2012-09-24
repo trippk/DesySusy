@@ -5,13 +5,14 @@
 #include "THTools.h"
 #include "eventselection.h"
 #include "Muon.h"
+#include "makeMuons.h"
 
 using namespace std;
 
 extern bool pcp;
 
 //======================================================
-float Consistency( LorentzM vRef, EasyChain* tree, const char* name);
+
 //======================================================
 
 
@@ -24,13 +25,13 @@ vector<Muon> makeAllMuons(EasyChain* tree){
   vector<Muon> AllMuons;
   vector<LorentzM>& Muons = tree->Get(&Muons, "muonP4Pat");
   vector<int>&      charge   = tree->Get( &charge,"muonChargePat");
-  vector<float>&    PFIso        = tree->Get(&PFIso,"muonPfIsolationR04DeltaBCorrectedPat");
+  vector<float>&    PFIso        = tree->Get(&PFIso,"DESYmuonPfIsolationR03DeltaBCorrectedPat");
   //
   Muon dummyMuon;
   for (int imu=0;imu<(int)Muons.size();++imu){
 
     if (Muons.at(imu).Pt() < 10.0)continue;
-    if (fabs(Muons.at(imu).Eta()) > 2.5)continue;    
+    if (fabs(Muons.at(imu).Eta()) >= 2.5)continue;    
 
     dummyMuon.Set(imu,&Muons.at(imu),charge.at(imu),PFIso.at(imu));
     AllMuons.push_back(dummyMuon);
@@ -53,7 +54,7 @@ bool makeLooseMuons(EasyChain* tree, vector<Muon>& AllMuons, vector<Muon*>& Loos
   ConfigReader config;
 
   static float  PTMIN  =  config.getFloat("LooseMuons_PTMIN",  15. );
-  static float  ETAMAX  = config.getFloat("LooseMuons_ETAMAX", 2.4 );
+  static float  ETAMAX  = config.getFloat("LooseMuons_ETAMAX", 2.5 );
 
   if(pcp)cout<<"inside looseMuons_RA4b"<<endl;
   
@@ -84,10 +85,10 @@ bool makeLooseMuons(EasyChain* tree, vector<Muon>& AllMuons, vector<Muon*>& Loos
 
     int indx=AllMuons.at(imu).GetIndexInTree();
 
-    OK=AllMuons.at(imu).pt()>PTMIN;
+    OK=AllMuons.at(imu).pt()>=PTMIN;
     if(!LooseMuonFlow.keepIf("pt>mu_pt_min_low",OK)) continue;
     //
-    OK=fabs(AllMuons.at(imu).eta())<ETAMAX;
+    OK=fabs(AllMuons.at(imu).eta())<=ETAMAX;
     if(!LooseMuonFlow.keepIf("abs(eta)<etamax",OK))continue;
     //
     OK=Mu_isPF.at(indx);
@@ -163,7 +164,7 @@ bool makeSoftMuons(EasyChain* tree, vector<Muon>& AllMuons, vector<Muon*>& SoftM
 
 
 
-  /*  vector<LorentzM>& Mu_p4 = tree->Get(&Mu_p4, "muonP4Pat");
+  /* 
   vector<int>&      Mu_charge   = tree->Get( &Mu_charge,    "muonChargePat");
   vector<int>&      Mu_IsGlobal = tree->Get( &Mu_IsGlobal, "muonIsGlobalMuonPat" );
   vector<float>&    Mu_DxyBS = tree->Get( &Mu_DxyBS,   "muonGlobalTrackDxyBSPat");
@@ -257,17 +258,17 @@ bool makeTightMuons(EasyChain* tree, vector<Muon>& AllMuons,vector<Muon*>& Tight
   ConfigReader config;
 
   static float PTMIN  = config.getFloat("TightMuons_PTMIN",  20. ); //
-  static float ETAMAX = config.getFloat("TightMuons_ETAMAX", 2.1 ); //
-  static float ISOMAX = config.getFloat("TightMuons_ISOMAX", 0.1 ); //
+  static float ETAMAX = config.getFloat("TightMuons_ETAMAX", 2.4 ); //
+  static float ISOMAX = config.getFloat("TightMuons_ISOMAX", 0.12 ); //
   static float Chi2MAX = config.getFloat("TightMuons_Chi2MAX",10.0); //
-  static int NValidGlobalTrackerHitsMIN = config.getInt("TightMuons_NValidGlobalTrackerHitsMIN", 1); //
+  static int NValidGlobalTrackerHitsMIN = config.getInt("TightMuons_NValidGlobalTrackerHitsMIN", 0); //
   //static int NValidMuonHitsMIN = config.getInt("TightMuons_NValidMuonHitsMIN", 1); // ??
-  static int NMatchedStationsMIN=config.getInt("TightMuons_NMatchedStationsMIN",2); //
-  static float dxyVertexMAX = config.getFloat("TightMuons_dxyVertexMAX", 0.2); //
+  static int NMatchedStationsMIN=config.getInt("TightMuons_NMatchedStationsMIN",1); //
+  static float dxyVertexMAX = config.getFloat("TightMuons_dxyVertexMAX", 0.02); //
   static float dzVertexMAX = config.getFloat("TightMuons_dzVertexMAX", 0.5); //
-  static int NValidPixelHitsMIN=config.getInt("TightMuons_NValidPixelHitsMIN",1); //
-  static int NTrackerLayersMIN=config.getInt("TightMuons_NTrackerLayersMIN",6); //
-  static int PFIsoCut          =config.getInt("TightMuonPFIsoCutMIN",0.12); //
+  static int NValidPixelHitsMIN=config.getInt("TightMuons_NValidPixelHitsMIN",0); //
+  static int NTrackerLayersMIN=config.getInt("TightMuons_NTrackerLayersMIN",5); //
+  static float PFIsoCut          =config.getFloat("TightMuonPFIsoCutMIN",0.12); //
 
 
   //====================================================================
@@ -280,6 +281,7 @@ bool makeTightMuons(EasyChain* tree, vector<Muon>& AllMuons,vector<Muon*>& Tight
   bool OK=false;
   double highestpt=-1.;
 
+  vector<LorentzM>& Mu_p4 = tree->Get(&Mu_p4, "muonP4Pat");
   vector<int>&   GT_nValTHits = tree->Get( &GT_nValTHits, "muonGlobalTracknumberOfValidHitsPat");
   vector<float>& normalisedchi2 = tree->Get(&normalisedchi2,"muonGlobalTracknormalizedChi2Pat");
   vector<unsigned int>& NValidGlobalTrackHits = tree->Get(&NValidGlobalTrackHits,"muonGlobalTracknumberOfValidMuonHitsPat");
@@ -309,7 +311,7 @@ bool makeTightMuons(EasyChain* tree, vector<Muon>& AllMuons,vector<Muon*>& Tight
     //    Muons_In.at(k)->SetID("Tight",0);
     int indx=AllMuons.at(imu).GetIndexInTree();
     
-    OK=AllMuons.at(imu).pt()>=PTMIN;
+    OK=AllMuons.at(imu).pt() >= PTMIN;
     if(!TightMuonFlow.keepIf("pt>mu_pt_min_low TIGHT",OK)) continue;
     //
     OK=fabs(AllMuons.at(imu).Eta())<=ETAMAX;
@@ -321,13 +323,13 @@ bool makeTightMuons(EasyChain* tree, vector<Muon>& AllMuons,vector<Muon*>& Tight
     OK=Mu_isPF.at(indx);
     if(!TightMuonFlow.keepIf("is PF",OK)) continue;
     //
-    OK=normalisedchi2.at(indx) < Chi2MAX;
+    OK=normalisedchi2.at(indx) <= Chi2MAX;
     if(!TightMuonFlow.keepIf("normalised chi2 for TIGHT muons",OK)) continue;
     //
-    OK=NValidGlobalTrackHits.at(indx) >= NValidGlobalTrackerHitsMIN;
+    OK=NValidGlobalTrackHits.at(indx) > NValidGlobalTrackerHitsMIN;
     if(!TightMuonFlow.keepIf("global tracker hits for TIGHT muons",OK)) continue;
     //
-    OK=NMatchedStations.at(indx)>=NMatchedStationsMIN;
+    OK=NMatchedStations.at(indx)>NMatchedStationsMIN;
     if(!TightMuonFlow.keepIf("N Matched Statios for TIGHT muons",OK)) continue;
     //
     OK=fabs(Dxy_track.at(indx)) < dxyVertexMAX;
@@ -336,19 +338,22 @@ bool makeTightMuons(EasyChain* tree, vector<Muon>& AllMuons,vector<Muon*>& Tight
     OK=fabs(Dz_track.at(indx)) < dzVertexMAX;
     if(!TightMuonFlow.keepIf("dz to vertex position",OK)) continue;
     //
-    OK=NValidPixelHits.at(indx) >= NValidPixelHitsMIN;
+    OK=NValidPixelHits.at(indx) > NValidPixelHitsMIN;
     if(!TightMuonFlow.keepIf("PixelHits min",OK)) continue;
     //
-    OK=NTrackerLayers.at(indx)>=NTrackerLayersMIN;
+    OK=NTrackerLayers.at(indx)>NTrackerLayersMIN;
     if(!TightMuonFlow.keepIf("NTrackerLayers min",OK)) continue;
 
-    OK=AllMuons.at(imu).RelIso() < PFIsoCut;
-    OK=true;
+    OK=AllMuons.at(indx).RelIso() < PFIsoCut;
+    // OK=true;
     if(!TightMuonFlow.keepIf("PFIso",OK)) continue;
     
 
     //if it got here, it must be a tight lepton
-    
+    //     cout <<    Consistency(Mu_p4.at(indx),tree,"muonP4PF") << endl;
+    OK= Consistency(Mu_p4.at(indx),tree,"muonP4PF") <5.;
+    if(!TightMuonFlow.keepIf("RecoPt-PFPt",OK)) continue;
+
     AllMuons.at(imu).SetID("Tight",true);
     TightMuons.push_back(&AllMuons.at(imu));
     NTightMuons++;
@@ -367,6 +372,8 @@ bool makeVetoMuons(EasyChain* tree, vector<Muon>& AllMuons, vector<Muon*>& VetoM
   static CutSet VetoMuonFlow("Veto_Muon_Selection");
   extern   bool pcp;
   VetoMuonFlow.autodump=true;
+  vector<float>& Dxy_track = tree->Get( &Dxy_track,   "muonInnerTrackDxyPat");
+  vector<float>& Dz_track = tree->Get( &Dz_track,   "muonInnerTrackDzPat");
 
   //====================================================================
   //READ OR DEFINE THE CUTS FOR THE VETO MUONS
@@ -374,7 +381,9 @@ bool makeVetoMuons(EasyChain* tree, vector<Muon>& AllMuons, vector<Muon*>& VetoM
   ConfigReader config;
   static float  PTMIN   =config.getFloat("VetoMuons_PTMIN",  15. );
   static float  ETAMAX  =config.getFloat("VetoMuons_ETAMAX",  2.5);
-  static double ISOMAX  =config.getFloat("VetoMuons_ISOMAX", 0.15);
+  static double ISOMAX  =config.getFloat("VetoMuons_ISOMAX", 0.2);
+  static float dxyVertexMAX = config.getFloat("VetoMuons_dxyVertexMAX", 0.2); //
+  static float dzVertexMAX = config.getFloat("VetoMuons_dzVertexMAX", 0.5); //
   static bool quick     =config.getBool("quick");
   //====================================================================
 
@@ -395,9 +404,20 @@ bool makeVetoMuons(EasyChain* tree, vector<Muon>& AllMuons, vector<Muon*>& VetoM
     //I only take into account the ones that are not Signal
     if (AllMuons.at(iel).IsID("Tight") )continue;
     
-    //at the moment, VETO are those which are SOFT
-    if (!AllMuons.at(iel).IsID("Soft") )continue;
+    //at the moment, VETO are those which are Loose and 
+    if (!AllMuons.at(iel).IsID("Loose") )continue;
 
+    OK=AllMuons.at(iel).RelIso() < ISOMAX;
+    // OK=true;
+    if(!VetoMuonFlow.keepIf("PFIso",OK)) continue;
+   
+    OK=fabs(Dxy_track.at(iel)) < dxyVertexMAX;
+    if(!VetoMuonFlow.keepIf("dxy to vertex position",OK)) continue;
+    //
+    OK=fabs(Dz_track.at(iel)) < dzVertexMAX;
+    if(!VetoMuonFlow.keepIf("dz to vertex position",OK)) continue;
+   
+    AllMuons.at(iel).SetID("Veto",true);
     //this muon is NOT tight, but it is SOFT, so its VETO
     VetoMuons.push_back(&AllMuons.at(iel));
     NOfVetoMuons++;
@@ -414,7 +434,6 @@ bool makeVetoMuons(EasyChain* tree, vector<Muon>& AllMuons, vector<Muon*>& VetoM
 float Consistency( LorentzM vRef, EasyChain* tree, const char* name) {
   
   vector<LorentzM>& vConf = tree->Get(&vConf, name);
-  vector<int>& vConfFlag = tree->Get(&vConfFlag, "muonSelectedPF");
 
   LorentzM closest;
   float deltaRclosest=20.;
@@ -422,7 +441,7 @@ float Consistency( LorentzM vRef, EasyChain* tree, const char* name) {
   int NPF = 0;
 
   for (int i=0; i<vConf.size(); i++) {
-    if (vConfFlag.at(i) == 1) {
+    if (vConf.at(i).Pt() > 10.) {
       deltaR=ROOT::Math::VectorUtil::DeltaR(vRef, vConf.at(i));
       if (deltaR < deltaRclosest) {
 	if (vConf.at(i).Pt()>0) {
@@ -436,10 +455,10 @@ float Consistency( LorentzM vRef, EasyChain* tree, const char* name) {
 
   if (NPF==0){
     //cout<<"no pf muons!!"<<endl;
-    return 999.;
+    return -1.;
   }
 
-  float result = (fabs(vRef.Pt() - closest.Pt()) / vRef.Pt());
+  float result = fabs(vRef.Pt() - closest.Pt());
 
   return result;
 }

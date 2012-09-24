@@ -5,6 +5,8 @@
 #include "THTools.h"
 #include "eventselection.h"
 #include "Electron.h"
+#include "makeMuons.h"
+
 
 using namespace std;
 
@@ -29,8 +31,8 @@ vector<Electron> makeAllElectrons(EasyChain* tree){
   Electron dummyElectron;
   for (int iel=0;iel<(int)Electrons.size();++iel){
 
-    if (Electrons.at(iel).Pt() < 10.0)continue;
-    if( fabs(Electrons.at(iel).Eta()) >2.5)continue;
+    //    if (Electrons.at(iel).Pt() < 10.0)continue;
+    // if( fabs(Electrons.at(iel).Eta()) >2.5)continue;
 
     double EcalIso=El_Dr03EcalRecHitSumEt.at(iel);
     if(fabs(Electrons.at(iel).eta())<1.479)EcalIso=max(0.,(EcalIso-1.));
@@ -89,11 +91,11 @@ bool makeLooseElectrons(EasyChain* tree, vector<Electron>& AllElectrons, vector<
 
     int indx=AllElectrons.at(iel).GetIndexInTree();
     //
-    OK=AllElectrons.at(iel).pt()>PTMIN;
+    OK=(AllElectrons.at(iel).pt()>=PTMIN || fabs(El_SuperClusterPositionETA.at(indx))>1.566);
     if(!ElectronFlow.keepIf("pt>el_pt_min_low", OK) && quick) continue;
     //
-    OK=fabs(AllElectrons.at(iel).eta())<ETAMAX;
-    if(!ElectronFlow.keepIf("abs(eta)<etamax",OK) && quick)continue;
+    //OK=fabs(AllElectrons.at(iel).eta())=<ETAMAX;
+    //    if(!ElectronFlow.keepIf("abs(eta)<etamax",OK) && quick)continue;
     //
     if(!ElectronFlow.keepIf("notinetagap",fabs(El_SuperClusterPositionETA.at(indx))<1.4442 || fabs(El_SuperClusterPositionETA.at(indx))>1.566) && quick)continue;
     //
@@ -122,7 +124,7 @@ bool makeTightElectrons(EasyChain* tree, vector<Electron>& AllElectrons, vector<
   static float  PTMIN   =config.getFloat("TightElectrons_PTMIN",  20. );
   static float  ETAMAX  =config.getFloat("TightElectrons_ETAMAX", 2.5 );
   static bool quick     =config.getBool("TightElectrons_quick",true);  
-  static string selection =config.getString("Electron_Selection","Tight");
+  static string selection =config.getString("Electron_Selection","Medium");
   static float trackdxyMAX = config.getFloat("TightElectron_trackdxyMAX",0.02);
   static float trackdzMAX = config.getFloat("TightElectron_trackdzMAX",0.1);
   //====================================================================
@@ -140,7 +142,7 @@ bool makeTightElectrons(EasyChain* tree, vector<Electron>& AllElectrons, vector<
   vector<float>&    El_GsfTrackDz         = tree->Get( &El_GsfTrackDz, "electronGsfTrackDzPat"      );
   vector<float>&    FbremPF = tree->Get(&FbremPF,"electronFbremPat");
   vector<float>&    EoverPin = tree->Get(&EoverPin,"electronESuperClusterOverPPat");
-
+  vector<LorentzM>& Ele_p4 = tree->Get(&Ele_p4, "electronP4Pat");
 
   bool TTver=false;
   if(selection=="Tight"){
@@ -174,11 +176,11 @@ bool makeTightElectrons(EasyChain* tree, vector<Electron>& AllElectrons, vector<
     AllElectrons.at(iel).SetID("Tight",false);
 
     //PT
-    OK = AllElectrons.at(iel).Pt() > PTMIN;
+    OK = (AllElectrons.at(iel).Pt() >= PTMIN);// || fabs(El_SuperClusterPositionETA.at(indx))>1.566);
     if(!ElectronFlow.keepIf("pt>el_pt_min_low", OK && quick) && quick) continue;
 
     //ETA
-    OK=fabs(AllElectrons.at(iel).Eta()) < ETAMAX;
+    OK=fabs(AllElectrons.at(iel).Eta()) <= ETAMAX;
     if(!ElectronFlow.keepIf("eta max", OK))continue;
     //
     OK=fabs(El_SuperClusterPositionETA.at(indx))<1.4442 || fabs(El_SuperClusterPositionETA.at(indx))>1.566;
@@ -189,13 +191,15 @@ bool makeTightElectrons(EasyChain* tree, vector<Electron>& AllElectrons, vector<
     if(!ElectronFlow.keepIf("Electron_ID",OK && quick)) continue;
 
     //additional cuts 
-    if (FbremPF.at(indx)<0.15 ){
+    /*    if (FbremPF.at(indx)<0.15 ){
       OK=fabs(AllElectrons.at(iel).Eta())< 1.0 && EoverPin.at(indx) > 0.95;
     }else {
       OK=true;
     }
     if (!ElectronFlow.keepIf("FbremPF_EoverPin", OK && quick) )continue;
-
+    */
+    OK=Consistency(Ele_p4.at(indx),tree,"electronP4PF")<10.;
+    if(!ElectronFlow.keepIf("RecoPt-PFPt",OK)) continue;
   
     if(TTver){
       OK=fabs(El_GsfTrackDxy.at(indx)) < trackdxyMAX ;
@@ -281,11 +285,11 @@ bool makeVetoElectrons(EasyChain* tree, vector<Electron>& AllElectrons, vector<E
     //I only take into account the ones that are not Signal
     
     //
-    OK=AllElectrons.at(iel).Pt() > PTMIN;
-    if(!ElectronFlow.keepIf("ptmin ",OK))continue;
+    OK=(AllElectrons.at(iel).Pt() > PTMIN);// || fabs(El_SuperClusterPositionETA.at(indx))>1.566);
+     if(!ElectronFlow.keepIf("ptmin ",OK))continue;
     //
-    OK=fabs(AllElectrons.at(iel).Eta()) < ETAMAX;
-    if(!ElectronFlow.keepIf("eta max ",OK))continue;
+    //    OK=fabs(AllElectrons.at(iel).Eta()) <= ETAMAX;
+    //    if(!ElectronFlow.keepIf("eta max ",OK))continue;
     //
     OK=fabs(El_SuperClusterPositionETA.at(indx))<1.4442 || fabs(El_SuperClusterPositionETA.at(indx))>1.566;
     if(!ElectronFlow.keepIf("notinetagap",OK && quick))continue;    
