@@ -390,7 +390,7 @@ int main(int argc, char** argv){
 
     
   //===========================================
-  bool turntriggersoff=false;
+  bool turntriggersoff=true;
   if(turntriggersoff){
     cout<<"-----------TURNTRIGGERSOFF IS true!!-----------"<<endl;
     if(isData){
@@ -669,7 +669,7 @@ int main(int argc, char** argv){
     //====================================================================
     // TRIGGERS
     //====================================================================
-    if(turntriggersoff ){
+    if(!turntriggersoff ){
       OK = triggers_RA4b(tree, triggernames,EventWeight);
       //OK=true;
       //================================================
