@@ -609,6 +609,7 @@ int main(int argc, char** argv){
     }
     makeCleanedJets( GoodJets, CleanedJets, Muons, Electrons);
     //============================================
+    
 
     //============================================
     //Make HT
@@ -668,17 +669,19 @@ int main(int argc, char** argv){
     //====================================================================
     // TRIGGERS
     //====================================================================
-    OK = triggers_RA4b(tree, triggernames,EventWeight);
-    //OK=true;
-    //================================================
-    if(pcp)cout<<"check point triggers called"<<endl;
-    //
-    if(i==0 && isquick){ OK=OK&&OKold; OKold=OK;}
-    if( !globalFlow.keepIf("triggers", OK )  && quick ) continue;    
-    EW_AfterTrigger->Fill(EventWeight);
-    //
-    if(DoControlPlots && OK)ControlPlots.MakePlots("Triggers", TightMuons, TightElectrons, CleanedJets, PFmet); 
-    //treeCuts["Triggers"]=OK;
+    if(turntriggersoff ){
+      OK = triggers_RA4b(tree, triggernames,EventWeight);
+      //OK=true;
+      //================================================
+      if(pcp)cout<<"check point triggers called"<<endl;
+      //
+      if(i==0 && isquick){ OK=OK&&OKold; OKold=OK;}
+      if( !globalFlow.keepIf("triggers", OK )  && quick ) continue;    
+      EW_AfterTrigger->Fill(EventWeight);
+      //
+      if(DoControlPlots && OK)ControlPlots.MakePlots("Triggers", TightMuons, TightElectrons, CleanedJets, PFmet); 
+      //treeCuts["Triggers"]=OK;
+    }
     //====================================================================
 
 
