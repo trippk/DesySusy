@@ -572,11 +572,13 @@ int main(int argc, char** argv){
     vector<Muon> Muons;
     vector<Muon*> LooseMuons;
     vector<Muon*> TightMuons;
-    vector<Muon*> SoftMuons;
+    vector<Muon*> VetoMuons;
     Muons=makeAllMuons(tree);
     makeTightMuons(tree,Muons,TightMuons);
     makeLooseMuons(tree,Muons,LooseMuons);
-    makeSoftMuons(tree ,Muons,SoftMuons);
+    makeVetoMuons(tree,Muons,VetoMuons);
+
+    //  makeSoftMuons(tree ,Muons,SoftMuons);
     //============================================
 
 
@@ -587,7 +589,7 @@ int main(int argc, char** argv){
     vector<Electron*> TightElectrons;
     vector<Electron*> VetoElectrons;
     Electrons=makeAllElectrons(tree);
-    makeLooseElectrons(tree,Electrons,LooseElectrons);
+    //    makeLooseElectrons(tree,Electrons,LooseElectrons);
     makeTightElectrons(tree,Electrons,TightElectrons);
     makeVetoElectrons(tree, Electrons,VetoElectrons);
     //============================================
@@ -605,7 +607,7 @@ int main(int argc, char** argv){
     for (int ijet=0; ijet<(int)Jets.size(); ++ijet){
       GoodJets.push_back(&Jets.at(ijet));
     }
-    makeCleanedJets( GoodJets, CleanedJets, TightMuons, TightElectrons);
+    makeCleanedJets( GoodJets, CleanedJets, Muons, Electrons);
     //============================================
 
     //============================================
@@ -679,6 +681,22 @@ int main(int argc, char** argv){
     //treeCuts["Triggers"]=OK;
     //====================================================================
 
+
+
+    bool  hcalLaserEventFilterFlag   = tree->Get( hcalLaserEventFilterFlag,    "hcalLaserEventFilterFlag"  );
+    OK= hcalLaserEventFilterFlag;
+    if(i==0 && isquick){OK=OK&&OKold; OKold=OK;}
+    if( !globalFlow.keepIf( "hcalLaserFilter"        , OK     ) && quick ) continue;
+    if(DoControlPlots && OK)ControlPlots.MakePlots("hcalLaserFilter", TightMuons, TightElectrons, CleanedJets, PFmet); 
+
+
+
+
+    bool eeBadSCPassed = tree->Get( eeBadSCPassed, "eeBadScFilterFlag"   );
+    OK=eeBadSCPassed;
+    if(i==0 && isquick){OK=OK&&OKold; OKold=OK;}
+    if( !globalFlow.keepIf("eeBadSCFilter"     , OK) && quick ) continue;
+    if(DoControlPlots && OK)ControlPlots.MakePlots("eeBadSCFilter", TightMuons, TightElectrons, CleanedJets, PFmet); 
 
 
 
@@ -801,7 +819,7 @@ int main(int argc, char** argv){
 
     //LEPTON SELECTION//
     string SigMu = config.getString("SignalMuon_Selection","Tight");
-    string WidMu = config.getString("WideMuon_Selection","Loose");
+    string WidMu = config.getString("WideMuon_Selection","Veto");
     string SigEl = config.getString("SignalElectron_Selection","Tight");
     string WidEl = config.getString("WideElectron_Selection","Veto");
 
