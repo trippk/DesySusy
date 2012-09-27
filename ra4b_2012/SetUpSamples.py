@@ -112,6 +112,19 @@ def TTJets():
     cleanUpDir('./'+Sample+'/'+SubSample)
     Scripts.append(script)
 
+def TTJets53():
+
+    Scripts=[]
+    Sample='TTJets53'
+    SubSample='SUMMER12'
+    FilesDir=' /pnfs/desy.de/cms/tier2/store/user/msahin/nTuple12_v4/mc/TTJets_MassiveBinDECAY_TuneZ2star_8TeV-madgraph-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/'
+    Config='config_MC_RA4b.txt'
+    nFiles=3
+    #
+    script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
+    cleanUpDir('./'+Sample+'/'+SubSample)
+    Scripts.append(script)    
+
 
 def TTJetsBUG():
     Scripts=[]
@@ -197,7 +210,7 @@ def SingleTop():
 
     newscript=open('runall_'+Sample+'_All','w')
     for sc in Scripts:
-        newline='SendBatchJob '+sc+ ' $1 $2 '
+        newline=sc+ ' $1 $2 '
         print newline
         newscript.write(newline+'\n')
     #
@@ -251,6 +264,7 @@ if __name__=='__main__':
     ElectronHad()
     SingleMu()
     TTJets()
+    TTJets53()
     ######TTJetsBUG()    
     DYJetsToLL()
     WJetsToLNu()
