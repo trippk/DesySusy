@@ -344,7 +344,7 @@ bool makeTightMuons(EasyChain* tree, vector<Muon>& AllMuons,vector<Muon*>& Tight
     OK=NTrackerLayers.at(indx)>NTrackerLayersMIN;
     if(!TightMuonFlow.keepIf("NTrackerLayers min",OK)) continue;
 
-    OK=AllMuons.at(indx).RelIso() < PFIsoCut;
+    OK=AllMuons.at(imu).RelIso() < PFIsoCut;
     // OK=true;
     if(!TightMuonFlow.keepIf("PFIso",OK)) continue;
     
