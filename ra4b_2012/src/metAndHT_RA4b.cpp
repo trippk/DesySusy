@@ -21,7 +21,7 @@ bool metAndHT_RA4b(EasyChain* tree){
 
   //=======================================  
   //Getting The PF Collections
-  LorentzM& PFmet = tree->Get(&PFmet, "metP4PF");
+  LorentzM& PFmet = tree->Get(&PFmet, "metP4TypeIPF");
   LorentzM& TCmet = tree->Get(&TCmet, "metP4TC");
   
 
