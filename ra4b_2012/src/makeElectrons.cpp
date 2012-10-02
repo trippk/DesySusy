@@ -25,12 +25,19 @@ vector<Electron> makeAllElectrons(EasyChain* tree){
   vector<float>&      El_Dr03EcalRecHitSumEt    = tree->Get( &El_Dr03EcalRecHitSumEt,  "electronDr03EcalRecHitSumEtPat");
   vector<float>&      El_Dr03HcalTowerSumEt     = tree->Get( &El_Dr03HcalTowerSumEt,   "electronDr03HcalTowerSumEtPat"); 
   vector<float>&      El_Dr03TkSumPt            = tree->Get( &El_Dr03TkSumPt,          "electronDr03TkSumPtPat" );
-
+  vector<float>&    El_SuperClusterPositionETA   = tree->Get( &El_SuperClusterPositionETA, "electronESuperClusterEtaPat");
   //lets calculate the isolation now.
 
   Electron dummyElectron;
+
   for (int iel=0;iel<(int)Electrons.size();++iel){
 
+    if(pcp){
+      cout<<"Electron "<<iel<<"; . Pt = "<<Electrons.at(iel).Pt()<<endl;
+      cout<<"Electron "<<iel<<"; . Eta = "<<Electrons.at(iel).Eta()<<endl;
+      cout<<"Electron "<<iel<<"; . Eta supercluster= "<<El_SuperClusterPositionETA.at(iel)<<endl;
+      cout<<"Electron "<<iel<<"; . Phi = "<<Electrons.at(iel).Phi()<<endl;
+    }
     //    if (Electrons.at(iel).Pt() < 10.0)continue;
     // if( fabs(Electrons.at(iel).Eta()) >2.5)continue;
 
@@ -78,6 +85,8 @@ bool makeLooseElectrons(EasyChain* tree, vector<Electron>& AllElectrons, vector<
   if(pcp)cout<<"check point about to get the electrons"<<endl;
   vector<LorentzM>& Electrons = tree->Get(&Electrons, "electronP4Pat");                    
   vector<float>&    El_SuperClusterPositionETA   = tree->Get( &El_SuperClusterPositionETA, "electronESuperClusterEtaPat");
+  vector<bool>& electronIsEBPat =  tree->Get(&electronIsEBPat,"DESYelectronIsEBPat");
+  vector<bool>& electronIsEEPat =  tree->Get(&electronIsEEPat,"DESYelectronIsEEPat");
   //
 
 
@@ -91,13 +100,19 @@ bool makeLooseElectrons(EasyChain* tree, vector<Electron>& AllElectrons, vector<
 
     int indx=AllElectrons.at(iel).GetIndexInTree();
     //
-    OK=(AllElectrons.at(iel).pt()>=PTMIN || fabs(El_SuperClusterPositionETA.at(indx))>1.566);
+    //OK=(AllElectrons.at(iel).pt()>=PTMIN || fabs(El_SuperClusterPositionETA.at(indx))>1.566);
+    //    if (pcp){
+    //      cout<<"eta supercluster of electron "<<indx<< " = "<<El_SuperClusterPositionETA.at(indx);
+    //    }
     if(!ElectronFlow.keepIf("pt>el_pt_min_low", OK) && quick) continue;
     //
     //OK=fabs(AllElectrons.at(iel).eta())=<ETAMAX;
-    //    if(!ElectronFlow.keepIf("abs(eta)<etamax",OK) && quick)continue;
+    //if(!ElectronFlow.keepIf("abs(eta)<etamax",OK) && quick)continue;
+    OK=fabs(El_SuperClusterPositionETA.at(indx))<=ETAMAX;    
+    if(!ElectronFlow.keepIf("abs(eta)<etamax",OK) && quick)continue;
     //
-    if(!ElectronFlow.keepIf("notinetagap",fabs(El_SuperClusterPositionETA.at(indx))<1.4442 || fabs(El_SuperClusterPositionETA.at(indx))>1.566) && quick)continue;
+    OK=electronIsEEPat.at(indx) || electronIsEBPat.at(indx);
+      if(!ElectronFlow.keepIf("notinetagap",OK ) && quick)continue;
     //
     AllElectrons.at(iel).SetID("Loose",true);
     LooseElectrons.push_back(&AllElectrons.at(iel));
@@ -143,6 +158,9 @@ bool makeTightElectrons(EasyChain* tree, vector<Electron>& AllElectrons, vector<
   vector<float>&    FbremPF = tree->Get(&FbremPF,"electronFbremPat");
   vector<float>&    EoverPin = tree->Get(&EoverPin,"electronESuperClusterOverPPat");
   vector<LorentzM>& Ele_p4 = tree->Get(&Ele_p4, "electronP4Pat");
+  vector<bool>& electronIsEBPat =  tree->Get(&electronIsEBPat,"DESYelectronIsEBPat");
+  vector<bool>& electronIsEEPat =  tree->Get(&electronIsEEPat,"DESYelectronIsEEPat");
+
 
   bool TTver=false;
   if(selection=="Tight"){
@@ -177,18 +195,21 @@ bool makeTightElectrons(EasyChain* tree, vector<Electron>& AllElectrons, vector<
 
     //PT
     OK = (AllElectrons.at(iel).Pt() >= PTMIN);// || fabs(El_SuperClusterPositionETA.at(indx))>1.566);
-    if(!ElectronFlow.keepIf("pt>el_pt_min_low", OK && quick) && quick) continue;
+    if(!ElectronFlow.keepIf("pt>el_pt_min_low", OK) && quick) continue;
 
     //ETA
-    OK=fabs(AllElectrons.at(iel).Eta()) <= ETAMAX;
-    if(!ElectronFlow.keepIf("eta max", OK))continue;
+    //OK=fabs(AllElectrons.at(iel).Eta()) <= ETAMAX;
+    OK=fabs(El_SuperClusterPositionETA.at(indx))<=ETAMAX;
+    if(!ElectronFlow.keepIf("eta max", OK) && quick)continue;
     //
-    OK=fabs(El_SuperClusterPositionETA.at(indx))<1.4442 || fabs(El_SuperClusterPositionETA.at(indx))>1.566;
-    if(!ElectronFlow.keepIf("notinetagap",OK && quick))continue;    
+    //OK=fabs(El_SuperClusterPositionETA.at(indx))<1.4442 || fabs(El_SuperClusterPositionETA.at(indx))>1.566;
+    //OK=fabs(AllElectrons.at(iel).Eta() <1.4442 || fabs(AllElectrons.at(iel).Eta()) >1.566;
+    OK=electronIsEEPat.at(indx) || electronIsEBPat.at(indx);
+    if(!ElectronFlow.keepIf("notinetagap",OK) && quick)continue;    
 
     //ID
     OK=id.at(indx);
-    if(!ElectronFlow.keepIf("Electron_ID",OK && quick)) continue;
+    if(!ElectronFlow.keepIf("Electron_ID",OK) && quick) continue;
 
     //additional cuts 
     /*    if (FbremPF.at(indx)<0.15 ){
@@ -199,13 +220,13 @@ bool makeTightElectrons(EasyChain* tree, vector<Electron>& AllElectrons, vector<
     if (!ElectronFlow.keepIf("FbremPF_EoverPin", OK && quick) )continue;
     */
     OK=Consistency(Ele_p4.at(indx),tree,"electronP4PF")<10.;
-    if(!ElectronFlow.keepIf("RecoPt-PFPt",OK)) continue;
+    if(!ElectronFlow.keepIf("RecoPt-PFPt",OK) && quick) continue;
   
     if(TTver){
       OK=fabs(El_GsfTrackDxy.at(indx)) < trackdxyMAX ;
-      if( !ElectronFlow.keepIf("|dxy|<0.02", OK && quick )) continue;
+      if( !ElectronFlow.keepIf("|dxy|<0.02", OK) && quick ) continue;
       OK=fabs(El_GsfTrackDz.at(indx)) < trackdzMAX;
-      if( !ElectronFlow.keepIf("|dz|<0.1"  , OK && quick )) continue;      
+      if( !ElectronFlow.keepIf("|dz|<0.1"  , OK) && quick ) continue;      
     }
         
     AllElectrons.at(iel).SetID("Tight",true);
@@ -231,6 +252,11 @@ bool makeVetoElectrons(EasyChain* tree, vector<Electron>& AllElectrons, vector<E
   ElectronFlow.autodump=true;
 
   VetoElectrons.clear();
+  
+  if(pcp){
+    cout<<endl;
+    cout<<"INSIDE VETO ELECTRONS"<<endl;
+  }
 
   //====================================================================
   //READ OR DEFINE THE CUTS FOR THE VETO ELECTRONS
@@ -250,8 +276,9 @@ bool makeVetoElectrons(EasyChain* tree, vector<Electron>& AllElectrons, vector<E
   //=====================================================
   if(pcp)cout<<"check point about to get the electrons"<<endl;
 
-  vector<float>&    El_SuperClusterPositionETA   = tree->Get( &El_SuperClusterPositionETA, "electronESuperClusterEtaPat");
-
+  //  vector<float>&    El_SuperClusterPositionETA   = tree->Get( &El_SuperClusterPositionETA, "electronESuperClusterEtaPat");
+  vector<bool>& electronIsEBPat =  tree->Get(&electronIsEBPat,"DESYelectronIsEBPat");
+  vector<bool>& electronIsEEPat =  tree->Get(&electronIsEEPat,"DESYelectronIsEEPat");
   bool TTver=false;
   const char* idname="undefined";
   if(selection=="Tight"){
@@ -267,6 +294,10 @@ bool makeVetoElectrons(EasyChain* tree, vector<Electron>& AllElectrons, vector<E
     cout<<"ID NOT SET. ERROR"<<endl;
     
   }
+  if(pcp){
+    cout<<"the idname used is "<<idname<<endl;
+  }
+
   vector<int>&     id = tree->Get( &id,idname);
 
 
@@ -283,28 +314,42 @@ bool makeVetoElectrons(EasyChain* tree, vector<Electron>& AllElectrons, vector<E
   for(int iel=0;iel<(int)AllElectrons.size();++iel){
     int indx=AllElectrons.at(iel).GetIndexInTree();
     //I only take into account the ones that are not Signal
-    
+   
+    if(pcp){
+      cout<<"examining the electron "<<iel<<endl;
+      cout<<"with a pt "<<AllElectrons.at(iel).Pt()<<endl;
+      cout<<"an eta of "<<AllElectrons.at(iel).Eta()<<endl;
+      cout<<"isTight "<<AllElectrons.at(iel).IsID("Tight")<<endl;
+    }
     //
     OK=(AllElectrons.at(iel).Pt() > PTMIN);// || fabs(El_SuperClusterPositionETA.at(indx))>1.566);
-     if(!ElectronFlow.keepIf("ptmin ",OK))continue;
+     if(!ElectronFlow.keepIf("ptmin ",OK) && quick)continue;
     //
-    //    OK=fabs(AllElectrons.at(iel).Eta()) <= ETAMAX;
-    //    if(!ElectronFlow.keepIf("eta max ",OK))continue;
-    //
-    OK=fabs(El_SuperClusterPositionETA.at(indx))<1.4442 || fabs(El_SuperClusterPositionETA.at(indx))>1.566;
-    if(!ElectronFlow.keepIf("notinetagap",OK && quick))continue;    
 
+    OK=electronIsEEPat.at(indx) || electronIsEBPat.at(indx);
+     if(pcp){
+       cout<<"passes notinthegap "<<OK<<endl;
+       cout<<"isEE "<<electronIsEEPat.at(indx)<<endl;
+       cout<<"isEB "<<electronIsEBPat.at(indx)<<endl;
+     }        
+    if(!ElectronFlow.keepIf("notinetagap",OK) && quick)continue;    
+    
+    //
     //
     if(AllElectrons.at(iel).IsID("Tight")  && id.at(indx)==0) {
       cout << "ERROR. The veto electron is tighter than the tight electron :)!" << endl; 
       exit(1);
     }
     //
-    if(!ElectronFlow.keepIf("Veto_Electron_ID",id.at(indx)) ) continue;
+    if(pcp)cout<<"satisfies the id? "<<id.at(indx)<<endl;
+    OK=id.at(indx);
+    if(!ElectronFlow.keepIf("Veto_Electron_ID",OK ) && quick ) continue;
     //
     NOfVetoElectrons++;
     AllElectrons.at(iel).SetID("Veto",true);
     
+    if(pcp)cout<<"the electron "<<iel<<" is a VETO electron"<<endl;
+       
     VetoElectrons.push_back(&AllElectrons.at(iel));
 
   }//Loop over electrons

@@ -16,6 +16,12 @@ extern bool pcp;
 
 vector<Jet> makeJets(EasyChain* tree ){
 
+  if(pcp){
+    cout<<endl;
+    cout<<"INSIDE makeJets "<<endl;
+    cout<<endl;
+  }
+
   vector<Jet> Jets;
   Jets.clear();
 
@@ -46,6 +52,8 @@ vector<Jet> makeJets(EasyChain* tree ){
   ConfigReader config;
   static float  PTMIN  =  config.getFloat("Jets_PTMIN",  40. );
   static float  ETAMAX  = config.getFloat("Jets_ETAMAX", 2.4 );
+  static string btagAlgorithm= config.getString("bTagAlgorithm","CSV");
+  static string btagWorkingPoint = config.getString("bTagWorkingPoint","Medium");
   //====================================================================
 
   bool OK=false;
@@ -56,7 +64,7 @@ vector<Jet> makeJets(EasyChain* tree ){
 
     OK=false;
 
-    if(pcp)cout<<"pt,eta and id -->"<<Jets_p4.at(ijet).pt()<<" "<<Jets_p4.at(ijet).eta()<<" "<<Jets_ID[ijet]<<endl;
+    if(pcp)cout<<"pt,eta, phi and id -->"<<Jets_p4.at(ijet).pt()<<" "<<Jets_p4.at(ijet).eta()<<" "<<Jets_p4.at(ijet).Phi()<<" "<<Jets_ID[ijet]<<endl;
 
     jetFlow.keepIf("jets no cuts yet in jets", true);
 
@@ -89,18 +97,36 @@ void makeCleanedJets(vector<Jet*>& Jets_In, vector<Jet*>& Jets_Out, vector<Muon>
   static CutSet CrossCleaning("Cleaned Jets");
   CrossCleaning.autodump=true;
   
+  if(pcp){
+    cout<<endl;
+    cout<<"INSIDE makeCleanedJets "<<endl;
+    cout<<endl;
+  }
+
   for(int ijet = 0; ijet<Jets_In.size(); ijet++){
 
     bool dumpJet=false;
   
     for(int imu=0; imu<(int)Muons.size(); ++imu){
-      if(pcp)cout<<"distance from jet "<<ijet<<" to lepton "<<imu<< " = "<<
+      if(pcp)cout<<"distance from jet "<<ijet<<" to muon "<<imu<< " = "<<
+	//if(pcp)cout<<"the muon "<<imu<<"  "<<imu<< " = "<<
 	
 	DeltaR(Jets_In.at(ijet)->P4(), Muons.at(imu).P4())<<" lep= "<<Muons.at(imu).Flavor()<<endl;
+
 
       if ( !Muons.at(imu).IsID("Tight") &&  !Muons.at(imu).IsID("Veto"))continue;
 
       if(DeltaR(Jets_In.at(ijet)->P4(),Muons.at(imu).P4())<0.3) {
+	if (pcp){
+	  cout<<endl;
+	  cout<<"CLEANING BEING DONE"<<endl;
+	  cout<<"the jet "<< ijet<< "with pt = "<<Jets_In.at(ijet)->Pt()<<endl;
+	  cout<<"is going to be cleaned because of the muon "<<imu<<" with "<<endl;
+	  cout<<"a pt of "<<Muons.at(imu).Pt()<<endl;
+	  cout<<"this muon has id Tight "<<Muons.at(imu).IsID("Tight")<<endl;
+	  cout<<"this muon has id Veto "<<Muons.at(imu).IsID("Veto")<<endl;
+	  cout<<endl;
+	}
 	dumpJet=true;
 	break;
       }
@@ -108,14 +134,21 @@ void makeCleanedJets(vector<Jet*>& Jets_In, vector<Jet*>& Jets_Out, vector<Muon>
 
     if (!CrossCleaning.keepIf("CrossCleaning Muons",!dumpJet)) continue;
 
+
     for(int iel=0; iel<(int)Electrons.size();++iel){
-      if(pcp)cout<<"distance from jet "<<ijet<<" to lepton "<<iel<< " = "<<
+      if(pcp)cout<<"distance from jet "<<ijet<<" to electron "<<iel<< " = "<<
 	
 	DeltaR(Jets_In.at(ijet)->P4(), Electrons.at(iel).P4())<<" lep= "<<Electrons.at(iel).Flavor()<<endl;
-      //      if (Electrons.at(iel).IsID("Veto")) cout << "warning" << endl;      
+      //if (Electrons.at(iel).IsID("Veto")) cout << "warning" << endl;      
+
       if ( !Electrons.at(iel).IsID("Tight") &&  !Electrons.at(iel).IsID("Veto"))continue;
 
       if(DeltaR(Jets_In.at(ijet)->P4(),Electrons.at(iel).P4())<0.3) {
+	if (pcp){
+	  cout<<"the jet "<< ijet<< "with pt = "<<Jets_In.at(ijet)->Pt()<<endl;
+	  cout<<"is going to be cleaned because of the electron "<<iel<<" with "<<endl;
+	  cout<<"a pt of "<<Electrons.at(iel).Pt()<<endl;
+	}
 	dumpJet=true;
 	break;
       }

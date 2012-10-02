@@ -21,7 +21,12 @@ extern bool pcp;
 
 //======================================================
 vector<Muon> makeAllMuons(EasyChain* tree){
-
+  
+  if(pcp){
+    cout<<endl;
+    cout<<"inside makeAllMuons "<<endl;
+    cout<<endl;
+  }
   vector<Muon> AllMuons;
   vector<LorentzM>& Muons = tree->Get(&Muons, "muonP4Pat");
   vector<int>&      charge   = tree->Get( &charge,"muonChargePat");
@@ -30,6 +35,10 @@ vector<Muon> makeAllMuons(EasyChain* tree){
   Muon dummyMuon;
   for (int imu=0;imu<(int)Muons.size();++imu){
 
+    if(pcp){
+      cout<<"muon("<<imu<<") pt = "<<Muons.at(imu).Pt() <<endl;
+      cout<<"muon("<<imu<<") eta = "<<Muons.at(imu).Eta() <<endl;
+    }
     if (Muons.at(imu).Pt() < 10.0)continue;
     if (fabs(Muons.at(imu).Eta()) >= 2.5)continue;    
 
@@ -371,6 +380,9 @@ bool makeVetoMuons(EasyChain* tree, vector<Muon>& AllMuons, vector<Muon*>& VetoM
   
   static CutSet VetoMuonFlow("Veto_Muon_Selection");
   extern   bool pcp;
+  if(pcp){
+    cout<<"INSIDE VETOMUONS"<<endl;
+  }
   VetoMuonFlow.autodump=true;
   vector<float>& Dxy_track = tree->Get( &Dxy_track,   "muonInnerTrackDxyPat");
   vector<float>& Dz_track = tree->Get( &Dz_track,   "muonInnerTrackDzPat");
@@ -400,6 +412,12 @@ bool makeVetoMuons(EasyChain* tree, vector<Muon>& AllMuons, vector<Muon*>& VetoM
   for(int iel=0;iel<(int)AllMuons.size();++iel){
 
 
+    int indx=AllMuons.at(iel).GetIndexInTree();
+
+    if (pcp){
+      cout<<"dz at "<<indx<<" is "<<Dz_track.at(indx)<<endl;
+      cout<<"dxy at "<<indx<<" is "<<Dxy_track.at(indx)<<endl;
+    }
 
     //I only take into account the ones that are not Signal
     if (AllMuons.at(iel).IsID("Tight") )continue;
@@ -411,16 +429,31 @@ bool makeVetoMuons(EasyChain* tree, vector<Muon>& AllMuons, vector<Muon*>& VetoM
     // OK=true;
     if(!VetoMuonFlow.keepIf("PFIso",OK)) continue;
    
-    OK=fabs(Dxy_track.at(iel)) < dxyVertexMAX;
+    if(pcp){
+      cout<<"dxy at "<<indx <<" is "<<Dxy_track.at(indx)<<endl;
+      cout<<"dxy at "<<0 <<" is "<<Dxy_track.at(0)<<endl;
+    }
+    OK=fabs(Dxy_track.at(indx)) < dxyVertexMAX;
     if(!VetoMuonFlow.keepIf("dxy to vertex position",OK)) continue;
     //
-    OK=fabs(Dz_track.at(iel)) < dzVertexMAX;
+    if(pcp){
+      cout<<"dz is "<<Dz_track.at(indx)<<endl;
+      cout<<"dz at "<<0 <<" is "<<Dz_track.at(0)<<endl;
+      //cout<<"the whole vector Dz = "<<Dz_track<<endl;
+    }
+    OK=fabs(Dz_track.at(indx)) < dzVertexMAX;
     if(!VetoMuonFlow.keepIf("dz to vertex position",OK)) continue;
    
     AllMuons.at(iel).SetID("Veto",true);
     //this muon is NOT tight, but it is SOFT, so its VETO
     VetoMuons.push_back(&AllMuons.at(iel));
     NOfVetoMuons++;
+
+    if(pcp){
+      cout<<endl;
+      cout<<"the muon "<<iel<<" is a good veto muon"<<endl;
+      cout<<endl;
+    }
 
   }//Loop over muons
 
@@ -455,7 +488,7 @@ float Consistency( LorentzM vRef, EasyChain* tree, const char* name) {
 
   if (NPF==0){
     //cout<<"no pf muons!!"<<endl;
-    return -1.;
+    return 999.;
   }
 
   float result = fabs(vRef.Pt() - closest.Pt());

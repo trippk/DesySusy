@@ -115,8 +115,19 @@ int main(int argc, char** argv){
   //data or monte carlo?
   bool isData=config.getBool("isData");
   //=================================================================
- 
 
+
+  ofstream events1;
+  ofstream events2;
+  ofstream onejet;
+  ofstream twojet;
+  ofstream threejet;
+
+  events1.open("after_1ele_veto.txt");
+  events2.open("after_1ele_nomu.txt");
+  onejet.open("after_1jet.txt");
+  twojet.open("after_2jet.txt");
+  threejet.open("after_3jet.txt");
   /*
 
   tree->SetBranchStatus("*",0);
@@ -340,8 +351,10 @@ int main(int argc, char** argv){
   //================================
   //SET THE BJET WORKING POINTS
   //================================
-  map<const char*, map<const char*, double> > bJetWP; 
+  map<string, map<string, double> > bJetWP; 
   Jet::SetWP("8TeV", &bJetWP); 
+  cout<<"the working point has been set to "<<Jet::GetbJetWP()["CSV"]["Medium"]<<endl;
+  //  exit(1);
 
   //=================================
   //SET THE CONTROL PLOTS HISTO MAKER
@@ -487,8 +500,6 @@ int main(int argc, char** argv){
     timer();
 
 
-
-
     
     if(pcp)cout<<"check point about to get entry "<< i<<endl;
 
@@ -502,6 +513,65 @@ int main(int argc, char** argv){
     unsigned int Run   = tree->Get(Run,"run");    
     if(pcp)cout<<"check point got the Event "<< i<< " "<<Event<<endl;    
 
+
+    if(Event==27560470){
+      cout<<"we have it!"<<endl;
+    }
+
+
+    if(Event==22291849 ||
+       Event==27561470 ){
+       //Event==22287444 ){
+       /*       Event==22292314 ||
+       Event==22307000 ||
+       Event==22318218 ||
+       Event==27560470 ||
+       Event==27561357 ||
+       Event==27561470 ||
+       Event==27561841 ||
+       Event==27562706 ||
+       Event==27563093 ||
+       Event==27843089 ||
+       Event==27843552 ||
+       Event==27998151 ||
+       Event==29140700 ||
+       Event==29140810 ||
+       Event==29141508 */
+       //Event==22287403){
+      pcp=true;
+      cout<<"yeah"<<" "<<Event<<endl;
+    }else{
+      pcp=false;
+      //continue;
+    }
+
+
+
+    if(pcp){
+
+      vector<LorentzM>& Muons = tree->Get(&Muons, "muonP4Pat");
+      vector<float>& Dxy_track = tree->Get( &Dxy_track,   "muonInnerTrackDxyPat");
+      vector<float>& Dz_track = tree->Get( &Dz_track,   "muonInnerTrackDzPat");
+      cout<<"dz and dxy of ALL MUONS"<<endl;
+      for (int imu=0;imu<(int)Muons.size();++imu){
+	cout<<"dz of "<<imu<< " = "<<Dz_track.at(imu)<<endl;
+	cout<<"dxy of "<<imu<< " = "<<Dxy_track.at(imu)<<endl;
+      }
+    }
+
+
+
+
+
+
+    if(pcp){
+      cout<<endl;
+      cout<<endl;
+      cout<<"**************************************"<<endl;
+      cout<<"NEW EVENT : "<<Event<<endl;
+      cout<<endl;
+      cout<<endl;
+    }
 
 
     //================================================
@@ -610,6 +680,17 @@ int main(int argc, char** argv){
     makeCleanedJets( GoodJets, CleanedJets, Muons, Electrons);
     //============================================
     
+    //NUMBER OF BTAGS//
+    static string btagAlgorithm= config.getString("bTagAlgorithm","CSV");
+    static string btagWorkingPoint = config.getString("bTagWorkingPoint","Medium");
+    int NumberOfbTags=0;
+    for (int ijet=0;ijet<CleanedJets.size();++ijet){
+      
+      if(CleanedJets.at(ijet)->IsBJet(btagAlgorithm,btagWorkingPoint)){
+	NumberOfbTags++;
+      }
+    }
+    //cout<<"number of btags is "<<NumberOfbTags<<endl;
 
     //============================================
     //Make HT
@@ -627,13 +708,19 @@ int main(int argc, char** argv){
 
     //============================================
     //Make MET
-    LorentzM& PFmet = tree->Get(&PFmet, "metP4PF");
-    double METSig = PFmet.Et() / sqrt(HT);
+    LorentzM& PFmet = tree->Get(&PFmet, "metP4TypeIPF");
+    double MET=(double)PFmet.Et() ;
+    double METSig = MET / sqrt(HT);
     //============================================
 
 
-
-
+    if (pcp){
+      cout<<endl;
+      cout<<"MET = "<<MET<<endl;
+      cout<<"HT = "<<HT<<endl;
+      cout<<endl;
+    }
+    
 
 
 
@@ -665,7 +752,6 @@ int main(int argc, char** argv){
 
 
 
-    //
     //====================================================================
     // TRIGGERS
     //====================================================================
@@ -813,13 +899,6 @@ int main(int argc, char** argv){
 
 
 
-
-
-
-
-
-
-
     //LEPTON SELECTION//
     string SigMu = config.getString("SignalMuon_Selection","Tight");
     string WidMu = config.getString("WideMuon_Selection","Veto");
@@ -827,12 +906,7 @@ int main(int argc, char** argv){
     string WidEl = config.getString("WideElectron_Selection","Veto");
 
 
-    //=================================
-    //MUONS
-    //=================================
-    //
-    //
-    //
+
     vector<Muon*> SignalMuons;
     vector<Muon*> WideMuons;
     for (int imu=0; (int)imu<Muons.size();++imu){
@@ -843,28 +917,6 @@ int main(int argc, char** argv){
 	WideMuons.push_back(&Muons.at(imu) ) ;
       }
     }
-    //
-    //
-    OK=SetOfCuts::SignalMuons.NUM.Examine(SignalMuons.size());
-    if(i==0 && isquick){OK=OK&&OKold; OKold=OK;}
-    if(!globalFlow.keepIf("Signal_Muons",OK) && quick) continue;
-    if(DoControlPlots && OK)ControlPlots.MakePlots("Signal_Muons", SignalMuons, TightElectrons, CleanedJets, PFmet); 
-    //treeCuts["Signal_Muons"]=OK;
-    //
-    //
-    OK=SetOfCuts::WideMuons.NUM.Examine(WideMuons.size());
-    if(i==0 && isquick){OK=OK&&OKold; OKold=OK;}
-    if(!globalFlow.keepIf("Wide_Muons",OK) && quick) continue;    
-    if(DoControlPlots && OK)ControlPlots.MakePlots("Wide_Muons", WideMuons, TightElectrons, CleanedJets, PFmet); 
-    //    treeCuts["Wide_Muons"]=OK;
-    //
-    //
-    //=================================
-    //ELECTRONS
-    //=================================
-    //
-    //
-    //
     vector<Electron*> SignalElectrons;
     vector<Electron*> WideElectrons;
     for (int imu=0; (int)imu<Electrons.size();++imu){
@@ -875,6 +927,18 @@ int main(int argc, char** argv){
 	WideElectrons.push_back(&Electrons.at(imu) ) ;
       }
     }
+
+
+
+
+
+    //=================================
+    //MUONS
+    //=================================
+    //
+    //
+    //
+    //
     //
     //
     OK=SetOfCuts::SignalElectrons.NUM.Examine(SignalElectrons.size());
@@ -882,6 +946,29 @@ int main(int argc, char** argv){
     if(!globalFlow.keepIf("Signal_Electrons",OK) && quick) continue;
     if(DoControlPlots && OK)ControlPlots.MakePlots("Signal_Electrons", SignalMuons, SignalElectrons, CleanedJets, PFmet); 
     //treeCuts["Signal_Electrons"]=OK;
+    //
+    //
+    //
+    OK=SetOfCuts::SignalMuons.NUM.Examine(SignalMuons.size());
+    if(i==0 && isquick){OK=OK&&OKold; OKold=OK;}
+    if(!globalFlow.keepIf("Signal_Muons",OK) && quick) continue;
+    if(DoControlPlots && OK)ControlPlots.MakePlots("Signal_Muons", SignalMuons, TightElectrons, CleanedJets, PFmet); 
+    //treeCuts["Signal_Muons"]=OK;
+    //
+    //
+    if( OK){
+      events2<<Event<<endl;
+    }
+    //
+    //
+    //
+    OK=SetOfCuts::WideMuons.NUM.Examine(WideMuons.size());
+    if(i==0 && isquick){OK=OK&&OKold; OKold=OK;}
+    if(!globalFlow.keepIf("Wide_Muons",OK) && quick) continue;    
+    if(DoControlPlots && OK)ControlPlots.MakePlots("Wide_Muons", WideMuons, TightElectrons, CleanedJets, PFmet); 
+    //    treeCuts["Wide_Muons"]=OK;
+    //
+    //
     //
     //
     OK=SetOfCuts::WideElectrons.NUM.Examine(WideElectrons.size());
@@ -892,8 +979,32 @@ int main(int argc, char** argv){
     //
     //===================================
 
+    if(WhatEstimation=="RA4b-singleLep"){
+      
+      OK=(int)SignalElectrons.size()+(int)SignalMuons.size()==1;
+      if(i==0 && isquick){OK=OK&&OKold; OKold=OK;}
+      if(!globalFlow.keepIf("one single lepton",OK) && quick) continue;    
+
+    }
 
 
+
+    if(OK){
+      //print the events
+      events1<<Event<<endl;
+    }
+
+
+
+
+    globalFlow.keepIf(">=1 jet",CleanedJets.size()>=1);
+    globalFlow.keepIf(">=2 jet",CleanedJets.size()>=2);
+
+
+
+
+
+    //LEPTON SELECTION//
 
     //===================================
     //JETS
@@ -904,7 +1015,14 @@ int main(int argc, char** argv){
     if(!globalFlow.keepIf("Jet_Cuts",OK) && quick) continue;    
     if(DoControlPlots && OK)ControlPlots.MakePlots("Jet_Cuts", SignalMuons, SignalElectrons, CleanedJets, PFmet); 
     //treeCuts["Jet_Cuts"]=OK;
+
+    globalFlow.keepIf("3=>jets and 1=>btags",NumberOfbTags>=1);
+
+    globalFlow.keepIf(">=4 jet",CleanedJets.size()>=4);
+    globalFlow.keepIf(">=4 and 1=> btagsjeCt",CleanedJets.size()>=4 && NumberOfbTags>=1);
     //===================================
+
+
 
 
 
@@ -1007,6 +1125,7 @@ int main(int argc, char** argv){
     if(pcp)cout<<"check point out of MET_HT"<<endl;
     if(DoControlPlots && OK)ControlPlots.MakePlots("MET", SignalMuons, SignalElectrons, CleanedJets, PFmet); 
     //treeCuts["MET"]=OK;
+    cout<<"the met here is "<<MET<<endl;
     //====================================================================
 
 
@@ -1070,7 +1189,7 @@ int main(int argc, char** argv){
 
 
     //LorentzM& PFmet = tree->Get(&PFmet, "metP4PF");
-    METSig = PFmet.Et() / sqrt(HT); 
+    METSig = MET / sqrt(HT); 
 
 
     EventInfo info;
@@ -1228,8 +1347,11 @@ int main(int argc, char** argv){
   globalFlow.dumpToHist(); 
 
 
-
-  
+  events1.close();
+  events2.close();
+  onejet.close();
+  twojet.close();
+  threejet.close();
   
 
   treeFile->cd();

@@ -17,9 +17,9 @@ class Jet: public AnalysisObject {
   bool     isMatch;
   double   scaleCorrFactor;
   string   type;
-  vector<const char*> allBTags;
-  map<const char*, double>  bJetDisc;
-  static map<const char*, map<const char*, double> >* pbJetWP;
+  vector<string> allBTags;
+  map<string, double>  bJetDisc;
+  static map<string, map<string, double> >* pbJetWP;
 
  public:
   Jet(){
@@ -36,22 +36,26 @@ class Jet: public AnalysisObject {
 
   ~Jet(){}
 
-  double BJetDisc(const char* key);
+  double BJetDisc(string key);
   string GenFlavor();
   bool   IsMatch();
   double ScaleCorrFactor();
   string Type();
-  bool IsBJet(const char* key="CSV", double disc_cut=0.679);
-  bool IsBJet(const char* key="CSV", const char* WP="Medium");
+  bool IsBJet(string key="CSV", double disc_cut=0.679);
+  bool IsBJet(string key="CSV", string WP="Medium");
+  //  bool IsBJet(char* key="CSV", char* WP);
+
 
   void SetGenFlavor(string genFlavor_In);
   void SetIsMatch(bool isMatch_In);
   void SetScaleCorrFactor(double scr_In);
   void SetType(string type_In);
-  void SetBJetDisc(const char* key, double value);
-  static void SetWP(const char* cme="8TeV", map<const char*, map<const char*, double> >* bJetWP=0);
-
+  void SetBJetDisc(string key, double value);
+  static void SetWP(string cme="8TeV", map<string, map<string, double> >* bJetWP=0);
   virtual void Set(int maptotree_In, LorentzM * momuntum_In, double scaleCorrFactor_In=1., string type_In="");
+
+  static map<string, map<string, double> > GetbJetWP();
+
 
 };
 
