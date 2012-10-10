@@ -81,11 +81,14 @@ class SusyCAF(object) :
             self.process.load('SUSYBSMAnalysis.DesySusy.SusyDESY_%s_cfi'%module)
         #self.process.load('RecoMET.METFilters.eeBadScFilter_cfi')
         #self.process.eeBadScFilterFlag = self.process.eeBadScFilter.clone(taggingMode = True)
+        self.process.load('RecoMET.METFilters.ecalLaserCorrFilter_cfi')
+        self.process.ecalLaserCorrFilterFlag = self.process.ecalLaserCorrFilter.clone(taggingMode = True)
         return ( self.patJet() +
                  self.patLepton('Electron') + self.patLepton('Muon') +
                  self.evalSequence('susycaf%s',  ['photon']+(['tau','HPStau','pftau'] if self.options.taus else [])) +
                  self.evalSequence('susycafmet%s', ['AK5','AK5TypeII','AK5TypeI','PF','TypeIPFPat','TypeIPF','TC']) +
                  #self.process.eeBadScFilterFlag +
+                 self.process.ecalLaserCorrFilterFlag +
                  self.evalSequence('susydesy%s', ['patelectrons','pfelectrons','patmuons','pfmuons','trigger']+
                                    ([] if self.options.isData else ['pu']))+
                  self.evalSequence('filterResult%s', ['OneLepton']) +
