@@ -422,14 +422,15 @@ def removeDuplicates():
 	last=''
 	cleaned=[]
 	for file in rootfiles:
-		ir=file.rfind('_')
+		ir=file.count('_')
+		kin=file.rfind('_')
 		if ir<=3:
-			print 'Warning - file name not well formed: '+filename
+			print 'Warning - file name not well formed: '+file
 			cleaned.append(file)
 			continue
-		comp=file[:ir-1]
+		comp=file[:kin-1]
 		if comp.find('_') < 0: 
-			print 'Warning - file name not well formed: '+filename
+			print 'Warning - file name not well formed: '+file
 			cleaned.append(file)
 			continue
 		if comp==last:
