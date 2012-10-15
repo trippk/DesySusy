@@ -159,8 +159,8 @@ void Nminus1Tree::Fill( EventInfo* info, EasyChain* tree, vector<Muon*>& muons_i
 
   for (int ijet=0; ijet<jets_in.size() && ijet<7; ijet++) {
     HT+=jets_in.at(ijet)->Pt();
-    HTx+=jets_in.at(ijet)->p4.Px();
-    HTy+=jets_in.at(ijet)->p4.Py();
+    HTx+=jets_in.at(ijet)->P4().Px();
+    HTy+=jets_in.at(ijet)->P4().Py();
     SetVector(jets[ijet], jets_in.at(ijet));
     jetsPt[ijet]=jets_in.at(ijet)->Pt();
     bjetdisc[ijet]=jets_in.at(ijet)->BJetDisc("CSV");
