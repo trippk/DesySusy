@@ -104,7 +104,7 @@ def TTJets():
     Scripts=[]
     Sample='TTJets'
     SubSample='SUMMER12'
-    FilesDir='/pnfs/desy.de/cms/tier2/store/user/msahin/nTuple12_v2/mc/TTJets_MassiveBinDECAY_TuneZ2star_8TeV-madgraph-tauola/Summer12-PU_S6_START52_V9-v1'
+    FilesDir='/scratch/hh/lustre/cms/user/sahin/nTuple12_v4b/mc/TTJets_MassiveBinDECAY_TuneZ2star_8TeV-madgraph-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/'
     Config='config_MC_RA4b.txt'
     nFiles=3
     #
@@ -112,34 +112,68 @@ def TTJets():
     cleanUpDir('./'+Sample+'/'+SubSample)
     Scripts.append(script)
 
-def TTJets53():
-
-    Scripts=[]
-    Sample='TTJets53'
-    SubSample='SUMMER12'
-    FilesDir=' /pnfs/desy.de/cms/tier2/store/user/msahin/nTuple12_v4/mc/TTJets_MassiveBinDECAY_TuneZ2star_8TeV-madgraph-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/'
+    SubSample='SUMMER12POWHEG'
+    FilesDir='/pnfs/desy.de/cms/tier2/store/user/schettle/nTuple12_v4b/mc/TT_CT10_TuneZ2star_8TeV-powheg-tauola/Summer12_DR53X-PU_S10_START53_V7A-v2/'
     Config='config_MC_RA4b.txt'
     nFiles=3
     #
     script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
     cleanUpDir('./'+Sample+'/'+SubSample)
-    Scripts.append(script)    
+    Scripts.append(script)
 
+def LM9():
 
-def TTJetsBUG():
     Scripts=[]
-    Sample='TTJets-BUG'
-    SubSample='SUMMER12'
-    FilesDir='/pnfs/desy.de/cms/tier2/store/user/schettle/nTuple12_v2/mc/TTJets_TuneZ2star_8TeV-madgraph-tauola/Summer12-PU_S7_START52_V9-v1'
+    Sample='LM9'
+    SubSample='NoSub'
+    FilesDir='/pnfs/desy.de/cms/tier2/store/user/msahin/nTuple12_v2/mc/SUSY_LM9_sftsht_8TeV-pythia6/Summer12-PU_S7_START52_V9-v1/'
     Config='config_MC_RA4b.txt'
     nFiles=3
     #
     script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
     cleanUpDir('./'+Sample+'/'+SubSample)
-    Scripts.append(script)    
+    Scripts.append(script)
 
+def LM6():
 
+    Scripts=[]
+    Sample='LM6'
+    SubSample='NoSub'
+    FilesDir='/pnfs/desy.de/cms/tier2/store/user/msahin/nTuple12_v2/mc/SUSY_LM6_sftsht_8TeV-pythia6/Summer12-PU_S7_START52_V9-v1/'
+    Config='config_MC_RA4b.txt'
+    nFiles=3
+    #
+    script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
+    cleanUpDir('./'+Sample+'/'+SubSample)
+    Scripts.append(script)
 
+def T2tt():
+
+    Scripts=[]
+    Sample='T2tt'
+    SubSample='t500n100'
+    FilesDir='/scratch/hh/current/cms/user/costanza/store/SMS-T2tt_FineBin_Mstop-225to1200_mLSP-0to1000_8TeV-Pythia6Z/Summer12-START52_V9_FSIM-v1/'
+    Config='config_MC_RA4b.txt'
+    nFiles=1
+    script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
+    cleanUpDir('./'+Sample+'/'+SubSample)
+    Scripts.append(script)
+    ########################################
+    SubSample='t650n200'
+    FilesDir='/scratch/hh/current/cms/user/costanza/store/SMS-T2tt_FineBin_Mstop-225to1200_mLSP-0to1000_8TeV-Pythia6Z/Summer12-START52_V9_FSIM-v1/'
+    Config='config_MC_RA4b.txt'
+    nFiles=1
+    script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
+    cleanUpDir('./'+Sample+'/'+SubSample)
+    Scripts.append(script)
+    ########################################
+    SubSample='t750n400'
+    FilesDir='/scratch/hh/current/cms/user/costanza/store/SMS-T2tt_FineBin_Mstop-225to1200_mLSP-0to1000_8TeV-Pythia6Z/Summer12-START52_V9_FSIM-v1/'
+    Config='config_MC_RA4b.txt'
+    nFiles=1
+    script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
+    cleanUpDir('./'+Sample+'/'+SubSample)
+    Scripts.append(script)
 
 def DYJetsToLL():
 
@@ -264,10 +298,9 @@ if __name__=='__main__':
     ElectronHad()
     SingleMu()
     TTJets()
-    TTJets53()
-    ######TTJetsBUG()    
     DYJetsToLL()
     WJetsToLNu()
     SingleTop()
-    LM6()
     LM9()
+    LM6()
+    T2tt()
