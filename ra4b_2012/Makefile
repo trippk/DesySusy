@@ -72,7 +72,6 @@ clean:
 
 .cpp.o:
 		$(CXX) $(CXXFLAGS) -c $<
-		$(info .cpp.p rule got called!)
 .C.o:
 		$(CXX) $(CXXFLAGS) -c $<
 ConfigReader.o : ConfigReader.cpp
