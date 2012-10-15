@@ -35,7 +35,7 @@ cd $OUTDIR
 ini glite
 ini dctools
 ##pwd
-cp ../../Summer12_V2_DATA_AK5PF_UncertaintySources.txt /tmp/
+cp ../../src/Summer12_V2_DATA_AK5PF_UncertaintySources.txt /tmp/
 ##ls -lrt /tmp
 echo job start at `date`
 
