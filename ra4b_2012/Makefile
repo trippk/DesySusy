@@ -8,7 +8,7 @@
 #
   VPATH = ./src
   SRCDIR   = ./src/
-  SOURCES  = main_RA4b.cpp Nminus1Tree.cpp defaultTree.cpp makeJets.cpp makeMuons.cpp makeElectrons.cpp vertices_RA4b.cpp triggers_RA4b.cpp triggers_RA4b_frequency.cpp evtqual_RA4b.cpp metAndHT_RA4b.cpp SetTriggers_RA4b.cpp SetConditions_RA4b.cpp ConfigReader.cpp CutFlow.cpp cschalo_RA4b.cpp trackingFailure_RA4b.cpp AnalysisObject.cpp Particle.cpp Electron.cpp Muon.cpp Jet.cpp eventselection.cpp HistoMaker.cpp mt2w_bisect.cpp mt2w_interface.cpp
+  SOURCES  = main_RA4b.cpp Nminus1Tree.cpp defaultTree.cpp makeJets.cpp makeMuons.cpp makeElectrons.cpp vertices_RA4b.cpp triggers_RA4b.cpp triggers_RA4b_frequency.cpp evtqual_RA4b.cpp metAndHT_RA4b.cpp SetTriggers_RA4b.cpp SetConditions_RA4b.cpp ConfigReader.cpp CutFlow.cpp cschalo_RA4b.cpp trackingFailure_RA4b.cpp AnalysisObject.cpp Particle.cpp Electron.cpp Muon.cpp Jet.cpp eventselection.cpp HistoMaker.cpp mt2w_bisect.cpp mt2w_interface.cpp systematics_RA4b.cpp makeSystematics.cpp
 
 # and create this executable
 #
@@ -36,7 +36,7 @@ endif
 
 ROOTLIBS    = `root-config --libs` -lGenVector
 CXX         = g++ -g3 -O1
-CXXFLAGS    = `root-config --cflags` -I./
+CXXFLAGS    = `root-config --cflags` -I ./ 
 LD          = g++
 LDFLAGS     = `root-config --ldflags`
 
@@ -57,6 +57,7 @@ all: $(EXEC)
 $(EXEC): $(OBJS) NtupleTools2Dict.o
 	$(LD) $(LDFLAGS) $^ $(ROOTLIBS) $(MORELIBS)  -o $@
 	@echo "$@ done"
+	@echo "$(OBJS) 	$(LD) $(LDFLAGS) $^ $(ROOTLIBS) $(MORELIBS)  -o $@"
 
 NtupleTools2Dict.cxx: NtupleTools2_h.h  Linkdef.h
 		@echo "Generating dictionary $@..."
