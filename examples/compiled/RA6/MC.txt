@@ -1,9 +1,17 @@
+dataPU=PU_data
+
 sampleCounter=1
 sampleName[$sampleCounter]=TTJets
-sampleSource[$sampleCounter]=/pnfs/desy.de/cms/tier2/store/user/schettle/nTuple12_v2/mc/TTJets_MassiveBinDECAY_TuneZ2star_8TeV-madgraph-tauola/Summer12-PU_S7_START52_V9-v2/
+sampleSource[$sampleCounter]=/scratch/hh/lustre/cms/user/sahin/nTuple12_v4b/mc/TTJets_MassiveBinDECAY_TuneZ2star_8TeV-madgraph-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/
 sampleConfig[$sampleCounter]=config_TTJets/config.txt
-sampleNfiles[$sampleCounter]=3
+samplePU[$sampleCounter]=PU_TTJets_SUMMER12_mc
+sampleNfiles[$sampleCounter]=5
 
+let sampleCounter=$sampleCounter+1
+sampleName[$sampleCounter]=TTJets_53x
+sampleSource[$sampleCounter]=/pnfs/desy.de/cms/tier2/store/user/msahin/nTuple12_v4/mc/TTJets_MassiveBinDECAY_TuneZ2star_8TeV-madgraph-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/
+sampleConfig[$sampleCounter]=config_TTJets_v1/config.txt
+sampleNfiles[$sampleCounter]=5
 
 let sampleCounter=$sampleCounter+1
 sampleName[$sampleCounter]=TTJets_v1
@@ -20,6 +28,12 @@ sampleNfiles[$sampleCounter]=5
 let sampleCounter=$sampleCounter+1
 sampleName[$sampleCounter]=DYJetsToLL_M-50
 sampleSource[$sampleCounter]=/pnfs/desy.de/cms/tier2/store/user/schettle/nTuple12_v2/mc/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/Summer12-PU_S7_START52_V9-v2
+sampleConfig[$sampleCounter]=config_DYJetsToLL_M-50/config.txt
+sampleNfiles[$sampleCounter]=12
+
+let sampleCounter=$sampleCounter+1
+sampleName[$sampleCounter]=DYJetsToLL_M-50_53x
+sampleSource[$sampleCounter]=/scratch/hh/lustre/cms/user/sahin/nTuple12_v4b/mc/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/Summer12_DR53X-PU_S10_START53_V7A-v1/
 sampleConfig[$sampleCounter]=config_DYJetsToLL_M-50/config.txt
 sampleNfiles[$sampleCounter]=12
 

@@ -3,6 +3,6 @@
 
 #include "NtupleTools2_h.h"
 
-bool electrons_RA6(EasyChain* tree, vector<unsigned>&, CutSet&);
+bool electrons_RA6(EasyChain* tree, vector<unsigned>&, CutSet& );
 
 #endif

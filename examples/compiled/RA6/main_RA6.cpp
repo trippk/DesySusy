@@ -52,11 +52,12 @@ int main(int argc, char** argv){
   static float         MET_min = config.getFloat(         "MET_min",  0. );
   static int          nJet_min = config.getInt  (        "nJet_min",  -1  );
   static float TCHEbTag_cutVal = config.getFloat( "TCHEbTag_cutVal",  3.3 );
+  static float  CSVbTag_cutVal = config.getFloat(  "CSVbTag_cutVal",  0.679 );
 
   static TString JetCollection = config.getTString( "JetCollection", "ak5JetPF" );//ak5JetPF2PAT
 
   static float lept_pt_min_high = config.getFloat("lept_pt_min_high", 20.);
-  static float lept_invMass_min = config.getFloat("lept_invMass_min", 12.);
+  static float lept_invMass_min = config.getFloat("lept_invMass_min", -1.);
   static int   lept_relCharge   = config.getInt  ("lept_relCharge",   -1 );
   
 
@@ -79,6 +80,8 @@ int main(int argc, char** argv){
   //Pile-up handling
   vector<float> PUweights;
   static TString PU_weightList = config.getTString( "PU_weightList", " " );
+
+  cout<<"PU_weightList: "<<PU_weightList<<endl;
 
   int PU_weightListSIZE=0;
   if( PU_weightList != " " ) {
@@ -220,34 +223,135 @@ int main(int argc, char** argv){
 
     //event cleaning------------------------------------------------------------------------------
     
-    bool HBHEnoiseNoIsoFilterResult = tree->Get( HBHEnoiseNoIsoFilterResult, "hbheNoiseNoIsoFilterResult" );
-    if( !globalFlow.keepIf( "HBHEnoiseNoIsoFilter"   , HBHEnoiseNoIsoFilterResult   ) && quick ) continue;
-    //cout<<"hbhe survived."<<endl;
-    bool hcalLaserEventFilterFlag   = tree->Get( hcalLaserEventFilterFlag,    "hcalLaserEventFilterFlag"  );
-    if( !globalFlow.keepIf( "hcalLaserFilter"        , hcalLaserEventFilterFlag     ) && quick ) continue;
+     bool HBHEnoiseNoIsoFilterResult = tree->Get( HBHEnoiseNoIsoFilterResult, "hbheNoiseNoIsoFilterResult" );
+     if( !globalFlow.keepIf( "HBHEnoiseNoIsoFilter"   , HBHEnoiseNoIsoFilterResult   ) && quick ) continue;
+//     //cout<<"hbhe survived."<<endl;
+     bool hcalLaserEventFilterFlag   = tree->Get( hcalLaserEventFilterFlag,    "hcalLaserEventFilterFlag"  );
+     if( !globalFlow.keepIf( "hcalLaserFilter"        , hcalLaserEventFilterFlag     ) && quick ) continue;
 
-    vertices_RA6 ( tree, RA6_selectedVx   , RA6_Vx_selectionCuts    );
-    //cout<<"vx done"<<endl;
-    if( !globalFlow.keepIf( "at_least_1_vertex"      , RA6_selectedVx.size()    >=1 ) && quick ) continue;
-    //cout<<"vertex survived."<<endl;
+     vertices_RA6 ( tree, RA6_selectedVx   , RA6_Vx_selectionCuts    );
+     //cout<<"vx done"<<endl;
+     if( !globalFlow.keepIf( "at_least_1_vertex"      , RA6_selectedVx.size()    >=1 ) && quick ) continue;
+     //cout<<"vertex survived."<<endl;
 
-    int Ntracks    = tree->Get( Ntracks   , "nTracksAll"        );
-    int NHPtracks  = tree->Get( NHPtracks , "nTracksHighPurity" );
-    if( !globalFlow.keepIf( "FracOfHPtracks", Ntracks <=10 ? true : (float) NHPtracks/Ntracks >=0.25 ) && quick ) continue;
+     int Ntracks    = tree->Get( Ntracks   , "nTracksAll"        );
+     int NHPtracks  = tree->Get( NHPtracks , "nTracksHighPurity" );
+     if( !globalFlow.keepIf( "FracOfHPtracks", Ntracks <=10 ? true : (float) NHPtracks/Ntracks >=0.25 ) && quick ) continue;
 
-    bool tffPassed  = tree->Get( tffPassed , "trackingFailureFilterFlag" );
-    if( !globalFlow.keepIf("trackFailFilter"   ,    tffPassed ) && quick ) continue;
-    bool edcfPassed = tree->Get( edcfPassed, "ecalDeadCellTPFilterFlag"  );
-    if( !globalFlow.keepIf("ecalDeadCellFilter",   edcfPassed ) && quick ) continue;
-    bool bhctFailed = tree->Get( bhctFailed, "beamHaloCSCTightHaloId"    );
-    if( !globalFlow.keepIf("beamHaloCSCFilter" ,  !bhctFailed ) && quick ) continue;//   stimmt das?? Dass die Flag das Failed angibt?
-    bool eeBadSCPassed = tree->Get( eeBadSCPassed, "eeBadScFilterFlag"   );
-    if( !globalFlow.keepIf("eeBadSCFilter"     , eeBadSCPassed) && quick ) continue;
+     bool tffPassed  = tree->Get( tffPassed , "trackingFailureFilterFlag" );
+     if( !globalFlow.keepIf("trackFailFilter"   ,    tffPassed ) && quick ) continue;
+     bool edcfPassed = tree->Get( edcfPassed, "ecalDeadCellTPFilterFlag"  );
+     if( !globalFlow.keepIf("ecalDeadCellFilter",   edcfPassed ) && quick ) continue;
+     bool bhctFailed = tree->Get( bhctFailed, "beamHaloCSCTightHaloId"    );
+     if( !globalFlow.keepIf("beamHaloCSCFilter" ,  !bhctFailed ) && quick ) continue;//   stimmt das?? Dass die Flag das Failed angibt?
+     bool eeBadSCPassed = tree->Get( eeBadSCPassed, "eeBadScFilterFlag"   );
+     if( !globalFlow.keepIf("eeBadSCFilter"     , eeBadSCPassed) && quick ) continue;
+
+
 
     //cout<<"dev filter"<<endl;
 
     //trigger-------------------------------------------------------------------------------------
-    int run = tree->Get(run, "run");
+    int      run   = tree->Get(run  , "run"        );
+    unsigned event = tree->Get(event, "event"      );
+    unsigned lumi  = tree->Get(lumi , "lumiSection");
+
+    bool isOneProbl=false;
+
+//      if(run==191720 && lumi== 57 && event== 57912577) isOneProbl=true;
+//      if(run==191834 && lumi==306 && event==360641878) isOneProbl=true; 
+//      if(run==196452 && lumi==364 && event==515106174) isOneProbl=true; 
+//      if(run==196531 && lumi== 94 && event== 74098505) isOneProbl=true; 
+//     if(run==191830 && lumi== 66 && event== 39481354) isOneProbl=true; 
+
+//MuTriggerFix:16
+
+//     if(run==194480 && event==637820522) isOneProbl=true;
+//     if(run==196047 && event==116446963) isOneProbl=true;
+//     if(run==196452 && event==597422450) isOneProbl=true;
+//     if(run==194825 && event==20315173) isOneProbl=true;
+//     if(run==195774 && event==1.123e+09) isOneProbl=true;
+
+//AllTriggersAll
+
+//     if(run==196531 && event==74098505) isOneProbl=true;
+//     if(run==196452 && event==515106174) isOneProbl=true;
+
+//MuMu in mine too much:
+//     if(run==191062 && event==73096287) isOneProbl=true;
+//     if(run==194223 && event==20025240) isOneProbl=true;
+//     if(run==194315 && event==85617929) isOneProbl=true;
+//     if(run==194315 && event==90136284) isOneProbl=true;
+//     if(run==194533 && event==111218247) isOneProbl=true;
+
+//ElEl diffs:
+//in Aachen but not me:
+// if(run==191062 && event==173724117) isOneProbl=true;
+// if(run==191830 && event==500801146) isOneProbl=true;
+// if(run==193575 && event==378525614) isOneProbl=true;
+// if(run==194076 && event==1780704) isOneProbl=true;
+// if(run==194151 && event==548436154) isOneProbl=true;
+// if(run==194315 && event==49895517) isOneProbl=true;
+// if(run==194424 && event==618059385) isOneProbl=true;
+// if(run==194789 && event==50048910) isOneProbl=true;
+// if(run==194790 && event==32359325) isOneProbl=true;
+// if(run==194912 && event==801636396) isOneProbl=true;
+// if(run==195655 && event==484658815) isOneProbl=true;
+// if(run==195749 && event==25008105) isOneProbl=true;
+// if(run==195915 && event==715603444) isOneProbl=true;
+// if(run==195948 && event==295979540) isOneProbl=true;
+// if(run==194076 && event==214790825) isOneProbl=true;
+// if(run==194912 && event==448763504) isOneProbl=true;
+// if(run==195552 && event==607255040) isOneProbl=true;
+// if(run==195950 && event==44923344) isOneProbl=true;
+// if(run==195950 && event==991151454) isOneProbl=true;
+// if(run==196047 && event==30959864) isOneProbl=true;
+// if(run==196197 && event==738255119) isOneProbl=true;
+// if(run==196438 && event==61554735) isOneProbl=true;
+
+// //in mine but not Aachen:
+// if(run==193336 && event==607270004) isOneProbl=true;
+// if(run==196438 && event==141696094) isOneProbl=true;
+// if(run==194150 && event==136483931) isOneProbl=true;
+// if(run==194315 && event==199208976) isOneProbl=true;
+// if(run==194429 && event==6474747) isOneProbl=true;
+// if(run==195013 && event==261167716) isOneProbl=true;
+// if(run==195378 && event==586513936) isOneProbl=true;
+// if(run==195390 && event==209739431) isOneProbl=true;
+// if(run==195774 && event==169278152) isOneProbl=true;
+
+
+//SYNCH in 533
+//mumu
+//Aachen not me
+if(run==190703 && event==188364467) isOneProbl=true; // run not in JSONforSUSY
+if(run==190733 && event==247838198) isOneProbl=true; // run not in JSONforSUSY
+if(run==191271 && event==258493671) isOneProbl=true; // LS not in JSONforSUSY
+
+//me not Aachen
+if(run==194115 && event==26127789) isOneProbl=true;
+if(run==194050 && event==544007612) isOneProbl=true;
+if(run==194050 && event==840612795) isOneProbl=true;
+
+//elel
+//Aachen not me
+ if(run==193193 && event==261448119) isOneProbl=true; // run not in JSONforSUSY
+ if(run==190702 && event==128666827) isOneProbl=true; // run not in JSONforSUSY
+ if(run==190733 && event==76514246) isOneProbl=true;  // run not in JSONforSUSY
+ if(run==190733 && event==303138892) isOneProbl=true; // run not in JSONforSUSY
+
+//me not Aachen
+if(run==195398 && event==242173458) isOneProbl=true;
+
+
+
+    if(isOneProbl) cout<<run<<","<<event<<": nothing survived"<<endl;
+
+
+    if(isOneProbl) cout<<run<<","<<event<<": filter: "<<HBHEnoiseNoIsoFilterResult<<hcalLaserEventFilterFlag<<tffPassed<<edcfPassed<<bhctFailed<<eeBadSCPassed<<endl;
+    if(isOneProbl) cout<<run<<","<<event<<": vertices: "<<RA6_selectedVx.size()<<endl;
+    if(isOneProbl) cout<<run<<","<<event<<": nTracks: "<<Ntracks<<", hpTracks: "<<NHPtracks<<endl;
+
     map<string,bool  >& triggered      = tree->Get( &triggered     , "triggered"          );
     map<string,int   >& prescaled      = tree->Get( &prescaled     , "prescaled"          );
     map<string,string>& triggerNameMap = tree->Get( &triggerNameMap, "DESYtriggerNameMap" );
@@ -263,33 +367,49 @@ int main(int argc, char** argv){
     static int     trigSize = config.ListSize(   "trigList"      );
     if( trigList != " " ) {
       bool oneTriggerFound = false;
-      for(int i=0; i<trigSize && !oneTriggerFound; ++i) {
+      bool oneFiredTrigger = false;
+      TString nameOfFired    = "";
+      TString nameOfNotFired = "";
+      for(int i=0; i<trigSize; ++i) {
 	//cout<<i<<endl;
 	string trigName = config.getString( "trigList" , i);
 	//cout<<trigName<<endl;
 	string trig = triggerNameMap[trigName];
 	//cout<<i<<" "<<trigName<<" "<<trig<<endl;
 	if( triggered.find( trig ) != triggered.end() ) {
-	  if( isData && !allowPrescale && prescaled[trig] > 1 ) continue;
+	  if(isOneProbl) cout<<run<<","<<event<<": trigger: "<<trig<<"  "<<triggered[ trig ]<<" ps:"<<prescaled[trig]<<endl;
+	  if( isData && !allowPrescale && prescaled[trig] != 1 ) continue;
 	  oneTriggerFound = true;
-	  TrigName+=trig;
-	  //cout<<"                     "<<triggered[ trig ]<<endl;
-	  if( globalFlow.keepIf(        TrigName, triggered[ trig ] ) ) {
-	    
-	    oneAltTriggerGood = true;
-	    if( isData ) {
-	      plotSet::global_event_weight = prescaled[trig];
-	      CutSet::global_event_weight  = prescaled[trig];
-	    }
+
+	  if( triggered[ trig ] ) {
+	    oneFiredTrigger=true;
+	    nameOfFired = trig;
+	  } else {
+	    if(nameOfNotFired != "") nameOfNotFired += "_";
+	    nameOfNotFired += trig;
 	  }
 	} 
       }
-      if( !oneTriggerFound ) {
+      if( oneTriggerFound ) {
+	if(oneFiredTrigger) {
+	  TrigName+=nameOfFired;
+	  globalFlow.keepIf( TrigName, true );
+	  oneAltTriggerGood = true;
+	  if( isData ) {
+	    plotSet::global_event_weight = prescaled[string(nameOfFired)];
+	    CutSet::global_event_weight  = prescaled[string(nameOfFired)];
+	  }
+	}
+	else {
+	  TrigName+=nameOfNotFired;
+	  globalFlow.keepIf( TrigName, false );
+	}
+      } else {
 	if(find( runsWithTriggerProb.begin(), runsWithTriggerProb.end(), run ) == runsWithTriggerProb.end()) {
 	  cout<<"In run "<<run<<" none of these triggers found: "<<trigList<<endl;
 	  runsWithTriggerProb.push_back(run);
 	}
-	ps.addPlot("0TriggerNotFound",40000, 160000., 200000., run);
+	ps.addPlot("0TriggerNotFound",40000, 190000., 230000., run);
 	continue;
       }
     }
@@ -297,17 +417,27 @@ int main(int argc, char** argv){
     static TString trigAltList = config.getTString( "trigAltList", " " );
     static int     trigAltSize = config.ListSize(   "trigAltList"      );
 
-    string trigAlt, trigAltAlt;
-
+    //    string trigAlt, trigAltAlt;
+    bool oneFiredTriggerAlt = false;
+    TString nameOfFiredAlt    = "";
+    TString nameOfNotFiredAlt = "";
 
     if( trigAltList != " " /*&& !trigFound */) {
       bool oneTriggerFound = false;
-      for(int i=0; i<trigAltSize && !oneTriggerFound; ++i) {
+      for(int i=0; i<trigAltSize; ++i) {
 	string trigAltName = config.getString( "trigAltList" , i);
-	trigAlt = triggerNameMap[trigAltName];
+	string trigAlt = triggerNameMap[trigAltName];
 	if( triggered.find( trigAlt ) != triggered.end() ) {
-	  if( isData && !allowPrescale && prescaled[trigAlt] > 1 ) continue;
+	  if( isData && !allowPrescale && prescaled[trigAlt] != 1 ) continue;
 	  oneTriggerFound = true;
+
+	  if( triggered[ trigAlt ] ) {
+	    oneFiredTriggerAlt=true;
+	    nameOfFiredAlt = trigAlt;
+	  } else {
+	    if(nameOfNotFiredAlt != "") nameOfNotFiredAlt += "_";
+	    nameOfNotFiredAlt += trigAlt;
+	  }
 	} 
       }
       if( !oneTriggerFound ) {
@@ -315,21 +445,37 @@ int main(int argc, char** argv){
 	  cout<<"In run "<<run<<" none of these triggers found: "<<trigAltList<<endl;
 	  runsWithAltTriggerProb.push_back(run);
 	}
-	ps.addPlot("0TriggerNotFound",40000, 160000., 200000., run);
+	ps.addPlot("0TriggerNotFound",40000, 190000., 230000., run);
 	continue;
       }
     }
     
     static TString trigAltAltList = config.getTString( "trigAltAltList", " " );
     static int     trigAltAltSize = config.ListSize(   "trigAltAltList"      );
+
+    bool oneFiredTriggerAltAlt = false;
+    TString nameOfFiredAltAlt    = "";
+    TString nameOfNotFiredAltAlt = "";
+
     if( trigAltAltList != " "/* && !trigFound */) {
       bool oneTriggerFound = false;
-      for(int i=0; i<trigAltAltSize && !oneTriggerFound; ++i) {
+//       bool oneFiredTrigger = false;
+//       TString nameOfFired    = "";
+//       TString nameOfNotFired = "";
+      for(int i=0; i<trigAltAltSize; ++i) {
 	string trigAltAltName = config.getString( "trigAltAltList" , i);
-	trigAltAlt = triggerNameMap[trigAltAltName];
+	string trigAltAlt = triggerNameMap[trigAltAltName];
 	if( triggered.find( trigAltAlt ) != triggered.end() ) {
-	  if( isData && !allowPrescale && prescaled[trigAltAlt] > 1 ) continue;
+	  if( isData && !allowPrescale && prescaled[trigAltAlt] != 1 ) continue;
 	  oneTriggerFound = true;
+
+	  if( triggered[ trigAltAlt ] ) {
+	    oneFiredTriggerAltAlt=true;
+	    nameOfFiredAltAlt = trigAltAlt;
+	  } else {
+	    if(nameOfNotFiredAltAlt != "") nameOfNotFiredAltAlt += "_";
+	    nameOfNotFiredAltAlt += trigAltAlt;
+	  }
 	} 
       }
       if( !oneTriggerFound ) {
@@ -337,22 +483,27 @@ int main(int argc, char** argv){
 	  cout<<"In run "<<run<<" none of these triggers found: "<<trigAltAltList<<endl;
 	  runsWithAltAltTriggerProb.push_back(run);
 	}
-	ps.addPlot("0TriggerNotFound",40000, 160000., 200000., run);
+	ps.addPlot("0TriggerNotFound",40000, 190000., 230000., run);
 	continue;
       }
     }
 
     //MuEl and ElMu trigger combination:
-    AltTrigName += trigAlt;
-    AltTrigName += "_or_";
-    AltTrigName += trigAltAlt;
-    if( globalFlow.keepIf(     AltTrigName, triggered[ trigAlt ] || triggered[ trigAltAlt ]) ) {
-      oneAltTriggerGood = true;
-      if( isData && prescaled[ trigAlt ] != 1 && prescaled[ trigAltAlt ] != 1) {
-	cout<<"!!! WARNING !!! Do not use OR combinations of prescaled triggers!";
-	//plotSet::global_event_weight = prescaled[ trigAlt ];
-	//CutSet::global_event_weight  = prescaled[ trigAlt ];
+    if( oneFiredTriggerAlt || oneFiredTriggerAltAlt ) {
+      AltTrigName += oneFiredTriggerAlt ? nameOfFiredAlt: nameOfNotFiredAlt;
+      AltTrigName += "_or_";
+      AltTrigName += oneFiredTriggerAltAlt ? nameOfFiredAltAlt: nameOfNotFiredAltAlt;
+      if( globalFlow.keepIf(     AltTrigName, true ) ) {
+	oneAltTriggerGood = true;
+	if( isData && prescaled[ string(nameOfFiredAlt) ] != 1 && prescaled[ string(nameOfFiredAltAlt) ] != 1) {
+	  cout<<"!!! WARNING !!! Do not use OR combinations of prescaled triggers!";
+	}
       }
+    } else {
+      AltTrigName += nameOfNotFiredAlt;
+      AltTrigName += "_or_";
+      AltTrigName += nameOfNotFiredAltAlt;
+      globalFlow.keepIf(     AltTrigName, false );
     }
 
 
@@ -360,33 +511,59 @@ int main(int argc, char** argv){
     static int     trigAltAltAltSize = config.ListSize(   "trigAltAltAltList"      );
     if( trigAltAltAltList != " "/* && !trigFound */) {
       bool oneTriggerFound = false;
-      for(int i=0; i<trigAltAltAltSize && !oneTriggerFound; ++i) {
+      bool oneFiredTrigger = false;
+      TString nameOfFired    = "";
+      TString nameOfNotFired = "";
+      for(int i=0; i<trigAltAltAltSize; ++i) {
 	string trigAltAltAltName = config.getString( "trigAltAltAltList" , i);
 	string trigAltAltAlt = triggerNameMap[trigAltAltAltName];
 	if( triggered.find( trigAltAltAlt ) != triggered.end() ) {
-	  if( isData && !allowPrescale && prescaled[trigAltAltAlt] > 1 ) continue;
+	  if( isData && !allowPrescale && prescaled[trigAltAltAlt] != 1 ) continue;
 	  oneTriggerFound = true;
-	  AltAltAltTrigName+=trigAltAltAlt;
-	  if( globalFlow.keepIf(  AltAltAltTrigName, triggered[ trigAltAltAlt ] ) ) {
-	    oneAltTriggerGood = true;
-	    if( isData ) {
-	      plotSet::global_event_weight = prescaled[trigAltAltAlt];
-	      CutSet::global_event_weight  = prescaled[trigAltAltAlt];
-	    }
+	  if( triggered[ trigAltAltAlt ] ) {
+	    oneFiredTrigger=true;
+	    nameOfFired = trigAltAltAlt;
+	  } else {
+	    if(nameOfNotFired != "") nameOfNotFired += "_";
+	    nameOfNotFired += trigAltAltAlt;
 	  }
+// 	  AltAltAltTrigName+=trigAltAltAlt;
+// 	  if( globalFlow.keepIf(  AltAltAltTrigName, triggered[ trigAltAltAlt ] ) ) {
+// 	    oneAltTriggerGood = true;
+// 	    if( isData ) {
+// 	      plotSet::global_event_weight = prescaled[trigAltAltAlt];
+// 	      CutSet::global_event_weight  = prescaled[trigAltAltAlt];
+// 	    }
+// 	  }
 	} 
       }
-      if( !oneTriggerFound ) {
+      if( oneTriggerFound ) {
+	if(oneFiredTrigger) {
+	  AltAltAltTrigName+=nameOfFired;
+	  globalFlow.keepIf( AltAltAltTrigName, true );
+	  oneAltTriggerGood = true;
+	  if( isData ) {
+	    plotSet::global_event_weight = prescaled[string(nameOfFired)];
+	    CutSet::global_event_weight  = prescaled[string(nameOfFired)];
+	  }
+	}
+	else {
+	  AltAltAltTrigName+=nameOfNotFired;
+	  globalFlow.keepIf( AltAltAltTrigName, false );
+	}
+      } else {
 	if(find( runsWithAltAltAltTriggerProb.begin(), runsWithAltAltAltTriggerProb.end(), run ) == runsWithAltAltAltTriggerProb.end()) {
 	  cout<<"In run "<<run<<" none of these triggers found: "<<trigAltAltAltList<<endl;
 	  runsWithAltAltAltTriggerProb.push_back(run);
 	}
-	ps.addPlot("0TriggerNotFound",40000, 160000., 200000., run);
+	ps.addPlot("0TriggerNotFound",40000, 190000., 230000., run);
 	continue;
       }
     }
 
     if( quick && !oneAltTriggerGood ) continue;
+
+    if(isOneProbl) cout<<run<<","<<event<<": trigger survived"<<endl;
 
     //cout<<"Trigger stuff survived."<<endl;
 
@@ -405,8 +582,9 @@ int main(int argc, char** argv){
 			                	    RA6_selectedMu.size()    >=1 &&
 				                    RA6_selectedEl.size()    >=1 ) ) isMuEl=true;
     if(  globalFlow.keepIf( "at_least_2_electrons", RA6_selectedEl.size()    >=2 ) ) isElEl=true;
-
+    if(isOneProbl) cout<<run<<","<<event<<": "<<RA6_selectedMu.size()<<" muons, "<<RA6_selectedEl.size()<<" electrons"<<endl;
     if( !isMuMu && !isMuEl && !isElEl && quick ) continue;
+    if(isOneProbl) cout<<run<<","<<event<<": dilepton survived"<<endl;
 
     jetsPF_RA6   ( tree, RA6_selectedJet, RA6_Jet_selectionCuts );
 
@@ -414,6 +592,7 @@ int main(int argc, char** argv){
     TString nJ_cutString = "nJets>=";
     nJ_cutString+=nJet_min;
     if(      !globalFlow.keepIf( nJ_cutString     , int(RA6_selectedJet.size()) >= nJet_min ) && quick ) continue;
+    if(isOneProbl) cout<<run<<","<<event<<": njets survived: "<<RA6_selectedJet.size()<<" jets"<<endl;
 
     TString JetP4name=JetCollection;
     JetP4name += "CorrectedP4Pat";
@@ -422,6 +601,14 @@ int main(int argc, char** argv){
     vector<LorentzM>& JetsPF    = tree->Get( &JetsPF   , JetP4name                   );
     vector<LorentzM>& Electrons = tree->Get( &Electrons, "electronP4Pat"             );
     vector<LorentzM>& Muons     = tree->Get( &Muons    , "muonP4Pat"                 );
+
+    if(isOneProbl) cout<<run<<","<<event<<": Before X cleaning"<<endl;
+    for(unsigned m=0; m<RA6_selectedMu.size(); ++m) 
+      if(isOneProbl) cout<<"  Muons:"<<Muons.at(RA6_selectedMu.at(m)).Pt()<<", "<<Muons.at(RA6_selectedMu.at(m)).Eta()<<", "<<Muons.at(RA6_selectedMu.at(m)).Phi()<<", "<<Muons.at(RA6_selectedMu.at(m)).E()<<endl;
+    for(unsigned m=0; m<RA6_selectedEl.size(); ++m) 
+      if(isOneProbl) cout<<"  Electrons:"<<Electrons.at(RA6_selectedEl.at(m)).Pt()<<", "<<Electrons.at(RA6_selectedEl.at(m)).Eta()<<", "<<Electrons.at(RA6_selectedEl.at(m)).Phi()<<", "<<Electrons.at(RA6_selectedEl.at(m)).E()<<endl;
+    for(unsigned m=0; m<RA6_selectedJet.size(); ++m) 
+      if(isOneProbl) cout<<"  JetsPF:"<<JetsPF.at(RA6_selectedJet.at(m)).Pt()<<", "<<JetsPF.at(RA6_selectedJet.at(m)).Eta()<<", "<<JetsPF.at(RA6_selectedJet.at(m)).Phi()<<", "<<JetsPF.at(RA6_selectedJet.at(m)).E()<<endl;
 
     //Jet smearing:
     double sumJetPx = 0;
@@ -532,6 +719,12 @@ int main(int argc, char** argv){
       }
     }
 
+    for(int m=0; m<RA6_selectedMu.size(); ++m)
+      for(int e=0; e<RA6_selectedEl.size(); ++e)
+	ps.addPlot("dR_Mu_El", 500, 0., 5.,
+		   DeltaR( Muons.at(RA6_selectedMu.at(m)), Electrons.at(RA6_selectedEl.at(e)) ) );
+    
+
     crossCleaning_RA6( tree,
 		       RA6_selectedMu   , RA6_Mu_selectionCuts,
 		       RA6_selectedEl   , RA6_El_selectionCuts,
@@ -548,6 +741,20 @@ int main(int argc, char** argv){
 		   DeltaR( JetsPF.at(RA6_selectedJet.at(j)), Electrons.at(RA6_selectedEl.at(e)) ) );
       }
     }
+    
+    for(int m=0; m<RA6_selectedMu.size(); ++m)
+      for(int e=0; e<RA6_selectedEl.size(); ++e)
+	ps.addPlot("dR_Mu_El_afterCC", 500, 0., 5.,
+		   DeltaR( Muons.at(RA6_selectedMu.at(m)), Electrons.at(RA6_selectedEl.at(e)) ) );
+
+    if(isOneProbl) cout<<run<<","<<event<<": After X cleaning"<<endl;
+    for(unsigned m=0; m<RA6_selectedMu.size(); ++m) 
+      if(isOneProbl) cout<<"  Muons:"<<Muons.at(RA6_selectedMu.at(m)).Pt()<<", "<<Muons.at(RA6_selectedMu.at(m)).Eta()<<", "<<Muons.at(RA6_selectedMu.at(m)).Phi()<<", "<<Muons.at(RA6_selectedMu.at(m)).E()<<endl;
+    for(unsigned m=0; m<RA6_selectedEl.size(); ++m) 
+      if(isOneProbl) cout<<"  Electrons:"<<Electrons.at(RA6_selectedEl.at(m)).Pt()<<", "<<Electrons.at(RA6_selectedEl.at(m)).Eta()<<", "<<Electrons.at(RA6_selectedEl.at(m)).Phi()<<", "<<Electrons.at(RA6_selectedEl.at(m)).E()<<endl;
+    for(unsigned m=0; m<RA6_selectedJet.size(); ++m) 
+      if(isOneProbl) cout<<"  JetsPF:"<<JetsPF.at(RA6_selectedJet.at(m)).Pt()<<", "<<JetsPF.at(RA6_selectedJet.at(m)).Eta()<<", "<<JetsPF.at(RA6_selectedJet.at(m)).Phi()<<", "<<JetsPF.at(RA6_selectedJet.at(m)).E()<<endl;
+
 
     //redo object multiplicity cuts after cross cleaning
     isMuMu=false;
@@ -560,11 +767,13 @@ int main(int argc, char** argv){
     if(  globalFlow.keepIf( "at_least_2_electrons_CC", RA6_selectedEl.size()    >=2 ) ) isElEl=true;
 
     if( !isMuMu && !isMuEl && !isElEl && quick ) continue;
+    if(isOneProbl) cout<<run<<","<<event<<": dilepton after CC survived"<<endl;
+
     ps.addPlot("JetMult_afterCC", "JetMult(before cut, after CC)", 15, 0., 15., RA6_selectedJet.size(), "multiplicity of selected jets", "events");
 
     nJ_cutString+="_CC";
     if(      !globalFlow.keepIf( nJ_cutString    , int(RA6_selectedJet.size()) >= nJet_min ) && quick ) continue;
-
+    if(isOneProbl) cout<<run<<","<<event<<": njets after CC survived"<<endl;
     //cout<<"mu&elsP2 survived."<<endl;
 
 
@@ -596,12 +805,13 @@ int main(int argc, char** argv){
     MET_cutString        += MET_min;
     ps.addPlot(MET_cutString, "MET(before cut)", 50, 0., 500., metP4PF->Et(), "MET [GeV]", "events");
     if( !globalFlow.keepIf( MET_cutString, metP4PF->Et()    >= MET_min ) && quick ) continue;
-
+    if(isOneProbl) cout<<run<<","<<event<<": HT and MET survived"<<endl;
 
     vector<int>& El_charge = tree->Get( &El_charge, "electronChargePat" );
     double minDPhi_MET_El = 100;
     vector<pair<unsigned, unsigned> > highPtOSElElPairs;
     if( globalFlow.keepIf("at_least_1_ElEl_pair", isElEl) ) {
+      if(isOneProbl) cout<<run<<","<<event<<": has 1 ElEl pair."<<endl;
       for( size_t el1=0; el1<RA6_selectedEl.size()-1; ++el1 ) {
 	if( Electrons.at( RA6_selectedEl[el1] ).pt() <= lept_pt_min_high ) continue;
 
@@ -626,6 +836,7 @@ int main(int argc, char** argv){
     double minDPhi_MET_Mu = 100;
     vector<pair<unsigned, unsigned> > highPtOSMuMuPairs;
     if( globalFlow.keepIf("at_least_1_MuMu_pair", isMuMu) ) {
+      if(isOneProbl) cout<<run<<","<<event<<": has 1 MuMu pair."<<endl;
       for( size_t mu1=0; mu1<RA6_selectedMu.size()-1; ++mu1 ) {
 	if( Muons.at( RA6_selectedMu[mu1] ).pt() <= lept_pt_min_high ) continue;
 
@@ -648,6 +859,7 @@ int main(int argc, char** argv){
 
     vector<pair<unsigned, unsigned> > highPtOSMuElPairs;
     if( globalFlow.keepIf("at_least_1_MuEl_pair", isMuEl) ) {
+      if(isOneProbl) cout<<run<<","<<event<<": has 1 MuEl pair."<<endl;
       for( size_t mu=0; mu<RA6_selectedMu.size(); ++mu ) {
 	for( size_t el=0; el<RA6_selectedEl.size(); ++el ) {
 	  if( Muons.    at( RA6_selectedMu[mu] ).pt() <= lept_pt_min_high  &&
@@ -663,18 +875,19 @@ int main(int argc, char** argv){
     }
 
     if( !globalFlow.keepIf( "highPtOSleptPair", highPtOSElElPairs.size()+highPtOSMuMuPairs.size()+highPtOSMuElPairs.size()>0 ) && quick ) continue;
+    if(isOneProbl) cout<<run<<","<<event<<": highPtOSpair survived"<<endl;
 
-    globalFlow.keepIf( "highPtOSMuMuPair", highPtOSMuMuPairs.size() > 0 );
-    globalFlow.keepIf( "highPtOSMuElPair", highPtOSMuElPairs.size() > 0 );
-    globalFlow.keepIf( "highPtOSElElPair", highPtOSElElPairs.size() > 0 );
+    if(globalFlow.keepIf( "highPtOSMuMuPair", highPtOSMuMuPairs.size() > 0 ) && isOneProbl ) cout<<run<<","<<event<<": is MuMu"<<endl;
+    if(globalFlow.keepIf( "highPtOSMuElPair", highPtOSMuElPairs.size() > 0 ) && isOneProbl ) cout<<run<<","<<event<<": is MuEl"<<endl;
+    if(globalFlow.keepIf( "highPtOSElElPair", highPtOSElElPairs.size() > 0 ) && isOneProbl ) cout<<run<<","<<event<<": is ElEl"<<endl;
 
     //cout<<"directly before final cuts"<<endl;
 
-    vector<float>& TCHE_bTag   = tree->Get(&TCHE_bTag  , JetCollection+"TrkCountingHighEffBJetTagsPat");
+    vector<float>& TCHE_bTag  = tree->Get(&TCHE_bTag , JetCollection+"TrkCountingHighEffBJetTagsPat");
 
     vector<unsigned> bTagedJets;
     for(size_t j=0; j<RA6_selectedJet.size(); ++j) 
-      if(TCHE_bTag.at(RA6_selectedJet.at(j)) > TCHEbTag_cutVal)
+      if(TCHE_bTag.at(RA6_selectedJet.at(j)) >TCHEbTag_cutVal)
 	bTagedJets.push_back(RA6_selectedJet.at(j));
     
     globalFlow.keepIf("exact2bTags", bTagedJets.size()==2 );
@@ -682,8 +895,10 @@ int main(int argc, char** argv){
     if(quick || globalFlow.applyCuts("RA6 common cuts", 
 		"HBHEnoiseNoIsoFilter hcalLaserFilter at_least_1_vertex FracOfHPtracks trackFailFilter ecalDeadCellFilter beamHaloCSCFilter eeBadSCFilter "+nJ_cutString+" "+HT_cutString+" "+MET_cutString ) ) {
       
+      if(isOneProbl) cout<<run<<","<<event<<": common cuts survived. Trig: "<<TrigName<<endl;
+
       //MuMu:
-     if(globalFlow.applyCuts("RA6 MuMu",
+      if(globalFlow.applyCuts("RA6 MuMu",
 			      TrigName+" at_least_1_MuMu_pair highPtOSMuMuPair")) isRA6highPtMuMu=true;
 
       //MuEl:
@@ -702,39 +917,64 @@ int main(int argc, char** argv){
 
     TString top="";
     LorentzM firstLept, secondLept;
-
+    double maxDiLeptonPtSum=0.;
     if( isRA6highPtMuMu ) {
+      if(isOneProbl) cout<<"isRA6highPtMuMu"<<endl;
+      int thisPair=-1;
+      for(unsigned pr=0; pr<highPtOSMuMuPairs.size(); ++pr) {
+	if(maxDiLeptonPtSum < Muons.at( highPtOSMuMuPairs.at(pr).first).pt() + Muons.at(highPtOSMuMuPairs.at(pr).second).pt() ) {
+	  maxDiLeptonPtSum = Muons.at( highPtOSMuMuPairs.at(pr).first).pt() + Muons.at(highPtOSMuMuPairs.at(pr).second).pt();
+	  thisPair=pr;
+	}
+      }
       top = "RA6MuMu";
-      if( Mu_charge.at(highPtOSMuMuPairs[0].first) == -1 ) {
-	firstLept  = Muons.at( highPtOSMuMuPairs[0].first  );
-	secondLept = Muons.at( highPtOSMuMuPairs[0].second );
+      if( Mu_charge.at(highPtOSMuMuPairs[thisPair].first) == -1 ) {
+	firstLept  = Muons.at( highPtOSMuMuPairs[thisPair].first  );
+	secondLept = Muons.at( highPtOSMuMuPairs[thisPair].second );
       } else {
-	firstLept  = Muons.at( highPtOSMuMuPairs[0].second );
-	secondLept = Muons.at( highPtOSMuMuPairs[0].first  );
+	firstLept  = Muons.at( highPtOSMuMuPairs[thisPair].second );
+	secondLept = Muons.at( highPtOSMuMuPairs[thisPair].first  );
       }
-      ps.addPlot(HT_cutString+"MuMu", "HT(after MuMu cuts)", 80, 0., 800., HT_selectedJet, "HT(selected jets) [GeV]", "events");
     }
-    else if ( isRA6highPtElEl ) {
-      top = "RA6ElEl";
-      if( El_charge.at(highPtOSElElPairs[0].first) == -1 ) {
-	firstLept  = Electrons.at( highPtOSElElPairs[0].first  );
-	secondLept = Electrons.at( highPtOSElElPairs[0].second );
-      } else {
-	firstLept  = Electrons.at( highPtOSElElPairs[0].second );
-	secondLept = Electrons.at( highPtOSElElPairs[0].first  );
+    if ( isRA6highPtElEl ) {
+      if(isOneProbl) cout<<"isRA6highPtElEl"<<endl;
+      int thisPair=-1;
+      for(unsigned pr=0; pr<highPtOSElElPairs.size(); ++pr) {
+	if(maxDiLeptonPtSum < Electrons.at( highPtOSElElPairs.at(pr).first).pt() + Electrons.at(highPtOSElElPairs.at(pr).second).pt() ) {
+	  maxDiLeptonPtSum = Electrons.at( highPtOSElElPairs.at(pr).first).pt() + Electrons.at(highPtOSElElPairs.at(pr).second).pt();
+	  thisPair=pr;
+	}
       }
-      ps.addPlot(HT_cutString+"ElEl", "HT(after ElEl cuts)", 80, 0., 800., HT_selectedJet, "HT(selected jets) [GeV]", "events");
+      if(thisPair>=0) {
+	top = "RA6ElEl";
+	if( El_charge.at(highPtOSElElPairs[0].first) == -1 ) {
+	  firstLept  = Electrons.at( highPtOSElElPairs[0].first  );
+	  secondLept = Electrons.at( highPtOSElElPairs[0].second );
+	} else {
+	  firstLept  = Electrons.at( highPtOSElElPairs[0].second );
+	  secondLept = Electrons.at( highPtOSElElPairs[0].first  );
+	}
+      }
     }
-    else if ( isRA6highPtMuEl ) {
-      top = "RA6MuEl";
-      if( Mu_charge.at(highPtOSMuElPairs[0].first) == -1 ) {
-	firstLept  = Muons    .at( highPtOSMuElPairs[0].first  );
-	secondLept = Electrons.at( highPtOSMuElPairs[0].second );
-      } else {
-	firstLept  = Electrons.at( highPtOSMuElPairs[0].second );
-	secondLept = Muons    .at( highPtOSMuElPairs[0].first  );
+    if ( isRA6highPtMuEl ) {
+      if(isOneProbl) cout<<"isRA6highPtMuEl"<<endl;
+      int thisPair=-1;
+      for(unsigned pr=0; pr<highPtOSMuElPairs.size(); ++pr) {
+	if(maxDiLeptonPtSum < Muons.at( highPtOSMuElPairs.at(pr).first).pt() + Electrons.at(highPtOSMuElPairs.at(pr).second).pt() ) {
+	  maxDiLeptonPtSum = Muons.at( highPtOSMuElPairs.at(pr).first).pt() + Electrons.at(highPtOSMuElPairs.at(pr).second).pt();
+	  thisPair=pr;
+	}
       }
-      ps.addPlot(HT_cutString+"MuEl", "HT(after MuEl cuts)", 80, 0., 800., HT_selectedJet, "HT(selected jets) [GeV]", "events");
+      if(thisPair>=0) {
+	top = "RA6MuEl";
+	if( Mu_charge.at(highPtOSMuElPairs[0].first) == -1 ) {
+	  firstLept  = Muons    .at( highPtOSMuElPairs[0].first  );
+	  secondLept = Electrons.at( highPtOSMuElPairs[0].second );
+	} else {
+	  firstLept  = Electrons.at( highPtOSMuElPairs[0].second );
+	  secondLept = Muons    .at( highPtOSMuElPairs[0].first  );
+	}
+      }
     }
 
 
@@ -747,32 +987,36 @@ int main(int argc, char** argv){
 
     //vector<float>& TCHE_bTag   = tree->Get(&TCHE_bTag  , JetCollection+"TrkCountingHighEffBJetTagsPat");
 
-
+    vector<float>& CSV_bTag   = tree->Get(&CSV_bTag  , JetCollection+"CombinedSecondaryVertexBJetTagsPat");
     int numBTags=0;
 
     double DphiMetClosestJet=1000.;
     double selectedPz=0;
+    LorentzM selctedVecSum;
+
     for(size_t j=0; j<RA6_selectedJet.size(); ++j) {
       selectedPz += JetsPF.at(RA6_selectedJet.at(j)).Pz();
-      if(TCHE_bTag.at(RA6_selectedJet.at(j)) > TCHEbTag_cutVal) ++numBTags;
+      selctedVecSum += JetsPF.at(RA6_selectedJet.at(j));
+      if(CSV_bTag.at(RA6_selectedJet.at(j)) > CSVbTag_cutVal) ++numBTags;
       if(fabs(DeltaPhi( JetsPF.at(RA6_selectedJet.at(j)), *metP4PF ) ) < DphiMetClosestJet )
 	DphiMetClosestJet = fabs(DeltaPhi( JetsPF.at(RA6_selectedJet.at(j)), *metP4PF ) );
     }
     double DphiMetClosestMuon=1000.;
     for(size_t m=0; m<RA6_selectedMu.size(); ++m) {
       selectedPz += Muons.at(RA6_selectedMu.at(m)).Pz();
+      selctedVecSum += Muons.at(RA6_selectedMu.at(m));
       if(fabs(DeltaPhi( Muons.at(RA6_selectedMu.at(m)), *metP4PF ) ) < DphiMetClosestMuon )
 	DphiMetClosestMuon = fabs(DeltaPhi( Muons.at(RA6_selectedMu.at(m)), *metP4PF ) );
     }
     double DphiMetClosestElectron=1000.;
     for(size_t el=0; el<RA6_selectedEl.size(); ++el) {
       selectedPz += Electrons.at(RA6_selectedEl.at(el)).Pz();
+      selctedVecSum += Electrons.at(RA6_selectedEl.at(el));
       if(fabs(DeltaPhi( Electrons.at(RA6_selectedEl.at(el)), *metP4PF ) ) < DphiMetClosestElectron )
 	DphiMetClosestElectron = fabs(DeltaPhi( Electrons.at(RA6_selectedEl.at(el)), *metP4PF ) );
     }
-    unsigned event = tree->Get(event,"event");
-    unsigned lumi  = tree->Get(lumi ,"lumiSection");
 
+    if(isOneProbl) cout<<run<<","<<event<<": to be stored in top: "<<top<<endl;
     plotsId->addLeaf( top, "cos",      cosThetaAngle                   );
     plotsId->addLeaf( top, "p1p2",     absmultp1p2                     );
     plotsId->addLeaf( top, "p1",       sqrt( firstLept.Vect().mag2() ) );
@@ -798,6 +1042,8 @@ int main(int argc, char** argv){
     plotsId->addLeaf( top, "phi2",      secondLept.phi()    );
     plotsId->addLeaf( top, "energy2",   secondLept.energy() );
 
+    plotsId->addLeaf( top, "deltaR",    DeltaR(firstLept,secondLept) );
+
 //     plotsId->addLeaf( top, "minDphiJetMET",     DphiMetClosestJet        );
 //     plotsId->addLeaf( top, "minDphiElMET" ,     DphiMetClosestElectron   );
 //     plotsId->addLeaf( top, "minDphiMuMET" ,     DphiMetClosestMuon       );
@@ -812,7 +1058,9 @@ int main(int argc, char** argv){
        plotsId->addLeaf( top+"ZWIN", "METPF_Zwindow"  ,      metP4PF->Et()     );
      }
 
-    plotsId->addLeaf( top, "selectedPz"  ,      selectedPz        );
+    plotsId->addLeaf( top, "selectedPz"   , selectedPz    );
+    plotsId->addLeaf( top, "selctedVecSum", selctedVecSum.mass() );
+
     //cout<<((*metP4PF)-JetVecSum+smearedJetVecSum).Et()<<endl;
   
     //cout<<"met: "<<(*metP4PF).Px()<<"  "<<(*metP4PF).Py()<<"  "<<(*metP4PF).Pz()<<"  "<<(*metP4PF).E()<<endl;

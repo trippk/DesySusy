@@ -10,22 +10,15 @@ using namespace std;
 bool jetsPF_RA6(EasyChain* tree, vector<unsigned>& selJet, CutSet& selCut) {
 
   ConfigReader config;
-  // static since we read only once
 
   static TString JetCollection = config.getTString( "JetCollection", "ak5JetPF" );//ak5JetPF2PAT
   static float jet_pt_min      = config.getFloat("jet_pt_min", 40);
-  static float jet_eta_max     = config.getDouble("jet_eta_max",   2.5);
+  static float jet_eta_max     = config.getDouble("jet_eta_max",   3.);
   static bool  quick           = config.getBool("quick",false);
-  static bool  isOldNtuple     = config.getBool("isOldNtuple",false);
-  // the muon collection
 
-  typedef LorentzM LOR;
-  //if(isOldNtuple) 
-  //typedef LorentzV LOR;
-  
   TString JetP4name=JetCollection;
   JetP4name += "CorrectedP4Pat";
-  vector<LOR>& JetsPF    = tree->Get( &JetsPF   , JetP4name );
+  vector<LorentzM>& JetsPF    = tree->Get( &JetsPF   , JetP4name );
 
   float HTPF = 0; 
   for( unsigned jet=0; jet<JetsPF.size(); ++jet ) {

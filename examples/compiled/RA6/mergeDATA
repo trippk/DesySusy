@@ -2,7 +2,8 @@
 
 setName=$1
 #target=/afs/naf.desy.de/user/s/schettle/scratch/AnalysisTrees/whole2011_RA6
-target=/scratch/hh/current/cms/user/schettle/AnalysisTrees/whole2011_RA6
+#target=/scratch/hh/current/cms/user/schettle/AnalysisTrees/whole2011_RA6
+target=/scratch/hh/current/cms/user/schettle/AnalysisTrees/first2012_RA6
 
 if [ "$setName" = "" ]; then
 	echo "please define setName or cancel [Ctrl c]."
@@ -15,13 +16,11 @@ echo "merge DoubleMu set ${setName}? [y/n/all]"
 read go
 
 if [ "$go" = "y" -o "$go" = "all" ]; then
-    mkdir ${target}/${setName}_DoubleMu_May10_PRv4_05Aug_PRv6_RunB
-    hadd -f ${target}/${setName}_DoubleMu_May10_PRv4_05Aug_PRv6_RunB/out.root \
-	${target}/${setName}_DoubleMuMay10/out.root \
-	${target}/${setName}_DoubleMuPRv4/out.root \
-	${target}/${setName}_DoubleMu05Aug/out.root \
-	${target}/${setName}_DoubleMuPRv6/out.root \
-	${target}/${setName}_DoubleMuRunB/out.root
+    mkdir ${target}/${setName}_DoubleMu_A_B_C
+    hadd -f ${target}/${setName}_DoubleMu_A_B_C/out.root \
+	${target}/${setName}_DoubleMuA/out.root \
+	${target}/${setName}_DoubleMuB/out.root \
+	${target}/${setName}_DoubleMuC/out.root
 fi
 
 if [ "$go" != "all" ]; then
@@ -29,13 +28,11 @@ if [ "$go" != "all" ]; then
     read go
 fi
 if [ "$go" = "y" -o "$go" = "all" ]; then
-    mkdir ${target}/${setName}_DoubleElectron_May10_PRv4_05Aug_PRv6_RunB
-    hadd -f ${target}/${setName}_DoubleElectron_May10_PRv4_05Aug_PRv6_RunB/out.root \
-	${target}/${setName}_DoubleElectronMay10/out.root \
-	${target}/${setName}_DoubleElectronPRv4/out.root \
-	${target}/${setName}_DoubleElectron05Aug/out.root \
-	${target}/${setName}_DoubleElectronPRv6/out.root \
-	${target}/${setName}_DoubleElectronRunB/out.root
+    mkdir ${target}/${setName}_DoubleElectron_A_B_C
+    hadd -f ${target}/${setName}_DoubleElectron_A_B_C/out.root \
+	${target}/${setName}_DoubleElectronA/out.root \
+	${target}/${setName}_DoubleElectronB/out.root \
+	${target}/${setName}_DoubleElectronC/out.root
 fi
 
 if [ "$go" != "all" ]; then
@@ -43,12 +40,10 @@ if [ "$go" != "all" ]; then
     read go
 fi
 if [ "$go" = "y" -o "$go" = "all" ]; then
-    mkdir ${target}/${setName}_MuEG_May10_PRv4_05Aug_PRv6_RunB
-    hadd -f ${target}/${setName}_MuEG_May10_PRv4_05Aug_PRv6_RunB/out.root \
-        ${target}/${setName}_MuEGMay10/out.root \
-        ${target}/${setName}_MuEGPRv4/out.root \
-        ${target}/${setName}_MuEG05Aug/out.root \
-        ${target}/${setName}_MuEGPRv6/out.root \
-        ${target}/${setName}_MuEGRunB/out.root
+    mkdir ${target}/${setName}_MuEG_A_B_C
+    hadd -f ${target}/${setName}_MuEG_A_B_C/out.root \
+        ${target}/${setName}_MuEGA/out.root \
+        ${target}/${setName}_MuEGB/out.root \
+        ${target}/${setName}_MuEGC/out.root
 fi
 

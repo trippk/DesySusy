@@ -23,6 +23,9 @@ else
     exit
 fi
 
+#get PU info from RA4b
+PUfile=/afs/naf.desy.de/user/s/schettle/macro/CMSSW_5_2_5/src/DesySusyExamples/ra4b_2012/pu_config.txt
+
 if [ "$setName" = "" ]; then
 	echo "please define setName or cancel [Ctrl c]."
 	read setName
@@ -59,9 +62,25 @@ for (( i=1; i<=$sampleCounter; ++i )); do
 	    mkdir ${target}/${setName}_${sampleName[$i]}
 	fi
 	cd ${target}/${setName}_${sampleName[$i]}
-	${scriptLoc}/./runOnAll2 ${sampleSource[$i]} \
-	    ${codeLoc}/myAnalysis ${codeLoc}/${sampleConfig[$i]} \
-	    cleanUp nFiles=${sampleNfiles[$i]}
+	if [ ! -d "${codeLoc}/ConfigTMP" ]; then
+	    mkdir -p ${codeLoc}/ConfigTMP
+	fi
+	cp ${codeLoc}/${sampleConfig[$i]} ${codeLoc}/ConfigTMP
+
+	while read line
+	  do
+	  if [[ $line == ${dataPU}* ]]; then
+	      echo $line >> ${codeLoc}/ConfigTMP/config.txt
+	  fi
+	  echo >> ${codeLoc}/ConfigTMP/config.txt
+	  if [[ $line == ${samplePU[$i]}* ]]; then
+	      #echo $line
+	      echo ${line/${samplePU[$i]}/PU_MC} >> ${codeLoc}/ConfigTMP/config.txt
+	  fi
+	done < $PUfile
+#	${scriptLoc}/./runOnAll2 ${sampleSource[$i]} \
+#	    ${codeLoc}/myAnalysis ${codeLoc}/ConfigTMP/config.txt \
+#	    cleanUp nFiles=${sampleNfiles[$i]}
 	echo
     fi
 done
