@@ -45,7 +45,7 @@
 #include "systematics_RA4b.h"
 #include "makeSystematics.h"
 #include "CMSSW_5_3_3_patch2/src/CondFormats/JetMETObjects/interface/JetCorrectorParameters.h"
-#include "CMSSW_5_3_3_patch2/src/CondFormats/JetMETObjects/interface/SimpleJetCorrectionUncertainty.h"
+#include "CMSSW_5_3_3_patch2/src/CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h"
 #include "Utilities.cc"
 #include "JetCorrectorParameters.cc"
 #include "SimpleJetCorrectionUncertainty.cc"
