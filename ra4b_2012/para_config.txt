@@ -1,7 +1,7 @@
 # xs_<sample name>_<sub sample name> -> Cross Section  of the
 #corresponding <sample name><sub sample name>
 xs_TTJets_SUMMER12           = 225.97
-xs_TTJets_SUMMER12v2         = 225.97
+xs_TTJets_SUMMER12POWHEG     = 225.97
 xs_TTJets_SUMMER12SemiL      = 225.97
 xs_TTJets_SUMMER12DiL        = 225.97
 xs_T2tt_t500n100             = 0.0855847
@@ -20,15 +20,15 @@ xs_LM6_NoSub                 = 0.70658
 xs_LM9_NoSub                 = 13.0018
 
 #(T)otal (N)umber (o)f (E)vents 
-TNoE_TTJets_SUMMER12           = 7256324
-TNoE_TTJets_SUMMER12v2         = 6923750
+TNoE_TTJets_SUMMER12           = 6923750
+TNoE_TTJets_SUMMER12POWHEG     = 21675970
 TNoE_TTJets_SUMMER12SemiL      = 6923750
 TNoE_TTJets_SUMMER12DiL        = 6923750
 TNoE_T2tt_t500n100             = 49997
 TNoE_T2tt_t650n200             = 49999
 TNoE_T2tt_t750n400             = 49997
 TNoE_T2tt_t780n180             = 49997
-TNoE_DYJets_M-50               = 30461028
+TNoE_DYJets_M-50               = 30459507
 TNoE_WJetsToLNu_NoSub          = 18393090
 TNoE_SingleTop_T-s-channel     = 259961
 TNoE_SingleTop_T-t-channel     = 23777
@@ -41,7 +41,7 @@ TNoE_LM9_NoSub                 = 1000080
 
 #(F)ilter (E)fficiency
 FE_TTJets_SUMMER12           = 1
-FE_TTJets_SUMMER12v2         = 1
+FE_TTJets_SUMMER12POWHEG     = 1
 FE_TTJets_SUMMER12SemiL      = 1
 FE_TTJets_SUMMER12DiL        = 1
 FE_T2tt_t500n100             = 1
