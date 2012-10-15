@@ -146,8 +146,7 @@ bool makeSoftMuons(EasyChain* tree, vector<Muon>& AllMuons, vector<Muon*>& SoftM
   static float  PTMIN          =  config.getFloat("SoftMuons_PTMIN",  15. ); //
   static float  ETAMAX         = config.getFloat("SoftMuons_ETAMAX", 2.4 );  //
   static int NValidPixelHitsMIN=config.getInt("SoftMuons_NValidPixelHitsMIN",1); //
-  static float PFIsoCut          =config.getInt("SoftPFIsoCutMIN",0.2); //
-
+  static float PFIsoCut          =config.getFloat("SoftPFIsoCutMIN",0.2); //
   //====================================================================
 
   if(pcp)cout<<"inside softMuons_RA4b"<<endl;
@@ -158,10 +157,6 @@ bool makeSoftMuons(EasyChain* tree, vector<Muon>& AllMuons, vector<Muon*>& SoftM
   //=============================================
   // THE MUON COLLECTION
   //=============================================
-
-
-  //vector<LorentzM>& p4           = tree->Get( &p4,            "muonP4Pat");
-
   vector<int>&      IsGlobal     = tree->Get( &IsGlobal,      "muonIsGlobalMuonPat" );
   vector<int>&      IsTracker    = tree->Get( &IsGlobal,      "muonIsTrackerMuonPat" );
   vector<int>&      OneStationTight = tree->Get(&OneStationTight,"muonTMOneStationTightPat");
@@ -170,8 +165,6 @@ bool makeSoftMuons(EasyChain* tree, vector<Muon>& AllMuons, vector<Muon*>& SoftM
   vector<float>&    D0_track     = tree->Get( &D0_track,      "muonInnerTrackDxyPat");
   vector<float>&    DZ_track     = tree->Get( &DZ_track,      "muonInnerTrackDzPat");
   vector<unsigned int>& NValidPixelHits = tree->Get(&NValidPixelHits,"muonNumberOfValidPixelHitsPat");
-
-
 
   /* 
   vector<int>&      Mu_charge   = tree->Get( &Mu_charge,    "muonChargePat");
@@ -274,8 +267,10 @@ bool makeTightMuons(EasyChain* tree, vector<Muon>& AllMuons,vector<Muon*>& Tight
   //static int NValidMuonHitsMIN = config.getInt("TightMuons_NValidMuonHitsMIN", 1); // ??
   static int NMatchedStationsMIN=config.getInt("TightMuons_NMatchedStationsMIN",1); //
   static float dxyVertexMAX = config.getFloat("TightMuons_dxyVertexMAX", 0.02); //
+  //
   static float dzVertexMAX = config.getFloat("TightMuons_dzVertexMAX", 0.5); //
   static int NValidPixelHitsMIN=config.getInt("TightMuons_NValidPixelHitsMIN",0); //
+  //
   static int NTrackerLayersMIN=config.getInt("TightMuons_NTrackerLayersMIN",5); //
   static float PFIsoCut          =config.getFloat("TightMuonPFIsoCutMIN",0.12); //
 

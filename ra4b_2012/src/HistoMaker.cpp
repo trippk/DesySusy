@@ -120,6 +120,13 @@ void HistoMaker::MakePlots( const TString& cutName, vector<Muon*> muons, vector<
     ElePt[cutName] = new TH1D(hname+"ElePt","Pt of the electron",50,0,500);
     EleEta[cutName] = new TH1D(hname+"ElEta","Pseudorapidity of the electron",60,-3.,3.);
 
+    HT[cutName]= new TH1D(hname+"HT"," HT",250,0,2500);
+    MET[cutName]= new TH1D(hname+"MET"," MET",100,0,1000);
+    MHT[cutName]= new TH1D(hname+"MHT"," MHT",150,0,1500);
+    YMET[cutName]= new TH1D(hname+"YMET"," YMET",80,0,40);
+
+
+
     NJets[cutName]= new TH1D(hname+"NJets","Number of Jets",15,0,15);
     PtAllJets[cutName]= new TH1D(hname+"PtAllJets","Pt of all the jets",150,0,1500);
     for(int i=0; i<NMonitorJets; i++) (PtJet[i])[cutName]= new TH1D(hname+"PtJet"+(long)i,"Pt of the Jet "+(long)i,50,0,500);
@@ -127,21 +134,18 @@ void HistoMaker::MakePlots( const TString& cutName, vector<Muon*> muons, vector<
     NBJets[cutName]= new TH1D(hname+"NBJets","Number of b-tagged jets",15,0,15);
     PtAllBJets[cutName]= new TH1D(hname+"PtAllBJets","Pt of all the b-tagged jets",150,0,1500);
     for(int i=0; i<NMonitorJets; i++) (PtBJet[i])[cutName]= new TH1D(hname+"PtBJet"+(long)i,"Pt of the b-tagged jet "+(long)i,50,0,500);
-    BDisc[cutName]= new TH1D(hname+"BDiscriminator",cutName+"BTag Discriminator",50,-10,10);
+    BDisc[cutName]= new TH1D(hname+"BDiscriminator","BTag Discriminator",50,-10,10);
 
-    HT[cutName]= new TH1D(hname+"HT",cutName+" HT",250,0,2500);
-    MHT[cutName]= new TH1D(hname+"MHT",cutName+" MHT",150,0,1500);
-    MET[cutName]= new TH1D(hname+"MET",cutName+" MET",100,0,1000);
-    YMET[cutName]= new TH1D(hname+"YMET",cutName+" YMET",80,0,40);
 
-    HT_YMET[cutName]= new TH2D(hname+"HT_YMET",cutName+" HT YMET scatter plot",100,0.,2500.,80,0.,40.);
+
+    HT_YMET[cutName]= new TH2D(hname+"HT_YMET"," HT YMET scatter plot",100,0.,2500.,80,0.,40.);
      
     TString region[4]={"A","B","C","D"};
     for (int idx=0; idx<4; idx++) {
-      (NJets_ABCD[idx])[cutName]= new TH1D(hname+"NJets"+(region[idx]),cutName+"Number of Jets in the region"+(region[idx]),15,0,15);
-      (PtAllJets_ABCD[idx])[cutName]= new TH1D(hname+"PtAllJets"+(region[idx]),cutName+"Pt of all the jets in the region"+(region[idx]),150,0,1500);
-      (MET_ABCD[idx])[cutName]= new TH1D(hname+"MET"+(region[idx]),cutName+"MET"+region[idx],100,0,1000);
-      for(int i=0; i<NMonitorJets; i++) (PtJet_ABCD[i][idx])[cutName]= new TH1D(hname+"PtJet"+(long)i+region[idx],cutName+"PtJet"+(long)i+region[idx],50,0,500);
+      (NJets_ABCD[idx])[cutName]= new TH1D(hname+"NJets"+(region[idx]),"Number of Jets in the region"+(region[idx]),15,0,15);
+      (PtAllJets_ABCD[idx])[cutName]= new TH1D(hname+"PtAllJets"+(region[idx]),"Pt of all the jets in the region"+(region[idx]),150,0,1500);
+      (MET_ABCD[idx])[cutName]= new TH1D(hname+"MET"+(region[idx]),"MET"+region[idx],100,0,1000);
+      for(int i=0; i<NMonitorJets; i++) (PtJet_ABCD[i][idx])[cutName]= new TH1D(hname+"PtJet"+(long)i+region[idx],"PtJet"+(long)i+region[idx],50,0,500);
     }
     
   }

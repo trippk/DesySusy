@@ -46,3 +46,23 @@ void AnalysisObject::Set(int maptotree_In, LorentzM* momuntum_In){
   maptotree=maptotree_In;
 
 }
+
+
+
+//DEFINE THE COPY CONSTRUCTOR
+AnalysisObject::AnalysisObject(const AnalysisObject& copy){
+
+
+  pp4=copy.pp4;
+  p4 = *pp4;
+  //otherwise, it would be pp4 = copy.pp4, and that's not
+  //what it should be.
+  
+  maptotree=copy.maptotree;
+  vector<TString> allIDS(copy.allIDs);
+  map<TString, bool> id(copy.id);
+  
+
+
+}
+

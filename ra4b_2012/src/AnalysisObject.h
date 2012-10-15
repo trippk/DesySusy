@@ -11,7 +11,7 @@ using namespace ROOT::Math::VectorUtil;
 
 class AnalysisObject {
   
-public:
+protected:
 
   LorentzM  p4;
   LorentzM* pp4; 
@@ -26,7 +26,11 @@ public:
     id.clear();
   }
 
-  ~AnalysisObject(){}
+  ~AnalysisObject(){
+    pp4=NULL;
+  }
+
+  AnalysisObject(const AnalysisObject& copy);
 
   LorentzM P4();
   LorentzM* pP4();

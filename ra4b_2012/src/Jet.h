@@ -20,6 +20,10 @@ class Jet: public AnalysisObject {
   vector<string> allBTags;
   map<string, double>  bJetDisc;
   static map<string, map<string, double> >* pbJetWP;
+  double correctionUncertainty_UP;
+  double correctionUncertainty_DOWN;
+  double jetPt_ShiftedUP;
+  
 
  public:
   Jet(){
@@ -32,6 +36,25 @@ class Jet: public AnalysisObject {
     isMatch=0;
     scaleCorrFactor=0.;
     bJetDisc.clear();
+    correctionUncertainty_UP=99;
+    correctionUncertainty_DOWN=99;
+    //jetPt_ShiftedUP=0;
+    //jetPt_ShiftedDOWN=0;
+  }
+  Jet(int maptotree_In, LorentzM  *momuntum_In, double scaleCorrFactor_In=1., string type_In=""){
+    //this->Jet();
+    pp4=0;
+    genFlavor="";
+    maptotree=0;
+    allIDs.clear();
+    id.clear();
+    type = "";
+    isMatch=0;
+    scaleCorrFactor=0.;
+    bJetDisc.clear();
+    correctionUncertainty_UP=99;
+    correctionUncertainty_DOWN=99;
+    this->Set(maptotree_In,momuntum_In,scaleCorrFactor_In,type_In);
   }
 
   ~Jet(){}
@@ -53,8 +76,13 @@ class Jet: public AnalysisObject {
   void SetBJetDisc(string key, double value);
   static void SetWP(string cme="8TeV", map<string, map<string, double> >* bJetWP=0);
   virtual void Set(int maptotree_In, LorentzM * momuntum_In, double scaleCorrFactor_In=1., string type_In="");
-
+  //  virtual void Set(int maptotree_In, LorentzM momuntum_In, double scaleCorrFactor_In=1., string type_In="");
   static map<string, map<string, double> > GetbJetWP();
+
+  void SetCorrectionUncertainty(string name, double value);
+  double GetCorrectionUncertainty(string name);
+
+  double GetJetPt_Shifted(string name);
 
 
 };

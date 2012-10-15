@@ -33,9 +33,13 @@ void SetConditions_RA4b(SampleInformation mySampleInformation){
     SetOfCuts::SignalMuons.NUM.Set(1,"equal","one signal muon");
     SetOfCuts::WideMuons.NUM.Set(0,"equal","no wider muons");
     //============================================
+    //LEPTONS
+    //============================================
+    SetOfCuts::Leptons.NUM.Set(1,"equal","one single lepton");
+    //============================================
     //JETS
     //============================================
-    SetOfCuts::Jets.NUM.Set(3,"above","jets>3");
+      SetOfCuts::Jets.NUM.Set(3,"above","jets>3");
     //============================================
     //EVENT
     //============================================
@@ -82,6 +86,10 @@ void SetConditions_RA4b(SampleInformation mySampleInformation){
     SetOfCuts::SignalMuons.NUM.Set(-1,"above","no muons");
     SetOfCuts::WideMuons.NUM.Set(-1,"above","no wider muons");
     //============================================
+    //LEPTONS
+    //============================================
+    SetOfCuts::Leptons.NUM.Set(1,"equal","one single lepton");
+    //============================================
     //JETS
     //============================================
     SetOfCuts::Jets.NUM.Set(2,"above","jets>2");
@@ -108,7 +116,10 @@ void SetConditions_RA4b(SampleInformation mySampleInformation){
     //
     SetOfCuts::SignalMuons.NUM.Set(1,"equal","one signal muon");
     SetOfCuts::WideMuons.NUM.Set(0,"equal","no wider muons");
-    //SetOfCut
+    //============================================
+    //LEPTONS
+    //============================================
+    SetOfCuts::Leptons.NUM.Set(1,"equal","one single lepton");
     //============================================
     //JETS
     //============================================
@@ -134,6 +145,10 @@ void SetConditions_RA4b(SampleInformation mySampleInformation){
     //============================================
     SetOfCuts::SignalMuons.NUM.Set(0,"equal","no muons");
     SetOfCuts::WideMuons.NUM.Set(0,"equal","no wider muons");
+    //============================================
+    //LEPTONS
+    //============================================
+    SetOfCuts::Leptons.NUM.Set(1,"equal","one single lepton");
     //============================================
     //JETS
     //============================================

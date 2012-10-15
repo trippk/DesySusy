@@ -42,6 +42,16 @@
 #include "subTree.h"
 #include "subTreeFactory.h"
 #include "EventInfo.h"
+#include "systematics_RA4b.h"
+#include "makeSystematics.h"
+#include "JetCorrectorParameters.h"
+#include "JetCorrectionUncertainty.h"
+#include "Utilities.cc"
+#include "JetCorrectorParameters.cc"
+#include "SimpleJetCorrectionUncertainty.cc"
+#include "JetCorrectionUncertainty.cc"
+#include "typelookup.cc"
+
 
 using namespace std;
 using namespace ROOT::Math::VectorUtil;
@@ -61,21 +71,30 @@ double EventWeight;
 //================================================================================
 int main(int argc, char** argv){
 
+
+
+  //MT2W CALCULATOR
   mt2w_bisect::mt2w_interface mt2w_calc;
 
+  //
   const double PI = 4.0*atan(1.0);  
+
+
+  //PCP=TRUE FOR DEBUGGING
   pcp=false;
-  //pcp=true;
-    EventWeight=1.0;
+
+
+  EventWeight=1.0;
 
 
   //CONFIG. The program will always take the file config.txt in the output directory
   //specified in the execution of runOnAll
-  
   string MainDir="./";
   ConfigReader config(MainDir+"config.txt",argc,argv);
   config.Add(MainDir+"para_config.txt");
   config.Add(MainDir+"pu_config.txt");
+
+  //NAME OF THE FILE
   TString filename = config.getTString("filename");
   
   EasyChain* tree = new EasyChain("/susyTree/tree");
@@ -90,7 +109,7 @@ int main(int argc, char** argv){
   TFile *outfile = TFile::Open(outname,"RECREATE");
   //TFile *outprovafile = TFile::Open("outprovafile.root","RECREATE");
   // set output root file for cut flow (to be done!)
-  CutSet::setTFile(outfile);
+  //  CutSet::setTFile(outfile);
   
 
  
@@ -103,11 +122,12 @@ int main(int argc, char** argv){
   }
   //
   TFile* treeFile=TFile::Open((TString)treeFileName,"RECREATE");
-  treeFile->cd();
+  //  treeFile->cd();
   TString treeType = config.getTString("treeType","default"); 
-  subTree* subTree= subTreeFactory::NewTree(treeType);
+  cout<<"going to call new tree with "<<treeFile<<endl;
+  subTree* subTree= subTreeFactory::NewTree(treeType,treeFile,(string)"./");
+  bool doSmallTree=true;
   outfile->cd();  
-
 
 
 
@@ -117,17 +137,17 @@ int main(int argc, char** argv){
   //=================================================================
 
 
-  ofstream events1;
-  ofstream events2;
-  ofstream onejet;
-  ofstream twojet;
-  ofstream threejet;
-
-  events1.open("after_1ele_veto.txt");
-  events2.open("after_1ele_nomu.txt");
-  onejet.open("after_1jet.txt");
-  twojet.open("after_2jet.txt");
-  threejet.open("after_3jet.txt");
+  //ofstream events1;
+  //  ofstream events2;
+  //  ofstream onejet;
+  //  ofstream twojet;
+  //  ofstream threejet;
+  
+  //events1.open("afterjets_fast.txt");
+  //events2.open("after_1ele_nomu.txt");
+  //  onejet.open("after_1jet.txt");
+  //  twojet.open("after_2jet.txt");
+  //  threejet.open("after_3jet.txt");
   /*
 
   tree->SetBranchStatus("*",0);
@@ -210,6 +230,10 @@ int main(int argc, char** argv){
 
   */
 
+
+
+
+
   //===========================================================================
   // SET THE INFORMATION ABOUT THE SAMPLE
   //===========================================================================
@@ -256,7 +280,7 @@ int main(int argc, char** argv){
   //WEIGHTS
   //======================================================
 
-  bool DoOnlineRW=false;
+
 
   //PU
 
@@ -279,10 +303,16 @@ int main(int argc, char** argv){
     cout << "problem in pu inf in para_config - number of bins in MC PU dist is different than data!" << endl;
     return 0;
   }
-  //
-  //bool DoOnlineRW=false;
 
   double InitialEventWeight=1.0;             //Event weight do to Lumi and xsec.
+
+
+
+
+
+  //REWEIGHT DUE TO THE DATA LUMINOSITY
+  //this should be done offline
+  bool DoOnlineRW=false;
   if(DoOnlineRW){
     cout<<"GOING TO REWEIGHT THE MC SAMPLE TO THE DATA LUMI "<<endl;
     double xsecMC=1.0;                         //Monte Carlo Cross Section
@@ -318,7 +348,7 @@ int main(int argc, char** argv){
 
   //keep track of the weights
   TH1::SetDefaultSumw2(true);
-
+  //=========================
 
 
 
@@ -344,16 +374,13 @@ int main(int argc, char** argv){
 
 
 
-  //================================================================
-
-
 
   //================================
   //SET THE BJET WORKING POINTS
   //================================
   map<string, map<string, double> > bJetWP; 
   Jet::SetWP("8TeV", &bJetWP); 
-  cout<<"the working point has been set to "<<Jet::GetbJetWP()["CSV"]["Medium"]<<endl;
+  //  cout<<"the working point has been set to "<<Jet::GetbJetWP()["CSV"]["Medium"]<<endl;
   //  exit(1);
 
   //=================================
@@ -390,15 +417,16 @@ int main(int argc, char** argv){
 
 
 
-  bool OK=false;
-  bool OKold=true;
-
-
   //===========================================
   //CUT FLOW MONITORING
   //===========================================
+  //OK and OKold for the cutflow
+  bool OK=false;
+  bool OKold=true;
   CutSet globalFlow("global flow");
+  CutSet::setTFile(outfile);
   CutSet* p2globalFlow= &globalFlow;
+  CutSet systematicsFlow("systematics flow");
   //===========================================
 
     
@@ -407,7 +435,7 @@ int main(int argc, char** argv){
   if(turntriggersoff){
     cout<<"-----------TURNTRIGGERSOFF IS true!!-----------"<<endl;
     if(isData){
-      cout<<"--------NO TRIGGERS NO DATA--------------------"<<endl;
+      cout<<"--------NO TRIGGERS, NO DATA--------------------"<<endl;
       exit(1);
     }
   }
@@ -475,8 +503,71 @@ int main(int argc, char** argv){
 
   bool isquick=config.getBool("quick",true);
   bool quick=false;
+  cout<<"isquick is"<<isquick<<endl;
  
- 
+
+
+
+
+
+
+
+
+
+
+  //===================================================================
+  //SYSTEMATIC UNCERTAINTIES
+  //===================================================================
+  static bool doSystematics=config.getBool("doSystematics",true);
+  bool OKsyst=false;
+  Systematics systematics;
+  if (!isquick && doSystematics){
+    //it cant do systematics on the quick mode
+    systematics.AddUncertainty((string)"jetup",treeFile);
+    systematics.AddUncertainty((string)"jetdown",treeFile);
+    systematics.AddUncertainty((string)"clustersup",treeFile);
+    systematics.AddUncertainty((string)"clustersdown",treeFile);
+  }
+
+
+  //=============INITIALIZE THE JETUncertainty object
+  // Instantiate uncertainty sources
+  const int nsrc = 16;
+  const char* srcnames[nsrc] =
+    {"Absolute", "HighPtExtra", "SinglePion", "Flavor", "Time",
+     "RelativeJEREC1", "RelativeJEREC2", "RelativeJERHF",
+     "RelativeStatEC2", "RelativeStatHF", "RelativeFSR",
+     "PileUpDataMC", "PileUpOOT", "PileUpPt", "PileUpBias", "PileUpJetRate"};
+
+  for (int isrc = 0; isrc < nsrc; isrc++) {
+    const char *name = srcnames[isrc];
+    //std::string test="src/jetUncertainties/Summer12_V2_DATA_AK5PF_UncertaintySources.txt";
+    std::string test="/tmp/Summer12_V2_DATA_AK5PF_UncertaintySources.txt";
+    JetCorrectorParameters *p ;
+    if (systematics.IsEnabled()){
+      p= new JetCorrectorParameters(test, name);
+      systematics.vsrc.push_back(new JetCorrectionUncertainty(*p));
+    }
+  }
+  //==========Total uncertainty for reference
+  std::string test  ="/tmp/Summer12_V2_DATA_AK5PF_UncertaintySources.txt";
+  //std::string test  ="src/jetUncertainties/Summer12_V2_DATA_AK5PF_UncertaintySources.txt";
+  if(systematics.IsEnabled()){
+    systematics.total = new JetCorrectionUncertainty(*(new JetCorrectorParameters(test, "Total")));
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -496,10 +587,13 @@ int main(int argc, char** argv){
       quick=isquick;
     }
      
+    //    pcp=true;
+    //    if(i>10)continue;
 
     timer();
 
 
+    
     
     if(pcp)cout<<"check point about to get entry "<< i<<endl;
 
@@ -513,42 +607,19 @@ int main(int argc, char** argv){
     unsigned int Run   = tree->Get(Run,"run");    
     if(pcp)cout<<"check point got the Event "<< i<< " "<<Event<<endl;    
 
-
-    if(Event==27560470){
-      cout<<"we have it!"<<endl;
-    }
-
-
-    if(Event==22291849 ||
-       Event==27561470 ){
-       //Event==22287444 ){
-       /*       Event==22292314 ||
-       Event==22307000 ||
-       Event==22318218 ||
-       Event==27560470 ||
-       Event==27561357 ||
-       Event==27561470 ||
-       Event==27561841 ||
-       Event==27562706 ||
-       Event==27563093 ||
-       Event==27843089 ||
-       Event==27843552 ||
-       Event==27998151 ||
-       Event==29140700 ||
-       Event==29140810 ||
-       Event==29141508 */
-       //Event==22287403){
-      pcp=true;
-      cout<<"yeah"<<" "<<Event<<endl;
-    }else{
-      pcp=false;
-      //continue;
-    }
+    
 
 
 
+    //    pcp=true;
+    //
+    //    if (i>10){
+    //      pcp=false;
+    //      continue;
+    //    }
+    //    cout<<Event<<endl;
+    //CHECK dz_track and dy_track due to the differences with other groups
     if(pcp){
-
       vector<LorentzM>& Muons = tree->Get(&Muons, "muonP4Pat");
       vector<float>& Dxy_track = tree->Get( &Dxy_track,   "muonInnerTrackDxyPat");
       vector<float>& Dz_track = tree->Get( &Dz_track,   "muonInnerTrackDzPat");
@@ -561,14 +632,13 @@ int main(int argc, char** argv){
 
 
 
-
-
-
+    //DEBUGGING:
     if(pcp){
       cout<<endl;
       cout<<endl;
       cout<<"**************************************"<<endl;
       cout<<"NEW EVENT : "<<Event<<endl;
+      cout<<"**************************************"<<endl;
       cout<<endl;
       cout<<endl;
     }
@@ -668,40 +738,45 @@ int main(int argc, char** argv){
     //============================================    
     // Make Jets
     vector<Jet>  Jets;
+    vector<Jet*> AllJets;
     vector<Jet*> GoodJets;
     vector<Jet*> CleanedJets;
 
-    Jets=makeJets(tree);
-
-    Jet dummyJet;
-    for (int ijet=0; ijet<(int)Jets.size(); ++ijet){
-      GoodJets.push_back(&Jets.at(ijet));
+    Jets=makeAllJets(tree);
+    for (int ijet=0;ijet<(int)Jets.size();++ijet){
+      AllJets.push_back(&Jets.at(ijet));
     }
+    //    cout<<"size of the collection "<<Jets.size()<<endl;
+    makeGoodJets(tree,AllJets,GoodJets);
+    //    cout<<"size of all jets is "<<AllJets.size()<<endl;
+    //    cout<<"size of the thing! "<<GoodJets.size()<<endl;
     makeCleanedJets( GoodJets, CleanedJets, Muons, Electrons);
     //============================================
     
-    //NUMBER OF BTAGS//
+
+    //NUMBER OF BTAGS==============================
     static string btagAlgorithm= config.getString("bTagAlgorithm","CSV");
     static string btagWorkingPoint = config.getString("bTagWorkingPoint","Medium");
     int NumberOfbTags=0;
     for (int ijet=0;ijet<CleanedJets.size();++ijet){
-      
       if(CleanedJets.at(ijet)->IsBJet(btagAlgorithm,btagWorkingPoint)){
 	NumberOfbTags++;
       }
     }
-    //cout<<"number of btags is "<<NumberOfbTags<<endl;
+
+
 
     //============================================
     //Make HT
+    //============================================
     double HT=0;
     double px=0;
     double py=0;
     double MHT=0;
     for(int ijet=0;ijet<(int)CleanedJets.size();++ijet){
       HT=HT+CleanedJets.at(ijet)->Pt();
-      px+=  CleanedJets.at(ijet)->p4.Px();
-      py+=  CleanedJets.at(ijet)->p4.Py();
+      px+=  CleanedJets.at(ijet)->P4().Px();
+      py+=  CleanedJets.at(ijet)->P4().Py();
     }
     MHT=sqrt(px*px + py*py);
     //============================================
@@ -720,9 +795,64 @@ int main(int argc, char** argv){
       cout<<"HT = "<<HT<<endl;
       cout<<endl;
     }
-    
 
 
+
+    //===========================================
+    //CALCULATE SYSTEMATICS VARIATIONS    
+    //===========================================
+    if (systematics.IsEnabled()){
+
+      //clear all the vectors inside systematics
+      //otherwise they accumulate
+      systematics.Reset();
+      if (systematics.DoJetUp() || systematics.DoJetDown()){
+	//=========RESCALE THE JETS
+	rescaleJets(tree,AllJets,systematics);
+      
+	//=========RESCALE THE MET
+	rescaleMET(tree,systematics.GetsysJet("jetup"),systematics, "jetup");
+	rescaleMET(tree,systematics.GetsysJet("jetdown"),systematics, "jetdown");
+	//now systematics contain the varied jet collection
+	//and also the MET
+
+	//======FEED THE RESCALED JETS TO makeGoodJets
+	makeGoodJets(tree,systematics.GetsysJet("jetup"),systematics.GetsysJet("jetup_good"));
+	//
+	makeGoodJets(tree,systematics.GetsysJet("jetdown"),systematics.GetsysJet("jetdown_good"));
+	//
+	//======CLEAN THEM
+	makeCleanedJets(systematics.GetsysJet("jetup_good"),systematics.GetsysJet("jetup_good_clean"),Muons,Electrons);
+	makeCleanedJets(systematics.GetsysJet("jetdown_good"),systematics.GetsysJet("jetdown_good_clean"),Muons,Electrons);
+
+	//=====GET THE NEW HT
+	rescaleHT(systematics.GetsysJet("jetup_good_clean"), systematics, "jetup");
+	rescaleHT(systematics.GetsysJet("jetdown_good_clean"), systematics, "jetdown");
+      }
+      
+
+      if(systematics.GetSysMap()["clustersup"]){
+
+	rescaleClusters(AllJets,systematics);
+	//RESCALE THE MET
+	rescaleMET(tree,systematics.GetsysJet("clustersup"),systematics,"clustersup");
+	rescaleMET(tree,systematics.GetsysJet("clustersdown"),systematics,"clustersdown");
+      }
+      //
+      //
+      //
+      //test this
+      //      cout<<"the size of input jets "<<systematics.GetsysJet("down").size()<<endl;
+      //      cout<<"size of cleaned jets down"<<systematics.GetsysJet("down_good_clean").size()<<endl;
+      //      cout<<"size of cleaned jets up"<<systematics.GetsysJet("up_good_clean").size()<<endl;
+      //      for (int ijet=0;ijet<systematics.GetsysJet("up_good_clean").size(); ++ijet){
+      //	cout<<"loop is "<<ijet<<endl;
+      //	cout<<"pt up "<<systematics.GetsysJet("up_good_clean").at(ijet)->Pt()<<endl;
+      //      }
+      //for (int ijet=0;ijet<systematics.GetsysJet("down_good_clean").size(); ++ijet){
+      //cout<<"pt down "<<systematics.GetsysJet("down_good_clean").at(ijet)->Pt()<<endl;
+      //}
+    }
 
 
 
@@ -739,11 +869,6 @@ int main(int argc, char** argv){
     //=====================================================================   
     //=====================================================================   
     //=====================================================================   
-
-    int NVertices=0;
-    int NBtags=0;
-
-    //if(DoControlPlots)FillControlPlots(CplotsMap["Before_CutFlow"],Muons,Electrons,Jets,PFmet,NVertices,NBtags);
 
 
 
@@ -772,21 +897,22 @@ int main(int argc, char** argv){
 
 
 
+    //====================================================================
     bool  hcalLaserEventFilterFlag   = tree->Get( hcalLaserEventFilterFlag,    "hcalLaserEventFilterFlag"  );
     OK= hcalLaserEventFilterFlag;
     if(i==0 && isquick){OK=OK&&OKold; OKold=OK;}
     if( !globalFlow.keepIf( "hcalLaserFilter"        , OK     ) && quick ) continue;
     if(DoControlPlots && OK)ControlPlots.MakePlots("hcalLaserFilter", TightMuons, TightElectrons, CleanedJets, PFmet); 
+    //====================================================================
 
 
-
-
+    //====================================================================
     bool eeBadSCPassed = tree->Get( eeBadSCPassed, "eeBadScFilterFlag"   );
     OK=eeBadSCPassed;
     if(i==0 && isquick){OK=OK&&OKold; OKold=OK;}
     if( !globalFlow.keepIf("eeBadSCFilter"     , OK) && quick ) continue;
     if(DoControlPlots && OK)ControlPlots.MakePlots("eeBadSCFilter", TightMuons, TightElectrons, CleanedJets, PFmet); 
-
+    //====================================================================
 
 
 
@@ -823,7 +949,6 @@ int main(int argc, char** argv){
     if(i==0 && isquick){ OK=OK&&OKold; OKold=OK;}
     if(  !globalFlow.keepIf("PV", OK)    && quick ) continue;
     if(pcp)cout<<"check point  vertex called"<<endl;
-    NVertices=(int)goodVert.size();
     if(DoControlPlots && OK)ControlPlots.MakePlots("PV", TightMuons, TightElectrons, CleanedJets, PFmet); 
     //====================================================================
 
@@ -928,6 +1053,58 @@ int main(int argc, char** argv){
       }
     }
 
+   
+    //===============================================
+    //SINGLE LEPTON
+    //===============================================
+    if(pcp){
+      cout<<"the sum of the sizes of leptons is "<<(int)SignalElectrons.size()+(int)SignalMuons.size()<<endl;
+      cout<<SignalElectrons.size()<<" "<<SignalMuons.size()<<endl;
+    }
+
+    OK=SetOfCuts::Leptons.NUM.Examine((int)SignalElectrons.size()+(int)SignalMuons.size());
+    if(i==0 && isquick){OK=OK&&OKold; OKold=OK;}
+    if(!globalFlow.keepIf("One_single_lepton",OK) && quick) continue;    
+    
+    
+    
+
+    //===================================
+    //JETS
+    //===================================
+    //
+    globalFlow.keepIf(">=1 jet",CleanedJets.size()>=1);
+    globalFlow.keepIf(">=2 jet",CleanedJets.size()>=2);
+    globalFlow.keepIf("3>jets",CleanedJets.size()>=3);
+    globalFlow.keepIf("3=>jets and 1=>btags",NumberOfbTags>=1);
+    globalFlow.keepIf(">=4 jet",CleanedJets.size()>=4);
+    globalFlow.keepIf(">=4 and 1=> btagsjeCt",CleanedJets.size()>=4 && NumberOfbTags>=1);
+    OK=SetOfCuts::Jets.NUM.Examine(CleanedJets.size());
+    if(i==0 && isquick){OK=OK&&OKold; OKold=OK;}
+    if(!globalFlow.keepIf("Jet_Cuts",OK) && quick) continue;    
+    //    events1<<Event<<endl;
+
+    if(DoControlPlots && OK)ControlPlots.MakePlots("Jet_Cuts", SignalMuons, SignalElectrons, CleanedJets, PFmet); 
+    //treeCuts["Jet_Cuts"]=OK;
+
+
+
+    //==========JET SYSTEMATICS===============
+    if (systematics.IsEnabled()){
+      if(systematics.DoJetUp()){
+	OKsyst=SetOfCuts::Jets.NUM.Examine((int)systematics.GetsysJet("jetup_good_clean").size());
+	globalFlow.keepIf("Jet_Cuts_JetUp",OKsyst);
+      }
+      if(systematics.DoJetUp()){
+	OKsyst=SetOfCuts::Jets.NUM.Examine((int)systematics.GetsysJet("jetdown_good_clean").size());
+	globalFlow.keepIf("Jet_Cuts_JetDown",OKsyst);
+      }
+    }
+    //===================================
+
+
+
+
 
 
 
@@ -937,6 +1114,11 @@ int main(int argc, char** argv){
     //=================================
     //
     //
+    OK=SetOfCuts::SignalMuons.NUM.Examine(SignalMuons.size());
+    if(i==0 && isquick){OK=OK&&OKold; OKold=OK;}
+    if(!globalFlow.keepIf("Signal_Muons",OK) && quick) continue;
+    if(DoControlPlots && OK)ControlPlots.MakePlots("Signal_Muons", SignalMuons, TightElectrons, CleanedJets, PFmet); 
+    //treeCuts["Signal_Muons"]=OK;
     //
     //
     //
@@ -949,16 +1131,9 @@ int main(int argc, char** argv){
     //
     //
     //
-    OK=SetOfCuts::SignalMuons.NUM.Examine(SignalMuons.size());
-    if(i==0 && isquick){OK=OK&&OKold; OKold=OK;}
-    if(!globalFlow.keepIf("Signal_Muons",OK) && quick) continue;
-    if(DoControlPlots && OK)ControlPlots.MakePlots("Signal_Muons", SignalMuons, TightElectrons, CleanedJets, PFmet); 
-    //treeCuts["Signal_Muons"]=OK;
-    //
-    //
-    if( OK){
-      events2<<Event<<endl;
-    }
+    //    if( OK){
+    //      events2<<Event<<endl;
+    //    }
     //
     //
     //
@@ -979,90 +1154,11 @@ int main(int argc, char** argv){
     //
     //===================================
 
-    if(WhatEstimation=="RA4b-singleLep"){
-      
-      OK=(int)SignalElectrons.size()+(int)SignalMuons.size()==1;
-      if(i==0 && isquick){OK=OK&&OKold; OKold=OK;}
-      if(!globalFlow.keepIf("one single lepton",OK) && quick) continue;    
-
-    }
-
-
-
-    if(OK){
-      //print the events
-      events1<<Event<<endl;
-    }
-
-
-
-
-    globalFlow.keepIf(">=1 jet",CleanedJets.size()>=1);
-    globalFlow.keepIf(">=2 jet",CleanedJets.size()>=2);
 
 
 
 
 
-    //LEPTON SELECTION//
-
-    //===================================
-    //JETS
-    //===================================
-    //
-    OK=SetOfCuts::Jets.NUM.Examine(CleanedJets.size());
-    if(i==0 && isquick){OK=OK&&OKold; OKold=OK;}
-    if(!globalFlow.keepIf("Jet_Cuts",OK) && quick) continue;    
-    if(DoControlPlots && OK)ControlPlots.MakePlots("Jet_Cuts", SignalMuons, SignalElectrons, CleanedJets, PFmet); 
-    //treeCuts["Jet_Cuts"]=OK;
-
-    globalFlow.keepIf("3=>jets and 1=>btags",NumberOfbTags>=1);
-
-    globalFlow.keepIf(">=4 jet",CleanedJets.size()>=4);
-    globalFlow.keepIf(">=4 and 1=> btagsjeCt",CleanedJets.size()>=4 && NumberOfbTags>=1);
-    //===================================
-
-
-
-
-
-
-
-    if(pcp)cout<<"before btagging the jets"<<endl;
-    //===================================================================
-    //BTAGGING OF JETS
-    //===================================================================
-
-    //    for (int ijet=0;ijet<=CleanedJets.size(); ++ijet){
-    //      CleanedJets.at(ijet)->SetWP("8TeV",);
-    //    }
-    
-    /*
-      double TCHE_bTag_cutVal=config.getFloat("Btag_CutValue",3.3);
-      int NOfbtags=0;
-      vector<float>& TCHE_bTag   = tree->Get(&TCHE_bTag  , "ak5JetPFTrkCountingHighEffBJetTagsPat"); 
-      for(int ijet=0;ijet<(int)selectedJets.size();++ijet){
-      int m=selectedJets.at(ijet)->GetIndexInTree();
-      if(TCHE_bTag.at(m) > TCHE_bTag_cutVal ){
-      selectedJets.at(ijet)->SetBtag(true);
-      //if i==0, be careful
-      if(i==0 && OK && OKold){NOfbtags++; }
-      if(i!=1){NOfbtags++;}
-      }
-      }
-    */
-    //===================================================================
-    
-    
-    //===================================================================
-    //Requirements on the number of btags
-    //===================================================================
-    //OK=SetOfCuts::Event.NumberOfBtags.Examine(NOfbtags);
-    //    if(i==0 && isquick){ OK=OK&&OKold; OKold=OK;}
-    //if(!globalFlow.keepIf(SetOfCuts::Event.NumberOfBtags.name,OK) && quick)continue;
-    //===================================================================
-    //    if(pcp)cout<<"number of btags imposed "<<endl;
-    int NOfbtags=0;
 
 
 
@@ -1100,12 +1196,25 @@ int main(int argc, char** argv){
     for(int ijet=0;ijet<(int)CleanedJets.size();++ijet){
       HT=HT+CleanedJets.at(ijet)->Pt();	
     }
-
+    
     OK=SetOfCuts::Event.HT.Examine(HT);
     if(i==0 && isquick){ OK=OK&&OKold; OKold=OK;}
     if(!globalFlow.keepIf("HT", OK ) && quick ) continue;
     if(DoControlPlots && OK)ControlPlots.MakePlots("HT", SignalMuons, SignalElectrons, CleanedJets, PFmet); 
-    //treeCuts["HT"]=OK;
+
+
+    if (systematics.IsEnabled()){
+      if (systematics.GetSysMap()["jetup"]){
+	//cout<<"testing HT = "<<systematics.GetsysHT("jetup")<<endl;
+	OKsyst=SetOfCuts::Event.HT.Examine(systematics.GetsysHT("jetup"));
+	//cout<<"pointer to the flow = "<<systematics.GetsysFlow("jetup")<<endl;
+	globalFlow.keepIf("HT_JetUp",OKsyst);
+      }
+      if (systematics.GetSysMap()["jetdown"]){
+	OKsyst=SetOfCuts::Event.HT.Examine(systematics.GetsysHT("jetdown"));
+	globalFlow.keepIf("HT_JetDown",OKsyst);
+      }
+    }
     //===================================================================
 
 
@@ -1124,8 +1233,30 @@ int main(int argc, char** argv){
     if(  !globalFlow.keepIf("MET", OK ) && quick ) continue;
     if(pcp)cout<<"check point out of MET_HT"<<endl;
     if(DoControlPlots && OK)ControlPlots.MakePlots("MET", SignalMuons, SignalElectrons, CleanedJets, PFmet); 
+
+    
+    if (systematics.IsEnabled()){
+      if (systematics.GetSysMap()["jetup"]){
+	//	cout<<"feeding up "<<systematics.GetsysMET("jetup")<<endl;
+	OKsyst=SetOfCuts::Event.MET.Examine(systematics.GetsysMET("jetup"));
+	globalFlow.keepIf("MET_JetUp", OKsyst);
+      }
+      if (systematics.GetSysMap()["jetdown"]){
+	//	cout<<"feeding down "<<systematics.GetsysMET("jetdown")<<endl;
+	OKsyst=SetOfCuts::Event.MET.Examine(systematics.GetsysMET("jetdown"));
+	globalFlow.keepIf("MET_JetDown", OKsyst);
+      }
+      if(systematics.GetSysMap()["clustersup"]){
+	OKsyst=SetOfCuts::Event.MET.Examine(systematics.GetsysMET("clustersup"));
+	globalFlow.keepIf("MET_clustersup", OKsyst);
+      }
+      if(systematics.GetSysMap()["clustersdown"]){
+	OKsyst=SetOfCuts::Event.MET.Examine(systematics.GetsysMET("clustersdown"));
+	globalFlow.keepIf("MET_clustersdown", OKsyst);
+      }
+    }
     //treeCuts["MET"]=OK;
-    cout<<"the met here is "<<MET<<endl;
+    //cout<<"the met here is "<<MET<<endl;
     //====================================================================
 
 
@@ -1146,8 +1277,138 @@ int main(int argc, char** argv){
 
 
 
-    //avoid having the first iteration entering here:
-    if(i==0 && !OK)continue;
+
+
+
+
+    
+    //====================COPY THE CUTFLOWS
+    vector<TString> globalFlowNames;
+    //globalFlowNames.push_back("triggers");
+    TString rawString;
+    bool OKall=false;
+    if(!isquick){
+      globalFlowNames.push_back("hcalLaserFilter");
+      globalFlowNames.push_back("eeBadSCFilter");
+      globalFlowNames.push_back("Scraping_Veto");
+      globalFlowNames.push_back("PV");
+      globalFlowNames.push_back("HBHE");
+      globalFlowNames.push_back("CSC_HALO");
+      globalFlowNames.push_back("trackingFailure");
+      globalFlowNames.push_back("ECAL_TP");
+      globalFlowNames.push_back("Signal_Muons");
+      globalFlowNames.push_back("Signal_Electrons");
+      globalFlowNames.push_back("Wide_Muons");
+      globalFlowNames.push_back("Wide_Electrons");
+      globalFlowNames.push_back("One_single_lepton");      
+      globalFlowNames.push_back("Jet_Cuts");
+      globalFlowNames.push_back("HT");
+      globalFlowNames.push_back("MET");
+
+      for(int iname=0;iname<(int)globalFlowNames.size();++iname){
+	rawString+=globalFlowNames.at(iname)+" ";
+      }
+      
+      OKall=globalFlow.applyCuts(rawString);
+	//events1<<Event<<endl;
+      if(pcp){
+	cout<<"OKall is "<<OKall<<endl;
+      }
+
+    }
+
+
+
+    if(systematics.IsEnabled()){
+
+      typedef map<string,bool>::iterator map_it;
+      for (map_it iter=systematics.GetSysMap().begin(); iter != systematics.GetSysMap().end(); iter++){
+	if(iter->second){
+	  if(iter->first=="jetup"){
+	    
+	    for (int iname=0;iname<(int)globalFlowNames.size();++iname){
+	      //COPY THE CUTFLOW
+	      if (globalFlowNames.at(iname) == "Jet_Cuts"){
+		OK=globalFlow.DidItPass("Jet_Cuts_JetUp");
+	      }
+	      else if (globalFlowNames.at(iname) == "HT"){
+		OK=globalFlow.DidItPass("HT_JetUp");
+	      }
+	      else if (globalFlowNames.at(iname) == "MET"){
+		OK=globalFlow.DidItPass("MET_JetUp");
+	      }
+	      else{
+		OK=globalFlow.DidItPass(globalFlowNames.at(iname));
+	      }
+	      //======copy the global flow
+	      systematics.GetsysFlow("jetup")->keepIf(globalFlowNames.at(iname), OK);
+	      
+	    }//iname
+	    //cout<<"the jet up cutflow "<<endl;
+		
+	  }
+	  else if(iter->first=="jetdown"){
+	    
+	    for (int iname=0;iname<(int)globalFlowNames.size();++iname){
+	      //COPY THE CUTFLOW
+	      if (globalFlowNames.at(iname) == "Jet_Cuts"){
+		OK=globalFlow.DidItPass("Jet_Cuts_JetDown");
+	      }
+	      else if (globalFlowNames.at(iname) == "HT"){
+		OK=globalFlow.DidItPass("HT_JetDown");
+	      }
+	      else if (globalFlowNames.at(iname) == "MET"){
+		OK=globalFlow.DidItPass("MET_JetDown");
+	      }
+	      else{
+		OK=globalFlow.DidItPass(globalFlowNames.at(iname));
+	      }
+	      //======copy the global flow
+	      systematics.GetsysFlow("jetdown")->keepIf(globalFlowNames.at(iname), OK);
+	    }
+	  }
+	  else if(iter->first=="clustersup"){
+	    for (int iname=0;iname<(int)globalFlowNames.size();++iname){
+	      //COPY THE CUTFLOW
+	      if (globalFlowNames.at(iname) == "MET"){
+		OK=globalFlow.DidItPass("MET_clustersup");
+	      }
+	      else{
+		OK=globalFlow.DidItPass(globalFlowNames.at(iname));		
+	      }
+	      systematics.GetsysFlow("clustersup")->keepIf(globalFlowNames.at(iname), OK);
+	    }
+	  }
+	  else if(iter->first=="clustersdown"){
+	    for (int iname=0;iname<(int)globalFlowNames.size();++iname){
+	      //COPY THE CUTFLOW
+	      if (globalFlowNames.at(iname) == "MET"){
+		OK=globalFlow.DidItPass("MET_clustersdown");
+	      }
+	      else{
+		OK=globalFlow.DidItPass(globalFlowNames.at(iname));		
+	      }
+	      //======copy the global flow
+	      systematics.GetsysFlow("clustersdown")->keepIf(globalFlowNames.at(iname), OK);
+	    }
+	  }
+	  //======APPLY THE CUTFLOW
+	  //cout<<"applying the cutflow to"<<iter->first<<endl;
+	  OK=systematics.GetsysFlow(iter->first)->applyCuts(EventWeight);
+	  //record it
+	  systematics.passCuts[iter->first]=OK;
+	}
+      }
+
+    }//systematics.IsEnabled()
+
+
+    
+
+    
+    //avoid having the first iteration entering here when running in 
+    //quick mode
+    if(isquick && i==0 && !OK)continue;
 
 
 
@@ -1165,6 +1426,49 @@ int main(int argc, char** argv){
 
 
 
+
+
+
+
+
+
+
+    //LorentzM& PFmet = tree->Get(&PFmet, "metP4PF");
+    METSig = MET / sqrt(HT); 
+
+
+    EventInfo info;
+    info.Event=Event;
+    info.Run=Run;
+    info.EventWeight=EventWeight;
+    info.PUWeight=PUWeight;
+
+
+
+
+    //=====================FILL THE TREES====================
+    //
+    //
+    //
+    
+    if (isquick || (!isquick && OKall)){
+      if(doSmallTree){
+	subTree->Fill( &info, tree, SignalMuons, SignalElectrons, CleanedJets, PFmet);
+      }
+    }
+	
+
+    //====================SYSTEMATICS TREES
+    if( systematics.IsEnabled()){
+      typedef map<string,bool>::iterator map_it;
+      for (map_it iter=systematics.GetSysMap().begin(); iter != systematics.GetSysMap().end(); iter++){
+	if(iter->second){    
+	  if(systematics.passCuts.at(iter->first)){
+	    systematics.GetsysDefaultTree(iter->first)->Fill(&info, tree, SignalMuons,SignalElectrons,systematics.GetsysJet("jetup_good_clean"),*systematics.GetsysMEVector(iter->first));
+	  }
+	}
+      }
+    }
 
     //=====================================================================   
     //=====================================================================   
@@ -1182,26 +1486,6 @@ int main(int argc, char** argv){
 
 
 
-
-
-    
-    //randvector.push_back(
-
-
-    //LorentzM& PFmet = tree->Get(&PFmet, "metP4PF");
-    METSig = MET / sqrt(HT); 
-
-
-    EventInfo info;
-    info.Event=Event;
-    info.Run=Run;
-    info.EventWeight=EventWeight;
-    info.PUWeight=PUWeight;
-
-    bool doSmallTree=true;
-    if(doSmallTree){
-      subTree->Fill( &info, tree, SignalMuons, SignalElectrons, CleanedJets, PFmet);
-    }
 
 
     if(HT< HTmin)continue;
@@ -1240,7 +1524,7 @@ int main(int argc, char** argv){
     //     ONE  B-TAG
     //   
     //============================================================
-    if(NOfbtags==1){
+    if(NumberOfbTags==1){
       onebtagdir->cd();
       if( Region=="A"){
 	OneBtag_1DPlots["RegionA"]->Fill(1);
@@ -1262,7 +1546,7 @@ int main(int argc, char** argv){
     //      TWO B-TAG
     //   
     //============================================================
-    else if(NOfbtags==2){
+    else if(NumberOfbTags==2){
       twobtagdir->cd();
       if( Region=="A"){
 	TwoBtag_1DPlots["RegionA"]->Fill(1);
@@ -1283,7 +1567,7 @@ int main(int argc, char** argv){
     //     TWO OR MORE
     //   
     //============================================================
-    else if(NOfbtags>2){
+    else if(NumberOfbTags>2){
       twoplusbtagdir->cd();
       if( Region=="A"){
 	TwoplusBtag_1DPlots["RegionA"]->Fill(1);
@@ -1302,20 +1586,46 @@ int main(int argc, char** argv){
 
   
 
+    
 
-
-
+    
   }//End of the event loop
      
   if(pcp)cout<<"out of the event loop"<<endl;
 
 
 
-  // save histogramms
+
+
+  if(systematics.IsEnabled()){
+    
+    typedef map<string,bool>::iterator map_it;
+    for (map_it iter=systematics.GetSysMap().begin(); iter != systematics.GetSysMap().end(); iter++){
+      if(iter->second){
+	//set a different directory for this
+	systematics.GetsysFlow(iter->first)->setTDir((TString)iter->first);
+	systematics.GetsysFlow(iter->first)->dumpToHist();
+      }
+    }
+  }
+  subTree->Write();
+  //==========WRITE THE TREES
+  if(systematics.IsEnabled()){
+    typedef map<string,bool>::iterator map_it;
+    for (map_it iter=systematics.GetSysMap().begin(); iter != systematics.GetSysMap().end(); iter++){
+      if(iter->second){
+	systematics.GetsysDefaultTree((string)iter->first)->Write();
+      }
+    }
+  }
+  treeFile->Close();
 
 
 
   //==================================================
+  //REST OF THE HISTOGRAMS
+  //==================================================
+  CutSet::setTDir("CutFlow");
   outfile->cd();
   TListIter* list = new TListIter(gDirectory->GetList()); //-->iterates over list of objects in memory
   TObject *nobj=(TObject*) list->Next(); //nobj now points to the first object in memory
@@ -1325,9 +1635,11 @@ int main(int argc, char** argv){
       nobj->Write();
       //nobj->Write("",TObject::kOverwrite) -->Overwrites the histogram if alredy present
     }
+    //delete(nobj);
+    //TObject *nobj=(TObject*) list->Next(); //nobj now points to the first object in memory
     nobj=list->Next();   //nobj point now to the next object
   }
-
+  delete(list);
   //==================================================
 
 
@@ -1345,23 +1657,29 @@ int main(int argc, char** argv){
   config.printUsed();
   //  globalFlow.printAll();
   globalFlow.dumpToHist(); 
-
-
-  events1.close();
-  events2.close();
-  onejet.close();
-  twojet.close();
-  threejet.close();
   
 
-  treeFile->cd();
-  subTree->Write();
+
+
+  
+  //  ControlPlots.HistoMaker::~HistoMaker();
+  //  globalFlow.CutSet::~CutSet();
+  //outfile->Close();
+  //  events1.close();
+  //  events2.close();
+  //  onejet.close();
+  //  twojet.close();
+  //  threejet.close();
+  
+  //  treeFile->cd();
+
+  
+
 
   //PROGRAM END
   //EndOfProgram:
   
-
-  return 0;
   
+  return 0;
 }
    

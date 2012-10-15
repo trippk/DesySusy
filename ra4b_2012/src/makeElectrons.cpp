@@ -264,7 +264,7 @@ bool makeVetoElectrons(EasyChain* tree, vector<Electron>& AllElectrons, vector<E
   ConfigReader config;
   static float  PTMIN   =config.getFloat("VetoElectrons_PTMIN",  15. );
   static float  ETAMAX  =config.getFloat("VetoElectrons_ETAMAX", 2.5 );
-  static bool quick     =config.getBool("quick");  
+  static bool quick     =config.getBool("VetoElectrons_quick",true);  
   static string selection =config.getString("VetoElectron_Selection","Veto");
   //====================================================================
 
