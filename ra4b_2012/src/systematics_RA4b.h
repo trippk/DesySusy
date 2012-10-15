@@ -5,7 +5,7 @@
 #include "Jet.h"
 #include <vector>
 #include "./CMSSW_5_3_3_patch2/src/CondFormats/JetMETObjects/interface/JetCorrectorParameters.h"
-#include "./CMSSW_5_3_3_patch2/src/CondFormats/JetMETObjects/interface/SimpleJetCorrectionUncertainty.h"
+#include "./CMSSW_5_3_3_patch2/src/CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h"
 #include "CutFlow.h"
 #include "subTree.h"
 #include "subTreeFactory.h"
