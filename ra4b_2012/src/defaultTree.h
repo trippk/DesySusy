@@ -22,7 +22,7 @@ class defaultTree: public subTree {
  public:
 
    defaultTree();
-   virtual void Fill(EventInfo* info, EasyChain* tree, vector<Muon*> muons, vector<Electron*> electrons, vector<Jet*> jets, LorentzM& met);
+   virtual void Fill(EventInfo* info, EasyChain* tree, vector<Muon*>& muons, vector<Electron*>& electrons, vector<Jet*>& jets, LorentzM& met);
    virtual void Write();
   protected:
 

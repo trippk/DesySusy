@@ -22,12 +22,14 @@ class Nminus1Tree: public subTree {
  public:
 
    Nminus1Tree();
-   virtual void Fill(EventInfo* info, EasyChain* tree, vector<Muon*> muons_in, vector<Electron*> electrons_in, vector<Jet*> jets_in, LorentzM& met_in);
+   virtual void Fill(EventInfo* info, EasyChain* tree, vector<Muon*>& muons_in, vector<Electron*>& electrons_in, vector<Jet*>& jets_in, LorentzM& met_in);
    virtual void Write();
   protected:
    
    template <class T> void SetVector(LorentzM* v, T ref);
    void SetToZero();
+   void FirstFill( EasyChain* tree);
+   void FillScan( EasyChain* tree);
 
    TTree* mytree;
    mt2w_bisect::mt2w_interface mt2w_calc;
@@ -65,6 +67,14 @@ class Nminus1Tree: public subTree {
 
    double      mtEl;
    double      mtMu;
+
+   map<TString, bool> scanBool;
+   map<TString, int> scanInt;
+   map<TString, float> scanFloat;
+   map<TString, double> scanDouble;
+
+   int nFill;
+   int leptonsFromTop;
 
 };
 

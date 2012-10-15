@@ -62,7 +62,7 @@ void defaultTree::Write(){
   mytree->Write();
 };
 
-void defaultTree::Fill( EventInfo* info, EasyChain* tree, vector<Muon*> muons, vector<Electron*> electrons, vector<Jet*> jets, LorentzM& met) {
+void defaultTree::Fill( EventInfo* info, EasyChain* tree, vector<Muon*>& muons, vector<Electron*>& electrons, vector<Jet*>& jets, LorentzM& met) {
   
 
   event = info->Event;

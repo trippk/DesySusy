@@ -1,8 +1,15 @@
 #include "Nminus1Tree.h"
+#include "TLeaf.h"
+#include "TObjArray.h"
+#include "ConfigReader.h"
 
+std::vector<int> GetDaughters(int ParticleIndex, std::vector<int>* MotherIndex);
+int Decay(int ParticleIndex, std::vector<int>* MotherIndex, std::vector<int>* PdgId, TString spazio);
+TString IdToString(int id);
 
 Nminus1Tree::Nminus1Tree(){
      
+  nFill=0;
   mytree = new TTree("subTree","a subTree");
   
   event=0;
@@ -45,6 +52,8 @@ Nminus1Tree::Nminus1Tree(){
 
   mtEl=0.;
   mtMu=0.;
+
+  leptonsFromTop=0;
 
   mytree->Branch("Event",&event,"event/I");
   mytree->Branch("Run",&run,"run/I");
@@ -102,7 +111,9 @@ Nminus1Tree::Nminus1Tree(){
   mytree->Branch("MHTSig",&MHTSig,"MHTSig/D");
 
   mytree->Branch("mtEl",&mtEl,"mtEl/D");
-  mytree->Branch("mtMu",&mtMu,"mtMu/D");				
+  mytree->Branch("mtMu",&mtMu,"mtMu/D");
+				
+  mytree->Branch("leptonsFromTop",&leptonsFromTop,"leptonsFromTop/I");
 
 }
 
@@ -110,8 +121,14 @@ void Nminus1Tree::Write(){
   mytree->Write();
 };
 
-void Nminus1Tree::Fill( EventInfo* info, EasyChain* tree, vector<Muon*> muons_in, vector<Electron*> electrons_in, vector<Jet*> jets_in, LorentzM& met_in) {
-    
+void Nminus1Tree::Fill( EventInfo* info, EasyChain* tree, vector<Muon*>& muons_in, vector<Electron*>& electrons_in, vector<Jet*>& jets_in, LorentzM& met_in) {
+   
+  nFill++;
+
+  if (nFill == 1) {
+    this->FirstFill(tree);
+  }
+  
   this->SetToZero();
 
   event = info->Event;
@@ -171,8 +188,101 @@ void Nminus1Tree::Fill( EventInfo* info, EasyChain* tree, vector<Muon*> muons_in
     mtMu=sqrt(2*muPt*MET*(1-cos(mu->Phi()-vMET->Phi() ) ) );;
   }
 
+  this->FillScan(tree);
+
+  leptonsFromTop=0;
+
+  ConfigReader config;
+
+  static bool isData=config.getBool("isData");
+
+  if (!isData) {
+    std::vector<int>& PdgId  = tree->Get( &PdgId, "genPdgId");
+    std::vector<int>& Status = tree->Get( &Status, "genStatus");
+    std::vector<int>& MotherIndex = tree->Get( &MotherIndex, "genMotherIndex");
+    std::vector<int>& MotherPdgId = tree->Get( &MotherPdgId, "genMotherPdgId");
+    
+    for (int igen=0; igen<Status.size(); igen++) {
+      if (abs(PdgId.at(igen))==6) {
+	//std::cout<<IdToString(PdgId.at(igen)) << std::endl;
+	leptonsFromTop+=Decay(igen,&MotherIndex,&PdgId,"");
+      }
+    }
+  }
+
   mytree->Fill();
 };
+
+void Nminus1Tree::FirstFill(EasyChain* tree){
+
+  TObjArray* leaves= tree->GetListOfLeaves();
+  int entries=leaves[0].GetEntries();
+  
+  for (int i=0; i<leaves[0].GetEntries(); i++){
+    
+    TLeaf* leaf=(TLeaf*) leaves[0][i];
+    TString name=leaf->GetTitle();
+    
+    if (name.Contains("susyScan") > 0) {
+      TString type=leaf->GetTypeName();
+      type.ToLower();
+      if (type.Contains("bool") > 0)
+	scanBool[name]=0;
+      else if (type.Contains("int") > 0)
+	scanInt[name]=0;
+      else if (type.Contains("float") > 0 )
+	scanFloat[name]=0.; 
+      else if (type.Contains("double") > 0)
+	scanDouble[name]=0.; 
+    }
+  }
+
+  map<TString, bool>::iterator itScanBool;
+  for (itScanBool = scanBool.begin(); itScanBool != scanBool.end(); ++itScanBool) {
+    TString nameType=itScanBool->first; nameType+="/B";
+    mytree->Branch(itScanBool->first, &itScanBool->second, nameType);
+  }
+
+  map<TString, int>::iterator itScanInt;
+  for (itScanInt = scanInt.begin(); itScanInt != scanInt.end(); ++itScanInt) {
+    TString nameType=itScanInt->first; nameType+="/I";
+    mytree->Branch(itScanInt->first, &itScanInt->second, nameType);
+  }
+
+  map<TString, float>::iterator itScanFloat;
+  for (itScanFloat = scanFloat.begin(); itScanFloat != scanFloat.end(); ++itScanFloat) {
+    TString nameType=itScanFloat->first; nameType+="/F";
+    mytree->Branch(itScanFloat->first, &(itScanFloat->second), nameType);
+  }
+
+  map<TString, double>::iterator itScanDouble;
+  for (itScanDouble = scanDouble.begin(); itScanDouble != scanDouble.end(); ++itScanDouble) {
+    TString nameType=itScanDouble->first; nameType+="/D";
+    mytree->Branch(itScanDouble->first, &(itScanDouble->second), nameType);
+  }
+
+}
+
+void Nminus1Tree::FillScan(EasyChain* tree){
+
+  map<TString, bool>::iterator itScanBool;
+  map<TString, int>::iterator itScanInt;
+  map<TString, float>::iterator itScanFloat;
+  map<TString, double>::iterator itScanDouble;
+
+  for (itScanBool = scanBool.begin(); itScanBool != scanBool.end(); ++itScanBool)
+    itScanBool->second=tree->Get( itScanBool->second, itScanBool->first);
+
+  for (itScanInt = scanInt.begin(); itScanInt != scanInt.end(); ++itScanInt)
+    itScanInt->second=tree->Get( itScanInt->second, itScanInt->first);
+  
+  for (itScanFloat = scanFloat.begin(); itScanFloat != scanFloat.end(); ++itScanFloat)
+    itScanFloat->second=tree->Get( itScanFloat->second, itScanFloat->first);
+
+  for (itScanDouble = scanDouble.begin(); itScanDouble != scanDouble.end(); ++itScanDouble)
+    itScanDouble->second=tree->Get( itScanDouble->second, itScanDouble->first);
+  
+}
 
 void Nminus1Tree::SetToZero(){
 
@@ -216,5 +326,67 @@ void Nminus1Tree::SetToZero(){
 
   mtEl=0.;
   mtMu=0.;
+
+  leptonsFromTop=0;
+
+}
+
+std::vector<int> GetDaughters(int ParticleIndex, std::vector<int>* MotherIndex) {
+
+  std::vector<int> daughters;
+  daughters.clear();
+
+  for( int igen=0; igen<MotherIndex->size(); igen++) {
+    if (MotherIndex->at(igen) == ParticleIndex)
+      daughters.push_back(igen);
+  }
+  return daughters;
+}
+
+
+int Decay(int ParticleIndex, std::vector<int>* MotherIndex, std::vector<int>* PdgId, TString spazio) {
+
+  TString spazionew="\t"; spazionew+=spazio;
+
+  std::vector<int> daughters;
+  daughters.clear();
+  daughters=GetDaughters( ParticleIndex, MotherIndex );
+
+  int count=0;
+
+  for( int igen=0; igen<daughters.size(); igen++) {
+    int id = PdgId->at(daughters.at(igen));
+    //std::cout<<spazio<< "'------>" << IdToString(id) << std::endl;
+    if ( abs(id) == 6 ||  abs(id) == 24 || abs(id) == 15 )
+      count+=Decay(daughters.at(igen), MotherIndex, PdgId, spazionew);
+    if ( abs(id) == 11 ||  abs(id) == 13 )
+      count++;
+  }
+
+  return count;
+}
+
+TString IdToString(int id){
+  TString particle;
+  particle="";
+  if (id<0) particle+="anti-";
+
+  id=abs(id);
+  if (id==1){ particle+="d"; }
+  else if (id==2) {particle+="u";}
+  else if (id==3) {particle+="s";}
+  else if (id==4) {particle+="c";}
+  else if (id==5) {particle+="b";}
+  else if (id==6) {particle+="t";}
+  else if (id==11){particle+="e";}
+  else if (id==12){particle+="nu_e";}
+  else if (id==13){particle+="mu";}
+  else if (id==14){particle+="nu_mu";}
+  else if (id==15){particle+="tau";}
+  else if (id==16){particle+="nu_tau";}
+  else if (id==24){particle+="W+";}
+  else {particle+=id;}
+
+  return particle;
 
 }
