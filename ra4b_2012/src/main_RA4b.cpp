@@ -541,8 +541,8 @@ int main(int argc, char** argv){
 
   for (int isrc = 0; isrc < nsrc; isrc++) {
     const char *name = srcnames[isrc];
-    //std::string test="src/jetUncertainties/Summer12_V2_DATA_AK5PF_UncertaintySources.txt";
-    std::string test="/tmp/Summer12_V2_DATA_AK5PF_UncertaintySources.txt";
+    std::string test="src/CMSSW_5_3_3_patch2/src/CondFormats/JetMETObjects/data/Summer12_V2_DATA_AK5PF_UncertaintySources.txt";
+    //std::string test="/tmp/Summer12_V2_DATA_AK5PF_UncertaintySources.txt";
     JetCorrectorParameters *p ;
     if (systematics.IsEnabled()){
       p= new JetCorrectorParameters(test, name);
@@ -550,8 +550,9 @@ int main(int argc, char** argv){
     }
   }
   //==========Total uncertainty for reference
-  std::string test  ="/tmp/Summer12_V2_DATA_AK5PF_UncertaintySources.txt";
-  //std::string test  ="src/jetUncertainties/Summer12_V2_DATA_AK5PF_UncertaintySources.txt";
+  //  std::string test  ="/tmp/Summer12_V2_DATA_AK5PF_UncertaintySources.txt";
+  std::string test="src/CMSSW_5_3_3_patch2/src/CondFormats/JetMETObjects/data/Summer12_V2_DATA_AK5PF_UncertaintySources.txt";
+
   if(systematics.IsEnabled()){
     systematics.total = new JetCorrectionUncertainty(*(new JetCorrectorParameters(test, "Total")));
   }

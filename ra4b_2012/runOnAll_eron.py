@@ -34,6 +34,9 @@ cd $OUTDIR
 ##initialize glite, dctools
 ini glite
 ini dctools
+##pwd
+cp ../../Summer12_V2_DATA_AK5PF_UncertaintySources.txt /tmp/
+##ls -lrt /tmp
 echo job start at `date`
 
 #echo total jobs at the NAF `qstat | wc -l`
@@ -425,12 +428,12 @@ def removeDuplicates():
 		ir=file.count('_')
 		kin=file.rfind('_')
 		if ir<=3:
-			print 'Warning - file name not well formed: '+file
+			#print 'Warning - file name not well formed: '+file
 			cleaned.append(file)
 			continue
 		comp=file[:kin-1]
 		if comp.find('_') < 0: 
-			print 'Warning - file name not well formed: '+file
+			#print 'Warning - file name not well formed: '+file
 			cleaned.append(file)
 			continue
 		if comp==last:
@@ -971,7 +974,7 @@ if __name__ == "__main__":
 		outmergetreefile=outmergefile.replace('_merge.root','_tree_merge.root')
 		#if only one merging is necessary, then its different:
 		if nlist[-1]==0:
-			outmergetreefile=outname.replace('.root',+'_'+Estimation+'_'+Tail+'_Tree.root')
+			outmergetreefile=outname.replace('.root','_'+Estimation+'_'+Tail+'_Tree.root')
 		#
 		#
 		#
@@ -1040,6 +1043,7 @@ if __name__ == "__main__":
 		print 'on the final merge, the files are ',treefilelist
 		createTreeMergeScript(treefilelist,outmergetreefile)
 		if not noJoin:
+			#pass
 			out=commands.getoutput('qsub -l site=hh -m a -hold_jid '+treejobids+' treeMerge_script')
 		#
 		#
