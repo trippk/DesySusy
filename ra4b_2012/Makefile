@@ -36,7 +36,7 @@ endif
 
 ROOTLIBS    = `root-config --libs` -lGenVector
 CXX         = g++ -g3 -O1
-CXXFLAGS    = `root-config --cflags` -I ./ 
+CXXFLAGS    = `root-config --cflags` -I ./  -I ./src -I ./src/CMSSW_5_3_3_patch2/src
 LD          = g++
 LDFLAGS     = `root-config --ldflags`
 
@@ -72,6 +72,7 @@ clean:
 
 .cpp.o:
 		$(CXX) $(CXXFLAGS) -c $<
+		$(info .cpp.p rule got called!)
 .C.o:
 		$(CXX) $(CXXFLAGS) -c $<
 ConfigReader.o : ConfigReader.cpp
