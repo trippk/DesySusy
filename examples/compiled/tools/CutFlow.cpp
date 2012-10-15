@@ -98,8 +98,20 @@ void CutSet::printFlow(const TString& rawCuts) {
 
 };
 
+void CutSet::setTDir(const TString& dirname){
+
+
+  //  cout<<"trying to make the dir "<<dirname<<endl;
+  TDirectory* newDir= (TDirectory*)tfile->mkdir(dirname);
+  if (newDir==0){
+    cout<<"ignore the Error in <TFile::mkdir>: above. It's OK"<<endl;
+  }
+  //  cout<<"newDir is "<<newDir<<endl;
+  tdir=(TDirectory*)tfile->Get(dirname);
+}
+
 void CutSet::setTFile(TFile *f){
-	TDirectory* mainDir=0;
+        TDirectory* mainDir=0;
 	if(f!=0)        mainDir = f->GetDirectory("/");
 	if(mainDir!=0) 	   tdir = mainDir->mkdir("CutFlow");
 	if(tdir==0) { 
@@ -111,7 +123,8 @@ void CutSet::setTFile(TFile *f){
 
 void CutSet::dumpToHist(){
 
-	int bins=allCuts.size();
+  cout<<"dumping it "<<endl;
+  	int bins=allCuts.size();
 
 	// remove spaces from name
 	TString hname;
