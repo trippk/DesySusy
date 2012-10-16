@@ -8,8 +8,7 @@
 #
   VPATH = ./src
   SRCDIR   = ./src/
-  SOURCES  = main_RA4b.cpp Nminus1Tree.cpp defaultTree.cpp makeJets.cpp makeMuons.cpp makeElectrons.cpp vertices_RA4b.cpp triggers_RA4b.cpp triggers_RA4b_frequency.cpp evtqual_RA4b.cpp metAndHT_RA4b.cpp SetTriggers_RA4b.cpp SetConditions_RA4b.cpp ConfigReader.cpp CutFlow.cpp cschalo_RA4b.cpp trackingFailure_RA4b.cpp AnalysisObject.cpp Particle.cpp Electron.cpp Muon.cpp Jet.cpp eventselection.cpp HistoMaker.cpp mt2w_bisect.cpp mt2w_interface.cpp systematics_RA4b.cpp makeSystematics.cpp
-
+  SOURCES  = main_RA4b.cpp Nminus1Tree.cpp defaultTree.cpp makeJets.cpp makeMuons.cpp makeElectrons.cpp vertices_RA4b.cpp triggers_RA4b.cpp triggers_RA4b_frequency.cpp evtqual_RA4b.cpp metAndHT_RA4b.cpp SetTriggers_RA4b.cpp SetConditions_RA4b.cpp ConfigReader.cpp CutFlow.cpp cschalo_RA4b.cpp trackingFailure_RA4b.cpp AnalysisObject.cpp Particle.cpp Electron.cpp Muon.cpp Jet.cpp eventselection.cpp HistoMaker.cpp mt2w_bisect.cpp mt2w_interface.cpp systematics_RA4b.cpp makeSystematics.cpp anDiLep.cpp
 # and create this executable
 #
   EXEC=myAnalysis
@@ -26,7 +25,11 @@ OBJS     := $(OBJS:.C=.o)
 OBJS     := $(OBJS:.cpp=.o)
 $(info Using the following files: $(SOURCES) )
 $(info Using the following files: $(OBJS) )
- 
+
+#Define sources for test. Leaves out some files for simplicity.
+SOURCES_TEST  = Nminus1Tree.cpp defaultTree.cpp makeJets.cpp makeMuons.cpp makeElectrons.cpp vertices_RA4b.cpp triggers_RA4b.cpp triggers_RA4b_frequency.cpp evtqual_RA4b.cpp metAndHT_RA4b.cpp SetTriggers_RA4b.cpp SetConditions_RA4b.cpp ConfigReader.cpp CutFlow.cpp cschalo_RA4b.cpp trackingFailure_RA4b.cpp AnalysisObject.cpp Particle.cpp Electron.cpp Muon.cpp Jet.cpp eventselection.cpp HistoMaker.cpp mt2w_bisect.cpp mt2w_interface.cpp anDiLep.cpp
+OBJS_TEST      = $(notdir $(SOURCES_TEST))
+OBJS_TEST     := $(OBJS_TEST:.cpp=.o)	 
 
 #------------------------------------------------------------------------------
 
@@ -43,12 +46,15 @@ LDFLAGS     = `root-config --ldflags`
 .SUFFIXES: .cpp .C .o .so
 
 # do we have a 32-bit root?
-BUILDTYPE = $(findstring 32, $(shell file ${ROOTSYS}/lib/libCore.so ) )
+BUILDTYPE = $(findstring 64-bit, $(shell file -L ${ROOTSYS}/lib/libCore.so ) )
 # check if we have changed the environment (32/64) and recompile everything
-FILETYPE =  $(findstring 32, $(shell file NtupleTools2Dict.o ) )
+FILETYPE =  $(findstring 64-bit, $(shell file -L NtupleTools2Dict.o ) )
 ifneq (${BUILDTYPE},${FILETYPE}) 
+$(info Different build-types for ROOT and NtupleTools2Dict. Recompiling all.)
 $(shell rm *.o NtupleTools2Dict.cxx )
 endif
+
+
 
 #------------------------------------------------------------------------------
 
@@ -79,6 +85,12 @@ ConfigReader.o : ConfigReader.cpp
 		$(CXX) $(CXXFLAGS) -c $<
 CutFlow.o : CutFlow.cpp
 		$(CXX) $(CXXFLAGS) -c $<
+
+test.x: test.o $(OBJS_TEST) NtupleTools2Dict.o
+	@echo "Creating test..."
+	$(LD) $(LDFLAGS) $^ $(ROOTLIBS) $(MORELIBS)  -o $@
+	@echo "$@ done"
+
 
 
 
