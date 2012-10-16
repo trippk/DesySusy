@@ -15,12 +15,14 @@
 
 using namespace std;
 
+extern bool pcp;
+
 bool triggers_RA4b_frequency(EasyChain* tree, vector<const char*>&triggernames){
 
   bool OK=false;
 
   //  extern vector<string>triggernames;   
-  extern bool checkthisevent;
+  //extern bool checkthisevent;
   static ConfigReader config;
   
   static CutSet TriggerFlowFrequency("trigger flow frequency");
@@ -28,9 +30,9 @@ bool triggers_RA4b_frequency(EasyChain* tree, vector<const char*>&triggernames){
   TriggerFlowFrequency.autodump=true;
   
 
- 
 
-  if(checkthisevent){
+  //if(checkthisevent){
+  if(pcp){
     cout<<"======================================"<<endl;
     cout<<"CHECKING THE TRIGGER ON THIS EVENT "<<endl;
   }
