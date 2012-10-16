@@ -321,7 +321,13 @@ void anDiLep::Fill(EventInfo* info, EasyChain* tree, std::vector<Muon*> & muons_
     return;
   }
 
+  if (!info) {
+    cout << "anDiLep::Fill >> ERROR: info pointer NULL!" << endl;
+    return;
+  }
+
   this->SetToZero();
+
 
   *event = info->Event;
   *run = info->Run;    
@@ -344,8 +350,8 @@ void anDiLep::Fill(EventInfo* info, EasyChain* tree, std::vector<Muon*> & muons_
 
   for (int ijet=0; ijet<jets_in.size() ; ijet++) {
     *HT+=jets_in.at(ijet)->Pt();
-    HTx+=jets_in.at(ijet)->p4.Px();
-    HTy+=jets_in.at(ijet)->p4.Py();
+    HTx+=jets_in.at(ijet)->P4().Px();
+    HTy+=jets_in.at(ijet)->P4().Py();
     jets->push_back(jets_in.at(ijet)->P4());
     jetsPt->push_back(jets_in.at(ijet)->Pt());
     
