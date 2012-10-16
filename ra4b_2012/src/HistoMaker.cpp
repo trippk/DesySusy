@@ -4,7 +4,7 @@
 
 using namespace std;
 
-extern double EventWeight;
+//extern double EventWeight;
 
 HistoMaker::HistoMaker(const TString& pre, const char* dlm ):  delim(dlm), autodump(true), prefix(pre){
 
@@ -152,17 +152,17 @@ void HistoMaker::MakePlots( const TString& cutName, vector<Muon*> muons, vector<
 
   //cout<<"EventWeight in HistoMaker"<<EventWeight<<" in "<<cutName<<endl;
 
-  mt2wEle[cutName]->Fill(mt2w_calc.get_mt2w(electrons, jets, met),EventWeight);
-  mt2wMu[cutName] ->Fill(mt2w_calc.get_mt2w(    muons, jets, met),EventWeight);
+  mt2wEle[cutName]->Fill(mt2w_calc.get_mt2w(electrons, jets, met),global_event_weight);
+  mt2wMu[cutName] ->Fill(mt2w_calc.get_mt2w(    muons, jets, met),global_event_weight);
 
   for(int k=0;k< muons.size();++k){
-    MuPt[cutName]->Fill(muons.at(k)->pt(),EventWeight);
-    MuEta[cutName]->Fill(muons.at(k)->Eta(),EventWeight);
+    MuPt[cutName]->Fill(muons.at(k)->pt(),global_event_weight);
+    MuEta[cutName]->Fill(muons.at(k)->Eta(),global_event_weight);
   }
 
   for(int k=0;k< electrons.size();++k){
-    ElePt[cutName]->Fill(electrons.at(k)->pt(),EventWeight);
-    EleEta[cutName]->Fill(electrons.at(k)->Eta(),EventWeight);
+    ElePt[cutName]->Fill(electrons.at(k)->pt(),global_event_weight);
+    EleEta[cutName]->Fill(electrons.at(k)->Eta(),global_event_weight);
   }
 
   double hx=0.;
@@ -171,27 +171,27 @@ void HistoMaker::MakePlots( const TString& cutName, vector<Muon*> muons, vector<
   int nBJets=0;
   
   for(int k=0;k< jets.size();++k){
-    PtAllJets[cutName]->Fill(jets.at(k)->pt(),EventWeight);
-    if (k<NMonitorJets) (PtJet[k])[cutName]->Fill(jets.at(k)->pt(),EventWeight);
+    PtAllJets[cutName]->Fill(jets.at(k)->pt(),global_event_weight);
+    if (k<NMonitorJets) (PtJet[k])[cutName]->Fill(jets.at(k)->pt(),global_event_weight);
     hx += jets.at(k)->pP4()->px();
     hy += jets.at(k)->pP4()->py();
     ht += jets.at(k)->pt();
 
     if(jets.at(k)->IsBJet("CSV","Medium") ) {
       nBJets++;
-      PtAllBJets[cutName]->Fill(jets.at(k)->pt(),EventWeight);
-      BDisc[cutName]->Fill(jets.at(k)->BJetDisc("CSV"),EventWeight);
-      if (nBJets<NMonitorJets) (PtBJet[nBJets])[cutName]->Fill(jets.at(k)->pt(),EventWeight);
+      PtAllBJets[cutName]->Fill(jets.at(k)->pt(),global_event_weight);
+      BDisc[cutName]->Fill(jets.at(k)->BJetDisc("CSV"),global_event_weight);
+      if (nBJets<NMonitorJets) (PtBJet[nBJets])[cutName]->Fill(jets.at(k)->pt(),global_event_weight);
     }
     
   }
   
-  NJets[cutName]->Fill(jets.size(),EventWeight);
+  NJets[cutName]->Fill(jets.size(),global_event_weight);
   NBJets[cutName]->Fill(nBJets);
 
   HT[cutName]->Fill(ht);
-  MHT[cutName]->Fill(sqrt(hx*hx+hy*hy),EventWeight);
-  MET[cutName]->Fill(met.pt(),EventWeight);
+  MHT[cutName]->Fill(sqrt(hx*hx+hy*hy),global_event_weight);
+  MET[cutName]->Fill(met.pt(),global_event_weight);
   double ymet=met.pt()/sqrt(ht);
   YMET[cutName]->Fill(ymet);
 
@@ -210,11 +210,11 @@ void HistoMaker::MakePlots( const TString& cutName, vector<Muon*> muons, vector<
   if(D) regionID=3;
   
   if (regionID>-1) {
-    (NJets_ABCD[regionID])[cutName]->Fill(jets.size(),EventWeight);
-    (MET_ABCD[regionID])[cutName]->Fill(met.pt(),EventWeight);
+    (NJets_ABCD[regionID])[cutName]->Fill(jets.size(),global_event_weight);
+    (MET_ABCD[regionID])[cutName]->Fill(met.pt(),global_event_weight);
     for(int k=0;k< jets.size();++k){
-      (PtAllJets_ABCD[regionID])[cutName]->Fill(jets.at(k)->pt(),EventWeight);
-      if(k<NMonitorJets) (PtJet_ABCD[k][regionID])[cutName]->Fill(jets.at(k)->pt(),EventWeight);
+      (PtAllJets_ABCD[regionID])[cutName]->Fill(jets.at(k)->pt(),global_event_weight);
+      if(k<NMonitorJets) (PtJet_ABCD[k][regionID])[cutName]->Fill(jets.at(k)->pt(),global_event_weight);
     }
   }
  
