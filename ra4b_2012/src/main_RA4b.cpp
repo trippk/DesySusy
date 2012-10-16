@@ -59,33 +59,21 @@ using namespace ROOT::Math::VectorUtil;
 //                   GLOBAL VARIABLES
 //===================================================================
 
-bool checkthisevent=false;
+bool pcp = false; //Set to true for debugging.
 
-vector<string> triggernames;
-vector<string> triggernames_short;
-bool pcp;
-double EventWeight;
-
-
+//Globals to remove
+//bool checkthisevent=false;
+//vector<string> triggernames;
+//vector<string> triggernames_short;
+//double EventWeight;
 
 //================================================================================
 int main(int argc, char** argv){
 
-
-
-  //MT2W CALCULATOR
-  mt2w_bisect::mt2w_interface mt2w_calc;
-
-  //
-  const double PI = 4.0*atan(1.0);  
-
-
   //PCP=TRUE FOR DEBUGGING
   pcp=false;
 
-
-  EventWeight=1.0;
-
+  double EventWeight=1.0;
 
   //CONFIG. The program will always take the file config.txt in the output directory
   //specified in the execution of runOnAll
@@ -677,11 +665,11 @@ int main(int argc, char** argv){
     //cout << "weight before PUrw -> " << EventWeight << endl;
     EW_AfterPU->Fill(EventWeight);
     CutSet::global_event_weight  = EventWeight;
-
+    HistoMaker::global_event_weight = EventWeight; //Set the weight to be used in the HistoMaker class
     //==============================================
 
 
-    if(checkthisevent){
+    if(pcp){
       cout<<"=================================================== "<<endl;
       cout<<"going to check the event "<<Event<<endl;
       cout<<"=================================================== "<<endl;
