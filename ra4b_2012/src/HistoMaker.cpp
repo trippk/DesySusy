@@ -187,15 +187,15 @@ void HistoMaker::MakePlots( const TString& cutName, vector<Muon*> muons, vector<
   }
   
   NJets[cutName]->Fill(jets.size(),global_event_weight);
-  NBJets[cutName]->Fill(nBJets);
+  NBJets[cutName]->Fill(nBJets,global_event_weight);
 
-  HT[cutName]->Fill(ht);
+  HT[cutName]->Fill(ht, global_event_weight);
   MHT[cutName]->Fill(sqrt(hx*hx+hy*hy),global_event_weight);
   MET[cutName]->Fill(met.pt(),global_event_weight);
   double ymet=met.pt()/sqrt(ht);
-  YMET[cutName]->Fill(ymet);
+  YMET[cutName]->Fill(ymet, global_event_weight);
 
-  HT_YMET[cutName]->Fill(ht,ymet);
+  HT_YMET[cutName]->Fill(ht,ymet, global_event_weight);
 
   int regionID=-1;
 
