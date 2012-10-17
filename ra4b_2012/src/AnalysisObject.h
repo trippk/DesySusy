@@ -14,47 +14,39 @@ class AnalysisObject {
 protected:
 
   LorentzM  p4;
-  LorentzM* pp4; 
+  LorentzM* pp4_original; 
   int       maptotree;
-  vector<TString> allIDs;
-  map<TString, bool> id;
+  std::map<std::string, bool> id;
   
 public:
-  AnalysisObject(){
-    pp4=0;
-    allIDs.clear();
-    id.clear();
-  }
-
-  ~AnalysisObject(){
-    pp4=NULL;
-  }
-
+  
+  AnalysisObject();
   AnalysisObject(const AnalysisObject& copy);
+  ~AnalysisObject();
 
-  LorentzM P4();
-  LorentzM* pP4();
+  LorentzM P4() const;
+  LorentzM* pOriginalP4() const;
 
-  double Pt();
-  double pt();
-  double Eta();
-  double eta();
-  double Phi();
-  double phi();
+  double Pt() const;
+  double pt() const;
+  double Eta() const;
+  double eta() const;
+  double Phi() const;
+  double phi() const;
 
-  double E();
-  double e();
-  double Px();
-  double px();
-  double Py();
-  double py();
-  double Pz();
-  double pz();
+  double E() const;
+  double e() const;
+  double Px() const;
+  double px() const;
+  double Py() const;
+  double py() const;
+  double Pz() const;
+  double pz() const;
 
-  int GetIndexInTree();
+  int GetIndexInTree() const;
 
-  bool IsID(string id);
-  void SetID(string key, bool value);
+  bool IsID(const string & id) const;
+  void SetID(const string & key, bool value);
 
   void Set(int maptotree_In, LorentzM * momuntum_In);
 };

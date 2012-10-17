@@ -10,7 +10,7 @@
 using namespace std;
 using namespace ROOT::Math::VectorUtil;
 
-class Particle: public AnalysisObject {
+class Particle : public AnalysisObject {
   
  protected:
   int       charge;
@@ -20,23 +20,19 @@ class Particle: public AnalysisObject {
 
  public:
   Particle(){
-    pp4=0;
     charge=99;
     flavor="undefined";
     particleID=0;
     relIso=-1.;
-    maptotree=-1;
-    allIDs.clear();
-    id.clear();
   }
 
   ~Particle(){}
 
-  int Charge();
-  string Flavor();
-  int ParticleID();
-  float RelIso();
-  bool IsIso(double ISO_CUT=0.10);
+  int Charge() const ;
+  string Flavor() const;
+  int ParticleID() const;
+  float RelIso() const;
+  bool IsIso(double ISO_CUT=0.10) const;
 
   void SetCharge(int charge_In);
   void SetFlavor(string flavor_In);
@@ -45,7 +41,7 @@ class Particle: public AnalysisObject {
 
 
   //SET IS OVERLOADED
-  virtual void Set(int maptotree_In, LorentzM * momuntum_In);
+/*   virtual void Set(int maptotree_In, LorentzM * momuntum_In); */
   virtual void Set(int maptotree_In, LorentzM * momuntum_In, int particleID_In, int charge_In, string flavor_In, double relIso_In);
   virtual void Set(int maptotree_In, LorentzM* momuntum_In, int charge_In, double relIso_In);
 };

@@ -8,13 +8,13 @@ using namespace ROOT::Math::VectorUtil;
 
 
 
-void Electron::Set(int maptotree_In,LorentzM* momentum_In){
+// void Electron::Set(int maptotree_In,LorentzM* momentum_In){
 
-  pp4=momentum_In;
-  p4=*pp4;
-  maptotree=maptotree_In;
+//   pp4=momentum_In;
+//   p4=*pp4;
+//   maptotree=maptotree_In;
 
-}
+// }
 
 void Electron::Set(int maptotree_In, LorentzM * momentum_In, int particleID_In, int charge_In, string flavor_In, double relIso_In){
   this->Set(maptotree_In, momentum_In, charge_In, relIso_In);
@@ -23,7 +23,7 @@ void Electron::Set(int maptotree_In, LorentzM * momentum_In, int particleID_In, 
 
 void Electron::Set(int maptotree_In, LorentzM * momentum_In, int charge_In, double relIso_In){
 
-  this->Set(maptotree_In,momentum_In);
+  this->AnalysisObject::Set(maptotree_In,momentum_In);
 
   //SET THE CHARGE
   this->SetCharge(charge_In);

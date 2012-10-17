@@ -106,20 +106,14 @@ void Jet::SetWP(string cme, map<string, map<string, double> >* bJetWP){
 };
 
 void Jet::Set(int maptotree_In, LorentzM * pmomuntum_In, double scaleCorrFactor_In, string type_In){
-
-  //SET THE MAP TO THE TREE
-  maptotree=maptotree_In;
-
-  //SET THE FOURVECTOR
-  pp4=pmomuntum_In;
-  p4=*pp4;
+  
+  AnalysisObject::Set(maptotree_In, pmomuntum_In);
 
   //SET SCALE CORRECTION FACTOR
   scaleCorrFactor=scaleCorrFactor_In;
 
   //SET THE TYPE
   type=type_In;
-
 }
 
 

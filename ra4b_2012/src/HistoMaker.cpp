@@ -173,8 +173,8 @@ void HistoMaker::MakePlots( const TString& cutName, vector<Muon*> muons, vector<
   for(int k=0;k< jets.size();++k){
     PtAllJets[cutName]->Fill(jets.at(k)->pt(),global_event_weight);
     if (k<NMonitorJets) (PtJet[k])[cutName]->Fill(jets.at(k)->pt(),global_event_weight);
-    hx += jets.at(k)->pP4()->px();
-    hy += jets.at(k)->pP4()->py();
+    hx += jets.at(k)->P4().px();
+    hy += jets.at(k)->P4().py();
     ht += jets.at(k)->pt();
 
     if(jets.at(k)->IsBJet("CSV","Medium") ) {

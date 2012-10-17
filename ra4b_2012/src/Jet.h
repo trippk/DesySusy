@@ -24,17 +24,12 @@ class Jet: public AnalysisObject {
   double correctionUncertainty_DOWN;
   double jetPt_ShiftedUP;
   
-
  public:
   Jet(){
-    pp4=0;
     genFlavor="";
-    maptotree=0;
-    allIDs.clear();
-    id.clear();
-    type = "";
     isMatch=0;
     scaleCorrFactor=0.;
+    type = "";
     bJetDisc.clear();
     correctionUncertainty_UP=99;
     correctionUncertainty_DOWN=99;
@@ -43,14 +38,10 @@ class Jet: public AnalysisObject {
   }
   Jet(int maptotree_In, LorentzM  *momuntum_In, double scaleCorrFactor_In=1., string type_In=""){
     //this->Jet();
-    pp4=0;
     genFlavor="";
-    maptotree=0;
-    allIDs.clear();
-    id.clear();
-    type = "";
     isMatch=0;
     scaleCorrFactor=0.;
+    type = "";
     bJetDisc.clear();
     correctionUncertainty_UP=99;
     correctionUncertainty_DOWN=99;

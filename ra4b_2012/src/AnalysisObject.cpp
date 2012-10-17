@@ -5,64 +5,77 @@
 using namespace std;
 using namespace ROOT::Math::VectorUtil;
 
-LorentzM AnalysisObject::P4(){return p4;}
-LorentzM* AnalysisObject::pP4(){return pp4;}
+AnalysisObject::AnalysisObject() : pp4_original(0), maptotree(-1) {
 
-double AnalysisObject::Pt() {return pp4->Pt();}
-double AnalysisObject::pt() {return pp4->Pt();}
-double AnalysisObject::Eta(){return pp4->Eta();}
-double AnalysisObject::eta(){return pp4->Eta();}
-double AnalysisObject::Phi(){return pp4->Phi();}
-double AnalysisObject::phi(){return pp4->Phi();}
+}
+AnalysisObject::AnalysisObject(const AnalysisObject& copy){
+  p4 = copy.p4;
+  pp4_original = copy.pp4_original;
+  maptotree = copy.maptotree;
+  id = copy.id;
+}
+AnalysisObject::~AnalysisObject() {
 
-double AnalysisObject::E() {return pp4->E();}
-double AnalysisObject::e() {return pp4->E();}
-double AnalysisObject::Px(){return pp4->Px();}
-double AnalysisObject::px(){return pp4->Px();}
-double AnalysisObject::Py(){return pp4->Py();}
-double AnalysisObject::py(){return pp4->Py();}
-double AnalysisObject::Pz(){return pp4->Pz();}
-double AnalysisObject::pz(){return pp4->Pz();}
-
-bool AnalysisObject::IsID(string key){
-
-  return id[key];
 }
 
-void AnalysisObject::SetID(string key, bool value){
+LorentzM AnalysisObject::P4() const {return p4;}
+LorentzM* AnalysisObject::pOriginalP4() const {return pp4_original;}
+
+double AnalysisObject::Pt() const {return p4.Pt();}
+double AnalysisObject::pt() const {return p4.Pt();}
+double AnalysisObject::Eta() const {return p4.Eta();}
+double AnalysisObject::eta() const {return p4.Eta();}
+double AnalysisObject::Phi() const {return p4.Phi();}
+double AnalysisObject::phi() const {return p4.Phi();}
+
+double AnalysisObject::E() const {return p4.E();}
+double AnalysisObject::e() const {return p4.E();}
+double AnalysisObject::Px() const {return p4.Px();}
+double AnalysisObject::px() const {return p4.Px();}
+double AnalysisObject::Py() const {return p4.Py();}
+double AnalysisObject::py() const {return p4.Py();}
+double AnalysisObject::Pz() const {return p4.Pz();}
+double AnalysisObject::pz() const {return p4.Pz();}
+
+int AnalysisObject::GetIndexInTree()const {return maptotree;}
+
+bool AnalysisObject::IsID(const string & key) const {
+  std::map<std::string, bool>::const_iterator it = id.find(key);
+
+  if (it == id.end() ) {
+    //std::cout << "AnalysisObject::IsID >> WARNING : Trying to get ID '" << key << "', which does not exist!" << std::endl;
+    return false;
+  }
+  else {
+    return it->second;
+  }
+
+}
+
+void AnalysisObject::SetID(const string & key, bool value){
   id[key]=value;
-  if( find(allIDs.begin(),allIDs.end(),key) == allIDs.end() ) allIDs.push_back(key);
+  return;
 }
-
-int AnalysisObject::GetIndexInTree(){return maptotree;}
 
 void AnalysisObject::Set(int maptotree_In, LorentzM* momuntum_In){
 
   //SET THE FOURVECTOR
-  pp4=momuntum_In;
-  p4=*pp4;
+  if (momuntum_In) {
+    pp4_original=momuntum_In;
+    p4=*pp4_original;
+  }
+  else {
+    cout << "AnalysisObject::Set >> ERROR momuntum_In is a NULL pointer!" << endl;
+    pp4_original = 0;
+    p4.SetPxPyPzE(0.,0.,0.,0.);
+  }
 
   //SET THE MAP TO THE TREE
   maptotree=maptotree_In;
 
+  return;
 }
 
 
 
-//DEFINE THE COPY CONSTRUCTOR
-AnalysisObject::AnalysisObject(const AnalysisObject& copy){
-
-
-  pp4=copy.pp4;
-  p4 = *pp4;
-  //otherwise, it would be pp4 = copy.pp4, and that's not
-  //what it should be.
-  
-  maptotree=copy.maptotree;
-  vector<TString> allIDS(copy.allIDs);
-  map<TString, bool> id(copy.id);
-  
-
-
-}
 
