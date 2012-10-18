@@ -4,28 +4,26 @@ using std::cout;
 using std::endl;
 using std::cerr;
 
-anDiLep::anDiLep() : treeToRead(0), treeToWrite(0) {
-
+anDiLep::anDiLep() : treeToRead(0), treeToWrite(0), nEntries(0), iEntry(0) {
   treeToWrite = new TTree("subTree", "a subTree");   ///Create a new tree to write.
-
   AllocateMemory();
-
   SetBranchesWrite();
 }
 
-anDiLep::anDiLep(TTree * treeToReadIn) : treeToRead(treeToReadIn), treeToWrite(0) {
-
-  SetToZero();   //Initialise
+anDiLep::anDiLep(TTree * treeToReadIn) : treeToRead(treeToReadIn), treeToWrite(0), nEntries(0), iEntry(0), event(0), run(0), weight(0), PUWeight(0), el(0), elPt(0), mu(0), muPt(0), njets(0), jets(0), jetsPt(0), bjetdisc(0), nbjets(0), isbjet(0), vMET(0), vMHT(0), MET(0), MHT(0), HT(0), elSig(0), muSig(0), METSig(0), MHTSig(0), mtEl(0), mtMu(0), mt2wEl(0), mt2wMu(0) {
 
   SetBranchesRead();
+
+  if (treeToRead) {
+    nEntries = treeToRead->GetEntries();
+  }
+
 }
 
 anDiLep::~anDiLep() {
-  
   if (treeToWrite) {
     DeallocateMemory();
   }
-
 }
 
 void anDiLep::AllocateMemory() {
@@ -281,7 +279,7 @@ void anDiLep::SetBranchesRead() {
   treeToRead->SetBranchAddress("Run",run);
   treeToRead->SetBranchAddress("Weight",weight);
   treeToRead->SetBranchAddress("PUWeight",PUWeight);
-
+  
   treeToRead->SetBranchAddress("el",&el);
   treeToRead->SetBranchAddress("elPt",&elPt);
   treeToRead->SetBranchAddress("mu",&mu);
@@ -300,15 +298,15 @@ void anDiLep::SetBranchesRead() {
   treeToRead->SetBranchAddress("MET",MET);
   treeToRead->SetBranchAddress("MHT",MHT);
   treeToRead->SetBranchAddress("HT",HT  );
-
+  
   treeToRead->SetBranchAddress("elSig",elSig  );
   treeToRead->SetBranchAddress("muSig",muSig  );
   treeToRead->SetBranchAddress("METSig",METSig);
   treeToRead->SetBranchAddress("MHTSig",MHTSig);
-
+  
   treeToRead->SetBranchAddress("mtEl",mtEl);
   treeToRead->SetBranchAddress("mtMu",mtMu);
-
+   
   treeToRead->SetBranchAddress("mt2wEl",mt2wEl);
   treeToRead->SetBranchAddress("mt2wMu",mt2wMu);
 
@@ -385,3 +383,23 @@ void anDiLep::Write(){
   if (treeToWrite) treeToWrite->Write();
 };
 
+bool anDiLep::Read(long getEntry) {
+
+  if (!treeToRead) {
+    return false;
+  }
+
+  long entryToGet = iEntry;
+
+  if (getEntry < 0) iEntry++;
+  else entryToGet = getEntry;
+
+  if (entryToGet < 0 || entryToGet >= nEntries) {
+    return false;
+  }
+  else {
+    treeToRead->GetEntry(entryToGet);
+    return true;
+  }
+
+}

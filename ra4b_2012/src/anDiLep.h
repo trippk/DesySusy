@@ -17,15 +17,6 @@
 
 
 class anDiLep : public subTree {
- public:
-
-   anDiLep();
-   anDiLep(TTree * treeToReadIn);
-   ~anDiLep();
-
-   virtual void Fill(EventInfo* info, EasyChain* tree, std::vector<Muon*> & muons_in, std::vector<Electron*> & electrons_in, std::vector<Jet*> & jets_in, LorentzM& met_in);
-   virtual void Write();
- 
  private:
 
    void AllocateMemory();///Allocate memory for internal members
@@ -39,6 +30,9 @@ class anDiLep : public subTree {
 
    TTree * treeToRead;
    TTree * treeToWrite;
+
+   long nEntries; //Total number of entries in treeToRead
+   long iEntry; //The next entry of treeToRead that will be read in ::Read
    
    /////////////////
    //Tree branches
@@ -80,6 +74,20 @@ class anDiLep : public subTree {
    double * mt2wMu;
    
    //--------------------------
+
+ public:
+
+   anDiLep();
+   anDiLep(TTree * treeToReadIn);
+   ~anDiLep();
+
+   virtual void Fill(EventInfo* info, EasyChain* tree, std::vector<Muon*> & muons_in, std::vector<Electron*> & electrons_in, std::vector<Jet*> & jets_in, LorentzM& met_in); //Adds information to the tree
+   virtual void Write(); //Writes the tree to the file
+
+   long getEntries() {return nEntries;} //Returns the total number of entries in tree to be read
+   bool Read(long getEntry = -1); //Reads in an entry from treeToRead. Will read in getEntry if greater than equal to zero. Returns true is read successful, false otherwise.
+ 
+   const std::vector<LorentzM> * getJets() {return jets;}
 
 };
 

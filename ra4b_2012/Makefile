@@ -23,13 +23,20 @@ OBJS      = $(notdir $(SOURCES))
 #OBJS     = $(SOURCES)
 OBJS     := $(OBJS:.C=.o)
 OBJS     := $(OBJS:.cpp=.o)
-$(info Using the following files: $(SOURCES) )
-$(info Using the following files: $(OBJS) )
+#$(info Using the following files: $(SOURCES) )
+#$(info Using the following files: $(OBJS) )
 
 #Define sources for test. Leaves out some files for simplicity.
 SOURCES_TEST  = Nminus1Tree.cpp defaultTree.cpp makeJets.cpp makeMuons.cpp makeElectrons.cpp vertices_RA4b.cpp triggers_RA4b.cpp triggers_RA4b_frequency.cpp evtqual_RA4b.cpp metAndHT_RA4b.cpp SetTriggers_RA4b.cpp SetConditions_RA4b.cpp ConfigReader.cpp CutFlow.cpp cschalo_RA4b.cpp trackingFailure_RA4b.cpp AnalysisObject.cpp Particle.cpp Electron.cpp Muon.cpp Jet.cpp eventselection.cpp HistoMaker.cpp mt2w_bisect.cpp mt2w_interface.cpp anDiLep.cpp
 OBJS_TEST      = $(notdir $(SOURCES_TEST))
 OBJS_TEST     := $(OBJS_TEST:.cpp=.o)	 
+
+#Define sources to be used with a shared library
+SOURCES_LIB  = AnalysisObject.cpp Particle.cpp Electron.cpp Muon.cpp Jet.cpp mt2w_bisect.cpp mt2w_interface.cpp anDiLep.cpp
+HEADERS_LIB = $(notdir $(SOURCES_LIB))
+HEADERS_LIB:= $(HEADERS_LIB:.cpp=.h)	
+OBJS_LIB   = $(notdir $(SOURCES_LIB))
+OBJS_LIB   := $(OBJS_LIB:.cpp=_sl.o)	 
 
 #------------------------------------------------------------------------------
 
@@ -74,7 +81,7 @@ NtupleTools2_h.h:  NtupleTools2.h
 	touch NtupleTools2_h.h 
         
 clean:
-	@rm -f myAnalysis *Dict.* *.so core $(OBJS) *.d 
+	@rm -f myAnalysis *Dict.* *Dict_* *.so core $(OBJS) $(OBJS_LIB) *.d 
 
 .cpp.o:
 		$(CXX) $(CXXFLAGS) -c $<
@@ -86,11 +93,20 @@ ConfigReader.o : ConfigReader.cpp
 CutFlow.o : CutFlow.cpp
 		$(CXX) $(CXXFLAGS) -c $<
 
+#Rules for creating a test program
 test.x: test.o $(OBJS_TEST) NtupleTools2Dict.o
 	@echo "Creating test..."
 	$(LD) $(LDFLAGS) $^ $(ROOTLIBS) $(MORELIBS)  -o $@
 	@echo "$@ done"
 
-
+#Rules for creating the linked library
+%_sl.o : %.cpp
+	$(CXX) -fPIC $(CXXFLAGS) -o $@ -c $<
+NtupleTools2Dict_sl.o: NtupleTools2Dict.cxx
+	 $(CXX) -fPIC $(CXXFLAGS) -D __NTHEADER___ -o $@ -c $<	
+libRA4bDict.cpp : $(HEADERS_LIB) libRA4bDict_Linkdef.h 
+	rootcint -f $@ -c -p $^
+libRA4b.so : $(OBJS_LIB) libRA4bDict_sl.o NtupleTools2Dict_sl.o
+	$(CXX) -shared $(LDFLAGS) $(ROOTLIBS) -o $@ $^ 
 
 
