@@ -44,34 +44,14 @@ class anDiLep : public subTree {
    double * PUWeight;
 
    std::vector<LorentzM> * el;
-   std::vector<double> * elPt;
    std::vector<LorentzM> * mu;
-   std::vector<double> * muPt;
-
-   int * njets;
    std::vector<LorentzM> * jets;
-   std::vector<double> *  jetsPt;
+
    std::vector<double> *  bjetdisc;
    int *  nbjets;
    std::vector<bool> * isbjet;
 
    LorentzM *   vMET;
-   LorentzM *   vMHT;
-
-   double   *   MET; 
-   double   *   MHT;
-   double   *   HT;
- 
-   double   *   elSig;
-   double   *   muSig;
-   double   *   METSig;
-   double   *   MHTSig;
-
-   double   *   mtEl;
-   double   *   mtMu;
-
-   double * mt2wEl;
-   double * mt2wMu;
    
    //--------------------------
 

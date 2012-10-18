@@ -10,7 +10,7 @@ anDiLep::anDiLep() : treeToRead(0), treeToWrite(0), nEntries(0), iEntry(0) {
   SetBranchesWrite();
 }
 
-anDiLep::anDiLep(TTree * treeToReadIn) : treeToRead(treeToReadIn), treeToWrite(0), nEntries(0), iEntry(0), event(0), run(0), weight(0), PUWeight(0), el(0), elPt(0), mu(0), muPt(0), njets(0), jets(0), jetsPt(0), bjetdisc(0), nbjets(0), isbjet(0), vMET(0), vMHT(0), MET(0), MHT(0), HT(0), elSig(0), muSig(0), METSig(0), MHTSig(0), mtEl(0), mtMu(0), mt2wEl(0), mt2wMu(0) {
+anDiLep::anDiLep(TTree * treeToReadIn) : treeToRead(treeToReadIn), treeToWrite(0), nEntries(0), iEntry(0), event(0), run(0), weight(0), PUWeight(0), el(0), mu(0), jets(0), bjetdisc(0), nbjets(0), isbjet(0), vMET(0) {
 
   SetBranchesRead();
 
@@ -34,34 +34,14 @@ void anDiLep::AllocateMemory() {
   PUWeight = new double(0.);
 
   el = new std::vector<LorentzM>();
-  elPt = new std::vector<double>();
   mu = new std::vector<LorentzM>();
-  muPt = new std::vector<double>();
   
-  njets = new int(0);
   jets = new std::vector<LorentzM>();
-  jetsPt = new std::vector<double>();
   bjetdisc = new std::vector<double>();
   nbjets = new int(0);
   isbjet = new std::vector<bool>();
 
   vMET = new LorentzM();
-  vMHT = new LorentzM();
-
-  MET     = new double(0.);
-  MHT	= new double(0.);
-  HT	= new double(0.);
-
-  elSig	= new double(0.);
-  muSig	= new double(0.);
-  METSig	= new double(0.);
-  MHTSig	= new double(0.);
-
-  mtEl	= new double(0.);
-  mtMu	= new double(0.);
-
-  mt2wEl	= new double(0.);
-  mt2wMu	= new double(0.);
 
   return;
 }
@@ -89,30 +69,13 @@ void anDiLep::DeallocateMemory() {
     delete el;
     el = 0;
   }
-  if (elPt) {
-    delete elPt;
-    elPt = 0;
-  }
   if (mu) {
     delete mu;
     mu = 0;
   }
-  if (muPt) {
-    delete muPt;
-    muPt = 0;
-  }
-
-  if (njets) {
-    delete njets;
-    njets = 0;
-  }
   if (jets) {
     delete jets;
     jets = 0;
-  }
-  if (jetsPt) {
-    delete jetsPt;
-    jetsPt = 0;
   }
   if (bjetdisc) {
     delete bjetdisc;
@@ -131,59 +94,6 @@ void anDiLep::DeallocateMemory() {
     delete vMET;
     vMET = 0;
   }
-  if (vMHT) {
-    delete vMHT;
-    vMHT = 0;
-  }
-
-
-  if (MET) {
-    delete MET;
-    MET = 0;
-  }
-  if (MHT) {
-    delete MHT;
-    MHT = 0;
-  }
-  if (HT) {
-    delete HT;
-    HT = 0;
-  }
-
-  if (elSig) {
-    delete elSig;
-    elSig = 0;
-  }
-  if (muSig) {
-    delete muSig;
-    muSig = 0;
-  }
-  if (METSig) {
-    delete METSig;
-    METSig = 0;
-  }
-  if (MHTSig) {
-    delete MHTSig;
-    MHTSig = 0;
-  }
-
-
-  if (mtEl) {
-    delete mtEl;
-    mtEl = 0;
-  }
-  if (mtMu) {
-    delete mtMu;
-    mtMu = 0;
-  }
-  if (mt2wEl) {
-    delete mt2wEl;
-    mt2wEl = 0;
-  }
-  if (mt2wMu) {
-    delete mt2wMu;
-    mt2wMu = 0;
-  }
 
   return;
 }
@@ -197,31 +107,14 @@ void anDiLep::SetToZero(){
   *PUWeight=0.0;
   
   el->clear();
-  elPt->clear();
   mu->clear();
-  muPt->clear();
   
-  *njets=0;
   jets->clear();
-  jetsPt->clear();
   bjetdisc->clear();
   *nbjets=0;
   isbjet->clear();
   
   vMET->SetPxPyPzE(0.,0.,0.,0.);
-  *MET=0.;
-  vMHT->SetPxPyPzE(0.,0.,0.,0.);
-  *MHT=0.;
-  *HT=0.;
-
-  *METSig = 0.;
-  *MHTSig = 0.;
-
-  *mtEl=0.;
-  *mtMu=0.;
-
-  *mt2wEl=0.;
-  *mt2wMu=0.;
 }
 
 void anDiLep::SetBranchesWrite() {
@@ -237,33 +130,14 @@ void anDiLep::SetBranchesWrite() {
   treeToWrite->Branch("PUWeight",PUWeight,"PUWeight/D");
 
   treeToWrite->Branch("el","std::vector<ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<float> > >", &el);
-  treeToWrite->Branch("elPt",elPt);
   treeToWrite->Branch("mu","std::vector<ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<float> > >", &mu);
-  treeToWrite->Branch("muPt",muPt);
 
-  treeToWrite->Branch("njets",njets,"njets/I");
   treeToWrite->Branch("jets", "std::vector<ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<float> > >", &jets);
-  treeToWrite->Branch("jetsPt", &jetsPt);
   treeToWrite->Branch("bjetdisc", &bjetdisc);
   treeToWrite->Branch("nbjets",nbjets, "nbjets/I");
   treeToWrite->Branch("isbjet",&isbjet);
 
   treeToWrite->Branch("vMET",vMET);
-  treeToWrite->Branch("MET",MET,"MET/D");
-  treeToWrite->Branch("vMHT", vMHT);
-  treeToWrite->Branch("MHT",MHT,"MHT/D");
-  treeToWrite->Branch("HT",HT,"HT/D");
-
-  treeToWrite->Branch("elSig",elSig,"elSig/D");
-  treeToWrite->Branch("muSig",muSig,"muSig/D");
-  treeToWrite->Branch("METSig",METSig,"METSig/D");
-  treeToWrite->Branch("MHTSig",MHTSig,"MHTSig/D");
-
-  treeToWrite->Branch("mtEl",mtEl,"mtEl/D");
-  treeToWrite->Branch("mtMu",mtMu,"mtMu/D");				
-
-  treeToWrite->Branch("mt2wEl",mt2wEl,"mt2wEl/D");
-  treeToWrite->Branch("mt2wMu",mt2wMu,"mt2wMu/D");
 
   return;
 }
@@ -281,34 +155,14 @@ void anDiLep::SetBranchesRead() {
   treeToRead->SetBranchAddress("PUWeight",PUWeight);
   
   treeToRead->SetBranchAddress("el",&el);
-  treeToRead->SetBranchAddress("elPt",&elPt);
   treeToRead->SetBranchAddress("mu",&mu);
-  treeToRead->SetBranchAddress("muPt",&muPt);
 
-  treeToRead->SetBranchAddress("njets",njets);
   treeToRead->SetBranchAddress("jets", &jets);
-  treeToRead->SetBranchAddress("jetsPt", &jetsPt);
   treeToRead->SetBranchAddress("bjetdisc", &bjetdisc);
   treeToRead->SetBranchAddress("nbjets",nbjets);
   treeToRead->SetBranchAddress("isbjet",&isbjet);
 
   treeToRead->SetBranchAddress("vMET",&vMET);
-  treeToRead->SetBranchAddress("vMHT", &vMHT);
-
-  treeToRead->SetBranchAddress("MET",MET);
-  treeToRead->SetBranchAddress("MHT",MHT);
-  treeToRead->SetBranchAddress("HT",HT  );
-  
-  treeToRead->SetBranchAddress("elSig",elSig  );
-  treeToRead->SetBranchAddress("muSig",muSig  );
-  treeToRead->SetBranchAddress("METSig",METSig);
-  treeToRead->SetBranchAddress("MHTSig",MHTSig);
-  
-  treeToRead->SetBranchAddress("mtEl",mtEl);
-  treeToRead->SetBranchAddress("mtMu",mtMu);
-   
-  treeToRead->SetBranchAddress("mt2wEl",mt2wEl);
-  treeToRead->SetBranchAddress("mt2wMu",mt2wMu);
 
   return;
 }
@@ -334,24 +188,12 @@ void anDiLep::Fill(EventInfo* info, EasyChain* tree, std::vector<Muon*> & muons_
 
   for ( int iel = 0; iel < electrons_in.size(); iel++) {
     el->push_back( electrons_in.at(iel)->P4() );
-    elPt->push_back( electrons_in.at(iel)->Pt() );
   }
   for ( int imu = 0; imu < muons_in.size(); imu++) {
     mu->push_back( muons_in.at(imu)->P4() );
-    muPt->push_back( muons_in.at(imu)->Pt() );
   }
-
-  *njets=jets_in.size();
-
-  double HTx=0;
-  double HTy=0;
-
   for (int ijet=0; ijet<jets_in.size() ; ijet++) {
-    *HT+=jets_in.at(ijet)->Pt();
-    HTx+=jets_in.at(ijet)->P4().Px();
-    HTy+=jets_in.at(ijet)->P4().Py();
     jets->push_back(jets_in.at(ijet)->P4());
-    jetsPt->push_back(jets_in.at(ijet)->Pt());
     
     bjetdisc->push_back(jets_in.at(ijet)->BJetDisc("CSV"));
     if ( jets_in.at(ijet)->IsBJet("CSV","Medium") ) {
@@ -362,17 +204,6 @@ void anDiLep::Fill(EventInfo* info, EasyChain* tree, std::vector<Muon*> & muons_
   }
 
   *vMET = met_in;
-  *MET=met_in.Et();
-  vMHT->SetPxPyPzE(HTx,HTy,0.,0.);
-  *MHT=vMHT->Pt();
-
-  *elSig = 0./sqrt(*HT);
-  *muSig = 0./sqrt(*HT);
-  *METSig = *MET/sqrt(*HT);
-  *MHTSig = *MHT/sqrt(*HT);
-
-  // mt2wEl=mt2w_calc.get_mt2w( electrons_in, jets_in, met_in);
-//   mt2wMu=mt2w_calc.get_mt2w( muons_in, jets_in, met_in);
 
   treeToWrite->Fill();
 
