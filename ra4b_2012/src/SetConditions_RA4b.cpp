@@ -162,6 +162,35 @@ void SetConditions_RA4b(SampleInformation mySampleInformation){
     //============================================
     
   }
+  else if(mySampleInformation.GetEstimation()=="RA4b-diMu" ){
+    
+    //============================================
+    //ELECTRONS
+    //============================================
+    SetOfCuts::SignalElectrons.NUM.Set(-1,"above","any signal electron");
+    SetOfCuts::WideElectrons.NUM.Set(-1,"above","any wider electrons");
+    //============================================
+    // MUONS
+    //============================================
+    SetOfCuts::SignalMuons.NUM.Set(1,"above","more than one muon");
+    SetOfCuts::WideMuons.NUM.Set(-1,"equal","any wider muons");
+    //============================================
+    //LEPTONS
+    //============================================
+    SetOfCuts::Leptons.NUM.Set(1,"above","more than one lepton");
+    //============================================
+    //JETS
+    //============================================
+    SetOfCuts::Jets.NUM.Set(1,"above","jets>2");
+    //============================================
+    //EVENT
+    //============================================
+    SetOfCuts::Event.NumberOfBtags.Set(-1,"above","any number of btags");
+    SetOfCuts::Event.HT.Set(100.0,"above","HT above 100");
+    SetOfCuts::Event.MET.Set(0.,"above","MET above 0");
+    //============================================
+    
+  }
   else{
     cout<<"The estimation "<<mySampleInformation.GetEstimation()<<" does not exist"<<endl;
     exit(1);
