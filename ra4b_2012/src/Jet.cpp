@@ -6,7 +6,7 @@
 using namespace std;
 using namespace ROOT::Math::VectorUtil;
 
-map<string, map<string, double> >* Jet::pbJetWP=0;
+map<string, map<string, double> > Jet::bJetWP;
 
 double Jet::BJetDisc(string key){return bJetDisc[key];};
 
@@ -17,36 +17,36 @@ string Jet::Type()           {return type;};
 
 bool   Jet::IsBJet(string key, double disc_cut){
 
-  if( find(allBTags.begin(),allBTags.end(),key) == allBTags.end() ) {
+  //Find disc value in bJetDisc
+  map<string, double>::const_iterator itKey = bJetDisc.find(key);
+  if (itKey == bJetDisc.end()) {
     std::cout<<"Btagging discriminator not found!"<<std::endl;
     return false;
   }
-  if(bJetDisc.at(key)-bJetDisc[key]!=0.0){
-    cout<<"SHIT!"<<endl;
+  else {
+    //Compare with cut.
+    return (itKey->second)>disc_cut;
   }
 
-  return bJetDisc.at(key)>disc_cut;
 };
 
 bool   Jet::IsBJet(string key, string WP){
-  if(pbJetWP==0) {
-    std::cout<<"BTagging WP table not set!"<<std::endl;
-    return false;
+
+  //Find the disc cut in the bJetWP table
+  map<string, map<string, double> >::const_iterator itKey = bJetWP.find(key);
+  if (itKey != bJetWP.end()) {
+    map<string, double>::const_iterator itWP = itKey->second.find(WP);
+    //If here, found disc cut. Compare with disc value.
+    if (itWP != itKey->second.end()) return IsBJet(key, itWP->second);
   }
-  
-  //cout<<"in this jet "<<endl;
-  //cout<<"the working point has been set to "<<Jet::GetbJetWP()["CSV"]["Medium"]<<endl;
-  //cout<<"As a comparison, the pointer is"<<(*Jet::pbJetWP)["CSV"]["Medium"]<<endl;
-  
-  if((*Jet::pbJetWP)[key][WP]==0) {
-    std::cout<<"the pointer "<<(*Jet::pbJetWP)[key][WP]<<endl;
-    std::cout<<"BTagging WP not set!"<<std::endl;
-    std::cout<<"using the key "<<key<<"of size"<<sizeof(key)<<endl;
-    std::cout<<"WP given was "<<WP<<endl;
-    std::cout<<(key=="CSV")<<" "<<(WP=="Medium")<<std::endl;
-    return false;
-  }
-  return this->IsBJet(key,(*Jet::pbJetWP)[key][WP]);
+
+  //If here the key or WP were not stored in bJetWP
+  std::cout<<"BTagging WP not set!"<<std::endl;
+  std::cout<<"using the key "<<key<<"of size"<<sizeof(key)<<endl;
+  std::cout<<"WP given was "<<WP<<endl;
+  std::cout<<(key=="CSV")<<" "<<(WP=="Medium")<<std::endl;
+  return false;
+
 };
 
 
@@ -64,44 +64,47 @@ void Jet::SetType(string type_In){
 };
 
 void Jet::SetBJetDisc(string key, double value){
-  if( find(allBTags.begin(),allBTags.end(),key) == allBTags.end() ) allBTags.push_back(key);
   bJetDisc[key]=value;
 };
 
-void Jet::SetWP(string cme, map<string, map<string, double> >* bJetWP){
-  pbJetWP=bJetWP;
-  pbJetWP->clear();
+void Jet::SetWP(string cme){
+  bJetWP.clear();
+
   if(cme=="8TeV"){
-    (*pbJetWP)["TCHP"]["Tight"] =3.41;
+    cout << "Jet::SetWP >> Setting WP " << cme << endl;
 
-    (*pbJetWP)["CSV"]["Loose"] =0.244;
-    (*pbJetWP)["CSV"]["Medium"]=0.679;
-    (*pbJetWP)["CSV"]["Tight"] =0.898;
+    (bJetWP)["TCHP"]["Tight"] =3.41;
 
-    (*pbJetWP)["JP"]["Loose"] =0.275;
-    (*pbJetWP)["JP"]["Medium"]=0.545;
-    (*pbJetWP)["JP"]["Tight"] =0.790;
+    (bJetWP)["CSV"]["Loose"] =0.244;
+    (bJetWP)["CSV"]["Medium"]=0.679;
+    (bJetWP)["CSV"]["Tight"] =0.898;
 
-    cout<<"here "<< (*pbJetWP)["CSV"]["Medium"]<<endl;
+    (bJetWP)["JP"]["Loose"] =0.275;
+    (bJetWP)["JP"]["Medium"]=0.545;
+    (bJetWP)["JP"]["Tight"] =0.790;
+
+    //cout<<"here "<< (bJetWP)["CSV"]["Medium"]<<endl;
   }
   else if(cme=="7TeV"){
-    (*pbJetWP)["TCHE"]["Loose"] = 1.7;
-    (*pbJetWP)["TCHE"]["Medium"]= 3.3;
-    (*pbJetWP)["TCHE"]["Tight"] =10.2;
+    cout << "Jet::SetWP >> Setting WP " << cme << endl;
 
-    (*pbJetWP)["TCHP"]["Loose"] =1.19;
-    (*pbJetWP)["TCHP"]["Medium"]=1.93;
-    (*pbJetWP)["TCHP"]["Tight"] =3.41;
+    (bJetWP)["TCHE"]["Loose"] = 1.7;
+    (bJetWP)["TCHE"]["Medium"]= 3.3;
+    (bJetWP)["TCHE"]["Tight"] =10.2;
 
-    (*pbJetWP)["CSV"]["Loose"] =0.244;
-    (*pbJetWP)["CSV"]["Medium"]=0.679;
-    (*pbJetWP)["CSV"]["Tight"] =0.898;
+    (bJetWP)["TCHP"]["Loose"] =1.19;
+    (bJetWP)["TCHP"]["Medium"]=1.93;
+    (bJetWP)["TCHP"]["Tight"] =3.41;
 
-    (*pbJetWP)["JP"]["Loose"] =0.275;
-    (*pbJetWP)["JP"]["Medium"]=0.545;
-    (*pbJetWP)["JP"]["Tight"] =0.790;
+    (bJetWP)["CSV"]["Loose"] =0.244;
+    (bJetWP)["CSV"]["Medium"]=0.679;
+    (bJetWP)["CSV"]["Tight"] =0.898;
+
+    (bJetWP)["JP"]["Loose"] =0.275;
+    (bJetWP)["JP"]["Medium"]=0.545;
+    (bJetWP)["JP"]["Tight"] =0.790;
   }
-  else std::cout<<"BTagging WP table not set!"<<std::endl;
+  else std::cout<<"Jet::SetWP >> ERROR : BTagging WP table not set!"<<std::endl;
 
 };
 
@@ -138,7 +141,7 @@ void Jet::Set(int maptotree_In, LorentzM  momuntum_In, double scaleCorrFactor_In
 
 
 
-map<string, map<string, double> > Jet::GetbJetWP(){return *(Jet::pbJetWP);}
+map<string, map<string, double> > Jet::GetbJetWP(){return Jet::bJetWP;}
 
 
 void Jet::SetCorrectionUncertainty(string name, double value){

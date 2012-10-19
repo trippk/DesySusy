@@ -17,15 +17,17 @@ class Jet: public AnalysisObject {
   bool     isMatch;
   double   scaleCorrFactor;
   string   type;
-  vector<string> allBTags;
+
+  static map<string, map<string, double> > bJetWP;
   map<string, double>  bJetDisc;
-  static map<string, map<string, double> >* pbJetWP;
+
   double correctionUncertainty_UP;
   double correctionUncertainty_DOWN;
   double jetPt_ShiftedUP;
   
  public:
   Jet(){
+    if (bJetWP.size() == 0) SetWP();
     genFlavor="";
     isMatch=0;
     scaleCorrFactor=0.;
@@ -38,6 +40,7 @@ class Jet: public AnalysisObject {
   }
   Jet(int maptotree_In, LorentzM  *momuntum_In, double scaleCorrFactor_In=1., string type_In=""){
     //this->Jet();
+    if (bJetWP.size() == 0) SetWP();
     genFlavor="";
     isMatch=0;
     scaleCorrFactor=0.;
@@ -59,23 +62,23 @@ class Jet: public AnalysisObject {
   bool IsBJet(string key="CSV", string WP="Medium");
   //  bool IsBJet(char* key="CSV", char* WP);
 
-
   void SetGenFlavor(string genFlavor_In);
   void SetIsMatch(bool isMatch_In);
   void SetScaleCorrFactor(double scr_In);
   void SetType(string type_In);
   void SetBJetDisc(string key, double value);
-  static void SetWP(string cme="8TeV", map<string, map<string, double> >* bJetWP=0);
+  static void SetWP(string cme="8TeV");
   virtual void Set(int maptotree_In, LorentzM * momuntum_In, double scaleCorrFactor_In=1., string type_In="");
   //  virtual void Set(int maptotree_In, LorentzM momuntum_In, double scaleCorrFactor_In=1., string type_In="");
-  static map<string, map<string, double> > GetbJetWP();
+  map<string, map<string, double> > GetbJetWP();
 
   void SetCorrectionUncertainty(string name, double value);
   double GetCorrectionUncertainty(string name);
 
   double GetJetPt_Shifted(string name);
 
-
 };
+
+//Jet::SetWP();
 
 #endif

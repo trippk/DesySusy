@@ -24,13 +24,8 @@ int main() {
 
   std::vector<Electron*> electrons;
 
-  //Seemingly required to setup the jets. WHY?!?!
-  map<string, map<string, double> > bJetWP; 
-  cout << "Setting Jet btagWP" << endl;
-  Jet::SetWP("8TeV", &bJetWP); 
-  cout << "...done" << endl;
-
   std::vector<Jet*> jets;
+  cout << "Creating first jet" << endl;
   Jet jet1;
   cout << "Setting Btag disc" << endl;
   jet1.SetBJetDisc("CSV", 0.01);
@@ -42,7 +37,7 @@ int main() {
   //Create the new analyser
   anDiLep analyser;
   
-  for (int i = 0; i < 100; i++) {
+  for (int i = 0; i < 10; i++) {
     cout << "Fill: " << i << endl;
 
     LorentzM vec;

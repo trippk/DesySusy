@@ -356,21 +356,6 @@ int main(int argc, char** argv){
   
 
 
-
-
-
-
-
-
-
-  //================================
-  //SET THE BJET WORKING POINTS
-  //================================
-  map<string, map<string, double> > bJetWP; 
-  Jet::SetWP("8TeV", &bJetWP); 
-  //  cout<<"the working point has been set to "<<Jet::GetbJetWP()["CSV"]["Medium"]<<endl;
-  //  exit(1);
-
   //=================================
   //SET THE CONTROL PLOTS HISTO MAKER
   //================================ 
