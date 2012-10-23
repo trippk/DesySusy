@@ -22,7 +22,7 @@ batch_script = \
 #$ -j y
 ##(send mail on job's end and abort)
 #$ -m a
-#
+#$ -l site=hh
 ## define output dir,executable,config file and LD_LIBRARY_PATH
 #$ -v OUTDIR=
 #$ -v EXECUTABLE=
