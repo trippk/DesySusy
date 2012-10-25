@@ -4,13 +4,20 @@ using std::cout;
 using std::endl;
 using std::cerr;
 
-anDiLep::anDiLep() : treeToRead(0), treeToWrite(0), nEntries(0), iEntry(0) {
+anDiLep::anDiLep(TDirectory * dirIn) : treeToRead(0), treeToWrite(0), nEntries(0), iEntry(0) {
+  if (dirIn) {
+    dir = dirIn;
+    dir->cd();
+  }
+  else dir = gDirectory;
+
+  cout << "anDiLep::anDiLep >> Creating in dir: " << dir->GetName() << endl;
   treeToWrite = new TTree("subTree", "a subTree");   ///Create a new tree to write.
   AllocateMemory();
   SetBranchesWrite();
 }
 
-anDiLep::anDiLep(TTree * treeToReadIn) : treeToRead(treeToReadIn), treeToWrite(0), nEntries(0), iEntry(0), event(0), run(0), weight(0), PUWeight(0), el(0), mu(0), jets(0), bjetdisc(0), nbjets(0), isbjet(0), vMET(0) {
+anDiLep::anDiLep(TTree * treeToReadIn) : treeToRead(treeToReadIn), treeToWrite(0), dir(0), nEntries(0), iEntry(0), event(0), run(0), weight(0), PUWeight(0), el(0), mu(0), jets(0), bjetdisc(0), nbjets(0), isbjet(0), vMET(0) {
 
   SetBranchesRead();
 
@@ -43,10 +50,16 @@ void anDiLep::AllocateMemory() {
 
   vMET = new LorentzM();
 
+  //Ensure that SumW2 is called and declare histograms
+  TH1::SetDefaultSumw2(true);
+  h_Mll = new TH1D("Mll", "Invariant mass of lepton pair;Mll;N", 300, 0., 300.);
+
   return;
 }
 
 void anDiLep::DeallocateMemory() {
+
+  cout << "anDiLep::Decallocate mem!" << endl;
 
   if (event) {
     delete event;
@@ -93,6 +106,11 @@ void anDiLep::DeallocateMemory() {
   if (vMET) {
     delete vMET;
     vMET = 0;
+  }
+
+  if (h_Mll) {
+    delete h_Mll;
+    h_Mll = 0;
   }
 
   return;
@@ -178,8 +196,26 @@ void anDiLep::Fill(EventInfo* info, EasyChain* tree, std::vector<Muon*> & muons_
     return;
   }
 
-  this->SetToZero();
+  //Check for single SF lepton pair.
+  std::vector<Particle*> singleSFpair;
+  if ( muons_in.size() == 2 && electrons_in.size() == 0 ) {
+    singleSFpair.push_back( (Particle*) muons_in.at(0) );
+    singleSFpair.push_back( (Particle*) muons_in.at(1) );
+  }
+  else if (muons_in.size() == 0 && electrons_in.size() == 2 ) {
+    singleSFpair.push_back( (Particle*) electrons_in.at(0) );
+    singleSFpair.push_back( (Particle*) electrons_in.at(1) );
+  }
+  if (singleSFpair.size() == 0) return;
 
+  //Check that pair is OS
+  int chargeProduct = singleSFpair.at(0)->Charge() * singleSFpair.at(1)->Charge() ;
+  if (chargeProduct >= 0) return;
+
+
+  //If here, write to tree.
+
+  this->SetToZero();
 
   *event = info->Event;
   *run = info->Run;    
@@ -207,11 +243,30 @@ void anDiLep::Fill(EventInfo* info, EasyChain* tree, std::vector<Muon*> & muons_
 
   treeToWrite->Fill();
 
+  LorentzM pll = singleSFpair.at(0)->P4();
+  pll = pll + singleSFpair.at(1)->P4();
+  h_Mll->Fill(pll.M(), *weight);
+
   return;
 }
 
 void anDiLep::Write(){
-  if (treeToWrite) treeToWrite->Write();
+  
+  if (!dir) {
+    cout << "anDiLep::Write >> No dir is set! Cannot write!" << endl;
+    return; 
+  }
+
+  dir->cd(); //Set current directory to the original directory, before write.
+  
+  if (treeToWrite) {
+    cout << "anDiLep::Write >> WRITING TREE!" << endl;
+    treeToWrite->Write();
+  }
+  if (h_Mll) {
+    h_Mll->Write();
+    cout << "anDiLep::Write >> WRITING HIST!" << endl;
+  }
 };
 
 bool anDiLep::Read(long getEntry) {

@@ -8,6 +8,7 @@
 
 #include "TFile.h"
 #include "TTree.h"
+#include "TH1D.h"
 #include "TMath.h"
 #include "subTree.h"
 #include "Electron.h"
@@ -27,6 +28,8 @@ class anDiLep : public subTree {
    void SetBranchesWrite();///Sets the branches for writing. Done if no tree is givn to constructor
    
    mt2w_bisect::mt2w_interface mt2w_calc;
+
+   TDirectory * dir; //dir in which tree and hists are created
 
    TTree * treeToRead;
    TTree * treeToWrite;
@@ -55,9 +58,18 @@ class anDiLep : public subTree {
    
    //--------------------------
 
+
+   /////////////////
+   //Histograms
+   /////////////////
+
+   TH1D * h_Mll; //Stores the invariant mass of OSSF lepton pair
+
+   //--------------------------
+
  public:
 
-   anDiLep();
+   anDiLep(TDirectory * dirIn = 0);
    anDiLep(TTree * treeToReadIn);
    ~anDiLep();
 
