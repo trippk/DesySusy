@@ -167,13 +167,13 @@ void SetConditions_RA4b(SampleInformation mySampleInformation){
     //============================================
     //ELECTRONS
     //============================================
-    SetOfCuts::SignalElectrons.NUM.Set(-1,"above","any signal electron");
-    SetOfCuts::WideElectrons.NUM.Set(-1,"above","any wider electrons");
+    SetOfCuts::SignalElectrons.NUM.Set(0,"equal","Exactly zero signal electron");
+    SetOfCuts::WideElectrons.NUM.Set(0,"equal","any wider electrons");
     //============================================
     // MUONS
     //============================================
-    SetOfCuts::SignalMuons.NUM.Set(1,"above","more than one muon");
-    SetOfCuts::WideMuons.NUM.Set(-1,"equal","any wider muons");
+    SetOfCuts::SignalMuons.NUM.Set(2,"equal","Exactly two muons");
+    SetOfCuts::WideMuons.NUM.Set(0,"equal","No wider muons");
     //============================================
     //LEPTONS
     //============================================
@@ -181,12 +181,12 @@ void SetConditions_RA4b(SampleInformation mySampleInformation){
     //============================================
     //JETS
     //============================================
-    SetOfCuts::Jets.NUM.Set(1,"above","jets>2");
+    SetOfCuts::Jets.NUM.Set(1,"above","jets>1");
     //============================================
     //EVENT
     //============================================
     SetOfCuts::Event.NumberOfBtags.Set(-1,"above","any number of btags");
-    SetOfCuts::Event.HT.Set(100.0,"above","HT above 100");
+    SetOfCuts::Event.HT.Set(0.,"above","HT above 0");
     SetOfCuts::Event.MET.Set(0.,"above","MET above 0");
     //============================================
     
