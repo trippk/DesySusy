@@ -1,5 +1,6 @@
 //A simple test program
 
+#include "subTreeFactory.h"
 #include "anDiLep.h"
 #include <iostream>
 
