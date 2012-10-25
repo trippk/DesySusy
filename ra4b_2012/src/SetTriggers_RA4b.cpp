@@ -50,9 +50,11 @@ void SetTriggers_RA4b(SampleInformation mySampleInformation, vector<const char*>
     for (int i=0; i<El_LowPtMenu.size(); ++i){
       triggernames.push_back(El_LowPtMenu.at(i));
     }
-    
-    
-  }else{
+  }
+  else if (mySampleInformation.GetEstimation()=="RA4b-diMu"){
+    triggernames.push_back("HLT_Mu17_Mu8");
+  }
+  else {
     cout <<"triggers HAVE NOT been set. Warning"<<endl;
   }
   
