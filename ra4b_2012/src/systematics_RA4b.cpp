@@ -73,7 +73,7 @@ void Systematics::AddUncertainty(string sysname, TFile* treefile, bool sysval ){
 
 void Systematics::AddTree(string sysname, TFile* treefile){
   
-  sysDefaultTree[sysname]=(defaultTree*)subTreeFactory::NewTree((TString)"default",treefile,(TString)"./Systematics/"+(TString)sysname);
+  sysDefaultTree[sysname]=(defaultTree*)subTreeFactory::NewTree((TString)"default",treefile,(TString)"Systematics/"+(TString)sysname);
   //  sysTree[sysname]->SetTFile(treefile);
   //  sysTree[sysname]->SetTDir("Systematics/"+sysname);
 }
