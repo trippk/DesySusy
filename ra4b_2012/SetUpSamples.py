@@ -99,6 +99,34 @@ def SingleMu():
     Scripts.append(script)
 
 
+def DoubleMu():
+
+    Scripts=[]
+    Sample='DoubleMu'
+    SubSample='Run2012A-13Jul2012-v1'
+    FilesDir='/scratch/hh/dust/naf/cms/user/schettle/nTuple12_v4c/data/DoubleMu/Run2012A-13Jul2012-v1'
+    Config='config_DATA_RA4b.txt'
+    nFiles=3
+
+    #
+    script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
+    cleanUpDir('./'+Sample+'/'+SubSample)    
+    Scripts.append(script)
+
+
+    Sample='DoubleMu'
+    SubSample='Run2012B-13Jul2012-v4'
+    FilesDir='/scratch/hh/dust/naf/cms/user/schettle/nTuple12_v4c/data/DoubleMu/Run2012B-13Jul2012-v4'
+    Config='config_DATA_RA4b.txt'
+    nFiles=7
+
+    #
+    script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
+    cleanUpDir('./'+Sample+'/'+SubSample)    
+    Scripts.append(script)
+
+
+
 def TTJets():
 
     Scripts=[]
@@ -297,6 +325,7 @@ if __name__=='__main__':
     MuHad()
     ElectronHad()
     SingleMu()
+    DoubleMu()
     TTJets()
     DYJetsToLL()
     WJetsToLNu()
