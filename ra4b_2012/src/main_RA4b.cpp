@@ -113,7 +113,7 @@ int main(int argc, char** argv){
   //  treeFile->cd();
   TString treeType = config.getTString("treeType","default"); 
   cout<<"going to call new tree with "<<treeFile<<endl;
-  subTree* subTree= subTreeFactory::NewTree(treeType,treeFile,(string)"./");
+  subTree* subTree= subTreeFactory::NewTree(treeType,treeFile,(string)"");
   bool doSmallTree=true;
   outfile->cd();  
 
@@ -404,7 +404,7 @@ int main(int argc, char** argv){
 
     
   //===========================================
-  bool turntriggersoff=true;
+  bool turntriggersoff=config.getBool("TurnTriggersOff",false);
   if(turntriggersoff){
     cout<<"-----------TURNTRIGGERSOFF IS true!!-----------"<<endl;
     if(isData){
@@ -420,58 +420,8 @@ int main(int argc, char** argv){
   TH1D* EW_AfterPU=new TH1D("EW_AfterPU","Event Weight after PU RW",100,0.0,10.0);
   //TH1D* triggers_prescale= new TH1D("trigger_prescale","the prescale of the trigger",50,0.0,10.0);
 
-  static double HTmin=config.getFloat("ABDCHTmin",375);
-  static double HTmax=config.getFloat("ABDCHTmax",650);
-  static double METSig_min=config.getFloat("ABDCMETSigmin",2.5);
-  static double METSig_max=config.getFloat("ABDCMETSigmax",5.5);
- 
 
-  //AFTER THE CUT FLOW
-  TH2D* HT_METSig= new TH2D("HT_METSig","HT vs METSig",50,HTmin,2000.,50,METSig_min,40.);  
-  TH1D* RegionA = new TH1D("RegionA", "Number of entries in A",1,0.5,1.5);
-  TH1D* RegionB = new TH1D("RegionB", "Number of entries in B",1,0.5,1.5);
-  TH1D* RegionC = new TH1D("RegionC", "Number of entries in C",1,0.5,1.5);
-  TH1D* RegionD = new TH1D("RegionD", "Number of entries in D",1,0.5,1.5);
-
-  //ONE BTAG
-  map <const char*,TH1D*> OneBtag_1DPlots;
-  map <const char*,TH2D*> OneBtag_2DPlots;
-  TDirectory* onebtagdir =outfile->mkdir("ONE_BTAG");
-  onebtagdir->cd();
-  OneBtag_1DPlots["RegionA"]= new TH1D("RegionA", "Number of entries in A with one btag",1,0.5,1.5);
-  OneBtag_1DPlots["RegionB"]= new TH1D("RegionB", "Number of entries in B with one btag",1,0.5,1.5);
-  OneBtag_1DPlots["RegionC"]= new TH1D("RegionC", "Number of entries in C with one btag",1,0.5,1.5);
-  OneBtag_1DPlots["RegionD"]= new TH1D("RegionD", "Number of entries in D with one btag",1,0.5,1.5);
-  OneBtag_2DPlots["HT_METSig"]= new TH2D("HT_METSig","HT vs METSig",50,HTmin,2000.,50,METSig_min,40.);  
-
-  //TWO BTAGS
-  map <const char*,TH1D*> TwoBtag_1DPlots;
-  map <const char*,TH2D*> TwoBtag_2DPlots;
-  TDirectory* twobtagdir =outfile->mkdir("TWO_BTAG");
-  twobtagdir->cd();
-  TwoBtag_1DPlots["RegionA"]= new TH1D("RegionA", "Number of entries in A with two btag",1,0.5,1.5);
-  TwoBtag_1DPlots["RegionB"]= new TH1D("RegionB", "Number of entries in B with two btag",1,0.5,1.5);
-  TwoBtag_1DPlots["RegionC"]= new TH1D("RegionC", "Number of entries in C with two btag",1,0.5,1.5);
-  TwoBtag_1DPlots["RegionD"]= new TH1D("RegionD", "Number of entries in D with two btag",1,0.5,1.5);
-  TwoBtag_2DPlots["HT_METSig"]= new TH2D("HT_METSig","HT vs METSig",50,HTmin,2000.,50,METSig_min,40.);  
-
-
-  //TWOPLUS BTAGS
-  map <const char*,TH1D*> TwoplusBtag_1DPlots;
-  map <const char*,TH2D*> TwoplusBtag_2DPlots;
-  TDirectory* twoplusbtagdir =outfile->mkdir("TWOPLUS_BTAG");
-  twoplusbtagdir->cd();
-  TwoplusBtag_1DPlots["RegionA"]= new TH1D("RegionA", "Number of entries in A with twoplus btag",1,0.5,1.5);
-  TwoplusBtag_1DPlots["RegionB"]= new TH1D("RegionB", "Number of entries in B with twoplus btag",1,0.5,1.5);
-  TwoplusBtag_1DPlots["RegionC"]= new TH1D("RegionC", "Number of entries in C with twoplus btag",1,0.5,1.5);
-  TwoplusBtag_1DPlots["RegionD"]= new TH1D("RegionD", "Number of entries in D with twoplus btag",1,0.5,1.5);
-  TwoplusBtag_2DPlots["HT_METSig"]= new TH2D("HT_METSig","HT vs METSig",50,HTmin,2000.,50,METSig_min,40.);  
-
-
-  //
-  //
   if(pcp)cout<<"check point before the event loop"<<endl;
-
 
 
   bool isquick=config.getBool("quick",true);
@@ -632,7 +582,7 @@ int main(int argc, char** argv){
     double PUWeight=0;
     if(!isData) {
       float PUnumInter    = tree->Get( PUnumInter, "pileupTrueNumInteractionsBX0");
-      int relevantNumPU = PUnumInter;
+      int relevantNumPU = (int) PUnumInter;
       if( relevantNumPU >= nobinsmc ) {
 	cout << "something wrong with the pile up info!!! - exceed max number of vertex:     " << nobinsmc <<endl;
 	return 0; 
@@ -759,7 +709,6 @@ int main(int argc, char** argv){
     //Make MET
     LorentzM& PFmet = tree->Get(&PFmet, "metP4TypeIPF");
     double MET=(double)PFmet.Et() ;
-    double METSig = MET / sqrt(HT);
     //============================================
 
 
@@ -1386,31 +1335,6 @@ int main(int argc, char** argv){
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    //LorentzM& PFmet = tree->Get(&PFmet, "metP4PF");
-    METSig = MET / sqrt(HT); 
-
-
     EventInfo info;
     info.Event=Event;
     info.Run=Run;
@@ -1444,131 +1368,13 @@ int main(int argc, char** argv){
       }
     }
 
-    //=====================================================================   
-    //=====================================================================   
-    //=====================================================================   
-    //=====================================================================   
-
-
-    //                    A  B  C  D   Categorization                     //
-
-
-    //=====================================================================   
-    //=====================================================================   
-    //=====================================================================   
-    //=====================================================================   
 
 
 
-
-
-    if(HT< HTmin)continue;
-    if(METSig <METSig_min)continue;
-
-
-    HT_METSig->Fill(HT,METSig,EventWeight);
-      
-    const char* Region;
-    if (  HT < HTmax ){
-      Region="A";
-      if ( METSig > METSig_max)Region="C";
-    }else{
-      Region="B";
-      if( METSig > METSig_max)Region="D";
-    }
-
-
-    if( Region=="A"){
-      RegionA->Fill(1);
-    }else if(Region=="B"){
-      RegionB->Fill(1);
-
-    }else if(Region=="C"){
-      RegionC->Fill(1);
-
-    }else if(Region=="D"){
-      RegionD->Fill(1);
-    }
-
-
-
-
-    //============================================================
-    //
-    //     ONE  B-TAG
-    //   
-    //============================================================
-    if(NumberOfbTags==1){
-      onebtagdir->cd();
-      if( Region=="A"){
-	OneBtag_1DPlots["RegionA"]->Fill(1);
-      }else if(Region=="B"){
-	OneBtag_1DPlots["RegionB"]->Fill(1);
-	
-      }else if(Region=="C"){
-	OneBtag_1DPlots["RegionC"]->Fill(1);
-	
-      }else if(Region=="D"){
-	OneBtag_1DPlots["RegionD"]->Fill(1);
-      }
-      OneBtag_2DPlots["HT_METSig"]->Fill(HT,METSig);
-    }
-
-
-    //============================================================
-    //
-    //      TWO B-TAG
-    //   
-    //============================================================
-    else if(NumberOfbTags==2){
-      twobtagdir->cd();
-      if( Region=="A"){
-	TwoBtag_1DPlots["RegionA"]->Fill(1);
-      }else if(Region=="B"){
-	TwoBtag_1DPlots["RegionB"]->Fill(1);
-	
-      }else if(Region=="C"){
-	TwoBtag_1DPlots["RegionC"]->Fill(1);
-	
-      }else if(Region=="D"){
-	TwoBtag_1DPlots["RegionD"]->Fill(1);
-      }
-      TwoBtag_2DPlots["HT_METSig"]->Fill(HT,METSig);
-    }
-
-    //============================================================
-    //
-    //     TWO OR MORE
-    //   
-    //============================================================
-    else if(NumberOfbTags>2){
-      twoplusbtagdir->cd();
-      if( Region=="A"){
-	TwoplusBtag_1DPlots["RegionA"]->Fill(1);
-      }else if(Region=="B"){
-	TwoplusBtag_1DPlots["RegionB"]->Fill(1);
-	
-      }else if(Region=="C"){
-	TwoplusBtag_1DPlots["RegionC"]->Fill(1);
-	
-      }else if(Region=="D"){
-	TwoplusBtag_1DPlots["RegionD"]->Fill(1);
-      }
-      TwoplusBtag_2DPlots["HT_METSig"]->Fill(HT,METSig);
-    }
-
-
-  
-
-    
-
-    
+   
   }//End of the event loop
      
   if(pcp)cout<<"out of the event loop"<<endl;
-
-
-
 
 
   if(systematics.IsEnabled()){
@@ -1582,16 +1388,17 @@ int main(int argc, char** argv){
       }
     }
   }
-  subTree->Write();
+  //subTree->Write();
   //==========WRITE THE TREES
-  if(systematics.IsEnabled()){
-    typedef map<string,bool>::iterator map_it;
-    for (map_it iter=systematics.GetSysMap().begin(); iter != systematics.GetSysMap().end(); iter++){
-      if(iter->second){
-	systematics.GetsysDefaultTree((string)iter->first)->Write();
-      }
-    }
-  }
+//   if(systematics.IsEnabled()){
+//     typedef map<string,bool>::iterator map_it;
+//     for (map_it iter=systematics.GetSysMap().begin(); iter != systematics.GetSysMap().end(); iter++){
+//       if(iter->second){
+// 	systematics.GetsysDefaultTree((string)iter->first)->Write();
+//       }
+//     }
+//   }
+  treeFile->Write(); //Write all hists and tree assoc with treeFile
   treeFile->Close();
 
 
@@ -1623,10 +1430,6 @@ int main(int argc, char** argv){
   //write the control plots
 
   //other dir
-  onebtagdir->Write();
-  twobtagdir->Write();
-  twoplusbtagdir->Write();
-
 
   config.printUsed();
   //  globalFlow.printAll();
