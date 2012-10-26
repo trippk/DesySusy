@@ -28,11 +28,12 @@ vector<Jet> makeAllJets(EasyChain* tree){
 
   vector<LorentzM>&  Jets_p4 = tree->Get(&Jets_p4, "ak5JetPFCorrectedP4Pat");
   vector<float>&     Jets_CorrFactor = tree->Get(&Jets_CorrFactor, "ak5JetPFCorrFactorPat");
-  
+  vector<int>&       Jets_genFlavor = tree->Get(&Jets_genFlavor, "ak5JetPFgenJetFlavourPat");  
   for(int ijet = 0; ijet<Jets_p4.size(); ijet++){  
 
     Jet dummyJet;
     dummyJet.Set(ijet, &Jets_p4.at(ijet), Jets_CorrFactor.at(ijet), "AK5");    
+    dummyJet.SetGenFlavor(Jets_genFlavor.at(ijet));
     Jets.push_back(dummyJet);
     
   }

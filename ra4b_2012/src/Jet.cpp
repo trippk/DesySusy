@@ -10,7 +10,7 @@ map<string, map<string, double> > Jet::bJetWP;
 
 double Jet::BJetDisc(string key){return bJetDisc[key];};
 
-string Jet::GenFlavor()      {return genFlavor;};
+int    Jet::GenFlavor()      {return genFlavor;};
 bool   Jet::IsMatch()        {return isMatch;};
 double Jet::ScaleCorrFactor(){return scaleCorrFactor;};
 string Jet::Type()           {return type;};
@@ -50,7 +50,7 @@ bool   Jet::IsBJet(string key, string WP){
 };
 
 
-void Jet::SetGenFlavor(string genFlavor_In){
+void Jet::SetGenFlavor(int genFlavor_In){
   genFlavor=genFlavor_In;
 };
 void Jet::SetIsMatch(bool isMatch_In){

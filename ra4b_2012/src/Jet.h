@@ -13,7 +13,7 @@ using namespace ROOT::Math::VectorUtil;
 class Jet: public AnalysisObject {
   
  protected:
-  string   genFlavor;
+  int      genFlavor;
   bool     isMatch;
   double   scaleCorrFactor;
   string   type;
@@ -28,7 +28,7 @@ class Jet: public AnalysisObject {
  public:
   Jet(){
     if (bJetWP.size() == 0) SetWP();
-    genFlavor="";
+    genFlavor=0;
     isMatch=0;
     scaleCorrFactor=0.;
     type = "";
@@ -41,7 +41,7 @@ class Jet: public AnalysisObject {
   Jet(int maptotree_In, LorentzM  *momuntum_In, double scaleCorrFactor_In=1., string type_In=""){
     //this->Jet();
     if (bJetWP.size() == 0) SetWP();
-    genFlavor="";
+    genFlavor=0;
     isMatch=0;
     scaleCorrFactor=0.;
     type = "";
@@ -54,7 +54,7 @@ class Jet: public AnalysisObject {
   ~Jet(){}
 
   double BJetDisc(string key);
-  string GenFlavor();
+  int GenFlavor();
   bool   IsMatch();
   double ScaleCorrFactor();
   string Type();
@@ -62,7 +62,7 @@ class Jet: public AnalysisObject {
   bool IsBJet(string key="CSV", string WP="Medium");
   //  bool IsBJet(char* key="CSV", char* WP);
 
-  void SetGenFlavor(string genFlavor_In);
+  void SetGenFlavor(int genFlavor_In);
   void SetIsMatch(bool isMatch_In);
   void SetScaleCorrFactor(double scr_In);
   void SetType(string type_In);
