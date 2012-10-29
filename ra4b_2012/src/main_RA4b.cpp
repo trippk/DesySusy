@@ -52,7 +52,7 @@
 #include "JetCorrectionUncertainty.cc"
 #include "typelookup.cc"
 #include "Exception.cc"
-
+#include "TagEff.h"
 using namespace std;
 using namespace ROOT::Math::VectorUtil;
 //===================================================================
@@ -294,6 +294,11 @@ int main(int argc, char** argv){
 
   double InitialEventWeight=1.0;             //Event weight do to Lumi and xsec.
 
+  //Tag
+  int bin=0;
+  bin = config.getInt("lasttagbin",3); // set the lasttagbin i.e 3 to get tag weightings for 0,1,2,3+
+  //TagEff tag(WhatSample,WhatSubSample);
+  //tag.lastbin(bin);
 
 
 
@@ -678,15 +683,11 @@ int main(int argc, char** argv){
     //============================================
     
 
-    //NUMBER OF BTAGS==============================
+    //Define TAG algorithm & working points==============================
     static string btagAlgorithm= config.getString("bTagAlgorithm","CSV");
     static string btagWorkingPoint = config.getString("bTagWorkingPoint","Medium");
     int NumberOfbTags=0;
-    for (int ijet=0;ijet<CleanedJets.size();++ijet){
-      if(CleanedJets.at(ijet)->IsBJet(btagAlgorithm,btagWorkingPoint)){
-	NumberOfbTags++;
-      }
-    }
+   
 
 
 
@@ -989,8 +990,8 @@ int main(int argc, char** argv){
     if(i==0 && isquick){OK=OK&&OKold; OKold=OK;}
     if(!globalFlow.keepIf("One_single_lepton",OK) && quick) continue;    
     
-    
-    
+    //number of tags & tag w.
+    //NumberOfbTags = tag.JetLoop(CleanedJets); //cout << "number of btags " << NumberOfbTags << endl; // loop over jets to get tag w., return number of btags
 
     //===================================
     //JETS
@@ -1430,7 +1431,7 @@ int main(int argc, char** argv){
   //write the control plots
 
   //other dir
-
+  //tag.finalize(); //write the files
   config.printUsed();
   //  globalFlow.printAll();
   globalFlow.dumpToHist(); 
