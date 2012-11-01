@@ -12,6 +12,8 @@ bool vertices_RA4b(EasyChain* tree, vector<int>& goodVert){
   ConfigReader config;
   bool isData=config.getBool("isData");
 
+  float vertexZ_mc = config.getFloat("VertexZ_MC", 24.0);
+
   extern bool pcp;
 
 
@@ -40,7 +42,7 @@ bool vertices_RA4b(EasyChain* tree, vector<int>& goodVert){
       goodVert.push_back(vx);
     } else {
       // MC
-      if( fabs(Vertices[vx].z()) >= 15 ) continue;
+      if( fabs(Vertices[vx].z()) > vertexZ_mc ) continue;
       if( Vertices[vx].rho() > 2 )       continue;
       if( Vertex_ndof[vx] <= 4 )         continue;
 
