@@ -17,7 +17,7 @@ anDiLep::anDiLep(TDirectory * dirIn) : treeToRead(0), treeToWrite(0), nEntries(0
   SetBranchesWrite();
 }
 
-anDiLep::anDiLep(TTree * treeToReadIn) : treeToRead(treeToReadIn), treeToWrite(0), dir(0), nEntries(0), iEntry(0), event(0), run(0), weight(0), PUWeight(0), el(0), mu(0), jets(0), bjetdisc(0), nbjets(0), isbjet(0), vMET(0) {
+anDiLep::anDiLep(TTree * treeToReadIn) : treeToRead(treeToReadIn), treeToWrite(0), dir(0), nEntries(0), iEntry(0), event(0), run(0), weight(0), PUWeight(0), el(0), elQ(0), mu(0), muQ(0), jets(0), bjetdisc(0), nbjets(0), isbjet(0), vMET(0) {
 
   SetBranchesRead();
 
@@ -41,7 +41,9 @@ void anDiLep::AllocateMemory() {
   PUWeight = new double(0.);
 
   el = new std::vector<LorentzM>();
+  elQ = new std::vector<int>();
   mu = new std::vector<LorentzM>();
+  muQ = new std::vector<int>();
   
   jets = new std::vector<LorentzM>();
   bjetdisc = new std::vector<double>();
@@ -77,14 +79,21 @@ void anDiLep::DeallocateMemory() {
     delete PUWeight;
     PUWeight = 0;
   }
-
   if (el) {
     delete el;
     el = 0;
   }
+  if (elQ) {
+    delete elQ;
+    elQ = 0;
+  }
   if (mu) {
     delete mu;
     mu = 0;
+  }
+  if (muQ) {
+    delete muQ;
+    muQ = 0;
   }
   if (jets) {
     delete jets;
@@ -108,11 +117,6 @@ void anDiLep::DeallocateMemory() {
     vMET = 0;
   }
 
-  if (h_Mll) {
-    delete h_Mll;
-    h_Mll = 0;
-  }
-
   return;
 }
 
@@ -125,8 +129,10 @@ void anDiLep::SetToZero(){
   *PUWeight=0.0;
   
   el->clear();
+  elQ->clear();
   mu->clear();
-  
+  muQ->clear();
+    
   jets->clear();
   bjetdisc->clear();
   *nbjets=0;
@@ -148,7 +154,10 @@ void anDiLep::SetBranchesWrite() {
   treeToWrite->Branch("PUWeight",PUWeight,"PUWeight/D");
 
   treeToWrite->Branch("el","std::vector<ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<float> > >", &el);
+  treeToWrite->Branch("elQ","std::vector<int>", &elQ);
   treeToWrite->Branch("mu","std::vector<ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<float> > >", &mu);
+  treeToWrite->Branch("muQ","std::vector<int>", &muQ);
+
 
   treeToWrite->Branch("jets", "std::vector<ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<float> > >", &jets);
   treeToWrite->Branch("bjetdisc", &bjetdisc);
@@ -174,6 +183,8 @@ void anDiLep::SetBranchesRead() {
   
   treeToRead->SetBranchAddress("el",&el);
   treeToRead->SetBranchAddress("mu",&mu);
+  treeToRead->SetBranchAddress("elQ",&elQ);
+  treeToRead->SetBranchAddress("muQ",&muQ);
 
   treeToRead->SetBranchAddress("jets", &jets);
   treeToRead->SetBranchAddress("bjetdisc", &bjetdisc);
@@ -196,25 +207,6 @@ void anDiLep::Fill(EventInfo* info, EasyChain* tree, std::vector<Muon*> & muons_
     return;
   }
 
-  //Check for single SF lepton pair.
-  std::vector<Particle*> singleSFpair;
-  if ( muons_in.size() == 2 && electrons_in.size() == 0 ) {
-    singleSFpair.push_back( (Particle*) muons_in.at(0) );
-    singleSFpair.push_back( (Particle*) muons_in.at(1) );
-  }
-  else if (muons_in.size() == 0 && electrons_in.size() == 2 ) {
-    singleSFpair.push_back( (Particle*) electrons_in.at(0) );
-    singleSFpair.push_back( (Particle*) electrons_in.at(1) );
-  }
-  if (singleSFpair.size() == 0) return;
-
-  //Check that pair is OS
-  int chargeProduct = singleSFpair.at(0)->Charge() * singleSFpair.at(1)->Charge() ;
-  if (chargeProduct >= 0) return;
-
-
-  //If here, write to tree.
-
   this->SetToZero();
 
   *event = info->Event;
@@ -224,9 +216,11 @@ void anDiLep::Fill(EventInfo* info, EasyChain* tree, std::vector<Muon*> & muons_
 
   for ( int iel = 0; iel < electrons_in.size(); iel++) {
     el->push_back( electrons_in.at(iel)->P4() );
+    elQ->push_back( electrons_in.at(iel)->Charge() );
   }
   for ( int imu = 0; imu < muons_in.size(); imu++) {
     mu->push_back( muons_in.at(imu)->P4() );
+    muQ->push_back( muons_in.at(imu)->Charge() );
   }
   for (int ijet=0; ijet<jets_in.size() ; ijet++) {
     jets->push_back(jets_in.at(ijet)->P4());
@@ -243,9 +237,15 @@ void anDiLep::Fill(EventInfo* info, EasyChain* tree, std::vector<Muon*> & muons_
 
   treeToWrite->Fill();
 
-  LorentzM pll = singleSFpair.at(0)->P4();
-  pll = pll + singleSFpair.at(1)->P4();
-  h_Mll->Fill(pll.M(), *weight);
+  std::vector<LorentzM> ossfPair;
+  getOsSfPair(ossfPair);
+
+  //Fill the histogram
+  if (ossfPair.size() == 2) {
+    LorentzM pll = ossfPair.at(0);
+    pll = pll + ossfPair.at(1);
+    h_Mll->Fill(pll.M(), *weight);
+  }
 
   return;
 }
@@ -288,4 +288,151 @@ bool anDiLep::Read(long getEntry) {
     return true;
   }
 
+}
+
+
+void anDiLep::getOsLeptonPair(const std::vector<LorentzM> * leptons, const std::vector<int> * leptonsQ, std::vector<LorentzM> & osPair) {
+
+    osPair.clear();
+    
+    //Sense checks
+    if (leptons == 0 || leptonsQ == 0) return;
+    if (leptons->size() < 2) return;
+    if (leptons->size() != leptonsQ->size() ) return;
+
+    //Find highest pt lepton
+    int highestPtLep = -1;
+    double highestPt = -1.;
+
+    for (int iLep = 0; iLep < leptons->size(); iLep++) {
+      if (leptons->at(iLep).Pt() > highestPt ) {
+	highestPt = leptons->at(iLep).Pt();
+	highestPtLep = iLep;
+      }
+    }
+
+    if (highestPtLep < 0) {
+      cout << "anDiLep::getOsLeptonPair >> ERROR. Could not find highest Pt lepton." << endl;
+      return;
+    }
+    //Now consider the leptons with the opposite sign to the highest pt lepton
+    //Find the lepton in this set with highest Pt
+
+    double highestPtOs = -1.;
+    int highestPtOsLep = -1;
+    const int highestPtCharge = leptonsQ->at(highestPtLep);
+
+    for (int iLep = 0; iLep < leptons->size(); iLep++) {
+
+      if (highestPtCharge * leptonsQ->at(iLep) >= 0 ) continue;
+
+      if (leptons->at(iLep).Pt() > highestPtOs ) {
+	highestPtOs = leptons->at(iLep).Pt();
+	highestPtOsLep = iLep;
+      }
+    }
+
+    //Order the lepton four-vectors by charge. Put negative charge (i.e. particle, not anti-particle) first.
+
+    if (highestPtLep >= 0 && highestPtOsLep >= 0) {
+      if (highestPtCharge < 0) {
+	osPair.push_back(leptons->at(highestPtLep));
+	osPair.push_back(leptons->at(highestPtOsLep));
+      }
+      else {
+	osPair.push_back(leptons->at(highestPtOsLep));
+	osPair.push_back(leptons->at(highestPtLep));
+      }
+    }
+
+
+    return;
+}
+
+void anDiLep::getOsMuPair(std::vector<LorentzM> & muPair) {
+  getOsLeptonPair(mu, muQ, muPair);
+  return;
+}
+void anDiLep::getOsElPair(std::vector<LorentzM> & elPair) {
+  getOsLeptonPair(el, elQ, elPair);
+  return;
+}
+void anDiLep::getOsSfPair(std::vector<LorentzM> & ossfPair) {
+  ossfPair.clear();
+
+  std::vector<LorentzM> muOSPair;
+  getOsMuPair(muOSPair);
+
+  std::vector<LorentzM> elOSPair;
+  getOsElPair(elOSPair);
+  
+
+
+
+  std::vector<LorentzM> * highestPtPair = 0;
+  if ( muOSPair.size() == 2 && elOSPair.size() == 0 ) {
+    highestPtPair = &muOSPair;
+  }
+  else if ( muOSPair.size() == 0 && elOSPair.size() == 2 ) {
+    highestPtPair = &elOSPair;
+  }
+  else if (muOSPair.size() == 2 && elOSPair.size() == 2) { 
+    //Pick the pair with the highest scalar sum of Pt
+    double muSumPt = 0.;
+    for (int iMu = 0; iMu < muOSPair.size() ; iMu++) {
+      muSumPt += muOSPair.at(iMu).Pt();
+    }
+    double elSumPt = 0.;
+    for (int iEl = 0; iEl < elOSPair.size() ; iEl++) {
+      elSumPt += elOSPair.at(iEl).Pt();
+    }
+
+    if (muSumPt > elSumPt) {
+      highestPtPair = &muOSPair;
+    }
+    else highestPtPair = &elOSPair;
+
+  }
+  else {
+    return;
+  }
+
+  ossfPair = *highestPtPair;
+
+  return;
+}
+
+double anDiLep::getHT() {
+
+  if (jets == 0) return 0.;
+
+  double HT = 0.;
+  for (int iJet = 0; iJet < jets->size() ; iJet++) {
+    HT += jets->at(iJet).Pt();
+  }
+
+  return HT;
+}
+
+double anDiLep::getMET() {
+  if (vMET == 0) return 0.;
+  return vMET->Pt();
+}
+
+static double getMT(const LorentzM & vis, const LorentzM & inv, double invMass, double visMass) {
+  double MTsq = 0.;
+
+  if (visMass < 0) visMass = sqrt(vis.M2());
+
+  double eT_vis = sqrt(visMass*visMass + vis.Pt()*vis.Pt());
+  double eT_inv = sqrt(invMass*invMass + inv.Pt()*inv.Pt());
+
+  MTsq  = visMass*visMass;
+  MTsq += invMass*invMass;
+  MTsq += eT_vis*eT_inv;
+  MTsq += -vis.Pt()*inv.Pt()*cos(vis.Phi() - inv.Phi());
+
+  if (MTsq > 0) return sqrt(MTsq);
+
+  return 0.;
 }

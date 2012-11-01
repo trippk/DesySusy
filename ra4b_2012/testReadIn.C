@@ -40,6 +40,22 @@ int testReadIn() {
 	cout << "Jet: " << iJet << " Px: " << jets->at(iJet).Px()  << " Py: " << jets->at(iJet).Py()  << " Pz: " << jets->at(iJet).Pz()  << " E: " << jets->at(iJet).E() << endl;
       }
     }
+    cout << "HT: " << test.getHT() << endl;
+    cout << "MET: " << test.getMET() << endl;
+
+    std::vector<LorentzM> ossfPair;
+    test.getOsSfPair(ossfPair);
+    
+    TLorentzVector pll;
+    if (ossfPair.size() == 2) {
+      TLorentzVector temp(ossfPair[0].X(), ossfPair[0].Y(), ossfPair[0].Z(), ossfPair[0].T());
+      pll  = temp;
+      temp.SetXYZT(ossfPair[1].X(), ossfPair[1].Y(), ossfPair[1].Z(), ossfPair[1].T());
+      pll += temp;
+    }
+    cout << "Mll: " << pll.M() << endl;
+
+
   }
 
   return 0;

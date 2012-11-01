@@ -20,8 +20,10 @@ int main() {
   //Create some fake information, info, muons, electrons and jets.
   EventInfo info;
   std::vector<Muon*> muons;
-  Muon mu;
-  muons.push_back(&mu);
+  Muon mu1;
+  Muon mu2;
+  muons.push_back(&mu1);
+  muons.push_back(&mu2);
 
   std::vector<Electron*> electrons;
 
@@ -42,11 +44,14 @@ int main() {
     cout << "Fill: " << i << endl;
 
     LorentzM vec;
-    vec.SetPxPyPzE((double) i,(double) i,(double) i,(double) i);
+    vec.SetPxPyPzE((double) i,(double) i,(double) i,sqrt(3.)*(double) i);
 
     muons[0]->Set(-1, &vec, 1, 0.0);
     jets[0]->Set(-1, &vec);
     met.SetPxPyPzE((double) i,(double) i,(double) i,(double) i);
+
+    vec.SetPxPyPzE((double) -i,(double) -i,(double) -i,sqrt(3.)*(double) i);
+    muons[1]->Set(-1, &vec, 1, 0.0);
 
     analyser.Fill(&info, 0, muons, electrons, jets, met);
   }

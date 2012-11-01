@@ -26,6 +26,8 @@ class anDiLep : public subTree {
 
    void SetBranchesRead();///Sets the branches for reading. A tree must be given to read in constructor
    void SetBranchesWrite();///Sets the branches for writing. Done if no tree is givn to constructor
+
+   void getOsLeptonPair(const std::vector<LorentzM> * leptons, const std::vector<int> * leptonsQ, std::vector<LorentzM> & osPair);
    
    mt2w_bisect::mt2w_interface mt2w_calc;
 
@@ -46,10 +48,12 @@ class anDiLep : public subTree {
    double *  weight;
    double * PUWeight;
 
-   std::vector<LorentzM> * el;
-   std::vector<LorentzM> * mu;
-   std::vector<LorentzM> * jets;
+   std::vector<LorentzM> * el; //el pt
+   std::vector<int> * elQ; //el charge
+   std::vector<LorentzM> * mu; //mu pt
+   std::vector<int> * muQ; //mu charge
 
+   std::vector<LorentzM> * jets; //jet pt
    std::vector<double> *  bjetdisc;
    int *  nbjets;
    std::vector<bool> * isbjet;
@@ -79,6 +83,15 @@ class anDiLep : public subTree {
    long getEntries() {return nEntries;} //Returns the total number of entries in tree to be read
    bool Read(long getEntry = -1); //Reads in an entry from treeToRead. Will read in getEntry if greater than equal to zero. Returns true is read successful, false otherwise.
  
+   void getOsMuPair(std::vector<LorentzM> & muPair); //Returns four vectors for an OS pair of muons (formed from the highest Pt OS pair). The first muon is negative, the second positive.
+   void getOsElPair(std::vector<LorentzM> & elPair); //Returns four vectors for an OS pair of electrons (formed from the highest Pt OS pair). The first electron is negative, the second positive.
+   void getOsSfPair(std::vector<LorentzM> & ossfPair); //Returns the OSSF pair with the highest sum Pt.
+
+   double getHT(); //Returns HT
+   double getMET(); //Returns MET
+
+   double getMT(const LorentzM & vis, const LorentzM & inv, double invMass, double visMass = -1.);
+
    const std::vector<LorentzM> * getJets() {return jets;}
 
 };
