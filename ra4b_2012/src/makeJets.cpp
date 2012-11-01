@@ -130,6 +130,8 @@ void makeCleanedJets(vector<Jet*>& Jets_In, vector<Jet*>& Jets_Out, vector<Muon>
   Jets_Out.clear();
   
   //Distance between the jet and the iso leptons
+  ConfigReader config;
+  static float  DELTAR_CUT  =  config.getFloat("Jets_CLEANDELTAR",  0.3 );
 
   static CutSet CrossCleaning("Cleaned Jets");
   CrossCleaning.autodump=true;
@@ -152,7 +154,7 @@ void makeCleanedJets(vector<Jet*>& Jets_In, vector<Jet*>& Jets_Out, vector<Muon>
 
       if ( !Muons.at(imu).IsID("Tight") &&  !Muons.at(imu).IsID("Veto"))continue;
 
-      if(DeltaR(Jets_In.at(ijet)->P4(),Muons.at(imu).P4())<0.3) {
+      if(DeltaR(Jets_In.at(ijet)->P4(),Muons.at(imu).P4())<DELTAR_CUT) {
 	if (pcp){
 	  cout<<endl;
 	  cout<<"CLEANING BEING DONE"<<endl;
@@ -179,7 +181,7 @@ void makeCleanedJets(vector<Jet*>& Jets_In, vector<Jet*>& Jets_Out, vector<Muon>
 
       if ( !Electrons.at(iel).IsID("Tight") &&  !Electrons.at(iel).IsID("Veto"))continue;
 
-      if(DeltaR(Jets_In.at(ijet)->P4(),Electrons.at(iel).P4())<0.3) {
+      if(DeltaR(Jets_In.at(ijet)->P4(),Electrons.at(iel).P4())< DELTAR_CUT) {
 	if (pcp){
 	  cout<<"the jet "<< ijet<< "with pt = "<<Jets_In.at(ijet)->Pt()<<endl;
 	  cout<<"is going to be cleaned because of the electron "<<iel<<" with "<<endl;
@@ -202,4 +204,54 @@ void makeCleanedJets(vector<Jet*>& Jets_In, vector<Jet*>& Jets_Out, vector<Muon>
 
 
 
+}
+
+
+void makeCleanedJets(vector<Jet*>& Jets_In, vector<Jet*>& Jets_Out, vector<Muon*>& Muons, vector<Electron*>& Electrons){
+  
+  Jets_Out.clear();
+  
+  //Distance between the jet and the iso leptons
+  ConfigReader config;
+  static float  DELTAR_CUT  =  config.getFloat("Jets_CLEANDELTAR",  0.3 );
+
+  static CutSet CrossCleaning("Cleaned Jets");
+  CrossCleaning.autodump=true;
+  
+  if(pcp){
+    cout<<endl;
+    cout<<"INSIDE makeCleanedJets "<<endl;
+    cout<<endl;
+  }
+
+  for(int ijet = 0; ijet<Jets_In.size(); ijet++){
+
+    bool dumpJet=false;
+  
+    for(int imu=0; imu<(int)Muons.size(); ++imu){
+
+      if(DeltaR(Jets_In.at(ijet)->P4(),Muons.at(imu)->P4())<DELTAR_CUT) {
+	dumpJet=true;
+	break;
+      }
+
+    }
+
+    if (!CrossCleaning.keepIf("CrossCleaning Muons",!dumpJet)) continue;
+
+    for(int iel=0; iel<(int)Electrons.size();++iel){
+      if(DeltaR(Jets_In.at(ijet)->P4(),Electrons.at(iel)->P4())< DELTAR_CUT) {
+	dumpJet=true;
+	break;
+      }
+    }
+    if (!CrossCleaning.keepIf("CrossCleaning Electrons",!dumpJet)) continue;
+
+
+    //WE want this jet, keep it.
+    Jets_Out.push_back(Jets_In.at(ijet));
+
+    if(pcp)cout<<"pt and eta of jet "<<ijet<<" = "<<Jets_In.at(ijet)->P4().pt()<<" "<<Jets_In.at(ijet)->P4().eta()<<endl;
+
+  }
 }
