@@ -208,7 +208,7 @@ def DYJetsToLL():
     Scripts=[]
     Sample='DYJets'
     SubSample='M-50'
-    FilesDir='/pnfs/desy.de/cms/tier2/store/user/msahin/nTuple12_v2/mc/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/Summer12-PU_S7_START52_V9-v2/'
+    FilesDir='/scratch/hh/lustre/cms/user/sahin/nTuple12_v4b/mc/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/Summer12_DR53X-PU_S10_START53_V7A-v1/'
     Config='config_MC_RA4b.txt'
     nFiles=3
     cleanUpDir('./'+Sample+'/'+SubSample)
