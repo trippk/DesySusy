@@ -13,7 +13,8 @@ using namespace std;
 
 bool evtqual_RA4b(EasyChain* tree){
 
-  bool hbheNoiseFilterResult =  tree->Get(hbheNoiseFilterResult,"hbheNoiseFilterResult");
+  bool hbheNoiseFilterResult =  tree->Get(hbheNoiseFilterResult,"hbheNoiseNoIsoFilterResult");
+  //bool hbheNoiseFilterResult =  tree->Get(hbheNoiseFilterResult,"hbheNoiseFilterResult");
   
   return hbheNoiseFilterResult;
 }
