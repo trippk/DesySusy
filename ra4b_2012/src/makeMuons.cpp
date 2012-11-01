@@ -272,8 +272,9 @@ bool makeTightMuons(EasyChain* tree, vector<Muon>& AllMuons,vector<Muon*>& Tight
   static int NValidPixelHitsMIN=config.getInt("TightMuons_NValidPixelHitsMIN",0); //
   //
   static int NTrackerLayersMIN=config.getInt("TightMuons_NTrackerLayersMIN",5); //
-  static float PFIsoCut          =config.getFloat("TightMuonPFIsoCutMIN",0.12); //
-
+  static float PFIsoCut          =config.getFloat("TightMuons_PFIsoCutMIN",0.12); //
+  static float PFRECO_MAXDIFF = config.getFloat("TightMuons_PFRECO_MAXDIFF", 5.0);
+  static bool REQ_ISTRACKER = config.getBool("TightMuons_REQ_ISTRACKER", false);
 
   //====================================================================
 
@@ -296,6 +297,7 @@ bool makeTightMuons(EasyChain* tree, vector<Muon>& AllMuons,vector<Muon*>& Tight
   vector<unsigned int>& NTrackerLayers=tree->Get(&NTrackerLayers,"muonNumberOfTrackerLayersWithMeasurementPat");
   vector<int>&      Mu_isPF = tree->Get(&Mu_isPF,"muonIsPFMuonPat");
   vector<int>&      Mu_IsGlobal = tree->Get( &Mu_IsGlobal, "muonIsGlobalMuonPat" );
+  vector<int>&      Mu_IsTracker = tree->Get( &Mu_IsTracker, "muonIsTrackerMuonPat" );
 
 
   
@@ -321,11 +323,18 @@ bool makeTightMuons(EasyChain* tree, vector<Muon>& AllMuons,vector<Muon*>& Tight
     OK=fabs(AllMuons.at(imu).Eta())<=ETAMAX;
     if(!TightMuonFlow.keepIf("abs(eta)<etamax TIGHT",OK))continue;
     //
+    OK=AllMuons.at(imu).RelIso() < PFIsoCut;
+    // OK=true;
+    if(!TightMuonFlow.keepIf("PFIso",OK)) continue;
+
     OK=Mu_IsGlobal.at(indx);
     if(!TightMuonFlow.keepIf("is global",OK)) continue;    
     //
     OK=Mu_isPF.at(indx);
     if(!TightMuonFlow.keepIf("is PF",OK)) continue;
+    //
+    OK= ((!REQ_ISTRACKER) || Mu_IsTracker.at(indx));
+    if(!TightMuonFlow.keepIf("is Tracker",OK)) continue;
     //
     OK=normalisedchi2.at(indx) <= Chi2MAX;
     if(!TightMuonFlow.keepIf("normalised chi2 for TIGHT muons",OK)) continue;
@@ -347,15 +356,10 @@ bool makeTightMuons(EasyChain* tree, vector<Muon>& AllMuons,vector<Muon*>& Tight
     //
     OK=NTrackerLayers.at(indx)>NTrackerLayersMIN;
     if(!TightMuonFlow.keepIf("NTrackerLayers min",OK)) continue;
-
-    OK=AllMuons.at(imu).RelIso() < PFIsoCut;
-    // OK=true;
-    if(!TightMuonFlow.keepIf("PFIso",OK)) continue;
-    
-
+ 
     //if it got here, it must be a tight lepton
     //     cout <<    Consistency(Mu_p4.at(indx),tree,"muonP4PF") << endl;
-    OK= Consistency(Mu_p4.at(indx),tree,"muonP4PF") <5.;
+    OK= Consistency(Mu_p4.at(indx),tree,"muonP4PF") < PFRECO_MAXDIFF;
     if(!TightMuonFlow.keepIf("RecoPt-PFPt",OK)) continue;
 
     AllMuons.at(imu).SetID("Tight",true);
