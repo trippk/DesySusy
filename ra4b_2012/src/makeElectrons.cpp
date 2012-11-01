@@ -170,7 +170,10 @@ bool makeTightElectrons(EasyChain* tree, vector<Electron>& AllElectrons, vector<
   }else if(selection=="TriggerTight"){
     idname="DESYelectronIdTriggerTightPat";
     TTver=true;
+  }else if(selection=="Loose"){
+    idname="electronIdLoosePat";
   }
+
 
   else{
     cout<<"ID NOT SET. ERROR"<<endl;
@@ -228,6 +231,13 @@ bool makeTightElectrons(EasyChain* tree, vector<Electron>& AllElectrons, vector<
       OK=fabs(El_GsfTrackDz.at(indx)) < trackdzMAX;
       if( !ElectronFlow.keepIf("|dz|<0.1"  , OK) && quick ) continue;      
     }
+
+    //ADDED FOR HANNES SYNC
+    OK=fabs(El_GsfTrackDxy.at(indx)) < trackdxyMAX ;
+    if( !ElectronFlow.keepIf("|dxy|<0.02", OK) && quick ) continue;
+    OK=fabs(El_GsfTrackDz.at(indx)) < trackdzMAX;
+    if( !ElectronFlow.keepIf("|dz|<0.1"  , OK) && quick ) continue;      
+    
         
     AllElectrons.at(iel).SetID("Tight",true);
     TightElectrons.push_back(&AllElectrons.at(iel));
@@ -360,4 +370,45 @@ bool makeVetoElectrons(EasyChain* tree, vector<Electron>& AllElectrons, vector<E
 
 
 };
+
+void makeCleanedElectrons(vector<Electron*>& Electrons_In, vector<Electron*>& Electrons_Out, vector<Muon*>& Muons) {
+
+  Electrons_Out.clear();
+  
+  //Distance between the jet and the iso leptons
+  ConfigReader config;
+  static float  DELTAR_CUT  =  config.getFloat("Electrons_CLEANDELTAR",  0.1 );
+
+  static CutSet CrossCleaning("Cleaned Electrons");
+  CrossCleaning.autodump=true;
+  
+  if(pcp){
+    cout<<endl;
+    cout<<"INSIDE makeCleanedElectrons "<<endl;
+    cout<<endl;
+  }
+
+  for(int iel = 0; iel<Electrons_In.size(); iel++){
+
+    bool dumpElectron=false;
+  
+    for(int imu=0; imu<(int)Muons.size(); ++imu){
+
+      if(DeltaR(Electrons_In.at(iel)->P4(),Muons.at(imu)->P4())<DELTAR_CUT) {
+	dumpElectron=true;
+	break;
+      }
+
+    }
+
+    if (!CrossCleaning.keepIf("CrossCleaning Muons",!dumpElectron)) continue;
+
+    Electrons_Out.push_back(Electrons_In.at(iel));
+
+    if(pcp)cout<<"pt and eta of jet "<<iel<<" = "<<Electrons_In.at(iel)->P4().pt()<<" "<<Electrons_In.at(iel)->P4().eta()<<endl;
+
+  }
+
+  return;
+}
 
