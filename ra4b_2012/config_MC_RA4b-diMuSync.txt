@@ -1,0 +1,51 @@
+# prelim RA4b_config
+
+################
+#Generic options
+################
+quick       = true
+doSystematics = false
+
+################
+#File specific
+################
+isData      = false
+filename    = /scratch/hh/current/cms/user/eron/nTuples/testdir/
+resonance_cut = 8.0
+isolation_cut = 0.1
+SampleName = DYJets
+SubSampleName = M-50
+TurnTriggersOff = false
+
+###############
+#Analysis Specific
+###############
+#diLep
+#Estimation = RA4b-diMuSync
+#treeType = anDiLep
+#TightMuons_PTMIN = 20.0
+
+#diLep Synchro
+Estimation = RA4b-diMuSync
+Tail = Quick
+treeType = anDiLep
+
+VertexZ_MC = 24.0
+
+LooseMuons_PTMIN = 10.0
+TightMuons_PTMIN = 10.0
+TightMuons_ISOMAX = 0.15
+TightMuons_PFIsoCutMIN = 0.15
+TightMuons_dzVertexMAX = 0.1
+TightMuons_PFRECO_MAXDIFF = 999999.
+TightMuons_REQ_ISTRACKER = true
+
+Electron_Selection = Loose
+LooseElectrons_PTMIN = 10.0
+TightElectrons_PTMIN = 10.0
+TightElectrons_ETAMAX = 2.4
+TightElectron_trackdzMAX = 0.1
+
+Jets_PTMIN = 40.0
+Jets_ETAMAX = 3.0
+Jets_CLEANDELTAR = 0.4
