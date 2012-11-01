@@ -162,6 +162,35 @@ void SetConditions_RA4b(SampleInformation mySampleInformation){
     //============================================
     
   }
+  else if(mySampleInformation.GetEstimation()=="RA4b-diMuSync" ){
+    
+    //============================================
+    //ELECTRONS
+    //============================================
+    SetOfCuts::SignalElectrons.NUM.Set(-1,"above","Any tight electrons");
+    SetOfCuts::WideElectrons.NUM.Set(-1,"above","Any wider electrons");
+    //============================================
+    // MUONS
+    //============================================
+    SetOfCuts::SignalMuons.NUM.Set(1,"above","Two or more tight muons");
+    SetOfCuts::WideMuons.NUM.Set(-1,"above","Any wider muons");
+    //============================================
+    //LEPTONS
+    //============================================
+    SetOfCuts::Leptons.NUM.Set(1,"above","more than one tight lepton");
+    //============================================
+    //JETS
+    //============================================
+    SetOfCuts::Jets.NUM.Set(1,"above","jets>1");
+    //============================================
+    //EVENT
+    //============================================
+    SetOfCuts::Event.NumberOfBtags.Set(-1,"above","any number of btags");
+    SetOfCuts::Event.HT.Set(0.,"above","HT above 0");
+    SetOfCuts::Event.MET.Set(0.,"above","MET above 0");
+    //============================================
+    
+  }
   else if(mySampleInformation.GetEstimation()=="RA4b-diMu" ){
     
     //============================================
