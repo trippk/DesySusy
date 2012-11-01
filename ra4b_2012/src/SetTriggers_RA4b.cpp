@@ -54,6 +54,10 @@ void SetTriggers_RA4b(SampleInformation mySampleInformation, vector<const char*>
   else if (mySampleInformation.GetEstimation()=="RA4b-diMu"){
     triggernames.push_back("HLT_Mu17_Mu8");
   }
+  else if (mySampleInformation.GetEstimation()=="RA4b-diMuSync"){
+    triggernames.push_back("HLT_Mu17_Mu8");
+    triggernames.push_back("HLT_Mu17_TkMu8");
+  }
   else {
     cout <<"triggers HAVE NOT been set. Warning"<<endl;
   }
