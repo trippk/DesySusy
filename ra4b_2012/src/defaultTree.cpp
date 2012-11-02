@@ -2,9 +2,9 @@
 #include "defaultTree.h"
 #include "string.h"
 #include "TFile.h"
-#include "/usr/include/boost/test/utils/foreach.hpp"
-#include "/usr/include/boost/algorithm/string/iter_find.hpp"
-#include "/usr/include/boost/algorithm/string.hpp"
+#include "boost/test/utils/foreach.hpp"
+#include "boost/algorithm/string/iter_find.hpp"
+#include "boost/algorithm/string.hpp"
 //#include <boost/foreach.hpp>
 //#include <algorithm/string/iter_find.hpp>
 //#include <algorithm>
