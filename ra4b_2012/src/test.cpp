@@ -43,6 +43,8 @@ int main() {
   for (int i = 0; i < 10; i++) {
     cout << "Fill: " << i << endl;
 
+    info.EventWeight = (float) i;
+
     LorentzM vec;
     vec.SetPxPyPzE((double) i,(double) i,(double) i,sqrt(3.)*(double) i);
 

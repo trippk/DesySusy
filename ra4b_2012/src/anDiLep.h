@@ -43,10 +43,10 @@ class anDiLep : public subTree {
    //Tree branches
    ////////////////
 
-   int * event;
-   int * run;
-   double *  weight;
-   double * PUWeight;
+   int event;
+   int run;
+   double weight;
+   double PUWeight;
 
    std::vector<LorentzM> * el; //el pt
    std::vector<int> * elQ; //el charge
@@ -55,7 +55,7 @@ class anDiLep : public subTree {
 
    std::vector<LorentzM> * jets; //jet pt
    std::vector<double> *  bjetdisc;
-   int *  nbjets;
+   int nbjets;
    std::vector<bool> * isbjet;
 
    LorentzM *   vMET;
@@ -89,11 +89,14 @@ class anDiLep : public subTree {
 
    double getHT(); //Returns HT
    double getMET(); //Returns MET
+   void getMETv(LorentzM & met); //Returns MET vector
 
-   double getMT(const LorentzM & vis, const LorentzM & inv, double invMass, double visMass = -1.);
+   double getMT(const LorentzM & vis, const LorentzM & inv, double visMass, double invMass);
 
    const std::vector<LorentzM> * getJets() {return jets;}
 
+   double getWeight();
+   int getNtags();
 };
 
 

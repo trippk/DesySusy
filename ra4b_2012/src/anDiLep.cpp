@@ -35,11 +35,6 @@ anDiLep::~anDiLep() {
 
 void anDiLep::AllocateMemory() {
   
-  event = new int(0);
-  run = new int(0);
-  weight = new double(0.);
-  PUWeight = new double(0.);
-
   el = new std::vector<LorentzM>();
   elQ = new std::vector<int>();
   mu = new std::vector<LorentzM>();
@@ -47,7 +42,6 @@ void anDiLep::AllocateMemory() {
   
   jets = new std::vector<LorentzM>();
   bjetdisc = new std::vector<double>();
-  nbjets = new int(0);
   isbjet = new std::vector<bool>();
 
   vMET = new LorentzM();
@@ -63,22 +57,6 @@ void anDiLep::DeallocateMemory() {
 
   cout << "anDiLep::Decallocate mem!" << endl;
 
-  if (event) {
-    delete event;
-    event = 0;
-  }
-  if (run) {
-    delete run;
-    run = 0;
-  }
-  if (weight) {
-    delete weight;
-    weight = 0;
-  }
-  if (PUWeight) {
-    delete PUWeight;
-    PUWeight = 0;
-  }
   if (el) {
     delete el;
     el = 0;
@@ -103,10 +81,6 @@ void anDiLep::DeallocateMemory() {
     delete bjetdisc;
     bjetdisc = 0;
   }
-  if(nbjets) {
-    delete nbjets;
-    nbjets = 0;
-  }
   if (isbjet) {
     delete isbjet;
     isbjet = 0;
@@ -123,10 +97,10 @@ void anDiLep::DeallocateMemory() {
 
 void anDiLep::SetToZero(){
 
-  *event=0;
-  *run=0;
-  *weight=0.0;
-  *PUWeight=0.0;
+  event=0;
+  run=0;
+  weight=0.0;
+  PUWeight=0.0;
   
   el->clear();
   elQ->clear();
@@ -135,7 +109,7 @@ void anDiLep::SetToZero(){
     
   jets->clear();
   bjetdisc->clear();
-  *nbjets=0;
+  nbjets=0;
   isbjet->clear();
   
   vMET->SetPxPyPzE(0.,0.,0.,0.);
@@ -148,10 +122,10 @@ void anDiLep::SetBranchesWrite() {
     return;
   }
 
-  treeToWrite->Branch("Event",event,"event/I");
-  treeToWrite->Branch("Run",run,"run/I");
-  treeToWrite->Branch("Weight",weight,"weight/D");
-  treeToWrite->Branch("PUWeight",PUWeight,"PUWeight/D");
+  treeToWrite->Branch("Event",&event,"event/I");
+  treeToWrite->Branch("Run",&run,"run/I");
+  treeToWrite->Branch("Weight",&weight,"weight/D");
+  treeToWrite->Branch("PUWeight",&PUWeight,"PUWeight/D");
 
   treeToWrite->Branch("el","std::vector<ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<float> > >", &el);
   treeToWrite->Branch("elQ","std::vector<int>", &elQ);
@@ -161,7 +135,7 @@ void anDiLep::SetBranchesWrite() {
 
   treeToWrite->Branch("jets", "std::vector<ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<float> > >", &jets);
   treeToWrite->Branch("bjetdisc", &bjetdisc);
-  treeToWrite->Branch("nbjets",nbjets, "nbjets/I");
+  treeToWrite->Branch("nbjets",&nbjets, "nbjets/I");
   treeToWrite->Branch("isbjet",&isbjet);
 
   treeToWrite->Branch("vMET",vMET);
@@ -176,10 +150,10 @@ void anDiLep::SetBranchesRead() {
     return;
   }
 
-  treeToRead->SetBranchAddress("Event",event);
-  treeToRead->SetBranchAddress("Run",run);
-  treeToRead->SetBranchAddress("Weight",weight);
-  treeToRead->SetBranchAddress("PUWeight",PUWeight);
+  treeToRead->SetBranchAddress("Event",&event);
+  treeToRead->SetBranchAddress("Run",&run);
+  treeToRead->SetBranchAddress("Weight", &weight );
+  treeToRead->SetBranchAddress("PUWeight",&PUWeight);
   
   treeToRead->SetBranchAddress("el",&el);
   treeToRead->SetBranchAddress("mu",&mu);
@@ -188,7 +162,7 @@ void anDiLep::SetBranchesRead() {
 
   treeToRead->SetBranchAddress("jets", &jets);
   treeToRead->SetBranchAddress("bjetdisc", &bjetdisc);
-  treeToRead->SetBranchAddress("nbjets",nbjets);
+  treeToRead->SetBranchAddress("nbjets",&nbjets);
   treeToRead->SetBranchAddress("isbjet",&isbjet);
 
   treeToRead->SetBranchAddress("vMET",&vMET);
@@ -209,10 +183,10 @@ void anDiLep::Fill(EventInfo* info, EasyChain* tree, std::vector<Muon*> & muons_
 
   this->SetToZero();
 
-  *event = info->Event;
-  *run = info->Run;    
-  *weight = info->EventWeight;
-  *PUWeight = info->PUWeight;
+  event = info->Event;
+  run = info->Run;    
+  weight = info->EventWeight;
+  PUWeight = info->PUWeight;
 
   for ( int iel = 0; iel < electrons_in.size(); iel++) {
     el->push_back( electrons_in.at(iel)->P4() );
@@ -228,7 +202,7 @@ void anDiLep::Fill(EventInfo* info, EasyChain* tree, std::vector<Muon*> & muons_
     bjetdisc->push_back(jets_in.at(ijet)->BJetDisc("CSV"));
     if ( jets_in.at(ijet)->IsBJet("CSV","Medium") ) {
       isbjet->push_back(true);
-      *nbjets+=1;
+      nbjets+=1;
     }
     else isbjet->push_back(false);
   }
@@ -244,7 +218,7 @@ void anDiLep::Fill(EventInfo* info, EasyChain* tree, std::vector<Muon*> & muons_
   if (ossfPair.size() == 2) {
     LorentzM pll = ossfPair.at(0);
     pll = pll + ossfPair.at(1);
-    h_Mll->Fill(pll.M(), *weight);
+    h_Mll->Fill(pll.M(), weight);
   }
 
   return;
@@ -419,20 +393,36 @@ double anDiLep::getMET() {
   return vMET->Pt();
 }
 
-static double getMT(const LorentzM & vis, const LorentzM & inv, double invMass, double visMass) {
+double anDiLep::getMT(const LorentzM & vis, const LorentzM & inv, double visMass, double invMass) {
   double MTsq = 0.;
-
-  if (visMass < 0) visMass = sqrt(vis.M2());
 
   double eT_vis = sqrt(visMass*visMass + vis.Pt()*vis.Pt());
   double eT_inv = sqrt(invMass*invMass + inv.Pt()*inv.Pt());
 
   MTsq  = visMass*visMass;
   MTsq += invMass*invMass;
-  MTsq += eT_vis*eT_inv;
-  MTsq += -vis.Pt()*inv.Pt()*cos(vis.Phi() - inv.Phi());
+  MTsq += 2.*eT_vis*eT_inv;
+  MTsq += -2.*vis.Pt()*inv.Pt()*cos(vis.Phi() - inv.Phi());
 
   if (MTsq > 0) return sqrt(MTsq);
 
   return 0.;
+}
+
+double anDiLep::getWeight() {
+  return weight;
+}
+
+int anDiLep::getNtags() {
+  return nbjets;
+}
+
+void anDiLep::getMETv(LorentzM & met) {
+  if (vMET) {
+    met = *vMET; 
+  }
+  else {
+    cout << "anDiLep::getMETv >> ERROR : vMET pointer not set!" << endl;
+  }
+  return;
 }
