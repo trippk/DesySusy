@@ -93,7 +93,7 @@ class anDiLep : public subTree {
 
    double getMT(const LorentzM & vis, const LorentzM & inv, double visMass, double invMass);
 
-   const std::vector<LorentzM> * getJets() {return jets;}
+   void getJets(std::vector<LorentzM> & jetsOut);
 
    double getWeight();
    int getNtags();

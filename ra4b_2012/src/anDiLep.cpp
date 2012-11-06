@@ -426,3 +426,11 @@ void anDiLep::getMETv(LorentzM & met) {
   }
   return;
 }
+
+
+void anDiLep::getJets(std::vector<LorentzM> & jetsOut) {
+  jetsOut.clear();
+  if (jets == 0) return;
+  jetsOut = *jets;
+  return;
+}
