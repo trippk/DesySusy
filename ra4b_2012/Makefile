@@ -46,13 +46,11 @@ endif
 
 #GET THE BOOST DIR. REQUIRED ON WORKGROUP SERVER
 BOOSTLIB = /usr/include
-#ifneq "0" "1"
 ifneq "$(shell find $(BOOSTLIB) -type d -iname boost | wc -l)"  "1"
-#ifneq (`find $(BOOSTLIB) -type d -iname boost | wc -l`,1)
 $(info "Setting BOOST dir...")
 BOOSTLIB = /afs/desy.de/group/cms/sw/slc5_ia32_gcc434/external/boost/1.44.0-cms/include
 endif
-echo "Using BOOST: $(BOOSTLIB)"
+$(info "Using BOOST: $(BOOSTLIB)")
 
 ROOTLIBS    = `root-config --libs` -lGenVector
 CXX         = g++ -g3 -O1
