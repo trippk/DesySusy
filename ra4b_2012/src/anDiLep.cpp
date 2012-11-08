@@ -471,26 +471,32 @@ void anDiLep::getUntaggedJets(std::vector<LorentzM> & jetsOut) {
 
 double anDiLep::getMT2W (const LorentzM & lepton, const std::vector<LorentzM> & taggedJets, const std::vector<LorentzM> & untaggedJets, const LorentzM & mpt) {
 
-  //Create the combinatorics
+  //Create the possible jet pairs
   typedef std::vector<std::pair<const LorentzM*, const LorentzM*> > jetPairs_t;
-  jetPairs_t jetPairs;
+  jetPairs_t jetPairs; //First jet in the pair is attached to the lepton
 
   typedef std::vector<LorentzM> jet_t;
   jet_t::const_iterator jetIt1;
   jet_t::const_iterator jetIt2;
 
+  //Method depends upon the number of tagged jets
   if (taggedJets.size() >= 2) {
-
+    //If more than two tagged jets are found, use all pairs of tagged jets to
+    //assign the jets in forming MT2W.
+    //Assume ignorance about which b-jet in the pair belongs to the lepton,
+    //i.e. consider both possibilities
     for (jetIt1 = taggedJets.begin() ; jetIt1 != taggedJets.end() ; jetIt1++ ) {
       for (jetIt2 = jetIt1 + 1; jetIt2 != taggedJets.end() ; jetIt2++ ) {
-	jetPairs.push_back(make_pair( &*jetIt1, &*jetIt2 ));
+	jetPairs.push_back(make_pair( &*jetIt1, &*jetIt2 )); 
 	jetPairs.push_back(make_pair( &*jetIt2, &*jetIt1 ));
       }
     }
 
   }
   else if (taggedJets.size() == 1) {
-    
+    //If only one tagged jet, assign it to one of the jets in MT2W. 
+    //For the remaining jet, take into account ALL possible untagged jets.
+    //Again assume ignorance about whether the 
     jetIt1 = taggedJets.begin();
     for (jetIt2 = untaggedJets.begin(); jetIt2 != untaggedJets.end() ; jetIt2++ ) {
 	jetPairs.push_back(make_pair( &*jetIt1, &*jetIt2));
@@ -499,7 +505,7 @@ double anDiLep::getMT2W (const LorentzM & lepton, const std::vector<LorentzM> & 
     
   }
   else {
-
+    //If no tagged jets, consider all pairs of untagged jets
     for (jetIt1 = untaggedJets.begin() ; jetIt1 != untaggedJets.end() ; jetIt1++ ) {
       for (jetIt2 = jetIt1 + 1; jetIt2 != untaggedJets.end() ; jetIt2++ ) {
 	jetPairs.push_back(make_pair( &*jetIt1, &*jetIt2));
@@ -516,6 +522,7 @@ double anDiLep::getMT2W (const LorentzM & lepton, const std::vector<LorentzM> & 
   mt2w_bisect::mt2w mt2w_calc(mt2w_upper_bound, mt2w_error_value, mt2w_scan_step);
 
   double mt2w_min = mt2w_upper_bound;
+  //For each jet pair calculate MT2W. Find the smallest possible value.
   for (jetPairs_t::const_iterator jetPair = jetPairs.begin() ; jetPair != jetPairs.end(); jetPair++) {
     mt2w_calc.set_momenta(lepton.E(), lepton.Px(), lepton.Py(), lepton.Pz(),
 			  jetPair->first->E(), jetPair->first->Px(), jetPair->first->Py(), jetPair->first->Pz(),
