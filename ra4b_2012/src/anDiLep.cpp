@@ -434,3 +434,97 @@ void anDiLep::getJets(std::vector<LorentzM> & jetsOut) {
   jetsOut = *jets;
   return;
 }
+void anDiLep::getTaggedJets(std::vector<LorentzM> & jetsOut) {
+  jetsOut.clear();
+  if (jets == 0 || isbjet == 0) {
+    cout << "anDiLep::getTaggedJets >> jets or isbjet not set!" << endl;
+    return;
+  }
+  if (jets->size() != isbjet->size() ) {
+    cout << "anDiLep::getTaggedJets >> jets and isbjet vectors are different sizes!" << endl;
+    return;
+  }
+
+  for (int iJet = 0; iJet < jets->size() ; iJet++ ) {
+    if (isbjet->at(iJet)) jetsOut.push_back( jets->at(iJet) );
+  }
+
+  return;
+}
+void anDiLep::getUntaggedJets(std::vector<LorentzM> & jetsOut) {
+  jetsOut.clear();
+  if (jets == 0 || isbjet == 0) {
+    cout << "anDiLep::getUntaggedJets >> jets or isbjet not set!" << endl;
+    return;
+  }
+  if (jets->size() != isbjet->size() ) {
+    cout << "anDiLep::getUntaggedJets >> jets and isbjet vectors are different sizes!" << endl;
+    return;
+  }
+
+  for (int iJet = 0; iJet < jets->size() ; iJet++ ) {
+    if (!isbjet->at(iJet)) jetsOut.push_back( jets->at(iJet) );
+  }
+
+  return;
+}
+
+double anDiLep::getMT2W (const LorentzM & lepton, const std::vector<LorentzM> & taggedJets, const std::vector<LorentzM> & untaggedJets, const LorentzM & mpt) {
+
+  //Create the combinatorics
+  typedef std::vector<std::pair<const LorentzM*, const LorentzM*> > jetPairs_t;
+  jetPairs_t jetPairs;
+
+  typedef std::vector<LorentzM> jet_t;
+  jet_t::const_iterator jetIt1;
+  jet_t::const_iterator jetIt2;
+
+  if (taggedJets.size() >= 2) {
+
+    for (jetIt1 = taggedJets.begin() ; jetIt1 != taggedJets.end() ; jetIt1++ ) {
+      for (jetIt2 = jetIt1 + 1; jetIt2 != taggedJets.end() ; jetIt2++ ) {
+	jetPairs.push_back(make_pair( &*jetIt1, &*jetIt2 ));
+	jetPairs.push_back(make_pair( &*jetIt2, &*jetIt1 ));
+      }
+    }
+
+  }
+  else if (taggedJets.size() == 1) {
+    
+    jetIt1 = taggedJets.begin();
+    for (jetIt2 = untaggedJets.begin(); jetIt2 != untaggedJets.end() ; jetIt2++ ) {
+	jetPairs.push_back(make_pair( &*jetIt1, &*jetIt2));
+	jetPairs.push_back(make_pair( &*jetIt2, &*jetIt1));
+    }
+    
+  }
+  else {
+
+    for (jetIt1 = untaggedJets.begin() ; jetIt1 != untaggedJets.end() ; jetIt1++ ) {
+      for (jetIt2 = jetIt1 + 1; jetIt2 != untaggedJets.end() ; jetIt2++ ) {
+	jetPairs.push_back(make_pair( &*jetIt1, &*jetIt2));
+	jetPairs.push_back(make_pair( &*jetIt2, &*jetIt1));
+      }
+    }
+
+  }
+
+  //Create instance of the mt2w class
+  double mt2w_upper_bound = 500.0;
+  double mt2w_error_value = 499.0;
+  double mt2w_scan_step = 0.5;
+  mt2w_bisect::mt2w mt2w_calc(mt2w_upper_bound, mt2w_error_value, mt2w_scan_step);
+
+  double mt2w_min = mt2w_upper_bound;
+  for (jetPairs_t::const_iterator jetPair = jetPairs.begin() ; jetPair != jetPairs.end(); jetPair++) {
+    mt2w_calc.set_momenta(lepton.E(), lepton.Px(), lepton.Py(), lepton.Pz(),
+			  jetPair->first->E(), jetPair->first->Px(), jetPair->first->Py(), jetPair->first->Pz(),
+			  jetPair->second->E(), jetPair->second->Px(), jetPair->second->Py(), jetPair->second->Pz(),
+			  mpt.Px(), mpt.Py()
+			  );
+    double mt2w = mt2w_calc.get_mt2w();
+    if (mt2w <= mt2w_min) mt2w_min = mt2w;
+  }
+
+  return mt2w_min;  
+}

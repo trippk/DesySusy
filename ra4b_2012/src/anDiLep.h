@@ -5,6 +5,7 @@
 #include <fstream>
 #include <map>
 #include <vector>
+#include <utility>
 
 #include "TFile.h"
 #include "TTree.h"
@@ -94,6 +95,10 @@ class anDiLep : public subTree {
    double getMT(const LorentzM & vis, const LorentzM & inv, double visMass, double invMass);
 
    void getJets(std::vector<LorentzM> & jetsOut);
+   void getTaggedJets(std::vector<LorentzM> & jetsOut);
+   void getUntaggedJets(std::vector<LorentzM> & jetsOut);
+   
+   double getMT2W(const LorentzM & lepton, const std::vector<LorentzM> & taggedJets, const std::vector<LorentzM> & untaggedJets, const LorentzM & mpt);
 
    double getWeight();
    int getNtags();
