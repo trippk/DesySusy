@@ -291,6 +291,84 @@ def WJetsToLNu():
     cleanUpDir('./'+Sample+'/'+SubSample)
     Scripts.append(script)
 
+def WWJetsTo2L2Nu():
+
+    Scripts=[]
+    Sample='WWJetsTo2L2Nu'
+    SubSample='NoSub'
+    FilesDir='/scratch/hh/lustre/cms/user/schettle/nTuple12_v4b/mc/WWJetsTo2L2Nu_TuneZ2star_8TeV-madgraph-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1'
+    Config='config_MC_RA4b.txt'
+    nFiles=3
+    #
+    script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
+    cleanUpDir('./'+Sample+'/'+SubSample)
+    Scripts.append(script)
+
+def WZJetsTo3LNu():
+
+    Scripts=[]
+    Sample='WZJetsTo3LNu'
+    SubSample='NoSub'
+    FilesDir='/scratch/hh/lustre/cms/user/schettle/nTuple12_v4b/mc/WZJetsTo3LNu_TuneZ2_8TeV-madgraph-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1'
+    Config='config_MC_RA4b.txt'
+    nFiles=3
+    #
+    script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
+    cleanUpDir('./'+Sample+'/'+SubSample)
+    Scripts.append(script)
+
+def WZJetsTo2L2Q():
+
+    Scripts=[]
+    Sample='WZJetsTo2L2Q'
+    SubSample='NoSub'
+    FilesDir='/scratch/hh/lustre/cms/user/schettle/nTuple12_v4b/mc/WZJetsTo2L2Q_TuneZ2star_8TeV-madgraph-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1'
+    Config='config_MC_RA4b.txt'
+    nFiles=3
+    #
+    script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
+    cleanUpDir('./'+Sample+'/'+SubSample)
+    Scripts.append(script)
+
+def ZZJetsTo2L2Q():
+
+    Scripts=[]
+    Sample='ZZJetsTo2L2Q'
+    SubSample='NoSub'
+    FilesDir='/scratch/hh/lustre/cms/user/schettle/nTuple12_v4b/mc/ZZJetsTo2L2Q_TuneZ2star_8TeV-madgraph-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/'
+    Config='config_MC_RA4b.txt'
+    nFiles=3
+    #
+    script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
+    cleanUpDir('./'+Sample+'/'+SubSample)
+    Scripts.append(script)
+
+def ZZJetsTo2L2Nu():
+
+    Scripts=[]
+    Sample='ZZJetsTo2L2Nu'
+    SubSample='NoSub'
+    FilesDir='/scratch/hh/lustre/cms/user/schettle/nTuple12_v4b/mc/ZZJetsTo2L2Nu_TuneZ2star_8TeV-madgraph-tauola/Summer12_DR53X-PU_S10_START53_V7A-v3'
+    Config='config_MC_RA4b.txt'
+    nFiles=3
+    #
+    script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
+    cleanUpDir('./'+Sample+'/'+SubSample)
+    Scripts.append(script)
+
+def ZZJetsTo4L():
+
+    Scripts=[]
+    Sample='ZZJetsTo4L'
+    SubSample='NoSub'
+    FilesDir='/scratch/hh/lustre/cms/user/schettle/nTuple12_v4b/mc/ZZJetsTo4L_TuneZ2star_8TeV-madgraph-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/'
+    Config='config_MC_RA4b.txt'
+    nFiles=3
+    #
+    script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
+    cleanUpDir('./'+Sample+'/'+SubSample)
+    Scripts.append(script)
+
 
 def LM6():
     Scripts=[]
@@ -329,6 +407,16 @@ if __name__=='__main__':
     TTJets()
     DYJetsToLL()
     WJetsToLNu()
+    ################
+    #DiBoson samples
+    ################
+    WWJetsTo2L2Nu()
+    WZJetsTo3LNu()
+    WZJetsTo2L2Q()
+    ZZJetsTo2L2Nu()
+    ZZJetsTo4L()
+    ZZJetsTo2L2Q()
+    ################
     SingleTop()
     LM9()
     LM6()
