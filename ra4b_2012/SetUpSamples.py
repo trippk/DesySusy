@@ -202,6 +202,14 @@ def T2tt():
     script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
     cleanUpDir('./'+Sample+'/'+SubSample)
     Scripts.append(script)
+    ########################################
+    SubSample='t350n50'
+    FilesDir='/scratch/hh/current/cms/user/costanza/store/SMS-T2tt_FineBin_Mstop-225to1200_mLSP-0to1000_8TeV-Pythia6Z/Summer12-START52_V9_FSIM-v1/'
+    Config='config_MC_RA4b.txt'
+    nFiles=20
+    script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
+    cleanUpDir('./'+Sample+'/'+SubSample)
+    Scripts.append(script)
 
 def DYJetsToLL():
 
