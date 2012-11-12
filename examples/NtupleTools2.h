@@ -48,6 +48,9 @@ using namespace std;
 
 typedef ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> >            LorentzV;
 typedef ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<float> >          LorentzM;
+typedef ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiE4D<float> >          LorentzE;
+typedef ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double> >          LorentzMD;
+typedef ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiE4D<double> >          LorentzED;
 typedef ROOT::Math::DisplacementVector3D<ROOT::Math::Cartesian3D<double> > XYZVectorD;
 typedef ROOT::Math::PositionVector3D<ROOT::Math::Cartesian3D<double>  >     XYZPointD;
 typedef ROOT::Math::DisplacementVector3D<ROOT::Math::Cartesian3D<float> > XYZVectorF;
@@ -77,10 +80,11 @@ typedef ROOT::Math::PositionVector3D<ROOT::Math::Cartesian3D<float>  >     XYZPo
 #pragma link C++ class ROOT::Math::PositionVector3D<ROOT::Math::Cartesian3D<float>  >+;
 #pragma link C++ class ROOT::Math::DisplacementVector3D<ROOT::Math::Cartesian3D<float> >+;
 #pragma link C++ class ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<float> >+;
+#pragma link C++ class ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiE4D<float> >+;
 #pragma link C++ class ROOT::Math::PtEtaPhiM4D<float>+;
 #endif
 
-
+//namespace ROOT {
 #ifndef __CINT__ 
 // following functions should not be processed by rootcint
 //---------- simple progress counter and timer -----------------------------
@@ -471,4 +475,5 @@ private:
 	ClassDef(EasyChain, 1);
 #endif
 };
+//}
 #endif
