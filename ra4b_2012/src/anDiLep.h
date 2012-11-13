@@ -17,6 +17,7 @@
 #include "Jet.h"
 #include "mt2w_interface.h"
 
+#include "mTtools/MT2/mt2_bisect.h"
 
 class anDiLep : public subTree {
  private:
@@ -30,7 +31,8 @@ class anDiLep : public subTree {
 
    void getOsLeptonPair(const std::vector<LorentzM> * leptons, const std::vector<int> * leptonsQ, std::vector<LorentzM> & osPair);
    
-   mt2w_bisect::mt2w_interface mt2w_calc;
+/*    mt2w_bisect::mt2w_interface mt2w_calc; */
+/*    mt2_bisect::mt2 mt2_calc; */
 
    TDirectory * dir; //dir in which tree and hists are created
 
@@ -102,6 +104,8 @@ class anDiLep : public subTree {
    void getUntaggedJets(std::vector<LorentzM> & jetsOut);
    
    double getMT2W(const LorentzM & lepton, const std::vector<LorentzM> & taggedJets, const std::vector<LorentzM> & untaggedJets, const LorentzM & mpt);
+
+   double getMT2(const LorentzM & lep1, const LorentzM & lep2, const LorentzM & mpt);
 
    double getWeight();
    int getNtags();

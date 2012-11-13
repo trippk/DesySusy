@@ -545,6 +545,20 @@ double anDiLep::getMT2W (const LorentzM & lepton, const std::vector<LorentzM> & 
   return mt2w_min;  
 }
 
+double anDiLep::getMT2(const LorentzM & p1, const LorentzM & p2, const LorentzM & mpt) {
+
+  mt2_bisect::mt2 mt2_calc;
+  double p10[3] = { p1.M(), p1.Px(), p1.Py() };
+  double p20[3] = { p2.M(), p2.Px(), p2.Py() };
+  double pmiss[3] = {0., mpt.Px(), mpt.Py()};
+  mt2_calc.set_momenta(p10, p20, pmiss);
+  mt2_calc.set_mn(0.);
+  
+  return mt2_calc.get_mt2();
+
+}
+
+
 bool anDiLep::isScanPoint(double mY_in, double mLsp_in) const {
   
   const double TOL = 0.01;
@@ -552,3 +566,4 @@ bool anDiLep::isScanPoint(double mY_in, double mLsp_in) const {
   if (  (fabs(mY - mY_in) < TOL) && (fabs(mLsp - mLsp_in) < TOL )  ) return true;
   else return false;
 }
+
