@@ -38,6 +38,9 @@ HEADERS_LIB:= $(HEADERS_LIB:.cpp=.h)
 OBJS_LIB   = $(notdir $(SOURCES_LIB))
 OBJS_LIB   := $(OBJS_LIB:.cpp=_sl.o)	 
 
+SOURCES_MTTOOLS = ./src/mTtools/MT2/mt2_bisect.cpp 
+OBJS_MTTOOLS   := $(SOURCES_MTTOOLS:.cpp=_sl.o)	 
+
 #------------------------------------------------------------------------------
 
 ifndef ROOTSYS
@@ -75,10 +78,10 @@ endif
 
 all: $(EXEC)
 
-$(EXEC): $(OBJS) NtupleTools2Dict.o
-	$(LD) $(LDFLAGS) $^ $(ROOTLIBS) $(MORELIBS)  -o $@
+$(EXEC): $(OBJS) NtupleTools2Dict.o MTTOOLS
+	$(LD) $(LDFLAGS) $(OBJS) NtupleTools2Dict.o $(ROOTLIBS) $(MORELIBS)  -o $@
 	@echo "$@ done"
-	@echo "$(OBJS) 	$(LD) $(LDFLAGS) $^ $(ROOTLIBS) $(MORELIBS)  -o $@"
+	@echo "$(OBJS) 	$(LD) $(LDFLAGS) $(OBJS) NtupleTools2Dict.o $(ROOTLIBS) $(MORELIBS)  -o $@"
 
 NtupleTools2Dict.cxx: NtupleTools2_h.h  Linkdef.h
 		@echo "Generating dictionary $@..."
@@ -87,7 +90,12 @@ NtupleTools2Dict.o: NtupleTools2Dict.cxx
 	 $(CXX) $(CXXFLAGS) -D __NTHEADER___ -c $<	
 NtupleTools2_h.h:  NtupleTools2.h
 	touch NtupleTools2_h.h 
-        
+
+MTTOOLS:
+	@echo "Making MTTOOLS..."
+	cd src/mTtools/MT2; make
+	cd src/mTtools/WIMPMASS; make
+
 clean:
 	@rm -f myAnalysis *Dict.* *Dict_* *.so core $(OBJS) $(OBJS_LIB) *.d 
 
@@ -114,7 +122,8 @@ NtupleTools2Dict_sl.o: NtupleTools2Dict.cxx
 	 $(CXX) -fPIC $(CXXFLAGS) -D __NTHEADER___ -o $@ -c $<	
 libRA4bDict.cpp : $(HEADERS_LIB) libRA4bDict_Linkdef.h 
 	rootcint -f $@ -c -p $^
-libRA4b.so : $(OBJS_LIB) libRA4bDict_sl.o NtupleTools2Dict_sl.o
-	$(CXX) -shared $(LDFLAGS) $(ROOTLIBS) -o $@ $^ 
+libRA4b.so : MTTOOLS $(OBJS_LIB) libRA4bDict_sl.o NtupleTools2Dict_sl.o 
+	$(CXX) -shared $(LDFLAGS) $(ROOTLIBS) -o $@ $(OBJS_LIB) libRA4bDict_sl.o NtupleTools2Dict_sl.o $(OBJS_MTTOOLS)
+	@echo "Made library!"
 
 
