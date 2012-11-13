@@ -49,6 +49,9 @@ class anDiLep : public subTree {
    double weight;
    double PUWeight;
 
+   double mY; //Mass of produced sparticle, used in scans.
+   double mLsp; //Mass of the LSP
+
    std::vector<LorentzM> * el; //el pt
    std::vector<int> * elQ; //el charge
    std::vector<LorentzM> * mu; //mu pt
@@ -102,6 +105,11 @@ class anDiLep : public subTree {
 
    double getWeight();
    int getNtags();
+
+   double getMY() const {return mY;}
+   double getMLSP() const {return mLsp;}
+   bool isSusyScan() const {return (mY >= 0. && mLsp >= 0.);}
+   bool isScanPoint(double mY_in, double mLsp_in) const;
 };
 
 

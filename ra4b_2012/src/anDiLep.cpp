@@ -17,7 +17,7 @@ anDiLep::anDiLep(TDirectory * dirIn) : treeToRead(0), treeToWrite(0), nEntries(0
   SetBranchesWrite();
 }
 
-anDiLep::anDiLep(TTree * treeToReadIn) : treeToRead(treeToReadIn), treeToWrite(0), dir(0), nEntries(0), iEntry(0), event(0), run(0), weight(0), PUWeight(0), el(0), elQ(0), mu(0), muQ(0), jets(0), bjetdisc(0), nbjets(0), isbjet(0), vMET(0) {
+anDiLep::anDiLep(TTree * treeToReadIn) : treeToRead(treeToReadIn), treeToWrite(0), dir(0), nEntries(0), iEntry(0), event(0), run(0), mY(-1.), mLsp(-1.), weight(0), PUWeight(0), el(0), elQ(0), mu(0), muQ(0), jets(0), bjetdisc(0), nbjets(0), isbjet(0), vMET(0) {
 
   SetBranchesRead();
 
@@ -101,7 +101,10 @@ void anDiLep::SetToZero(){
   run=0;
   weight=0.0;
   PUWeight=0.0;
-  
+  mY=-1.;
+  mLsp=-1.;
+
+
   el->clear();
   elQ->clear();
   mu->clear();
@@ -126,6 +129,8 @@ void anDiLep::SetBranchesWrite() {
   treeToWrite->Branch("Run",&run,"run/I");
   treeToWrite->Branch("Weight",&weight,"weight/D");
   treeToWrite->Branch("PUWeight",&PUWeight,"PUWeight/D");
+  treeToWrite->Branch("mY"  ,&mY  ,"mY/D");
+  treeToWrite->Branch("mLsp",&mLsp,"mLsp/D");
 
   treeToWrite->Branch("el","std::vector<ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<float> > >", &el);
   treeToWrite->Branch("elQ","std::vector<int>", &elQ);
@@ -154,6 +159,8 @@ void anDiLep::SetBranchesRead() {
   treeToRead->SetBranchAddress("Run",&run);
   treeToRead->SetBranchAddress("Weight", &weight );
   treeToRead->SetBranchAddress("PUWeight",&PUWeight);
+  treeToRead->SetBranchAddress("mY",&mY);
+  treeToRead->SetBranchAddress("mLsp",&mLsp);
   
   treeToRead->SetBranchAddress("el",&el);
   treeToRead->SetBranchAddress("mu",&mu);
@@ -187,6 +194,8 @@ void anDiLep::Fill(EventInfo* info, EasyChain* tree, std::vector<Muon*> & muons_
   run = info->Run;    
   weight = info->EventWeight;
   PUWeight = info->PUWeight;
+  mY = info->mY;
+  mLsp = info->mLsp;
 
   for ( int iel = 0; iel < electrons_in.size(); iel++) {
     el->push_back( electrons_in.at(iel)->P4() );
@@ -534,4 +543,12 @@ double anDiLep::getMT2W (const LorentzM & lepton, const std::vector<LorentzM> & 
   }
 
   return mt2w_min;  
+}
+
+bool anDiLep::isScanPoint(double mY_in, double mLsp_in) const {
+  
+  const double TOL = 0.01;
+
+  if (  (fabs(mY - mY_in) < TOL) && (fabs(mLsp - mLsp_in) < TOL )  ) return true;
+  else return false;
 }
