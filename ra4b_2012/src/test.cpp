@@ -1,5 +1,7 @@
 //A simple test program
 
+#include "TTree.h"
+
 #include "subTreeFactory.h"
 #include "anDiLep.h"
 #include <iostream>
@@ -11,9 +13,20 @@ bool pcp = false;
 //double EventWeight = 1.0;
 //bool checkthisevent = false;
 
+void testWrite();
+void testRead();
+
 int main() {
 
-  cout << "Running test" << endl;
+  testWrite();
+  testRead();
+
+  return 0;
+}
+
+void testWrite() {
+
+  cout << "Running write test" << endl;
 
   TFile f("testFile.root", "RECREATE");
 
@@ -63,8 +76,38 @@ int main() {
 
   cout << "Test complete" << endl;
 
-  return 0;
+  return;
 }
-
-
   
+void testRead() {
+
+  cout << "Running read test" << endl;
+
+  TFile f("testFile.root", "READ");
+
+  //Get the tree
+  TTree * tree = (TTree*) f.Get("subTree");
+
+  if (!tree) {
+    cout << "Could not find the tree!" << endl;
+    f.Close();
+    return;
+  }
+
+  double mStop = 0.;
+  tree->SetBranchAddress("mStop", &mStop);
+  
+  int run = -1;
+  tree->SetBranchAddress("Run", &run);
+
+  tree->GetEntry(1);
+
+  cout << "I'm here and mStop is: " << mStop << endl;
+  cout << "run is: " << run << endl;
+
+  f.Close();
+
+  cout << "Test complete" << endl;
+
+  return;
+}
