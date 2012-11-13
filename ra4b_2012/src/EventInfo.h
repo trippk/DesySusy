@@ -8,6 +8,8 @@ struct EventInfo{
   float EventWeight;
   float PUWeight;
 
+  float mY;
+  float mLsp;
 };
 
 #endif
