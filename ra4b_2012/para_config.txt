@@ -2,7 +2,8 @@
 #corresponding <sample name><sub sample name>
 xs_TTJets_SUMMER12           = 225.97
 xs_TTJets_SUMMER12POWHEG     = 225.97
-xs_T2tt_t350n50              = 0.807323
+xs_T2tt_t300n50             = 1.99608
+xs_T2tt_t350n50             = 0.807323
 xs_T2tt_t500n100             = 0.0855847
 xs_T2tt_t650n200             = 0.0139566
 xs_T2tt_t750n400             = 0.00480639
@@ -30,6 +31,7 @@ xs_LM9_NoSub                 = 13.0018
 #(T)otal (N)umber (o)f (E)vents 
 TNoE_TTJets_SUMMER12           = 6923750
 TNoE_TTJets_SUMMER12POWHEG     = 21675970
+TNoE_T2tt_t300n50              = 49997
 TNoE_T2tt_t350n50              = 49998
 TNoE_T2tt_t500n100             = 49997
 TNoE_T2tt_t650n200             = 49999
@@ -58,6 +60,7 @@ TNoE_LM9_NoSub                 = 1000080
 #(F)ilter (E)fficiency
 FE_TTJets_SUMMER12           = 1
 FE_TTJets_SUMMER12POWHEG     = 1
+FE_T2tt_t300n50              = 1
 FE_T2tt_t350n50              = 1
 FE_T2tt_t500n100             = 1
 FE_T2tt_t650n200             = 1
