@@ -18,6 +18,13 @@
 using namespace std;
 using namespace ROOT::Math::VectorUtil;
 
+namespace gentools{
+std::vector<int> GetDaughters(int ParticleIndex, std::vector<int>* MotherIndex);
+int Decay(int ParticleIndex, std::vector<int>* MotherIndex, std::vector<int>* PdgId, TString spazio);
+TString IdToString(int id);
+}
+
+
 class Nminus1Tree: public subTree {
  public:
 
@@ -26,7 +33,7 @@ class Nminus1Tree: public subTree {
    virtual void Write();
   protected:
    
-   template <class T> void SetVector(LorentzM* v, T ref);
+   template <class T> void SetVector(LorentzED* v, T ref);
    void SetToZero();
    void FirstFill( EasyChain* tree);
    void FillScan( EasyChain* tree);
@@ -39,24 +46,24 @@ class Nminus1Tree: public subTree {
    double weight;
    double PUWeight;
 
-   LorentzM* el;
+   LorentzED* el;
    double elPt;
-   LorentzM* mu;
+   LorentzED* mu;
    double muPt;
 
    double mt2wEl;
    double mt2wMu;
 
-   LorentzM* jets[7];
+   LorentzED* jets[7];
    double    jetsPt[7];
    double    bjetdisc[7];
    int       njets;
    int       nbjets[3];
    bool      isbjet[7][3];
 
-   LorentzM*   vMET;
+   LorentzED*   vMET;
    double      MET; 
-   LorentzM*   vMHT;
+   LorentzED*   vMHT;
    double      MHT;
    double      HT;
    
@@ -76,11 +83,15 @@ class Nminus1Tree: public subTree {
    int nFill;
    int leptonsFromTop;
 
+private:
+	std::vector<int> GetDaughters(int ParticleIndex, std::vector<int>* MotherIndex);
+	int Decay(int ParticleIndex, std::vector<int>* MotherIndex, std::vector<int>* PdgId, TString spazio);
+	TString IdToString(int id);
 };
 
 
 template <class T>
-void Nminus1Tree::SetVector(LorentzM* v, T ref) {
+void Nminus1Tree::SetVector(LorentzED* v, T ref) {
 
   v->SetPxPyPzE(ref->Px(),
 		ref->Py(),

@@ -3,12 +3,11 @@
 #include "TObjArray.h"
 #include "ConfigReader.h"
 
-std::vector<int> GetDaughters(int ParticleIndex, std::vector<int>* MotherIndex);
-int Decay(int ParticleIndex, std::vector<int>* MotherIndex, std::vector<int>* PdgId, TString spazio);
-TString IdToString(int id);
+//typedef LorentzVector<PtEtaPhiE4D<double> > ROOT::Math::PtEtaPhiEVector
+#include "Math/Vector4D.h"
 
 Nminus1Tree::Nminus1Tree(){
-     
+
   nFill=0;
   mytree = new TTree("subTree","a subTree");
   
@@ -17,9 +16,9 @@ Nminus1Tree::Nminus1Tree(){
   weight=0.0;
   PUWeight=0.0;
   
-  el=new LorentzM(0.,0.,0.,0.);
+  el=new LorentzED(0.,0.,0.,0.);
   elPt=0.;
-  mu=new LorentzM(0.,0.,0.,0.);
+  mu=new LorentzED(0.,0.,0.,0.);
   muPt=0.;
   
   mt2wEl=0.;
@@ -31,7 +30,7 @@ Nminus1Tree::Nminus1Tree(){
   }
   
   for (int ijet=0; ijet<7; ijet++) {
-    jets[ijet]=new LorentzM(0.,0.,0.,0.);
+    jets[ijet]=new LorentzED(0.,0.,0.,0.);
     jetsPt[ijet]=0.;
     bjetdisc[ijet]=0.;
     for (int iwp=0; iwp<3; iwp++) {
@@ -39,9 +38,9 @@ Nminus1Tree::Nminus1Tree(){
     }
   }
   
-  vMET=new LorentzM(0.,0.,0.,0.);
+  vMET=new LorentzED(0.,0.,0.,0.);
   MET=0.;
-  vMHT=new LorentzM(0.,0.,0.,0.);
+  vMHT=new LorentzED(0.,0.,0.,0.);
   MHT=0.;
   HT=0.;
      
@@ -59,9 +58,9 @@ Nminus1Tree::Nminus1Tree(){
   mytree->Branch("Run",&run,"run/I");
   mytree->Branch("Weight",&weight,"weight/D");
   mytree->Branch("PUWeight",&PUWeight,"PUWeight/D");
-  mytree->Branch("el","ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<float> >",&el);
+  mytree->Branch("el.","ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiE4D<double> >",&el);
   mytree->Branch("elPt",&elPt,"elPt/D");
-  mytree->Branch("mu","ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<float> >",&mu);
+  mytree->Branch("mu.","ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiE4D<double> >",&mu);
   mytree->Branch("muPt",&muPt,"muPt/D");
   mytree->Branch("mt2wEl",&mt2wEl,"mt2wEl/D");
   mytree->Branch("mt2wMu",&mt2wMu,"mt2wMu/D");
@@ -79,7 +78,7 @@ Nminus1Tree::Nminus1Tree(){
   for (int ijet=0; ijet<7; ijet++) {
 
     TString name="jet"; name+=ijet+1;
-    mytree->Branch(name,"ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<float> >",&jets[ijet]);
+    mytree->Branch(name+".","ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiE4D<double> >",&jets[ijet]);
 
     name="jet"; name+=ijet+1; name+="Pt";
     TString size=name; size+="/D";
@@ -99,9 +98,9 @@ Nminus1Tree::Nminus1Tree(){
     }
   }
 
-  mytree->Branch("vMET","ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<float> >",&vMET);
+  mytree->Branch("vMET.","ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiE4D<double> >",&vMET);
   mytree->Branch("MET",&MET,"MET/D");
-  mytree->Branch("vMHT","ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<float> >",&vMHT);
+  mytree->Branch("vMHT.","ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiE4D<double> >",&vMHT);
   mytree->Branch("MHT",&MHT,"MHT/D");
   mytree->Branch("HT",&HT,"HT/D");
 
@@ -205,7 +204,7 @@ void Nminus1Tree::Fill( EventInfo* info, EasyChain* tree, vector<Muon*>& muons_i
     for (int igen=0; igen<Status.size(); igen++) {
       if (abs(PdgId.at(igen))==6) {
 	//std::cout<<IdToString(PdgId.at(igen)) << std::endl;
-	leptonsFromTop+=Decay(igen,&MotherIndex,&PdgId,"");
+	leptonsFromTop+=gentools::Decay(igen,&MotherIndex,&PdgId,"");
       }
     }
   }
@@ -331,7 +330,7 @@ void Nminus1Tree::SetToZero(){
 
 }
 
-std::vector<int> GetDaughters(int ParticleIndex, std::vector<int>* MotherIndex) {
+std::vector<int> gentools::GetDaughters(int ParticleIndex, std::vector<int>* MotherIndex) {
 
   std::vector<int> daughters;
   daughters.clear();
@@ -344,7 +343,7 @@ std::vector<int> GetDaughters(int ParticleIndex, std::vector<int>* MotherIndex) 
 }
 
 
-int Decay(int ParticleIndex, std::vector<int>* MotherIndex, std::vector<int>* PdgId, TString spazio) {
+int gentools::Decay(int ParticleIndex, std::vector<int>* MotherIndex, std::vector<int>* PdgId, TString spazio) {
 
   TString spazionew="\t"; spazionew+=spazio;
 
@@ -366,7 +365,7 @@ int Decay(int ParticleIndex, std::vector<int>* MotherIndex, std::vector<int>* Pd
   return count;
 }
 
-TString IdToString(int id){
+TString gentools::IdToString(int id){
   TString particle;
   particle="";
   if (id<0) particle+="anti-";
