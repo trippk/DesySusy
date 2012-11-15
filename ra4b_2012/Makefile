@@ -77,9 +77,9 @@ endif
 
 #------------------------------------------------------------------------------
 
-all: $(EXEC)
+all: MTTOOLS $(EXEC)
 
-$(EXEC): MTTOOLS $(OBJS) NtupleTools2Dict.o 
+$(EXEC): $(OBJS) NtupleTools2Dict.o 
 	$(LD) $(LDFLAGS) $(OBJS) NtupleTools2Dict.o $(OBJS_MTTOOLS) $(ROOTLIBS) $(MORELIBS)  -o $@
 	@echo "$@ done"
 	@echo "$(OBJS) 	$(LD) $(LDFLAGS) $(OBJS) NtupleTools2Dict.o $(OBJS_MTTOOLS) $(ROOTLIBS) $(MORELIBS)  -o $@"
