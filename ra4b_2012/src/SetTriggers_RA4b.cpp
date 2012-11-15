@@ -58,6 +58,13 @@ void SetTriggers_RA4b(SampleInformation mySampleInformation, vector<const char*>
     triggernames.push_back("HLT_Mu17_Mu8");
     triggernames.push_back("HLT_Mu17_TkMu8");
   }
+  else if (mySampleInformation.GetEstimation()=="RA4b-diElSync"){
+    triggernames.push_back("HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL");
+  }
+  else if (mySampleInformation.GetEstimation()=="RA4b-MuEGSync"){
+    triggernames.push_back("HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL");
+    triggernames.push_back("HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL");
+  }
   else {
     cout <<"triggers HAVE NOT been set. Warning"<<endl;
   }
