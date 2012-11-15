@@ -45,6 +45,7 @@ LooseElectrons_PTMIN = 10.0
 TightElectrons_PTMIN = 10.0
 TightElectrons_ETAMAX = 2.4
 TightElectron_trackdzMAX = 0.1
+Electrons_CLEANDELTAR = 0.1
 
 Jets_PTMIN = 40.0
 Jets_ETAMAX = 3.0
