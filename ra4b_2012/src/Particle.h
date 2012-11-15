@@ -46,4 +46,5 @@ class Particle : public AnalysisObject {
   virtual void Set(int maptotree_In, LorentzM* momuntum_In, int charge_In, double relIso_In);
 };
 
+bool compare_Particle_Pt(Particle* p1, Particle* p2);
 #endif

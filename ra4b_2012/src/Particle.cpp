@@ -57,7 +57,17 @@ void Particle::Set(int maptotree_In, LorentzM* momentum_In, int charge_In, doubl
   SetRelIso(relIso_In);
 }
 
+bool compare_Particle_Pt(Particle* p1, Particle* p2) {
 
+  //Ordering mechanism for Particles. Used for stl containers with sort.
+  //If p1 has a higher Pt than p2, it should return true. This means that p1
+  //should be placed before p2 in the list.
+  
+  if ( p1->Pt() > p2->Pt() ) {
+    return true;
+  }
+  else return false;
+}
 
 
 
