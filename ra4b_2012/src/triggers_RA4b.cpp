@@ -97,3 +97,60 @@ bool triggers_RA4b(EasyChain* tree, vector<const char*>& triggernames, double& E
 
 }
 							    
+bool triggersFired_RA4b(EasyChain* tree, std::map<std::string, bool>& firedTriggers) {
+
+  extern bool pcp;
+
+  if( pcp){
+    cout<<"======================================"<<endl;
+    cout<<"CHECKING THE TRIGGER ON THIS EVENT "<<endl;
+  }
+    
+  if(pcp)cout<<"going to get the prescaled map from the tree" <<endl;
+  map<string,int>& HLTprescaled = tree->Get(&HLTprescaled, "prescaled");
+  if(pcp)cout<<"going to get the trigger map from the tree" <<endl;
+  map<string,bool>&   HLTtrigger = tree->Get(&HLTtrigger, "triggered");
+  map<string,string>& TriggerMap = tree->Get(&TriggerMap, "DESYtriggerNameMap");
+
+  if(pcp)cout<<"got the triggers from the tree!" <<endl;
+
+  bool atLeastOneTrigFired = false;
+
+  std::map<std::string,bool>::iterator trigIt;
+
+  for (trigIt =firedTriggers.begin();trigIt != firedTriggers.end(); trigIt++){
+    if(pcp)cout<<"checking if the trigger "<< trigIt->first <<endl;
+
+    std::string tname=TriggerMap[trigIt->first];
+    if (HLTtrigger[tname] && HLTprescaled[tname]==1) {
+      trigIt->second=true;
+      atLeastOneTrigFired = true;
+    }
+
+  }
+
+  return atLeastOneTrigFired;
+}
+
+bool isMuEGPlateau(const std::map<std::string, bool>& trigsFiredMap, double MuPt, double ElPt) {
+
+  std::map<std::string, bool>::const_iterator trigIt;
+  for (trigIt = trigsFiredMap.begin() ; trigIt != trigsFiredMap.end() ; trigIt++) {
+    if (trigIt->second) {
+      //Trig fired.
+      //Apply thresholds.
+      if (trigIt->first.find("Mu17_Ele8") != std::string::npos) {
+	if ((MuPt > 20.) && (ElPt > 10.)) return true;
+      }
+      else if (trigIt->first.find("Mu8_Ele17") != std::string::npos) {
+	if ((MuPt > 10.) && (ElPt > 20.)) return true;
+      }
+      else {
+	std::cout << "isMuEGPlateau >> ERROR! Unknown Thresholds for trigger: " << trigIt->first << std::endl;
+      }
+    }
+  }
+
+  //If here, no trigger was found that fired and satisfied thresholds.
+  return false;
+}
