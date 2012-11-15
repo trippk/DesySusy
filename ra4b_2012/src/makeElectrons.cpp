@@ -371,13 +371,13 @@ bool makeVetoElectrons(EasyChain* tree, vector<Electron>& AllElectrons, vector<E
 
 };
 
-void makeCleanedElectrons(vector<Electron*>& Electrons_In, vector<Electron*>& Electrons_Out, vector<Muon*>& Muons) {
+void makeCleanedElectrons(vector<Electron*>& Electrons_In, vector<Electron*>& Electrons_Out, vector<Muon>& Muons) {
 
   Electrons_Out.clear();
   
   //Distance between the jet and the iso leptons
   ConfigReader config;
-  static float  DELTAR_CUT  =  config.getFloat("Electrons_CLEANDELTAR",  0.1 );
+  static float  DELTAR_CUT  =  config.getFloat("Electrons_CLEANDELTAR",  -1. );
 
   static CutSet CrossCleaning("Cleaned Electrons");
   CrossCleaning.autodump=true;
@@ -394,7 +394,7 @@ void makeCleanedElectrons(vector<Electron*>& Electrons_In, vector<Electron*>& El
   
     for(int imu=0; imu<(int)Muons.size(); ++imu){
 
-      if(DeltaR(Electrons_In.at(iel)->P4(),Muons.at(imu)->P4())<DELTAR_CUT) {
+      if(DeltaR(Electrons_In.at(iel)->P4(),Muons.at(imu).P4())<DELTAR_CUT) {
 	dumpElectron=true;
 	break;
       }
