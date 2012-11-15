@@ -5,6 +5,7 @@
 #include "Muon.h"
 
 vector<Muon> makeAllMuons(EasyChain* tree );
+vector<Muon> makeTrkOrGlobalMuons(EasyChain* tree );
 bool makeSoftMuons(EasyChain* tree, vector<Muon>& Muons, vector<Muon*>& SoftMuons);
 bool makeLooseMuons(EasyChain* tree, vector<Muon>& Muons, vector<Muon*>& LooseMuons );
 bool makeTightMuons(EasyChain* tree, vector<Muon>& Muons, vector<Muon*>& TightMuons);

@@ -48,6 +48,40 @@ vector<Muon> makeAllMuons(EasyChain* tree){
   
   return AllMuons;
 }
+
+vector<Muon> makeTrkOrGlobalMuons(EasyChain* tree){
+  
+  if(pcp){
+    cout<<endl;
+    cout<<"inside makeTrkOrGlobalMuons "<<endl;
+    cout<<endl;
+  }
+  vector<Muon> TrkOrGlobalMuons;
+  vector<LorentzM>& Muons = tree->Get(&Muons, "muonP4Pat");
+  vector<int>&      charge   = tree->Get( &charge,"muonChargePat");
+  vector<float>&    PFIso        = tree->Get(&PFIso,"DESYmuonPfIsolationR03DeltaBCorrectedPat");
+
+  vector<int>&      Mu_IsGlobal = tree->Get( &Mu_IsGlobal, "muonIsGlobalMuonPat" );
+  vector<int>&      Mu_IsTracker = tree->Get( &Mu_IsGlobal, "muonIsTrackerMuonPat" );
+
+  Muon dummyMuon;
+  for (int imu=0;imu<(int)Muons.size();++imu){
+
+    if(pcp){
+      cout<<"muon("<<imu<<") pt = "<<Muons.at(imu).Pt() <<endl;
+      cout<<"muon("<<imu<<") eta = "<<Muons.at(imu).Eta() <<endl;
+    }
+
+    if ( !Mu_IsGlobal.at(imu) && !Mu_IsTracker.at(imu) ) continue;
+
+    dummyMuon.Set(imu,&Muons.at(imu),charge.at(imu),PFIso.at(imu));
+    TrkOrGlobalMuons.push_back(dummyMuon);
+  }
+  
+  return TrkOrGlobalMuons;
+}
+
+
 //
 //======================================================
 //
