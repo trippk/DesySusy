@@ -125,6 +125,46 @@ def DoubleMu():
     cleanUpDir('./'+Sample+'/'+SubSample)    
     Scripts.append(script)
 
+def DoubleEl():
+
+    Scripts=[]
+    Sample='DoubleElectron'
+    SubSample='Run2012A-13Jul2012-v1'
+    FilesDir='/scratch/hh/dust/naf/cms/user/schettle/nTuple12_v4c/data/DoubleElectron/Run2012A-13Jul2012-v1'
+    Config='config_DATA_RA4b.txt'
+    nFiles=3
+
+    #
+    script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
+    cleanUpDir('./'+Sample+'/'+SubSample)    
+    Scripts.append(script)
+
+
+    Sample='DoubleElectron'
+    SubSample='Run2012B-13Jul2012-v1'
+    FilesDir='/scratch/hh/dust/naf/cms/user/costanza/NTuple12_V4c/DoubleElectron/Run2012B-13Jul2012-v1'
+    Config='config_DATA_RA4b.txt'
+    nFiles=7
+
+    #
+    script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
+    cleanUpDir('./'+Sample+'/'+SubSample)    
+    Scripts.append(script)
+
+def MuEG():
+
+    Scripts=[]
+    Sample='MuEG'
+    SubSample='Run2012A-13Jul2012-v1'
+    FilesDir='/pnfs/desy.de/cms/tier2/store/user/schettle/nTuple12_v4b/data/MuEG/Run2012A-13Jul2012-v1/'
+    Config='config_DATA_RA4b.txt'
+    nFiles=3
+
+    #
+    script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
+    cleanUpDir('./'+Sample+'/'+SubSample)    
+    Scripts.append(script)
+
 
 
 def TTJets():
@@ -225,6 +265,16 @@ def DYJetsToLL():
     Sample='DYJets'
     SubSample='M-50'
     FilesDir='/scratch/hh/lustre/cms/user/sahin/nTuple12_v4b/mc/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball/Summer12_DR53X-PU_S10_START53_V7A-v1/'
+    Config='config_MC_RA4b.txt'
+    nFiles=3
+    cleanUpDir('./'+Sample+'/'+SubSample)
+    #
+    script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
+    Scripts.append(script)
+
+    Sample='DYJets'
+    SubSample='M-10to50'
+    FilesDir='/pnfs/desy.de/cms/tier2/store/user/schettle/nTuple12_v4c/mc/DYJetsToLL_M-10To50filter_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1'
     Config='config_MC_RA4b.txt'
     nFiles=3
     cleanUpDir('./'+Sample+'/'+SubSample)
@@ -420,6 +470,8 @@ if __name__=='__main__':
     ElectronHad()
     SingleMu()
     DoubleMu()
+    DoubleEl()
+    MuEG()
     TTJets()
     DYJetsToLL()
     WJetsToLNu()
