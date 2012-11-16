@@ -1,20 +1,9 @@
-
-#include <map>
-#include <string>
-#include <iostream>
-#include "TSystem.h"
-#include "TH1F.h"
-#include "TFile.h"
-#include "NtupleTools2_h.h"
-#include "ConfigReader.h"
-#include "CutFlow.h"
+#include "triggers_RA4b.h"
 //#include "muons_RA4b.h"
 //#include "vertices_RA4b.h"
 
 
 using namespace std;
-
-
 
 
 bool triggers_RA4b(EasyChain* tree, vector<const char*>& triggernames, double& EventWeight){
@@ -97,7 +86,7 @@ bool triggers_RA4b(EasyChain* tree, vector<const char*>& triggernames, double& E
 
 }
 							    
-bool triggersFired_RA4b(EasyChain* tree, std::map<std::string, bool>& firedTriggers) {
+bool triggerFired(EasyChain* tree, const std::string & triggername) {
 
   extern bool pcp;
 
@@ -111,29 +100,25 @@ bool triggersFired_RA4b(EasyChain* tree, std::map<std::string, bool>& firedTrigg
   if(pcp)cout<<"going to get the trigger map from the tree" <<endl;
   map<string,bool>&   HLTtrigger = tree->Get(&HLTtrigger, "triggered");
   map<string,string>& TriggerMap = tree->Get(&TriggerMap, "DESYtriggerNameMap");
-
   if(pcp)cout<<"got the triggers from the tree!" <<endl;
 
-  bool atLeastOneTrigFired = false;
+  if(pcp)cout<<"checking if the trigger "<< triggername <<endl;
 
-  std::map<std::string,bool>::iterator trigIt;
-
-  for (trigIt =firedTriggers.begin();trigIt != firedTriggers.end(); trigIt++){
-    if(pcp)cout<<"checking if the trigger "<< trigIt->first <<endl;
-
-    std::string tname=TriggerMap[trigIt->first];
-    if (HLTtrigger[tname] && HLTprescaled[tname]==1) {
-      trigIt->second=true;
-      atLeastOneTrigFired = true;
-    }
-
-  }
-
-  return atLeastOneTrigFired;
+  std::string tname=TriggerMap[triggername];
+  bool trigFired = false;
+  if (HLTtrigger[tname] && HLTprescaled[tname]==1) trigFired = true;
+  
+  return trigFired;
 }
 
 bool isMuEGPlateau(const std::map<std::string, bool>& trigsFiredMap, double MuPt, double ElPt) {
 
+
+  //Hannes
+  if (MuPt > 20. || ElPt > 20.) return true;
+  else return false;
+
+  //Dean
   std::map<std::string, bool>::const_iterator trigIt;
   for (trigIt = trigsFiredMap.begin() ; trigIt != trigsFiredMap.end() ; trigIt++) {
     if (trigIt->second) {
@@ -153,4 +138,47 @@ bool isMuEGPlateau(const std::map<std::string, bool>& trigsFiredMap, double MuPt
 
   //If here, no trigger was found that fired and satisfied thresholds.
   return false;
+}
+
+void getDiLepTriggers(EasyChain* tree, std::map<std::string,bool>& triggerMap, std::set<diLepEvent_t>& firedDiLepTypes ) {
+
+  //Create MAP from event-type (or dataset) to corresponding triggers
+  std::map<diLepEvent_t, std::vector<std::string> > typeToTrigMap;
+  typeToTrigMap[MUMU].push_back("HLT_Mu17_Mu8");
+  typeToTrigMap[MUMU].push_back("HLT_Mu17_TkMu8");
+
+  typeToTrigMap[MUEL].push_back("HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL");
+  typeToTrigMap[MUEL].push_back("HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL");
+
+  typeToTrigMap[ELEL].push_back("HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL");
+
+  //Create map of all trigger names to bools
+  //Create the set of diLepTrigTypes that were fired.
+  triggerMap.clear();
+  firedDiLepTypes.clear();
+  std::map<diLepEvent_t, std::vector<std::string> >::const_iterator mapIt;
+  for (mapIt = typeToTrigMap.begin() ; mapIt != typeToTrigMap.end() ; mapIt++ ) {
+    for (int iTrig = 0 ; iTrig < mapIt->second.size() ; iTrig++ ) {
+      bool trigWasFired = triggerFired(tree, mapIt->second.at(iTrig) );
+      triggerMap.insert( make_pair(mapIt->second.at(iTrig),trigWasFired) );
+      if (trigWasFired) firedDiLepTypes.insert(mapIt->first);
+    }
+  }
+
+  return;
+}
+
+diLepEvent_t getDiLepTrigType(const std::string& triggername) {
+
+    std::size_t muLoc = triggername.find("Mu");
+    std::size_t eleLoc = triggername.find("Ele");
+    diLepEvent_t diLepEventType; 
+    if (muLoc != std::string::npos ) {
+      if (eleLoc != std::string::npos) diLepEventType = MUEL;
+      else diLepEventType = MUMU;
+    }
+    else if (eleLoc != std::string::npos) diLepEventType = ELEL;
+    else diLepEventType = FAIL;
+
+    return diLepEventType;
 }

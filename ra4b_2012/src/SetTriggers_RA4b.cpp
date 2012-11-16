@@ -80,7 +80,6 @@ void SetTriggers_RA4b(SampleInformation mySampleInformation, vector<const char*>
 
 
 
-
   /*
   else if(mySampleInformation.GetSample()=="ElectronHad"){
 
