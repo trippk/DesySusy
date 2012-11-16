@@ -189,6 +189,68 @@ def TTJets():
     cleanUpDir('./'+Sample+'/'+SubSample)
     Scripts.append(script)
 
+def TTJetsMG():
+
+    Scripts=[]
+    Sample='TTJetsMG'
+    SubSample='Hadr-DR53'
+    FilesDir='/scratch/hh/dust/naf/cms/user/costanza/NTuple12_V4c/TTJetsMG/HadronicMGDecays-v1/'
+    Config='config_MC_RA4b.txt'
+    nFiles=6
+    script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
+    cleanUpDir('./'+Sample+'/'+SubSample)
+    Scripts.append(script)
+
+    SubSample='Semi-DR53'
+    FilesDir='/scratch/hh/dust/naf/cms/user/costanza/NTuple12_V4c/TTJetsMG/SemiLeptMGDecays_ext-v1/'
+    Config='config_MC_RA4b.txt'
+    nFiles=3
+    script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
+    cleanUpDir('./'+Sample+'/'+SubSample)
+    Scripts.append(script)
+    
+    SubSample='Full-DR53'
+    FilesDir='/scratch/hh/dust/naf/cms/user/costanza/NTuple12_V4c/TTJetsMG/FullLeptMGDecays-v2/'
+    Config='config_MC_RA4b.txt'
+    nFiles=5
+    script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
+    cleanUpDir('./'+Sample+'/'+SubSample)
+    Scripts.append(script)
+
+def TTJetsPOWHEG():
+
+    Scripts=[]
+    Sample='TTJetsPOWHEG'
+    SubSample='DR53-v1'
+    FilesDir='/scratch/hh/dust/naf/cms/user/costanza/NTuple12_V4c/TT_CT10_TuneZ2star_8TeV-powheg-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/'
+    Config='config_MC_RA4b.txt'
+    nFiles=5
+    script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
+    cleanUpDir('./'+Sample+'/'+SubSample)
+    Scripts.append(script)
+
+    SubSample='DR53-v2'
+    FilesDir='/pnfs/desy.de/cms/tier2/store/user/schettle/nTuple12_v4b/mc/TT_CT10_TuneZ2star_8TeV-powheg-tauola/Summer12_DR53X-PU_S10_START53_V7A-v2/'
+    Config='config_MC_RA4b.txt'
+    nFiles=16
+    script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
+    cleanUpDir('./'+Sample+'/'+SubSample)
+    Scripts.append(script)
+
+def TTJetsMCatNLO():
+    #TTJetsMG()
+    #TTJetsPOWHEG()
+    #TTJetsMCatNLO()
+    Scripts=[]
+    Sample='TTJetsMCatNLO'
+    SubSample='DR53'
+    FilesDir='/scratch/hh/dust/naf/cms/user/costanza/NTuple12_V4c/TTJetsMCatNLO/Summer12_DR53X-PU_S10_START53_V7A-v1/'
+    Config='config_MC_RA4b.txt'
+    nFiles=8
+    script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
+    cleanUpDir('./'+Sample+'/'+SubSample)
+    Scripts.append(script)
+
 def LM9():
 
     Scripts=[]
@@ -222,7 +284,7 @@ def T2tt():
     SubSample='t500n100'
     FilesDir='/scratch/hh/current/cms/user/costanza/store/SMS-T2tt_FineBin_Mstop-225to1200_mLSP-0to1000_8TeV-Pythia6Z/Summer12-START52_V9_FSIM-v1/'
     Config='config_MC_RA4b.txt'
-    nFiles=1
+    nFiles=20
     script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
     cleanUpDir('./'+Sample+'/'+SubSample)
     Scripts.append(script)
@@ -230,7 +292,7 @@ def T2tt():
     SubSample='t650n200'
     FilesDir='/scratch/hh/current/cms/user/costanza/store/SMS-T2tt_FineBin_Mstop-225to1200_mLSP-0to1000_8TeV-Pythia6Z/Summer12-START52_V9_FSIM-v1/'
     Config='config_MC_RA4b.txt'
-    nFiles=1
+    nFiles=20
     script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
     cleanUpDir('./'+Sample+'/'+SubSample)
     Scripts.append(script)
@@ -238,7 +300,7 @@ def T2tt():
     SubSample='t750n400'
     FilesDir='/scratch/hh/current/cms/user/costanza/store/SMS-T2tt_FineBin_Mstop-225to1200_mLSP-0to1000_8TeV-Pythia6Z/Summer12-START52_V9_FSIM-v1/'
     Config='config_MC_RA4b.txt'
-    nFiles=1
+    nFiles=20
     script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
     cleanUpDir('./'+Sample+'/'+SubSample)
     Scripts.append(script)
@@ -353,6 +415,30 @@ def WJetsToLNu():
     Config='config_MC_RA4b.txt'
     nFiles=3
     #
+    script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
+    cleanUpDir('./'+Sample+'/'+SubSample)
+    Scripts.append(script)
+
+    SubSample='HT250To300'
+    FilesDir='/scratch/hh/dust/naf/cms/user/costanza/NTuple12_V4c/WJetsToLNu/HT250To300/'
+    Config='config_MC_RA4b.txt'
+    nFiles=30
+    script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
+    cleanUpDir('./'+Sample+'/'+SubSample)
+    Scripts.append(script)
+
+    SubSample='HT300To400'
+    FilesDir='/scratch/hh/dust/naf/cms/user/costanza/NTuple12_V4c/WJetsToLNu/HT300To400/'
+    Config='config_MC_RA4b.txt'
+    nFiles=30
+    script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
+    cleanUpDir('./'+Sample+'/'+SubSample)
+    Scripts.append(script)
+
+    SubSample='HT400ToInf'
+    FilesDir='/scratch/hh/dust/naf/cms/user/costanza/NTuple12_V4c/WJetsToLNu/HT400ToInf/'
+    Config='config_MC_RA4b.txt'
+    nFiles=30
     script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
     cleanUpDir('./'+Sample+'/'+SubSample)
     Scripts.append(script)
@@ -473,6 +559,9 @@ if __name__=='__main__':
     DoubleEl()
     MuEG()
     TTJets()
+    TTJetsMG()
+    TTJetsPOWHEG()
+    TTJetsMCatNLO()
     DYJetsToLL()
     WJetsToLNu()
     ################
