@@ -2,6 +2,12 @@
 #corresponding <sample name><sub sample name>
 xs_TTJets_SUMMER12           = 225.97
 xs_TTJets_SUMMER12POWHEG     = 225.97
+xs_TTJetsMG_Hadr-DR53        = 104.1
+xs_TTJetsMG_Semi-DR53	     = 103.7
+xs_TTJetsMG_Full-DR53	     = 26.18
+xs_TTJetsPOWHEG_DR53-v1	     = 234
+xs_TTJetsPOWHEG_DR53-v2	     = 234
+xs_TTJetsMCatNLO_DR53	     = 234
 xs_T2tt_t300n50             = 1.99608
 xs_T2tt_t350n50             = 0.807323
 xs_T2tt_t500n100             = 0.0855847
@@ -31,6 +37,12 @@ xs_LM9_NoSub                 = 13.0018
 #(T)otal (N)umber (o)f (E)vents 
 TNoE_TTJets_SUMMER12           = 6923750
 TNoE_TTJets_SUMMER12POWHEG     = 21675970
+TNoE_TTJetsMG_Hadr-DR53        = 10537444
+TNoE_TTJetsMG_Semi-DR53	       = 25416637
+TNoE_TTJetsMG_Full-DR53	       = 12119013
+TNoE_TTJetsPOWHEG_DR53-v1      = 6474753
+TNoE_TTJetsPOWHEG_DR53-v2      = 21675970
+TNoE_TTJetsMCatNLO_DR53	       = 32852589
 TNoE_T2tt_t300n50              = 49997
 TNoE_T2tt_t350n50              = 49998
 TNoE_T2tt_t500n100             = 49997
@@ -61,6 +73,12 @@ TNoE_LM9_NoSub                 = 1000080
 #(F)ilter (E)fficiency
 FE_TTJets_SUMMER12           = 1
 FE_TTJets_SUMMER12POWHEG     = 1
+FE_TTJetsMG_Hadr-DR53        = 1
+FE_TTJetsMG_Semi-DR53	     = 1
+FE_TTJetsMG_Full-DR53	     = 1
+FE_TTJetsPOWHEG_DR53-v1	     = 1
+FE_TTJetsPOWHEG_DR53-v2	     = 1
+FE_TTJetsMCatNLO_DR53	     = 1
 FE_T2tt_t300n50              = 1
 FE_T2tt_t350n50              = 1
 FE_T2tt_t500n100             = 1
