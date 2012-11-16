@@ -167,10 +167,10 @@ void SusyDESY_Electrons::produce(edm::Event& iEvent, const edm::EventSetup& iSet
       bool vtxFitConversion = ConversionTools::hasMatchedConversion((const reco::GsfElectron) *el, conversions_h, beamSpot.position());
       matchedConv->push_back(vtxFitConversion);
 
-      //cout<<"genMatched.back() = " << genMatched << endl;
-      //cout<<"genPdgId.back()   = " << genPdgId.back() << endl;
-      //cout<<"genStatus.back()  = " << genStatus.back() << endl;
-      //cout<<endl;
+      //os<<"genMatched.back() = " << genMatched << endl;
+      //os<<"genPdgId.back()   = " << genPdgId.back() << endl;
+      //os<<"genStatus.back()  = " << genStatus.back() << endl;
+      //os<<endl;
     }
   }
 
@@ -341,20 +341,23 @@ void SusyDESY_Muons::beginJob(){}
 /////////////////////////////////////
 
 SusyDESY_Trigger::SusyDESY_Trigger(const edm::ParameterSet& iConfig)
-  : Prefix( iConfig.getParameter<string> ("Prefix") ),
-    Suffix( iConfig.getParameter<string> ("Suffix") ),
-    inputTag  (iConfig.getParameter<edm::InputTag>("inputTag"))
+  : Prefix    (iConfig.getParameter<string> ("Prefix") ),
+    Suffix    (iConfig.getParameter<string> ("Suffix") ),
+    inputTag  (iConfig.getParameter<edm::InputTag>("inputTag")),
+    muons_    (iConfig.getParameter<edm::InputTag>("muons")),
+    electrons_(iConfig.getParameter<edm::InputTag>("electrons"))
 {
-
   produces <bool>                               ( Prefix + "HandleValid"  + Suffix );
   produces <std::map<std::string,std::string> > ( Prefix + "NameMap"      + Suffix );
 
+  produces <std::vector<std::string> > (Prefix + "MuMatchedTriggerFilter"      + Suffix);
+  produces <std::vector<std::string> > (Prefix + "ElMatchedTriggerFilter"      + Suffix);
 }
 
 
 void SusyDESY_Trigger::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) 
 {
-
+  //---------------------------------- get the trigger path info
   std::auto_ptr<bool>                               handleValid ( new bool(false)                        );
   std::auto_ptr<std::map<std::string,std::string> > nameMap     ( new std::map<std::string,std::string>  );
 
@@ -375,10 +378,156 @@ void SusyDESY_Trigger::produce(edm::Event& iEvent, const edm::EventSetup& iSetup
   }
   iEvent.put( handleValid , Prefix + "HandleValid" + Suffix );
   iEvent.put( nameMap     , Prefix + "NameMap"     + Suffix );
+  
+  //---------------------------------- get the trigger filter info which can be matched to muons and electrons
+  //this is needed for trigger efficiency studies of single trigger legs
+  //cout<<"iEvent = " << iEvent.id().event() << endl;
+  //edm::Handle<std::vector<pat::Muon> > muons;
+  //edm::Handle<std::vector<pat::Electron> > electrons;
+  //iEvent.getByLabel(electrons_, electrons);
+  //iEvent.getByLabel(muons_, muons);
+  //static int counter=-1;
+  //cout<<"======================================================================= event: " << setw(6) << ++counter << "   (" << setw(2)<< muons->size() << "|"<< setw(2) << electrons->size() << ")" << endl; 
+  //printMatchingInfo(iEvent);
+  
+  edm::Handle<std::vector<pat::Muon> > muons;
+  edm::Handle<std::vector<pat::Electron> > electrons;
+  iEvent.getByLabel(muons_, muons);
+  iEvent.getByLabel(electrons_, electrons);
+  std::auto_ptr<std::vector<std::string> > MuMatchedTriggerFilter (new std::vector<std::string>());
+  std::auto_ptr<std::vector<std::string> > ElMatchedTriggerFilter (new std::vector<std::string>());
+  //static int counter=-1;
+  //cout<<"======================================================================= event: " << setw(6) << ++counter << "   (" << setw(2)<< muons->size() << "|"<< setw(2) << electrons->size() << ")" << endl; 
+  //---------------------------------- loop over muons
+  for(int i=0,N=(int)muons->size(); i<N; ++i){
+    string matchedTriggerFilters="";
+    if(muons->at(i).triggerObjectMatches().size()==1){
+      vector<string> filterLabels = muons->at(i).triggerObjectMatches().begin()->filterLabels();
+      for(Int_t j=0,M=filterLabels.size(); j<M; ++j){
+	matchedTriggerFilters+=filterLabels[j];
+	if(j<M-1) matchedTriggerFilters+=";";
+      }
+    }
+    cout<<"------------------> matchedTriggerFilters["<<i<<"] = " << matchedTriggerFilters << endl;
+    MuMatchedTriggerFilter->push_back(matchedTriggerFilters);
+  }
+  //---------------------------------- loop over electrons
+  for(int i=0,N=(int)electrons->size(); i<N; ++i){
+    string matchedTriggerFilters="";
+    if(electrons->at(i).triggerObjectMatches().size()==1){
+      vector<string> filterLabels = electrons->at(i).triggerObjectMatches().begin()->filterLabels();
+      for(Int_t j=0,M=filterLabels.size(); j<M; ++j){
+	matchedTriggerFilters+=filterLabels[j];
+	if(j<M-1) matchedTriggerFilters+=";";
+      }
+    }
+    cout<<"------------------> matchedTriggerFilters["<<i<<"] = " << matchedTriggerFilters << endl;
+    ElMatchedTriggerFilter->push_back(matchedTriggerFilters);
+  }
+  iEvent.put(MuMatchedTriggerFilter, Prefix + "MuMatchedTriggerFilter"      + Suffix);
+  iEvent.put(ElMatchedTriggerFilter, Prefix + "ElMatchedTriggerFilter"      + Suffix);
 }
 
 
 void SusyDESY_Trigger::beginJob(){}
+
+
+void SusyDESY_Trigger::printMatchingInfo(edm::Event& iEvent, ostream& os){
+  edm::Handle<std::vector<pat::Muon> > muons;
+  edm::Handle<std::vector<pat::Electron> > electrons;
+  iEvent.getByLabel(electrons_, electrons);
+  iEvent.getByLabel(muons_, muons);
+    
+  os<<endl;
+  os<<"//////////////////////////////////////////////////////////////////////////////"<<endl;
+  os<<"No. of Muons | electrons: " << muons->size() << " | " << electrons->size() << endl;
+  os<<"//////////////////////////////////////////////////////////////////////////////"<<endl;
+  os<<endl;
+  //--------------------- Muons
+  if(muons->size()) os<<"==================================================================== muons: " << muons->size() << endl;
+  for(int i=0,N=(int)muons->size(); i<N; ++i){
+    os<<"------------------------------ muon no: " << i << endl;
+    os<<"muons->at("<<i<<").charge()                      = " << muons->at(i).charge() << endl;
+    os<<"muons->at("<<i<<").p4()                          = " << muons->at(i).p4();
+    if(muons->at(i).triggerObjectMatches().size() ==1) os << " <--> " <<muons->at(i).triggerObjectMatches().begin()->p4();
+    os<<endl;
+    os<<"muons->at("<<i<<").triggerObjectMatches().size() = " << muons->at(i).triggerObjectMatches().size() << endl;
+    if(muons->at(i).triggerObjectMatches().size() ==1){
+      os<<"muons->at("<<i<<").triggerObjectMatches().begin():" << endl;
+      os<<setw(60)<<"collection() |"
+      <<setw(20)<<"conditionNames |"
+      <<setw(15)<<"filterLabels |"
+      <<setw(15)<<"pathNames"
+      <<endl;
+      os<<setw(60)<< muons->at(i).triggerObjectMatches().begin()->collection()
+      <<setw(20)<< muons->at(i).triggerObjectMatches().begin()->conditionNames().size()
+      <<setw(15)<<muons->at(i).triggerObjectMatches().begin()->filterLabels().size()
+      <<setw(15)<<muons->at(i).triggerObjectMatches().begin()->pathNames().size()
+      <<endl
+      <<endl;
+      printVector<string>("conditionNames", muons->at(i).triggerObjectMatches().begin()->conditionNames());
+      printVector<string>("filterLabels", muons->at(i).triggerObjectMatches().begin()->filterLabels());
+      printVector<string>("pathNames", muons->at(i).triggerObjectMatches().begin()->pathNames());
+      printVector<int>("triggerObjectTypes", muons->at(i).triggerObjectMatches().begin()->triggerObjectTypes());   
+    }
+    os<<endl;
+  }
+  //--------------------- Eletrons
+  if(electrons->size()) os<<"==================================================================== electrons: " << electrons->size() << endl;
+  for(int i=0,N=(int)electrons->size(); i<N; ++i){
+    os<<"------------------------------ electron no: " << i << endl;
+    os<<"electrons->at("<<i<<").charge()                      = " << electrons->at(i).charge() << endl;
+    os<<"electrons->at("<<i<<").p4()                          = " << electrons->at(i).p4();
+    if(electrons->at(i).triggerObjectMatches().size() ==1) os << " <--> " << electrons->at(i).triggerObjectMatches().begin()->p4();
+    os<<endl;    
+    os<<"electrons->at("<<i<<").triggerObjectMatches().size() = " << electrons->at(i).triggerObjectMatches().size() << endl;
+    if(electrons->at(i).triggerObjectMatches().size() ==1){
+      os<<"electrons->at("<<i<<").triggerObjectMatches().begin():" << endl;
+      os<<setw(60)<<"collection() |"
+      <<setw(20)<<"conditionNames |"
+      <<setw(15)<<"filterLabels |"
+      <<setw(15)<<"pathNames"
+      <<endl;
+      os<<setw(60)<< electrons->at(i).triggerObjectMatches().begin()->collection()
+      <<setw(20)<< electrons->at(i).triggerObjectMatches().begin()->conditionNames().size()
+      <<setw(15)<<electrons->at(i).triggerObjectMatches().begin()->filterLabels().size()
+      <<setw(15)<<electrons->at(i).triggerObjectMatches().begin()->pathNames().size()
+      <<endl
+      <<endl;
+      printVector<string>("conditionNames", electrons->at(i).triggerObjectMatches().begin()->conditionNames());
+      printVector<string>("filterLabels", electrons->at(i).triggerObjectMatches().begin()->filterLabels());
+      printVector<string>("pathNames", electrons->at(i).triggerObjectMatches().begin()->pathNames());
+      printVector<int>("triggerObjectTypes", electrons->at(i).triggerObjectMatches().begin()->triggerObjectTypes());
+    }
+  }
+}
+
+
+template <typename T>
+void SusyDESY_Trigger::printVector(TString name, vector<T> v, Int_t length, ostream& os){
+  printVectorSize(name,v);
+  if(v.size()>0){
+    for(Int_t i=0,N=v.size(); i<N; ++i){
+      TString temp_name = name;
+      temp_name += "[";
+      temp_name += i;
+      temp_name += "] = ";
+      os << setw(length) << temp_name << v[i] << endl;
+    }
+    os<<endl;
+  }
+}
+
+
+template <typename T>
+void SusyDESY_Trigger::printVectorSize(TString name, vector<T> v, Int_t length, ostream& os){
+  name += ".size() = ";
+  os << setw(length) << name << v.size();
+  os << endl;
+}
+
+
+
 
 SusyDESY_PU::SusyDESY_PU(const edm::ParameterSet& iConfig)
   :PileUp  (iConfig.getParameter<edm::InputTag>("PileUp"))

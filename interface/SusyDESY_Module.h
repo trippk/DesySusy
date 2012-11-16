@@ -51,34 +51,20 @@ private:
      void produce( edm::Event &, const edm::EventSetup & );
      void beginJob();
      const std::string Prefix,Suffix;
+     
+     void printMatchingInfo(edm::Event& iEvent, ostream& os=cout);
+     template <typename T>
+     void printVector(TString name, vector<T> v, Int_t length=30, ostream& os=cout);
+     template <typename T>
+     void printVectorSize(TString name, vector<T> v, Int_t length=30, ostream& os=cout); 
+     
+     
      //const edm::InputTag TriggerRes;
-
-
-     //enum DataSource { NOT_APPLICABLE, STREAM, DATASET }; 
-     edm::InputTag         inputTag; 
-/*       std::string           sourceName;  */
-/*       DataSource            sourceType;  */
-/*       HLTConfigProvider     hltConfig;  */
-/*       edm::InputTag         tag_;  */
-/*       //int                   run_;  */
-
-/*       std::vector<std::string>    dataSource;  */
-
-/*       void getDataSource() { */
-/* 	dataSource.clear(); */
-/* 	if (sourceType == NOT_APPLICABLE) return; */
-	
-/* 	if (sourceType == STREAM) { */
-/* 	  //unsigned int  index   = hltConfig.streamIndex(sourceName); */
-/* 	  dataSource    = hltConfig.streamContent(sourceName); */
-/* 	} */
-/* 	else { */
-/* 	  //unsigned int  index   = hltConfig.datasetIndex(sourceName); */
-/* 	  dataSource    = hltConfig.datasetContent(sourceName); */
-/* 	} */
-/*       } */
-      
+     edm::InputTag inputTag; 
+     edm::InputTag muons_;
+     edm::InputTag electrons_;
 };
+
 
 class SusyDESY_PU : public edm::EDProducer {
 public:

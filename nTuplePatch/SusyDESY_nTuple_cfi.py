@@ -83,16 +83,36 @@ class SusyCAF(object) :
         #self.process.eeBadScFilterFlag = self.process.eeBadScFilter.clone(taggingMode = True)
         self.process.load('RecoMET.METFilters.ecalLaserCorrFilter_cfi')
         self.process.ecalLaserCorrFilterFlag = self.process.ecalLaserCorrFilter.clone(taggingMode = True)
+        self.process.load("PhysicsTools.PatAlgos.triggerLayer1.triggerProducer_cff")
+        #from PhysicsTools.PatAlgos.tools.trigTools import *
+        self.process.patTriggerSequence = cms.Sequence(self.process.patTrigger)
+        
+        
+        #switchOnTrigger( self.process )
+        #switchOnTriggerMatching( self.process, triggerMatchers = [ 'muonTriggerMatchHLTMuons' , 'electronTriggerMatchHLTElectrons' ] )
+        #switchOnTriggerMatchEmbedding( self.process, triggerMatchers = [ 'muonTriggerMatchHLTMuons' , 'electronTriggerMatchHLTElectrons' ] )
+
         return ( self.patJet() +
                  self.patLepton('Electron') + self.patLepton('Muon') +
                  self.evalSequence('susycaf%s',  ['photon']+(['tau','HPStau','pftau'] if self.options.taus else [])) +
                  self.evalSequence('susycafmet%s', ['AK5','AK5TypeII','AK5TypeI','PF','TypeIPFPat','TypeIPF','TC']) +
                  #self.process.eeBadScFilterFlag +
                  self.process.ecalLaserCorrFilterFlag +
-                 self.evalSequence('susydesy%s', ['patelectrons','pfelectrons','patmuons','pfmuons','trigger']+
-                                   ([] if self.options.isData else ['pu']))+
+                 self.process.patTriggerSequence +
+                 self.process.muonTriggerMatchHLTMuons + 
+                 self.process.muonTriggerMatchHLTMuonsEmbedder +
+                 self.process.electronTriggerMatchHLTElectrons +
+                 self.process.electronTriggerMatchHLTElectronsEmbedder +
+                 #self.process.patTriggerEvent.patTriggerMatches = [ "muonTriggerMatchHLTMuons" , "electronTriggerMatchHLTElectrons" ] +
+                 self.evalSequence('susydesy%s', ['patelectrons','pfelectrons','patmuons','pfmuons','trigger'] +
+                                   ([] if self.options.isData else ['pu'])) +
                  self.evalSequence('filterResult%s', ['OneLepton']) +
                  self.evalSequence('filter%s'      , ['OneLepton'])
+                 #self.process.patTriggerSequence +
+                 #self.process.muonTriggerMatchHLTMuons + 
+                 #self.process.muonTriggerMatchHLTMuonsEmbedder +
+                 #self.process.electronTriggerMatchHLTElectrons +
+                 #self.process.electronTriggerMatchHLTElectronsEmbedder
                  )
 
     def patLepton(self,lepton) :

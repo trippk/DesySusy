@@ -32,16 +32,52 @@ susydesypfmuons = cms.EDProducer("SusyDESY_Muons",
                                PatMuons     = cms.InputTag('patAllMuonsPF'),
                                )
 
-
 susydesytrigger = cms.EDProducer("SusyDESY_Trigger",
                                  Prefix       = cms.string('DESYtrigger'),
                                  Suffix       = cms.string(''),
-                                 inputTag     = cms.InputTag('susycaftriggers:triggered')
+                                 inputTag     = cms.InputTag('susycaftriggers:triggered'),
+                                 muons        = cms.InputTag("muonTriggerMatchHLTMuonsEmbedder"),
+                                 electrons    = cms.InputTag("electronTriggerMatchHLTElectronsEmbedder")
                                  )
-
 
 susydesypu = cms.EDProducer("SusyDESY_PU",
                             PileUp     = cms.InputTag('susycafpileupsummary:pileupTrueNumInteractionsBX0')
                             )
+
+muonTriggerMatchHLTMuons = cms.EDProducer(
+  "PATTriggerMatcherDRLessByR"
+  , src     = cms.InputTag( 'cleanPatMuons' )
+  , matched = cms.InputTag( 'patTrigger' )
+  , matchedCuts = cms.string('filter("*") && (type( "TriggerMuon" ) || type( "TriggerL1Mu" ))')
+  #, matchedCuts = cms.string('path("*")')
+  #, matchedCuts = cms.string('path("HLT_IsoMu17_eta2p1_TriCentralPFJet30_v5",0)')
+  #hltL1sMu16Eta2p1
+  , maxDeltaR   = cms.double( 0.5 )
+  , resolveAmbiguities    = cms.bool( True )
+  , resolveByMatchQuality = cms.bool( True )
+)
+
+electronTriggerMatchHLTElectrons = muonTriggerMatchHLTMuons.clone()
+electronTriggerMatchHLTElectrons.src = 'cleanPatElectrons'
+electronTriggerMatchHLTElectrons.matchedCuts = 'filter("*") && (type("TriggerElectron") || type("TriggerL1IsoEG"))'
+
+muonTriggerMatchHLTMuonsEmbedder = cms.EDProducer(
+  "PATTriggerMatchMuonEmbedder",
+  src = cms.InputTag("cleanPatMuons"),
+  matches = cms.VInputTag("muonTriggerMatchHLTMuons")
+)
+
+electronTriggerMatchHLTElectronsEmbedder = cms.EDProducer(
+  "PATTriggerMatchElectronEmbedder",
+  src = cms.InputTag("cleanPatElectrons"),
+  matches = cms.VInputTag("electronTriggerMatchHLTElectrons")
+)
+
+
+
+
+
+
+
 
 
