@@ -113,12 +113,6 @@ bool triggerFired(EasyChain* tree, const std::string & triggername) {
 
 bool isMuEGPlateau(const std::map<std::string, bool>& trigsFiredMap, double MuPt, double ElPt) {
 
-
-  //Hannes
-  if (MuPt > 20. || ElPt > 20.) return true;
-  else return false;
-
-  //Dean
   std::map<std::string, bool>::const_iterator trigIt;
   for (trigIt = trigsFiredMap.begin() ; trigIt != trigsFiredMap.end() ; trigIt++) {
     if (trigIt->second) {
