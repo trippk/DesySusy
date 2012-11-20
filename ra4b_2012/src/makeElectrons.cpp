@@ -83,7 +83,7 @@ bool makeLooseElectrons(EasyChain* tree, vector<Electron>& AllElectrons, vector<
   // the electron collection
   //=====================================================
   if(pcp)cout<<"check point about to get the electrons"<<endl;
-  vector<LorentzM>& Electrons = tree->Get(&Electrons, "electronP4Pat");                    
+  vector<LorentzM>& Electrons = tree->Get(&Electrons, "electronP4Pat");   
   vector<float>&    El_SuperClusterPositionETA   = tree->Get( &El_SuperClusterPositionETA, "electronESuperClusterEtaPat");
   vector<bool>& electronIsEBPat =  tree->Get(&electronIsEBPat,"DESYelectronIsEBPat");
   vector<bool>& electronIsEEPat =  tree->Get(&electronIsEEPat,"DESYelectronIsEEPat");
@@ -142,6 +142,8 @@ bool makeTightElectrons(EasyChain* tree, vector<Electron>& AllElectrons, vector<
   static string selection =config.getString("Electron_Selection","Medium");
   static float trackdxyMAX = config.getFloat("TightElectron_trackdxyMAX",0.02);
   static float trackdzMAX = config.getFloat("TightElectron_trackdzMAX",0.1);
+  static float PFRECO_MAXDIFF = config.getFloat("TightElectrons_PFRECO_MAXDIFF", 10.0);
+  static float REQ_NOTINGAP_EXPLICIT = config.getBool("TightElectrons_REQ_NOTINGAP_EXPLICIT", false);
   //====================================================================
 
 
@@ -204,15 +206,25 @@ bool makeTightElectrons(EasyChain* tree, vector<Electron>& AllElectrons, vector<
     //OK=fabs(AllElectrons.at(iel).Eta()) <= ETAMAX;
     OK=fabs(El_SuperClusterPositionETA.at(indx))<=ETAMAX;
     if(!ElectronFlow.keepIf("eta max", OK) && quick)continue;
-    //
-    //OK=fabs(El_SuperClusterPositionETA.at(indx))<1.4442 || fabs(El_SuperClusterPositionETA.at(indx))>1.566;
-    //OK=fabs(AllElectrons.at(iel).Eta() <1.4442 || fabs(AllElectrons.at(iel).Eta()) >1.566;
-    OK=electronIsEEPat.at(indx) || electronIsEBPat.at(indx);
-    if(!ElectronFlow.keepIf("notinetagap",OK) && quick)continue;    
 
     //ID
     OK=id.at(indx);
     if(!ElectronFlow.keepIf("Electron_ID",OK) && quick) continue;
+
+    //ADDED FOR HANNES SYNC
+    OK=fabs(El_GsfTrackDxy.at(indx)) < trackdxyMAX ;
+    if( !ElectronFlow.keepIf("|dxy|<0.02", OK) && quick ) continue;
+    OK=fabs(El_GsfTrackDz.at(indx)) < trackdzMAX;
+    if( !ElectronFlow.keepIf("|dz|<0.1"  , OK) && quick ) continue;      
+
+    if(TTver){
+      OK=fabs(El_GsfTrackDxy.at(indx)) < trackdxyMAX ;
+      if( !ElectronFlow.keepIf("|dxy|<0.02", OK) && quick ) continue;
+      OK=fabs(El_GsfTrackDz.at(indx)) < trackdzMAX;
+      if( !ElectronFlow.keepIf("|dz|<0.1"  , OK) && quick ) continue;      
+    }
+
+
 
     //additional cuts 
     /*    if (FbremPF.at(indx)<0.15 ){
@@ -222,23 +234,19 @@ bool makeTightElectrons(EasyChain* tree, vector<Electron>& AllElectrons, vector<
     }
     if (!ElectronFlow.keepIf("FbremPF_EoverPin", OK && quick) )continue;
     */
-    OK=Consistency(Ele_p4.at(indx),tree,"electronP4PF")<10.;
+
+    //
+    //OK=fabs(El_SuperClusterPositionETA.at(indx))<1.4442 || fabs(El_SuperClusterPositionETA.at(indx))>1.566;
+    //OK=fabs(AllElectrons.at(iel).Eta() <1.4442 || fabs(AllElectrons.at(iel).Eta()) >1.566;
+    bool NOTINGAP_EXPLICIT = fabs(El_SuperClusterPositionETA.at(indx))<1.4442 || fabs(El_SuperClusterPositionETA.at(indx))>1.566; //Required for Sync with Hannes
+    OK=(electronIsEEPat.at(indx) || electronIsEBPat.at(indx)) && (!REQ_NOTINGAP_EXPLICIT || (NOTINGAP_EXPLICIT));
+    if(!ElectronFlow.keepIf("notinetagap",OK) && quick)continue;    
+
+
+    OK=Consistency(Ele_p4.at(indx),tree,"electronP4PF")<PFRECO_MAXDIFF;
     if(!ElectronFlow.keepIf("RecoPt-PFPt",OK) && quick) continue;
   
-    if(TTver){
-      OK=fabs(El_GsfTrackDxy.at(indx)) < trackdxyMAX ;
-      if( !ElectronFlow.keepIf("|dxy|<0.02", OK) && quick ) continue;
-      OK=fabs(El_GsfTrackDz.at(indx)) < trackdzMAX;
-      if( !ElectronFlow.keepIf("|dz|<0.1"  , OK) && quick ) continue;      
-    }
-
-    //ADDED FOR HANNES SYNC
-    OK=fabs(El_GsfTrackDxy.at(indx)) < trackdxyMAX ;
-    if( !ElectronFlow.keepIf("|dxy|<0.02", OK) && quick ) continue;
-    OK=fabs(El_GsfTrackDz.at(indx)) < trackdzMAX;
-    if( !ElectronFlow.keepIf("|dz|<0.1"  , OK) && quick ) continue;      
-    
-        
+       
     AllElectrons.at(iel).SetID("Tight",true);
     TightElectrons.push_back(&AllElectrons.at(iel));
 
@@ -393,12 +401,10 @@ void makeCleanedElectrons(vector<Electron*>& Electrons_In, vector<Electron*>& El
     bool dumpElectron=false;
   
     for(int imu=0; imu<(int)Muons.size(); ++imu){
-
       if(DeltaR(Electrons_In.at(iel)->P4(),Muons.at(imu).P4())<DELTAR_CUT) {
 	dumpElectron=true;
 	break;
       }
-
     }
 
     if (!CrossCleaning.keepIf("CrossCleaning Muons",!dumpElectron)) continue;
