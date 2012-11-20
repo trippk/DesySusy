@@ -186,8 +186,8 @@ void SetConditions_RA4b(SampleInformation mySampleInformation){
     //EVENT
     //============================================
     SetOfCuts::Event.NumberOfBtags.Set(-1,"above","any number of btags");
-    SetOfCuts::Event.HT.Set(100.,"above","HT above 0");
-    SetOfCuts::Event.MET.Set(150.,"above","MET above 0");
+    SetOfCuts::Event.HT.Set(0.,"above","HT above 0");
+    SetOfCuts::Event.MET.Set(0.,"above","MET above 0");
     //============================================
     
   }
@@ -215,8 +215,8 @@ void SetConditions_RA4b(SampleInformation mySampleInformation){
     //EVENT
     //============================================
     SetOfCuts::Event.NumberOfBtags.Set(-1,"above","any number of btags");
-    SetOfCuts::Event.HT.Set(100.,"above","HT above 0");
-    SetOfCuts::Event.MET.Set(150.,"above","MET above 0");
+    SetOfCuts::Event.HT.Set(0.,"above","HT above 0");
+    SetOfCuts::Event.MET.Set(0.,"above","MET above 0");
     //============================================
     
   }
@@ -244,8 +244,8 @@ void SetConditions_RA4b(SampleInformation mySampleInformation){
     //EVENT
     //============================================
     SetOfCuts::Event.NumberOfBtags.Set(-1,"above","any number of btags");
-    SetOfCuts::Event.HT.Set(100.,"above","HT above 0");
-    SetOfCuts::Event.MET.Set(150.,"above","MET above 0");
+    SetOfCuts::Event.HT.Set(0.,"above","HT above 0");
+    SetOfCuts::Event.MET.Set(0.,"above","MET above 0");
     //============================================
     
   }
