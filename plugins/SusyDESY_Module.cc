@@ -408,7 +408,7 @@ void SusyDESY_Trigger::produce(edm::Event& iEvent, const edm::EventSetup& iSetup
 	if(j<M-1) matchedTriggerFilters+=";";
       }
     }
-    cout<<"------------------> matchedTriggerFilters["<<i<<"] = " << matchedTriggerFilters << endl;
+    //cout<<"------------------> matchedTriggerFilters["<<i<<"] = " << matchedTriggerFilters << endl;
     MuMatchedTriggerFilter->push_back(matchedTriggerFilters);
   }
   //---------------------------------- loop over electrons
@@ -421,7 +421,7 @@ void SusyDESY_Trigger::produce(edm::Event& iEvent, const edm::EventSetup& iSetup
 	if(j<M-1) matchedTriggerFilters+=";";
       }
     }
-    cout<<"------------------> matchedTriggerFilters["<<i<<"] = " << matchedTriggerFilters << endl;
+    //cout<<"------------------> matchedTriggerFilters["<<i<<"] = " << matchedTriggerFilters << endl;
     ElMatchedTriggerFilter->push_back(matchedTriggerFilters);
   }
   iEvent.put(MuMatchedTriggerFilter, Prefix + "MuMatchedTriggerFilter"      + Suffix);
