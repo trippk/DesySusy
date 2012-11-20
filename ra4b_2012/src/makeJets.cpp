@@ -155,7 +155,7 @@ void makeCleanedJets(vector<Jet*>& Jets_In, vector<Jet*>& Jets_Out, vector<Muon>
       if ( !Muons.at(imu).IsID("Tight") &&  !Muons.at(imu).IsID("Veto"))continue;
 
       if(DeltaR(Jets_In.at(ijet)->P4(),Muons.at(imu).P4())<DELTAR_CUT) {
-	if (pcp){
+	if (pcp) {
 	  cout<<endl;
 	  cout<<"CLEANING BEING DONE"<<endl;
 	  cout<<"the jet "<< ijet<< "with pt = "<<Jets_In.at(ijet)->Pt()<<endl;
@@ -171,7 +171,6 @@ void makeCleanedJets(vector<Jet*>& Jets_In, vector<Jet*>& Jets_Out, vector<Muon>
     }
 
     if (!CrossCleaning.keepIf("CrossCleaning Muons",!dumpJet)) continue;
-
 
     for(int iel=0; iel<(int)Electrons.size();++iel){
       if(pcp)cout<<"distance from jet "<<ijet<<" to electron "<<iel<< " = "<<
@@ -228,17 +227,6 @@ void makeCleanedJets(vector<Jet*>& Jets_In, vector<Jet*>& Jets_Out, vector<Muon*
 
     bool dumpJet=false;
   
-    for(int imu=0; imu<(int)Muons.size(); ++imu){
-
-      if(DeltaR(Jets_In.at(ijet)->P4(),Muons.at(imu)->P4())<DELTAR_CUT) {
-	dumpJet=true;
-	break;
-      }
-
-    }
-
-    if (!CrossCleaning.keepIf("CrossCleaning Muons",!dumpJet)) continue;
-
     for(int iel=0; iel<(int)Electrons.size();++iel){
       if(DeltaR(Jets_In.at(ijet)->P4(),Electrons.at(iel)->P4())< DELTAR_CUT) {
 	dumpJet=true;
@@ -246,6 +234,14 @@ void makeCleanedJets(vector<Jet*>& Jets_In, vector<Jet*>& Jets_Out, vector<Muon*
       }
     }
     if (!CrossCleaning.keepIf("CrossCleaning Electrons",!dumpJet)) continue;
+
+    for(int imu=0; imu<(int)Muons.size(); ++imu){
+      if(DeltaR(Jets_In.at(ijet)->P4(),Muons.at(imu)->P4())<DELTAR_CUT) {
+	dumpJet=true;
+	break;
+      }
+    }
+    if (!CrossCleaning.keepIf("CrossCleaning Muons",!dumpJet)) continue;
 
 
     //WE want this jet, keep it.
