@@ -13,20 +13,20 @@ isData      = false
 filename    = /scratch/hh/current/cms/user/eron/nTuples/testdir/
 resonance_cut = 8.0
 isolation_cut = 0.1
-SampleName = DYJets
-SubSampleName = M-50
+SampleName = TTJets
+SubSampleName = SUMMER12
 TurnTriggersOff = false
 
 ###############
 #Analysis Specific
 ###############
 #diLep
-#Estimation = RA4b-diMuSync
+#Estimation = RA4b-MuEGSync
 #treeType = anDiLep
 #TightMuons_PTMIN = 20.0
 
 #diLep Synchro
-Estimation = RA4b-diMuSync
+Estimation = RA4b-MuEGSync
 Tail = Quick
 treeType = anDiLep
 
@@ -44,7 +44,10 @@ Electron_Selection = Loose
 LooseElectrons_PTMIN = 10.0
 TightElectrons_PTMIN = 10.0
 TightElectrons_ETAMAX = 2.4
+TightElectron_trackdxyMAX = 999999.
 TightElectron_trackdzMAX = 0.1
+TightElectrons_PFRECO_MAXDIFF = 999999.
+TightElectrons_REQ_NOTINGAP_EXPLICIT = true
 Electrons_CLEANDELTAR = 0.1
 
 Jets_PTMIN = 40.0
