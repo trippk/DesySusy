@@ -64,7 +64,8 @@ class anDiLep : public subTree {
    int nbjets;
    std::vector<bool> * isbjet;
 
-   LorentzM *   vMET;
+   LorentzM *   vMET_raw;
+   LorentzM *   vMET_type1;
    
    //--------------------------
 
@@ -83,7 +84,13 @@ class anDiLep : public subTree {
    anDiLep(TTree * treeToReadIn);
    ~anDiLep();
 
-   virtual void Fill(EventInfo* info, EasyChain* tree, std::vector<Muon*> & muons_in, std::vector<Electron*> & electrons_in, std::vector<Jet*> & jets_in, LorentzM& met_in); //Adds information to the tree
+    //Adds information to the tree
+   virtual void Fill(EventInfo* info, EasyChain* tree, std::vector<Muon*> & muons_in, std::vector<Electron*> & electrons_in, std::vector<Jet*> & jets_in, LorentzM& met_in) {
+     Fill(info, tree, muons_in, electrons_in, jets_in, met_in, met_in);
+   }
+   //Adds information to the tree, including different met types
+   void Fill(EventInfo* info, EasyChain* tree, std::vector<Muon*> & muons_in, std::vector<Electron*> & electrons_in, std::vector<Jet*> & jets_in, LorentzM& met_raw_in, LorentzM& met_type1_in); 
+
    virtual void Write(); //Writes the tree to the file
 
    long getEntries() {return nEntries;} //Returns the total number of entries in tree to be read
@@ -94,8 +101,8 @@ class anDiLep : public subTree {
    void getOsSfPair(std::vector<LorentzM> & ossfPair); //Returns the OSSF pair with the highest sum Pt.
 
    double getHT(); //Returns HT
-   double getMET(); //Returns MET
-   void getMETv(LorentzM & met); //Returns MET vector
+   //double getMET(); //Returns MET
+   void getMETv(LorentzM & met, const std::string & metName); //Returns MET vector
 
    double getMT(const LorentzM & vis, const LorentzM & inv, double visMass, double invMass);
 

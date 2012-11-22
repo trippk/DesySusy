@@ -17,7 +17,7 @@ anDiLep::anDiLep(TDirectory * dirIn) : treeToRead(0), treeToWrite(0), nEntries(0
   SetBranchesWrite();
 }
 
-anDiLep::anDiLep(TTree * treeToReadIn) : treeToRead(treeToReadIn), treeToWrite(0), dir(0), nEntries(0), iEntry(0), event(0), run(0), mY(-1.), mLsp(-1.), weight(0), PUWeight(0), el(0), elQ(0), mu(0), muQ(0), jets(0), bjetdisc(0), nbjets(0), isbjet(0), vMET(0) {
+anDiLep::anDiLep(TTree * treeToReadIn) : treeToRead(treeToReadIn), treeToWrite(0), dir(0), nEntries(0), iEntry(0), event(0), run(0), mY(-1.), mLsp(-1.), weight(0), PUWeight(0), el(0), elQ(0), mu(0), muQ(0), jets(0), bjetdisc(0), nbjets(0), isbjet(0), vMET_raw(0), vMET_type1(0) {
 
   SetBranchesRead();
 
@@ -44,7 +44,8 @@ void anDiLep::AllocateMemory() {
   bjetdisc = new std::vector<double>();
   isbjet = new std::vector<bool>();
 
-  vMET = new LorentzM();
+  vMET_raw = new LorentzM();
+  vMET_type1 = new LorentzM();
 
   //Ensure that SumW2 is called and declare histograms
   TH1::SetDefaultSumw2(true);
@@ -86,9 +87,14 @@ void anDiLep::DeallocateMemory() {
     isbjet = 0;
   }
 
-  if (vMET) {
-    delete vMET;
-    vMET = 0;
+  if (vMET_raw) {
+    delete vMET_raw;
+    vMET_raw = 0;
+  }
+
+  if (vMET_type1) {
+    delete vMET_type1;
+    vMET_type1 = 0;
   }
 
   return;
@@ -115,7 +121,8 @@ void anDiLep::SetToZero(){
   nbjets=0;
   isbjet->clear();
   
-  vMET->SetPxPyPzE(0.,0.,0.,0.);
+  vMET_raw->SetPxPyPzE(0.,0.,0.,0.);
+  vMET_type1->SetPxPyPzE(0.,0.,0.,0.);
 }
 
 void anDiLep::SetBranchesWrite() {
@@ -143,7 +150,8 @@ void anDiLep::SetBranchesWrite() {
   treeToWrite->Branch("nbjets",&nbjets, "nbjets/I");
   treeToWrite->Branch("isbjet",&isbjet);
 
-  treeToWrite->Branch("vMET",vMET);
+  treeToWrite->Branch("vMET_raw",vMET_raw);
+  treeToWrite->Branch("vMET_type1",vMET_type1);
 
   return;
 }
@@ -172,12 +180,13 @@ void anDiLep::SetBranchesRead() {
   treeToRead->SetBranchAddress("nbjets",&nbjets);
   treeToRead->SetBranchAddress("isbjet",&isbjet);
 
-  treeToRead->SetBranchAddress("vMET",&vMET);
+  treeToRead->SetBranchAddress("vMET_raw",&vMET_raw);
+  treeToRead->SetBranchAddress("vMET_type1",&vMET_type1);
 
   return;
 }
 
-void anDiLep::Fill(EventInfo* info, EasyChain* tree, std::vector<Muon*> & muons_in, std::vector<Electron*> & electrons_in, std::vector<Jet*> & jets_in, LorentzM& met_in) {
+void anDiLep::Fill(EventInfo* info, EasyChain* tree, std::vector<Muon*> & muons_in, std::vector<Electron*> & electrons_in, std::vector<Jet*> & jets_in, LorentzM& met_raw_in, LorentzM& met_type1_in) {
 
   if (!treeToWrite) {
     return;
@@ -216,7 +225,8 @@ void anDiLep::Fill(EventInfo* info, EasyChain* tree, std::vector<Muon*> & muons_
     else isbjet->push_back(false);
   }
 
-  *vMET = met_in;
+  *vMET_raw   = met_raw_in;
+  *vMET_type1 = met_type1_in;
 
   treeToWrite->Fill();
 
@@ -397,10 +407,10 @@ double anDiLep::getHT() {
   return HT;
 }
 
-double anDiLep::getMET() {
-  if (vMET == 0) return 0.;
-  return vMET->Pt();
-}
+// double anDiLep::getMET() {
+//   if (vMET == 0) return 0.;
+//   return vMET->Pt();
+// }
 
 double anDiLep::getMT(const LorentzM & vis, const LorentzM & inv, double visMass, double invMass) {
   double MTsq = 0.;
@@ -426,12 +436,17 @@ int anDiLep::getNtags() {
   return nbjets;
 }
 
-void anDiLep::getMETv(LorentzM & met) {
-  if (vMET) {
-    met = *vMET; 
+void anDiLep::getMETv(LorentzM & met, const std::string & metName) {
+  if (metName == "raw") {
+    if (vMET_raw) met = *vMET_raw; 
+    else cout << "anDiLep::getMETv >> ERROR : vMET pointer not set!" << endl;
+  }
+  else if (metName == "type1") {
+    if (vMET_type1) met = *vMET_type1; 
+    else cout << "anDiLep::getMETv >> ERROR : vMET pointer not set!" << endl;
   }
   else {
-    cout << "anDiLep::getMETv >> ERROR : vMET pointer not set!" << endl;
+    cout << "anDiLep::getMETv >> ERROR : Unknown MET type: " << metName << endl;
   }
   return;
 }
