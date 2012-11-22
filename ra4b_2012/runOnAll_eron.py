@@ -94,7 +94,7 @@ treeMerge_script = \
 ## the cpu time for this job
 #$ -l h_cpu=00:03:00
 ## the maximum memory usage of this job
-#$ -l h_vmem=700M
+#$ -l h_vmem=4000M
 ## stderr and stdout are merged together to stdout
 #$ -j y
 ## define input dir,output dir,executable,config file and LD_LIBRARY_PATH
@@ -421,28 +421,75 @@ def readCommandLine(commandLine):
 	return
 
 def removeDuplicates():
-	# files are sorted!
-	global rootfiles
-	last=''
-	cleaned=[]
-	for file in rootfiles:
-		ir=file.count('_')
-		kin=file.rfind('_')
-		if ir<=3:
-			#print 'Warning - file name not well formed: '+file
-			cleaned.append(file)
-			continue
-		comp=file[:kin-1]
-		if comp.find('_') < 0: 
-			#print 'Warning - file name not well formed: '+file
-			cleaned.append(file)
-			continue
-		if comp==last:
-			killed=cleaned.pop()
-			print 'Duplicate warning: '+killed+' has been removed.'
-		cleaned.append(file)
-		last=comp
-	rootfiles=cleaned			
+         # files are sorted!
+         global rootfiles
+         last=''
+         cleaned=[]
+         counter=0
+         for file in rootfiles:
+                 ir=file.count('_')
+                 pr=file.rfind('_')
+                 if ir<=3:
+                         if counter<7:
+                                 print 'Warning - file name not wellformed: '+file
+                         elif counter==7:
+                                 print '... further warnings skipped.'
+                         counter+=1
+                         cleaned.append(file)
+                         continue
+                 pr2=file[:pr-1].rfind('_')
+                 pr3=file[:pr2-1].rfind('_')
+                 #print "the number should be "+file[pr3+1:pr2]
+                 if not file[pr3+1:pr2].isdigit():
+                         if counter<7:
+                                 print 'Warning - file name not wellformed: '+file
+                                 print '          expect'+file[pr3+1:pr2]+' to be the job number.'
+                         elif counter==7:
+                                 print '... further warnings skipped.'
+                         counter+=1
+                         cleaned.append(file)
+                         continue
+                 comp=file[:pr-1]
+                 #print comp
+                 if comp.find('_') < 0:
+                         if counter<7:
+                                 print 'Warning - file name not wellformed: '+file
+                         elif counter==7:
+                                 print '... further warnings skipped.'
+                         counter+=1
+                         cleaned.append(file)
+                         continue
+                 if comp==last:
+                         killed=cleaned.pop()
+                         print 'Duplicate warning: '+killed+' has beenremoved.'
+                 cleaned.append(file)
+                 last=comp
+         rootfiles=cleaned
+
+
+## def removeDuplicates():
+## 	# files are sorted!
+## 	global rootfiles
+## 	last=''
+## 	cleaned=[]
+## 	for file in rootfiles:
+## 		ir=file.count('_')
+## 		kin=file.rfind('_')
+## 		if ir<=3:
+## 			#print 'Warning - file name not well formed: '+file
+## 			cleaned.append(file)
+## 			continue
+## 		comp=file[:kin-1]
+## 		if comp.find('_') < 0: 
+## 			#print 'Warning - file name not well formed: '+file
+## 			cleaned.append(file)
+## 			continue
+## 		if comp==last:
+## 			killed=cleaned.pop()
+## 			print 'Duplicate warning: '+killed+' has been removed.'
+## 		cleaned.append(file)
+## 		last=comp
+## 	rootfiles=cleaned			
 		
 def checkIndir():
 	""" check number of files in indir
