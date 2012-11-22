@@ -978,7 +978,7 @@ if __name__ == "__main__":
 		outmergetreefile=outmergefile.replace('_merge.root','_tree_merge.root')
 		#if only one merging is necessary, then its different:
 		if nlist[-1]==0:
-			outmergetreefile=outname.replace('.root','_'+Estimation+'_'+Tail+'_Tree.root')
+			outmergetreefile=outname.replace('.root','_Tree.root')
 		#
 		#
 		#
@@ -1043,7 +1043,8 @@ if __name__ == "__main__":
 			lastjobid=id
 
 
-		outmergetreefile=outname.replace('.root','_'+Estimation+'_'+Tail+'_Tree.root')
+		#outmergetreefile=outname.replace('.root','_'+Estimation+'_'+Tail+'_Tree.root')
+		outmergetreefile=outname.replace('.root','_Tree.root')
 		print 'on the final merge, the files are ',treefilelist
 		createTreeMergeScript(treefilelist,outmergetreefile)
 		if not noJoin:
