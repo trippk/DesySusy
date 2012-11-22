@@ -56,7 +56,7 @@ def ElectronHad():
     
     Scripts=[]
     Sample='ElectronHad'
-    SubSample='Run2012A_recover-06Aug'
+    SubSample='Run2012A-recover-06Aug'
     FilesDir='/scratch/hh/dust/naf/cms/user/costanza/NTuple12_V4c/ElectronHad/Run2012A_recover_06Aug/'
     Config='config_DATA_RA4b.txt'
     nFiles=9
@@ -67,7 +67,7 @@ def ElectronHad():
 
     Scripts=[]
     Sample='ElectronHad'
-    SubSample='Run2012B_13Jul'
+    SubSample='Run2012B-13Jul'
     FilesDir='/scratch/hh/dust/naf/cms/user/costanza/NTuple12_V4c/ElectronHad/Run2012B_13Jul/'
     Config='config_DATA_RA4b.txt'
     nFiles=8
@@ -114,7 +114,7 @@ def MuHad():
     
     Scripts=[]
     Sample='MuHad'
-    SubSample='Run2012A_recover-06Aug'
+    SubSample='Run2012A-recover-06Aug'
     FilesDir='/scratch/hh/dust/naf/cms/user/costanza/NTuple12_V4c/MuHad/Run2012A_recover_06Aug/'
     Config='config_DATA_RA4b.txt'
     nFiles=9
@@ -125,7 +125,7 @@ def MuHad():
 
     Scripts=[]
     Sample='MuHad'
-    SubSample='Run2012B_13Jul'
+    SubSample='Run2012B-13Jul'
     FilesDir='/scratch/hh/dust/naf/cms/user/costanza/NTuple12_V4c/MuHad/Run2012B_13Jul/'
     Config='config_DATA_RA4b.txt'
     nFiles=8
@@ -149,7 +149,7 @@ def SingleElectron():
     
     Scripts=[]
     Sample='SingleElectron'
-    SubSample='Run2012A_recover-06Aug'
+    SubSample='Run2012A-recover-06Aug'
     FilesDir='/scratch/hh/dust/naf/cms/user/costanza/NTuple12_V4c/SingleElectron/Run2012A_recover-06Aug/'
     Config='config_DATA_RA4b.txt'
     nFiles=3
@@ -160,7 +160,7 @@ def SingleElectron():
 
     Scripts=[]
     Sample='SingleElectron'
-    SubSample='Run2012B_13Jul'
+    SubSample='Run2012B-13Jul'
     FilesDir='/scratch/hh/dust/naf/cms/user/costanza/NTuple12_V4c/SingleElectron/Run2012B_13Jul/'
     Config='config_DATA_RA4b.txt'
     nFiles=3
@@ -207,7 +207,7 @@ def SingleMu():
     
     Scripts=[]
     Sample='SingleMu'
-    SubSample='Run2012A_recover-06Aug'
+    SubSample='Run2012A-recover-06Aug'
     FilesDir='/scratch/hh/dust/naf/cms/user/costanza/NTuple12_V4c/SingleMu/Run2012A_recover-06Aug/'
     Config='config_DATA_RA4b.txt'
     nFiles=6
@@ -218,7 +218,7 @@ def SingleMu():
 
     Scripts=[]
     Sample='SingleMu'
-    SubSample='Run2012B_13Jul'
+    SubSample='Run2012B-13Jul'
     FilesDir='/scratch/hh/dust/naf/cms/user/costanza/NTuple12_V4c/SingleMu/Run2012B_13Jul/'
     Config='config_DATA_RA4b.txt'
     nFiles=3
