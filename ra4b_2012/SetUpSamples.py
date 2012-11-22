@@ -46,7 +46,7 @@ def ElectronHad():
     
     Sample='ElectronHad'
     SubSample='Run2012A-13Jul'
-    FilesDir='/scratch/hh/dust/naf/cms/user/costanza/NTuple12_V4c/ElectronHad/Run2012A_13Jul/'
+    FilesDir='/scratch/hh/dust/naf/cms/user/costanza/NTuple12_V4c/ElectronHad/Run2012A-13Jul/'
     Config='config_DATA_RA4b.txt'
     nFiles=7
     #
@@ -57,7 +57,7 @@ def ElectronHad():
     Scripts=[]
     Sample='ElectronHad'
     SubSample='Run2012A-recover-06Aug'
-    FilesDir='/scratch/hh/dust/naf/cms/user/costanza/NTuple12_V4c/ElectronHad/Run2012A_recover_06Aug/'
+    FilesDir='/scratch/hh/dust/naf/cms/user/costanza/NTuple12_V4c/ElectronHad/Run2012A-recover_06Aug/'
     Config='config_DATA_RA4b.txt'
     nFiles=9
     #
@@ -68,7 +68,7 @@ def ElectronHad():
     Scripts=[]
     Sample='ElectronHad'
     SubSample='Run2012B-13Jul'
-    FilesDir='/scratch/hh/dust/naf/cms/user/costanza/NTuple12_V4c/ElectronHad/Run2012B_13Jul/'
+    FilesDir='/scratch/hh/dust/naf/cms/user/costanza/NTuple12_V4c/ElectronHad/Run2012B-13Jul/'
     Config='config_DATA_RA4b.txt'
     nFiles=8
     #
@@ -104,7 +104,7 @@ def MuHad():
     
     Sample='MuHad'
     SubSample='Run2012A-13Jul'
-    FilesDir='/scratch/hh/dust/naf/cms/user/costanza/NTuple12_V4c/MuHad/Run2012A_13Jul/'
+    FilesDir='/scratch/hh/dust/naf/cms/user/costanza/NTuple12_V4c/MuHad/Run2012A-13Jul/'
     Config='config_DATA_RA4b.txt'
     nFiles=7
     #
@@ -115,7 +115,7 @@ def MuHad():
     Scripts=[]
     Sample='MuHad'
     SubSample='Run2012A-recover-06Aug'
-    FilesDir='/scratch/hh/dust/naf/cms/user/costanza/NTuple12_V4c/MuHad/Run2012A_recover_06Aug/'
+    FilesDir='/scratch/hh/dust/naf/cms/user/costanza/NTuple12_V4c/MuHad/Run2012A-recover-06Aug/'
     Config='config_DATA_RA4b.txt'
     nFiles=9
     #
@@ -126,7 +126,7 @@ def MuHad():
     Scripts=[]
     Sample='MuHad'
     SubSample='Run2012B-13Jul'
-    FilesDir='/scratch/hh/dust/naf/cms/user/costanza/NTuple12_V4c/MuHad/Run2012B_13Jul/'
+    FilesDir='/scratch/hh/dust/naf/cms/user/costanza/NTuple12_V4c/MuHad/Run2012B-13Jul/'
     Config='config_DATA_RA4b.txt'
     nFiles=8
     #
@@ -138,8 +138,26 @@ def SingleElectron():
 
     Scripts=[]
     Sample='SingleElectron'
+    SubSample='Run2012A-PromptReco-v1'
+    FilesDir='/pnfs/desy.de/cms/tier2/store/user/msahin/nTuple12_v2/data/SingleElectron/Run2012A-PromptReco-v1/'
+    Config='config_DATA_RA4b.txt'
+    nFiles=3
+    
+    #
+    script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
+    cleanUpDir('./'+Sample+'/'+SubSample)    
+    Scripts.append(script)
+
+
+    Sample='SingleElectron'
+    SubSample='Run2012B-PromptReco-v1'
+    FilesDir='/pnfs/desy.de/cms/tier2/store/user/msahin/nTuple12_v2/data/SingleElectron/Run2012B-PromptReco-v1/'
+    Config='config_DATA_RA4b.txt'
+    nFiles=7
+    
+    Sample='SingleElectron'
     SubSample='Run2012A-13Jul'
-    FilesDir='/scratch/hh/dust/naf/cms/user/costanza/NTuple12_V4c/SingleElectron/Run2012A_13Jul/'
+    FilesDir='/scratch/hh/dust/naf/cms/user/costanza/NTuple12_V4c/SingleElectron/Run2012A-13Jul/'
     Config='config_DATA_RA4b.txt'
     nFiles=6
     #
@@ -150,7 +168,7 @@ def SingleElectron():
     Scripts=[]
     Sample='SingleElectron'
     SubSample='Run2012A-recover-06Aug'
-    FilesDir='/scratch/hh/dust/naf/cms/user/costanza/NTuple12_V4c/SingleElectron/Run2012A_recover-06Aug/'
+    FilesDir='/scratch/hh/dust/naf/cms/user/costanza/NTuple12_V4c/SingleElectron/Run2012A-recover-06Aug/'
     Config='config_DATA_RA4b.txt'
     nFiles=3
     #
@@ -161,7 +179,7 @@ def SingleElectron():
     Scripts=[]
     Sample='SingleElectron'
     SubSample='Run2012B-13Jul'
-    FilesDir='/scratch/hh/dust/naf/cms/user/costanza/NTuple12_V4c/SingleElectron/Run2012B_13Jul/'
+    FilesDir='/scratch/hh/dust/naf/cms/user/costanza/NTuple12_V4c/SingleElectron/Run2012B-13Jul/'
     Config='config_DATA_RA4b.txt'
     nFiles=3
     #
@@ -172,16 +190,16 @@ def SingleElectron():
 def SingleMu():
 
     Scripts=[]
-    #Sample='SingleMu'
-    #SubSample='Run2012A-PromptReco-v1'
-    #FilesDir='/pnfs/desy.de/cms/tier2/store/user/eron/nTuple12_v2/data/SingleMu/Run2012A-PromptReco-v1/190456-196531'
-    #Config='config_DATA_RA4b.txt'
-    #nFiles=3
-
+    Sample='SingleMu'
+    SubSample='Run2012A-PromptReco-v1'
+    FilesDir='/pnfs/desy.de/cms/tier2/store/user/eron/nTuple12_v2/data/SingleMu/Run2012A-PromptReco-v1/190456-196531'
+    Config='config_DATA_RA4b.txt'
+    nFiles=3
+    
     #
-    #script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
-    #cleanUpDir('./'+Sample+'/'+SubSample)    
-    #Scripts.append(script)
+    script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
+    cleanUpDir('./'+Sample+'/'+SubSample)    
+    Scripts.append(script)
 
 
     Sample='SingleMu'
@@ -197,7 +215,7 @@ def SingleMu():
 
     Sample='SingleMu'
     SubSample='Run2012A-13Jul'
-    FilesDir='/scratch/hh/dust/naf/cms/user/costanza/NTuple12_V4c/SingleMu/Run2012A_13Jul/'
+    FilesDir='/scratch/hh/dust/naf/cms/user/costanza/NTuple12_V4c/SingleMu/Run2012A-13Jul/'
     Config='config_DATA_RA4b.txt'
     nFiles=7
     #
@@ -208,7 +226,7 @@ def SingleMu():
     Scripts=[]
     Sample='SingleMu'
     SubSample='Run2012A-recover-06Aug'
-    FilesDir='/scratch/hh/dust/naf/cms/user/costanza/NTuple12_V4c/SingleMu/Run2012A_recover-06Aug/'
+    FilesDir='/scratch/hh/dust/naf/cms/user/costanza/NTuple12_V4c/SingleMu/Run2012A-recover-06Aug/'
     Config='config_DATA_RA4b.txt'
     nFiles=6
     #
@@ -219,7 +237,7 @@ def SingleMu():
     Scripts=[]
     Sample='SingleMu'
     SubSample='Run2012B-13Jul'
-    FilesDir='/scratch/hh/dust/naf/cms/user/costanza/NTuple12_V4c/SingleMu/Run2012B_13Jul/'
+    FilesDir='/scratch/hh/dust/naf/cms/user/costanza/NTuple12_V4c/SingleMu/Run2012B-13Jul/'
     Config='config_DATA_RA4b.txt'
     nFiles=3
     #
