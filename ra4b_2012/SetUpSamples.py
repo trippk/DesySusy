@@ -18,33 +18,6 @@ def cleanUpDir(outdir):
     file.write(line+'\n')
     file.close()
     out=com.getoutput("mv cleanUpDir "+outdir+"/")
-    
-def MuHad():
-
-    Scripts=[]
-    Sample='MuHad'
-    SubSample='Run2012A-PromptReco-v1'
-    FilesDir='/pnfs/desy.de/cms/tier2/store/user/eron/nTuple12_v2/data/MuHad/Run2012A-PromptReco-v1/190456-196531'
-    Config='config_DATA_RA4b.txt'
-    nFiles=3
-
-    #
-    script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
-    cleanUpDir('./'+Sample+'/'+SubSample)    
-    Scripts.append(script)
-
-
-    Sample='MuHad'
-    SubSample='Run2012B-PromptReco-v1'
-    FilesDir='/pnfs/desy.de/cms/tier2/store/user/eron/nTuple12_v2/data/MuHad/Run2012B-PromptReco-v1/SGE/190456-196531'
-    Config='config_DATA_RA4b.txt'
-    nFiles=7
-
-    #
-    script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
-    cleanUpDir('./'+Sample+'/'+SubSample)    
-    Scripts.append(script)
-
 
 def ElectronHad():
 
@@ -70,7 +43,131 @@ def ElectronHad():
     script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
     cleanUpDir('./'+Sample+'/'+SubSample)
     Scripts.append(script)        
+    
+    Sample='ElectronHad'
+    SubSample='Run2012A-13Jul'
+    FilesDir='/scratch/hh/dust/naf/cms/user/costanza/NTuple12_V4c/ElectronHad/Run2012A_13Jul/'
+    Config='config_DATA_RA4b.txt'
+    nFiles=7
+    #
+    script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
+    cleanUpDir('./'+Sample+'/'+SubSample)    
+    Scripts.append(script)
+    
+    Scripts=[]
+    Sample='ElectronHad'
+    SubSample='Run2012A_recover-06Aug'
+    FilesDir='/scratch/hh/dust/naf/cms/user/costanza/NTuple12_V4c/ElectronHad/Run2012A_recover_06Aug/'
+    Config='config_DATA_RA4b.txt'
+    nFiles=9
+    #
+    script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
+    cleanUpDir('./'+Sample+'/'+SubSample)    
+    Scripts.append(script)
 
+    Scripts=[]
+    Sample='ElectronHad'
+    SubSample='Run2012B_13Jul'
+    FilesDir='/scratch/hh/dust/naf/cms/user/costanza/NTuple12_V4c/ElectronHad/Run2012B_13Jul/'
+    Config='config_DATA_RA4b.txt'
+    nFiles=8
+    #
+    script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
+    cleanUpDir('./'+Sample+'/'+SubSample)    
+    Scripts.append(script)
+
+def MuHad():
+
+    Scripts=[]
+    Sample='MuHad'
+    SubSample='Run2012A-PromptReco-v1'
+    FilesDir='/pnfs/desy.de/cms/tier2/store/user/eron/nTuple12_v2/data/MuHad/Run2012A-PromptReco-v1/190456-196531'
+    Config='config_DATA_RA4b.txt'
+    nFiles=3
+
+    #
+    script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
+    cleanUpDir('./'+Sample+'/'+SubSample)    
+    Scripts.append(script)
+
+
+    Sample='MuHad'
+    SubSample='Run2012B-PromptReco-v1'
+    FilesDir='/pnfs/desy.de/cms/tier2/store/user/eron/nTuple12_v2/data/MuHad/Run2012B-PromptReco-v1/SGE/190456-196531'
+    Config='config_DATA_RA4b.txt'
+    nFiles=7
+
+    #
+    script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
+    cleanUpDir('./'+Sample+'/'+SubSample)    
+    Scripts.append(script)
+    
+    Sample='MuHad'
+    SubSample='Run2012A-13Jul'
+    FilesDir='/scratch/hh/dust/naf/cms/user/costanza/NTuple12_V4c/MuHad/Run2012A_13Jul/'
+    Config='config_DATA_RA4b.txt'
+    nFiles=7
+    #
+    script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
+    cleanUpDir('./'+Sample+'/'+SubSample)    
+    Scripts.append(script)
+    
+    Scripts=[]
+    Sample='MuHad'
+    SubSample='Run2012A_recover-06Aug'
+    FilesDir='/scratch/hh/dust/naf/cms/user/costanza/NTuple12_V4c/MuHad/Run2012A_recover_06Aug/'
+    Config='config_DATA_RA4b.txt'
+    nFiles=9
+    #
+    script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
+    cleanUpDir('./'+Sample+'/'+SubSample)    
+    Scripts.append(script)
+
+    Scripts=[]
+    Sample='MuHad'
+    SubSample='Run2012B_13Jul'
+    FilesDir='/scratch/hh/dust/naf/cms/user/costanza/NTuple12_V4c/MuHad/Run2012B_13Jul/'
+    Config='config_DATA_RA4b.txt'
+    nFiles=8
+    #
+    script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
+    cleanUpDir('./'+Sample+'/'+SubSample)    
+    Scripts.append(script)
+
+def SingleElectron():
+
+    Scripts=[]
+    Sample='SingleElectron'
+    SubSample='Run2012A-13Jul'
+    FilesDir='/scratch/hh/dust/naf/cms/user/costanza/NTuple12_V4c/SingleElectron/Run2012A_13Jul/'
+    Config='config_DATA_RA4b.txt'
+    nFiles=6
+    #
+    script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
+    cleanUpDir('./'+Sample+'/'+SubSample)    
+    Scripts.append(script)
+    
+    Scripts=[]
+    Sample='SingleElectron'
+    SubSample='Run2012A_recover-06Aug'
+    FilesDir='/scratch/hh/dust/naf/cms/user/costanza/NTuple12_V4c/SingleElectron/Run2012A_recover-06Aug/'
+    Config='config_DATA_RA4b.txt'
+    nFiles=3
+    #
+    script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
+    cleanUpDir('./'+Sample+'/'+SubSample)    
+    Scripts.append(script)
+
+    Scripts=[]
+    Sample='SingleElectron'
+    SubSample='Run2012B_13Jul'
+    FilesDir='/scratch/hh/dust/naf/cms/user/costanza/NTuple12_V4c/SingleElectron/Run2012B_13Jul/'
+    Config='config_DATA_RA4b.txt'
+    nFiles=3
+    #
+    script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
+    cleanUpDir('./'+Sample+'/'+SubSample)    
+    Scripts.append(script)
 
 def SingleMu():
 
@@ -98,6 +195,37 @@ def SingleMu():
     cleanUpDir('./'+Sample+'/'+SubSample)    
     Scripts.append(script)
 
+    Sample='SingleMu'
+    SubSample='Run2012A-13Jul'
+    FilesDir='/scratch/hh/dust/naf/cms/user/costanza/NTuple12_V4c/SingleMu/Run2012A_13Jul/'
+    Config='config_DATA_RA4b.txt'
+    nFiles=7
+    #
+    script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
+    cleanUpDir('./'+Sample+'/'+SubSample)    
+    Scripts.append(script)
+    
+    Scripts=[]
+    Sample='SingleMu'
+    SubSample='Run2012A_recover-06Aug'
+    FilesDir='/scratch/hh/dust/naf/cms/user/costanza/NTuple12_V4c/SingleMu/Run2012A_recover-06Aug/'
+    Config='config_DATA_RA4b.txt'
+    nFiles=6
+    #
+    script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
+    cleanUpDir('./'+Sample+'/'+SubSample)    
+    Scripts.append(script)
+
+    Scripts=[]
+    Sample='SingleMu'
+    SubSample='Run2012B_13Jul'
+    FilesDir='/scratch/hh/dust/naf/cms/user/costanza/NTuple12_V4c/SingleMu/Run2012B_13Jul/'
+    Config='config_DATA_RA4b.txt'
+    nFiles=3
+    #
+    script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
+    cleanUpDir('./'+Sample+'/'+SubSample)    
+    Scripts.append(script)
 
 def DoubleMu():
 
@@ -196,7 +324,7 @@ def TTJetsMG():
     SubSample='Hadr-DR53'
     FilesDir='/scratch/hh/dust/naf/cms/user/costanza/NTuple12_V4c/TTJetsMG/HadronicMGDecays-v1/'
     Config='config_MC_RA4b.txt'
-    nFiles=6
+    nFiles=3
     script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
     cleanUpDir('./'+Sample+'/'+SubSample)
     Scripts.append(script)
@@ -204,7 +332,7 @@ def TTJetsMG():
     SubSample='Semi-DR53'
     FilesDir='/scratch/hh/dust/naf/cms/user/costanza/NTuple12_V4c/TTJetsMG/SemiLeptMGDecays_ext-v1/'
     Config='config_MC_RA4b.txt'
-    nFiles=3
+    nFiles=2
     script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
     cleanUpDir('./'+Sample+'/'+SubSample)
     Scripts.append(script)
@@ -212,7 +340,7 @@ def TTJetsMG():
     SubSample='Full-DR53'
     FilesDir='/scratch/hh/dust/naf/cms/user/costanza/NTuple12_V4c/TTJetsMG/FullLeptMGDecays-v2/'
     Config='config_MC_RA4b.txt'
-    nFiles=5
+    nFiles=2
     script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
     cleanUpDir('./'+Sample+'/'+SubSample)
     Scripts.append(script)
@@ -224,7 +352,7 @@ def TTJetsPOWHEG():
     SubSample='DR53-v1'
     FilesDir='/scratch/hh/dust/naf/cms/user/costanza/NTuple12_V4c/TT_CT10_TuneZ2star_8TeV-powheg-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/'
     Config='config_MC_RA4b.txt'
-    nFiles=5
+    nFiles=2
     script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
     cleanUpDir('./'+Sample+'/'+SubSample)
     Scripts.append(script)
@@ -232,21 +360,19 @@ def TTJetsPOWHEG():
     SubSample='DR53-v2'
     FilesDir='/pnfs/desy.de/cms/tier2/store/user/schettle/nTuple12_v4b/mc/TT_CT10_TuneZ2star_8TeV-powheg-tauola/Summer12_DR53X-PU_S10_START53_V7A-v2/'
     Config='config_MC_RA4b.txt'
-    nFiles=16
+    nFiles=6
     script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
     cleanUpDir('./'+Sample+'/'+SubSample)
     Scripts.append(script)
 
 def TTJetsMCatNLO():
-    #TTJetsMG()
-    #TTJetsPOWHEG()
-    #TTJetsMCatNLO()
+    
     Scripts=[]
     Sample='TTJetsMCatNLO'
     SubSample='DR53'
     FilesDir='/scratch/hh/dust/naf/cms/user/costanza/NTuple12_V4c/TTJetsMCatNLO/Summer12_DR53X-PU_S10_START53_V7A-v1/'
     Config='config_MC_RA4b.txt'
-    nFiles=8
+    nFiles=4
     script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
     cleanUpDir('./'+Sample+'/'+SubSample)
     Scripts.append(script)
@@ -283,40 +409,48 @@ def T2tt():
     Sample='T2tt'
     SubSample='t500n100'
     FilesDir='/scratch/hh/current/cms/user/costanza/store/SMS-T2tt_FineBin_Mstop-225to1200_mLSP-0to1000_8TeV-Pythia6Z/Summer12-START52_V9_FSIM-v1/'
-    Config='config_MC_RA4b.txt'
-    nFiles=20
+    Config='config_Scan_RA4b.txt'
+    nFiles=50
     script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
     cleanUpDir('./'+Sample+'/'+SubSample)
     Scripts.append(script)
     ########################################
     SubSample='t650n200'
     FilesDir='/scratch/hh/current/cms/user/costanza/store/SMS-T2tt_FineBin_Mstop-225to1200_mLSP-0to1000_8TeV-Pythia6Z/Summer12-START52_V9_FSIM-v1/'
-    Config='config_MC_RA4b.txt'
-    nFiles=20
+    Config='config_Scan_RA4b.txt'
+    nFiles=50
     script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
     cleanUpDir('./'+Sample+'/'+SubSample)
     Scripts.append(script)
     ########################################
     SubSample='t750n400'
     FilesDir='/scratch/hh/current/cms/user/costanza/store/SMS-T2tt_FineBin_Mstop-225to1200_mLSP-0to1000_8TeV-Pythia6Z/Summer12-START52_V9_FSIM-v1/'
-    Config='config_MC_RA4b.txt'
-    nFiles=20
+    Config='config_Scan_RA4b.txt'
+    nFiles=50
     script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
     cleanUpDir('./'+Sample+'/'+SubSample)
     Scripts.append(script)
     ########################################
     SubSample='t350n50'
     FilesDir='/scratch/hh/current/cms/user/costanza/store/SMS-T2tt_FineBin_Mstop-225to1200_mLSP-0to1000_8TeV-Pythia6Z/Summer12-START52_V9_FSIM-v1/'
-    Config='config_MC_RA4b.txt'
-    nFiles=20
+    Config='config_Scan_RA4b.txt'
+    nFiles=50
+    script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
+    cleanUpDir('./'+Sample+'/'+SubSample)
+    Scripts.append(script)
+    ########################################
+    SubSample='t400n50'
+    FilesDir='/scratch/hh/current/cms/user/costanza/store/SMS-T2tt_FineBin_Mstop-225to1200_mLSP-0to1000_8TeV-Pythia6Z/Summer12-START52_V9_FSIM-v1/'
+    Config='config_Scan_RA4b.txt'
+    nFiles=50
     script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
     cleanUpDir('./'+Sample+'/'+SubSample)
     Scripts.append(script)
     ########################################
     SubSample='NoSub'
     FilesDir='/scratch/hh/current/cms/user/costanza/store/SMS-T2tt_FineBin_Mstop-225to1200_mLSP-0to1000_8TeV-Pythia6Z/Summer12-START52_V9_FSIM-v1/'
-    Config='config_MC_RA4b.txt'
-    nFiles=20
+    Config='config_Scan_RA4b.txt'
+    nFiles=10
     script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
     cleanUpDir('./'+Sample+'/'+SubSample)
     Scripts.append(script)
@@ -422,7 +556,7 @@ def WJetsToLNu():
     SubSample='HT250To300'
     FilesDir='/scratch/hh/dust/naf/cms/user/costanza/NTuple12_V4c/WJetsToLNu/HT250To300/'
     Config='config_MC_RA4b.txt'
-    nFiles=30
+    nFiles=15
     script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
     cleanUpDir('./'+Sample+'/'+SubSample)
     Scripts.append(script)
@@ -430,7 +564,7 @@ def WJetsToLNu():
     SubSample='HT300To400'
     FilesDir='/scratch/hh/dust/naf/cms/user/costanza/NTuple12_V4c/WJetsToLNu/HT300To400/'
     Config='config_MC_RA4b.txt'
-    nFiles=30
+    nFiles=15
     script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
     cleanUpDir('./'+Sample+'/'+SubSample)
     Scripts.append(script)
@@ -438,7 +572,7 @@ def WJetsToLNu():
     SubSample='HT400ToInf'
     FilesDir='/scratch/hh/dust/naf/cms/user/costanza/NTuple12_V4c/WJetsToLNu/HT400ToInf/'
     Config='config_MC_RA4b.txt'
-    nFiles=30
+    nFiles=15
     script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
     cleanUpDir('./'+Sample+'/'+SubSample)
     Scripts.append(script)
@@ -555,6 +689,7 @@ if __name__=='__main__':
     MuHad()
     ElectronHad()
     SingleMu()
+    SingleElectron()
     DoubleMu()
     DoubleEl()
     MuEG()
