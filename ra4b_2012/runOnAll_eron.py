@@ -45,7 +45,7 @@ echo job start at `date`
 #echo total own running jobs at the NAF `qstat -u eron | grep -i " r " | wc -l`
 #echo this machine is `echo $HOST`
 
-time $EXECUTABLE filename="$1" outname=$2
+time $EXECUTABLE filename="$1" outname=$2 Estimation=$3 Tail=$4
 ##cp $2 $OUTDIR
 ##echo cp $2 $OUTDIR
 echo
@@ -417,6 +417,7 @@ def readCommandLine(commandLine):
 	out=commands.getoutput('cp '+config_filename+' '+outdir+'/config.txt')
 	out=commands.getoutput('cp para_config.txt '+outdir+'/para_config.txt')
 	out=commands.getoutput('cp pu_config.txt '+outdir+'/pu_config.txt')
+	outname=outname.replace('.root', '_'+Estimation+'_'+Tail+'.root')
 	return
 
 def removeDuplicates():
@@ -609,8 +610,8 @@ def createMergeScript(jobids,filelist,outmergename,outname,nlistsize):
 		#============================================================
 		
 		#whatestimation=commands.getoutput('grep -i estimation '+config_filename+' | awk \'{print $3}\'')
-		line='OUTNAMEESTIMATION=`echo '+outname+' | sed s/.root/_'+Estimation+'.root/`'
-		mergefile.write(line+'\n')
+		#line='OUTNAMEESTIMATION=`echo '+outname+' | sed s/.root/_'+Estimation+'.root/`'
+		#mergefile.write(line+'\n')
 		#============================================================
 		
 
@@ -619,11 +620,11 @@ def createMergeScript(jobids,filelist,outmergename,outname,nlistsize):
 		#============================================================
 		#whattail=commands.getoutput('grep -i Tail '+config_filename+' | awk \'{print $3}\'')
 		#it there is a tail, the size should be different than 0
-		if Tail.__len__()!=0:
-			line='OUTNAMEESTIMATION2=$OUTNAMEESTIMATION'
-			mergefile.write(line+'\n')		
-			line='OUTNAMEESTIMATION=`echo $OUTNAMEESTIMATION2 | sed s/.root/_'+Tail+'.root/`'
-			mergefile.write(line+'\n')
+		#if Tail.__len__()!=0:
+		#	line='OUTNAMEESTIMATION2=$OUTNAMEESTIMATION'
+		#	mergefile.write(line+'\n')		
+		#	line='OUTNAMEESTIMATION=`echo $OUTNAMEESTIMATION2 | sed s/.root/_'+Tail+'.root/`'
+		#	mergefile.write(line+'\n')
 		#============================================================
 
 
@@ -632,53 +633,53 @@ def createMergeScript(jobids,filelist,outmergename,outname,nlistsize):
                 ## to the end of the name and the desired name is a symbolic link
                 ##to the last file.
                 ##===============================================================
-		line='TIMEID=`date | awk \'{ print $2 $3"at"$4 }\' | sed s/:/-/g`'
-		mergefile.write(line+'\n')		
-		line='OUTNAMEUNIQUE2=`echo $OUTNAME | sed s/.root/R/g`'
-		mergefile.write(line+'\n')		
-		line='OUTNAMEUNIQUE="$OUTNAMEUNIQUE2"_"$TIMEID".root'
-		mergefile.write(line+'\n')
-		line='mv $OUTNAME $OUTNAMEUNIQUE'
-		mergefile.write(line+'\n')		
-		line='echo "OUTNAME IS NOW " $OUTNAMEUNIQUE'
-		mergefile.write(line+'\n')		
+		#line='TIMEID=`date | awk \'{ print $2 $3"at"$4 }\' | sed s/:/-/g`'
+		#mergefile.write(line+'\n')		
+		#line='OUTNAMEUNIQUE2=`echo $OUTNAME | sed s/.root/R/g`'
+		#mergefile.write(line+'\n')		
+		#line='OUTNAMEUNIQUE="$OUTNAMEUNIQUE2"_"$TIMEID".root'
+		#mergefile.write(line+'\n')
+		#line='mv $OUTNAME $OUTNAMEUNIQUE'
+		#mergefile.write(line+'\n')		
+		#line='echo "OUTNAME IS NOW " $OUTNAMEUNIQUE'
+		#mergefile.write(line+'\n')		
 		#================================================================
 		
 		#=============================================
 		#MOVE THE FILE
 		#=============================================
-		line='mkdir OutputContainer'
-		mergefile.write(line+'\n')
-		line='mv $OUTNAMEUNIQUE ./OutputContainer'
-		mergefile.write(line+'\n')
+		#line='mkdir OutputContainer'
+		#mergefile.write(line+'\n')
+		#line='mv $OUTNAMEUNIQUE ./OutputContainer'
+		#mergefile.write(line+'\n')
 
 		#=============================================
 		#LINK THE LAST FILE TO NAME-LAST
 		#=============================================		
-		line='lastlink=`ls -lrt $OUTNAMEESTIMATION | awk \'{ print $11 }\'`'
-		mergefile.write(line+'\n')
-		line='echo "the last link was " $lastlink'
-		mergefile.write(line+'\n')		
-		line='OUTNAMELAST=`echo $OUTNAMEESTIMATION | sed s/.root/-LAST.root/`'
-		mergefile.write(line+'\n')		
-		line='echo "OUTNAMELAST IS" $OUTNAMELAST'
-		mergefile.write(line+'\n')		
-		line='rm -f $OUTNAMELAST '
-		mergefile.write(line+'\n')		
-		line='ln -s $lastlink $OUTNAMELAST'
-		mergefile.write(line+'\n')
+		#line='lastlink=`ls -lrt $OUTNAMEESTIMATION | awk \'{ print $11 }\'`'
+		#mergefile.write(line+'\n')
+		#line='echo "the last link was " $lastlink'
+		#mergefile.write(line+'\n')		
+		#line='OUTNAMELAST=`echo $OUTNAMEESTIMATION | sed s/.root/-LAST.root/`'
+		#mergefile.write(line+'\n')		
+		#line='echo "OUTNAMELAST IS" $OUTNAMELAST'
+		#mergefile.write(line+'\n')		
+		#line='rm -f $OUTNAMELAST '
+		#mergefile.write(line+'\n')		
+		#line='ln -s $lastlink $OUTNAMELAST'
+		#mergefile.write(line+'\n')
 
 		#=============================================
 		#LINK THE LAST JOB TO THE FINAL NAME
 		#=============================================		
-		line='rm -f $OUTNAMEESTIMATION'
-		mergefile.write(line+'\n')		
-		line='ln -s ./OutputContainer/$OUTNAMEUNIQUE $OUTNAMEESTIMATION'
-		mergefile.write(line+'\n')
-		line='rm -f nameofrootfile'
-		mergefile.write(line+'\n')		
-		line='echo "$OUTNAMEESTIMATION" > nameofrootfile'
-		mergefile.write(line+'\n')
+		#line='rm -f $OUTNAMEESTIMATION'
+		#mergefile.write(line+'\n')		
+		#line='ln -s ./OutputContainer/$OUTNAMEUNIQUE $OUTNAMEESTIMATION'
+		#mergefile.write(line+'\n')
+		#line='rm -f nameofrootfile'
+		#mergefile.write(line+'\n')		
+		#line='echo "$OUTNAMEESTIMATION" > nameofrootfile'
+		#mergefile.write(line+'\n')
 		#=============================================				
 
 	if cleanUp:
@@ -702,7 +703,8 @@ def createMergeScript(jobids,filelist,outmergename,outname,nlistsize):
 				line='rm'+buf+'\n'
 				mergefile.write(line+'\n')
 			else:
-				line='rm out_*[0-9]_merge.root\n'
+				#line='rm out_*[0-9]_merge.root\n'
+				line='rm out_'+Estimation+'_'+Tail+'_*[0-9]_merge.root\n'
 				mergefile.write(line+'\n')			
 				line='rm  runOnAll_'+outname+'.log\n'
 				mergefile.write(line+'\n')			
@@ -864,7 +866,8 @@ if __name__ == "__main__":
 	ListOfOutFiles=[]
 	modulus=0
 	for idx, rootfile in enumerate(rootfiles):
-		outfile='out_'+str(idx)+'_'+randstr+'.root'
+		#outfile='out_'+str(idx)+'_'+randstr+'.root'
+		outfile='out_' + Estimation + '_' + Tail + '_' + str(idx) + '_' + randstr + '.root'
 		ListOfOutFiles.append(outfile)
 		batchsendtime=commands.getoutput('date --rfc-3339=ns | awk \'{print $2}\'')
 
@@ -886,7 +889,7 @@ if __name__ == "__main__":
 
 		#print 'going to send qsub -l  site=hh  batch_script "'+files+'" '+outfile
 		#raw_input()
-		out=commands.getoutput('qsub -l  site=hh  batch_script "'+files+'" '+outfile)
+		out=commands.getoutput('qsub -l  site=hh  batch_script "'+files+'" '+outfile+' '+Estimation+' '+Tail)
 
 		if out.find('Your job ') == 0:
 			id=out.split(' ')[2]
@@ -929,8 +932,9 @@ if __name__ == "__main__":
 	for idx in nlist:
 		
 		#the outputname of this merging job
-		outrandfile='out_'+str(idx)+'_merge.root'
-
+		#outrandfile='out_'+str(idx)+'_merge.root'
+		outrandfile='out_'+Estimation+'_'+Tail+'_'+str(idx)+'_merge.root'
+		
 		outmergefile=outrandfile
 		#If there are less than chunksize files,
 		#then don't bother doing a final step
