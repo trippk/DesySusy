@@ -38,7 +38,6 @@ bool triggers_RA4b(EasyChain* tree, vector<const char*>& triggernames, double& E
 
   if(pcp)cout<<"got the triggers from the tree!" <<endl;
 
-
   OK=false;
 
 
@@ -53,15 +52,25 @@ bool triggers_RA4b(EasyChain* tree, vector<const char*>& triggernames, double& E
 //   }
 
 
-  string dummytrigger;  
-  string tname;
+  //***string dummytrigger;  
+  //***string tname;
 
   for (unsigned itr=0;itr<triggernames.size(); ++itr){
     if(pcp)cout<<"checking if the trigger "<< triggernames.at(itr)<<endl;
 
+    bool isTriggered = false;
+    int trigPrescale = -1;
+    string tname = "";
+
+    map<string,string>::const_iterator tnameIt = TriggerMap.find(triggernames.at(itr));
+    if ( tnameIt != TriggerMap.end() ) {
+      tname = tnameIt->second;
+      isTriggered = HLTtrigger[tname];
+      trigPrescale = HLTprescaled[tname];
+    }
 
     //tname=triggernames.at(itr);
-    tname=TriggerMap[triggernames.at(itr)];
+    //*****tname=TriggerMap[triggernames.at(itr)];
     //cout<<"the fucking trigger is"<<tname<<endl;
     //cout<<"which is associated to "<<triggernames.at(itr)<<endl;
     //check the trigger prescale, now it works with
@@ -70,14 +79,15 @@ bool triggers_RA4b(EasyChain* tree, vector<const char*>& triggernames, double& E
     //triggers_prescale->Fill(HLTprescaled[tname]);
     //}
     //
-    if(TriggerFlow.keepIf(tname, HLTtrigger[tname] && HLTprescaled[tname]==1 )){
+    //******if(TriggerFlow.keepIf(tname, HLTtrigger[tname] && HLTprescaled[tname]==1 )){
+    if(TriggerFlow.keepIf(tname, isTriggered && trigPrescale == 1 )){
 	//if(HLTprescaled[triggernames.at(itr)] > 1.)cout <<"the prescale of the trigger "<<HLTprescaled[triggernames.at(itr)]<<endl;
 	
 	//EventWeight=EventWeight*HLTprescaled[triggernames.at(itr)];
 	
 	OK=true;
       //      lastsuccesful=triggernames.at(itr);
-	if(pcp)cout<<"the trigger that fires is "<<dummytrigger<<endl;
+	//***if(pcp)cout<<"the trigger that fires is "<<dummytrigger<<endl;
 	break;
     }
   }
@@ -104,9 +114,13 @@ bool triggerFired(EasyChain* tree, const std::string & triggername) {
 
   if(pcp)cout<<"checking if the trigger "<< triggername <<endl;
 
-  std::string tname=TriggerMap[triggername];
+  //std::string tname=TriggerMap[triggername];
   bool trigFired = false;
-  if (HLTtrigger[tname] && HLTprescaled[tname]==1) trigFired = true;
+  
+  map<string, string>::const_iterator tnameIt = TriggerMap.find(triggername);
+  if ( tnameIt != TriggerMap.end() ) {
+    if (HLTtrigger[tnameIt->second] && HLTprescaled[tnameIt->second]==1) trigFired = true;
+  }
   
   return trigFired;
 }
