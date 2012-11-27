@@ -5,8 +5,13 @@ struct EventInfo{
 
   int Event;
   int Run;
-  float EventWeight;
+
+  float xs;
+  int   NEvents;
+  float FE; 
+  float GlobalWeight;
   float PUWeight;
+  float EventWeight;
 
   float mY;
   float mLsp;
