@@ -43,8 +43,13 @@ class Nminus1Tree: public subTree {
 
    int event;
    int run;
-   double weight;
+
+   double xs;
+   int nEvents;
+   double FE;
+   double globalWeight;
    double PUWeight;
+   double eventWeight;
 
    LorentzED* el;
    double elPt;
