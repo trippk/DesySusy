@@ -40,7 +40,7 @@ xs_LM9_NoSub                 = 13.0018
 #(T)otal (N)umber (o)f (E)vents 
 TNoE_TTJets_SUMMER12           = 6923750
 TNoE_TTJets_SUMMER12POWHEG     = 21675970
-TNoE_TTJetsMG_Hadr-DR53        = 10537444
+TNoE_TTJetsMG_Hadr-DR53        = 31223821
 TNoE_TTJetsMG_Semi-DR53	       = 25416637
 TNoE_TTJetsMG_Full-DR53	       = 12119013
 TNoE_TTJetsPOWHEG_DR53-v1      = 6474753
