@@ -13,8 +13,13 @@ Nminus1Tree::Nminus1Tree(){
   
   event=0;
   run=0;
-  weight=0.0;
-  PUWeight=0.0;
+
+  xs = 0.;
+  nEvents = 0;
+  FE = 0.;
+  globalWeight = 0.;
+  PUWeight = 0.;
+  eventWeight = 0.;
   
   el=new LorentzED(0.,0.,0.,0.);
   elPt=0.;
@@ -56,8 +61,12 @@ Nminus1Tree::Nminus1Tree(){
 
   mytree->Branch("Event",&event,"event/I");
   mytree->Branch("Run",&run,"run/I");
-  mytree->Branch("Weight",&weight,"weight/D");
+  mytree->Branch("xs",&xs,"xs/D");
+  mytree->Branch("nEvents",&nEvents,"nEvents/I");
+  mytree->Branch("FE",&FE,"FE/D");
+  mytree->Branch("globalWeight",&globalWeight,"globalWeight/D");
   mytree->Branch("PUWeight",&PUWeight,"PUWeight/D");
+  mytree->Branch("eventWeight",&eventWeight,"eventWeight/D");
   mytree->Branch("el.","ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiE4D<double> >",&el);
   mytree->Branch("elPt",&elPt,"elPt/D");
   mytree->Branch("mu.","ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiE4D<double> >",&mu);
@@ -132,9 +141,14 @@ void Nminus1Tree::Fill( EventInfo* info, EasyChain* tree, vector<Muon*>& muons_i
 
   event = info->Event;
   run = info->Run;    
-  weight=info->EventWeight;
-  PUWeight=info->PUWeight;
 
+  xs = info->xs;
+  nEvents = info->NEvents;
+  FE = info->FE;
+  globalWeight = info->GlobalWeight;
+  PUWeight = info->PUWeight;
+  eventWeight = info->EventWeight;
+  
   if (electrons_in.size()>0) {
     SetVector(el, electrons_in.at(0));
     elPt=electrons_in.at(0)->Pt();
@@ -156,16 +170,18 @@ void Nminus1Tree::Fill( EventInfo* info, EasyChain* tree, vector<Muon*>& muons_i
   double HTx=0;
   double HTy=0;
 
-  for (int ijet=0; ijet<jets_in.size() && ijet<7; ijet++) {
+  for (int ijet=0; ijet<jets_in.size(); ijet++) {
     HT+=jets_in.at(ijet)->Pt();
     HTx+=jets_in.at(ijet)->P4().Px();
     HTy+=jets_in.at(ijet)->P4().Py();
-    SetVector(jets[ijet], jets_in.at(ijet));
-    jetsPt[ijet]=jets_in.at(ijet)->Pt();
-    bjetdisc[ijet]=jets_in.at(ijet)->BJetDisc("CSV");
-    for (int iwp=0; iwp<3; iwp++) {
-      isbjet[ijet][iwp]=jets_in.at(ijet)->IsBJet("CSV",WP[iwp]);
-      if (isbjet[ijet][iwp]) nbjets[iwp]++;
+    if (ijet<7) {
+      SetVector(jets[ijet], jets_in.at(ijet));
+      jetsPt[ijet]=jets_in.at(ijet)->Pt();
+      bjetdisc[ijet]=jets_in.at(ijet)->BJetDisc("CSV");
+      for (int iwp=0; iwp<3; iwp++) {
+	isbjet[ijet][iwp]=jets_in.at(ijet)->IsBJet("CSV",WP[iwp]);
+	if (isbjet[ijet][iwp]) nbjets[iwp]++;
+      }
     }
   }
 
@@ -287,8 +303,13 @@ void Nminus1Tree::SetToZero(){
 
   event=0;
   run=0;
-  weight=0.0;
-  PUWeight=0.0;
+
+  xs = 0.;
+  nEvents = 0;
+  FE = 0.;
+  globalWeight = 0.;
+  PUWeight = 0.;
+  eventWeight = 0.;
   
   el->SetPxPyPzE(0.,0.,0.,0.);
   elPt=0.;
