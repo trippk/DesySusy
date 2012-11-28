@@ -43,6 +43,27 @@
 
 extern bool pcp;
 
+struct cutFlowSet {
+
+  CutSet* globalflow;
+
+  CutSet* triggerflow;
+
+  CutSet* electronTight;
+  CutSet* electronVeto;
+  CutSet* electronTightCleaned;
+  CutSet* electronVetoCleaned;
+
+  CutSet* muonLoose;
+  CutSet* muonTight;
+  CutSet* muonVeto;
+
+  CutSet* jetsGood;
+  CutSet* jetsCleaned;
+
+};
+
+
 class event {
  public:
   event(EasyChain * tree_in);
@@ -50,7 +71,7 @@ class event {
 
   bool setSampleInformation();
 
-  void setCutFlow(CutSet* cutSet_in) {globalflow = cutSet_in;}
+  void setCutFlows(cutFlowSet cutFlowSet_in) {cutFlows = cutFlowSet_in;}
   void setSubTree(subTree* subTree_in) {outTree = subTree_in;}
   void setControlPlots(HistoMaker* histMaker_in) {ControlPlots = histMaker_in;}
 
@@ -62,7 +83,7 @@ class event {
   void fillTree();
 
  private:
-  bool applyCut(const std::string & cutName);
+  bool applyCut(const std::string & cutName, vector<Muon*> * muonsPlot, vector<Electron*> * electronsPlot, vector<Jet*> * jetsPlot);
   bool chkOsFlavTrigger();
   void resetAll();
 
@@ -71,6 +92,8 @@ class event {
   vector<double> PUdata;
 
   bool doControlPlots;
+
+  cutFlowSet cutFlows;
   CutSet * globalflow;
   HistoMaker * ControlPlots;
   subTree * outTree;

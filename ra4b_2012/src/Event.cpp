@@ -1,6 +1,6 @@
 #include "Event.h"
 
-event::event(EasyChain * tree_in) : tree(tree_in), globalflow(0), ControlPlots(0), outTree(0) {
+event::event(EasyChain * tree_in) : tree(tree_in), ControlPlots(0), outTree(0) {
   return;
 }
 
@@ -197,20 +197,20 @@ void event::createObjects() {
   //============================================
   // Make Muons
   Muons=makeAllMuons(tree);
-  makeTightMuons(tree,Muons,TightMuons);
-  makeLooseMuons(tree,Muons,LooseMuons);
-  makeVetoMuons(tree,Muons,VetoMuons);
+  makeTightMuons(tree,Muons,TightMuons, cutFlows.muonTight);
+  makeLooseMuons(tree,Muons,LooseMuons, cutFlows.muonLoose);
+  makeVetoMuons(tree,Muons,VetoMuons, cutFlows.muonVeto);
   //============================================
 
   //============================================
   // Make Electrons
   Electrons=makeAllElectrons(tree);
-  makeTightElectrons(tree,Electrons,TightElectrons);
-  makeVetoElectrons(tree, Electrons,VetoElectrons);
+  makeTightElectrons(tree,Electrons,TightElectrons, cutFlows.electronTight);
+  makeVetoElectrons(tree, Electrons,VetoElectrons, cutFlows.electronVeto);
 
   TrkOrGlobalMuons = makeTrkOrGlobalMuons(tree);
-  makeCleanedElectrons(TightElectrons, CleanedTightElectrons, TrkOrGlobalMuons);
-  makeCleanedElectrons(VetoElectrons , CleanedVetoElectrons , TrkOrGlobalMuons);
+  makeCleanedElectrons(TightElectrons, CleanedTightElectrons, TrkOrGlobalMuons, cutFlows.electronTightCleaned);
+  makeCleanedElectrons(VetoElectrons , CleanedVetoElectrons , TrkOrGlobalMuons, cutFlows.electronVetoCleaned);
   //============================================
 
   //============================================    
@@ -220,8 +220,8 @@ void event::createObjects() {
     AllJets.push_back(&Jets.at(ijet));
   }
 
-  makeGoodJets(tree,AllJets,GoodJets);
-  makeCleanedJets( GoodJets, CleanedJets, TightMuons, CleanedTightElectrons); // Done for sync with Hannes. 
+  makeGoodJets(tree,AllJets,GoodJets, cutFlows.jetsGood);
+  makeCleanedJets( GoodJets, CleanedJets, TightMuons, CleanedTightElectrons, cutFlows.jetsCleaned); 
 
   HT=0.0;
   for(int ijet=0;ijet<(int)CleanedJets.size();++ijet){
@@ -267,7 +267,7 @@ bool event::applyCuts(const std::vector<std::string> & cutVec) {
     cout << "event::applyCuts >> ERROR ControlPlots is NULL." << endl;
     return false;
   }
-  if (globalflow == 0) {
+  if (cutFlows.globalflow == 0) {
     cout << "event::applyCuts >> ERROR globalflow is NULL." << endl;
     return false;
   }
@@ -276,13 +276,17 @@ bool event::applyCuts(const std::vector<std::string> & cutVec) {
 
   bool passAllCuts = true;
   
+  vector<Muon*> * muonsPlot = &TightMuons;
+  vector<Electron*> * electronsPlot = &CleanedTightElectrons;
+  vector<Jet*> * jetsPlot = &CleanedJets;
+
   std::vector<std::string>::const_iterator cutIt;
   for (cutIt = cutVec.begin() ; cutIt != cutVec.end() ; cutIt++ ) {
-    bool passCut = applyCut(*cutIt);
-    globalflow->keepIf(*cutIt, passCut);
+    bool passCut = applyCut(*cutIt, muonsPlot, electronsPlot, jetsPlot);
+    cutFlows.globalflow->keepIf(*cutIt, passCut);
     passAllCuts = passAllCuts&&passCut;
     if (passAllCuts) {
-      if (doControlPlots) ControlPlots->MakePlots(*cutIt, TightMuons, CleanedTightElectrons, CleanedJets, PFmetType1); 
+      if (doControlPlots) ControlPlots->MakePlots(*cutIt, *muonsPlot, *electronsPlot, *jetsPlot, PFmetType1); 
     }
     else break;      
   }
@@ -290,13 +294,17 @@ bool event::applyCuts(const std::vector<std::string> & cutVec) {
   return passAllCuts;
 }
 
-bool event::applyCut(const string &cutName) {
+bool event::applyCut(const string &cutName, vector<Muon*> * muonsPlot, vector<Electron*> * electronsPlot, vector<Jet*> * jetsPlot) {
   
   bool OK = false;
 
+  muonsPlot = &TightMuons;
+  electronsPlot = &CleanedTightElectrons;
+  jetsPlot = &CleanedJets;
+
   if (cutName == "Triggers"){
     if (turntriggersoff) OK = true;
-    else OK = triggers_RA4b(tree, triggernames,EventWeight);
+    else OK = triggers_RA4b(tree, triggernames,EventWeight, cutFlows.triggerflow);
   }
   else if (cutName == "hcalLaserFilter") {
     OK = tree->Get( OK,    "hcalLaserEventFilterFlag"  );
@@ -335,27 +343,41 @@ bool event::applyCut(const string &cutName) {
   }
   else if (cutName == "Jet_Cuts"){
     OK=SetOfCuts::Jets.NUM.Examine(CleanedJets.size());
+    muonsPlot = &SignalMuons;
+    electronsPlot = &SignalElectrons;
   }
   else if (cutName == "Signal_Muons"){
     OK=SetOfCuts::SignalMuons.NUM.Examine(SignalMuons.size());
+    muonsPlot = &SignalMuons;
+    electronsPlot = &SignalElectrons;
   }
   else if (cutName == "Signal_Electrons"){
     OK=SetOfCuts::SignalElectrons.NUM.Examine(SignalElectrons.size());
+    muonsPlot = &SignalMuons;
+    electronsPlot = &SignalElectrons;
   }
   else if (cutName == "Wide_Muons"){
     OK=SetOfCuts::WideMuons.NUM.Examine(WideMuons.size());
+    muonsPlot = &WideMuons;
   }
   else if (cutName == "Wide_Electrons"){
     OK=SetOfCuts::WideElectrons.NUM.Examine(WideElectrons.size());
+    electronsPlot = &WideElectrons;
   }
   else if (cutName == "HT"){
     OK=SetOfCuts::Event.HT.Examine(HT);
+    muonsPlot = &SignalMuons;
+    electronsPlot = &SignalElectrons;
   }
   else if (cutName == "MET"){
     OK=SetOfCuts::Event.MET.Examine(PFmetType1.pt());
+    muonsPlot = &SignalMuons;
+    electronsPlot = &SignalElectrons;
   }
   else if (cutName == "OS_FLAV_THRESH"){
     OK=chkOsFlavTrigger();
+    muonsPlot = &SignalMuons;
+    electronsPlot = &SignalElectrons;
   }
   else {
     cout << "Unknown cut: " << cutName << endl;
