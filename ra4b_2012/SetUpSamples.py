@@ -501,49 +501,49 @@ def SingleTop():
     Scripts=[]
     Sample='SingleTop'
     SubSample='T-s-channel'
-    FilesDir='/pnfs/desy.de/cms/tier2/store/user/msahin/nTuple12_v2/mc/T_s-channel_TuneZ2star_8TeV-powheg-tauola/Summer12-PU_S7_START52_V9-v1'
+    FilesDir='/scratch/hh/dust/naf/cms/user/costanza/NTuple12_V4c/SingleTop/T_schannel'
     Config='config_MC_RA4b.txt'
-    nFiles=3
+    nFiles=8
     script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
     cleanUpDir('./'+Sample+'/'+SubSample)
     Scripts.append(script)
     #============================================
     SubSample='T-t-channel'
-    FilesDir='/pnfs/desy.de/cms/tier2/store/user/msahin/nTuple12_v2/mc/T_t-channel_TuneZ2star_8TeV-powheg-tauola/Summer12-PU_S7_START52_V9-v1'
+    FilesDir='/scratch/hh/dust/naf/cms/user/costanza/NTuple12_V4c/SingleTop/T_tchannel'
     Config='config_MC_RA4b.txt'
-    nFiles=3
+    nFiles=5
     script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
     cleanUpDir('./'+Sample+'/'+SubSample)
     Scripts.append(script)                    
     #============================================
     SubSample='T-tW-channel'
-    FilesDir='/pnfs/desy.de/cms/tier2/store/user/msahin/nTuple12_v2/mc/T_tW-channel-DR_TuneZ2star_8TeV-powheg-tauola/Summer12-PU_S7_START52_V9-v1'
+    FilesDir='/scratch/hh/dust/naf/cms/user/costanza/NTuple12_V4c/SingleTop/T_tWchannel'
     Config='config_MC_RA4b.txt'
-    nFiles=3
+    nFiles=6
     script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
     cleanUpDir('./'+Sample+'/'+SubSample)
     Scripts.append(script)
     #============================================
     SubSample='Tbar-s-channel'
-    FilesDir='/pnfs/desy.de/cms/tier2/store/user/msahin/nTuple12_v2/mc/Tbar_s-channel_TuneZ2star_8TeV-powheg-tauola/Summer12-PU_S7_START52_V9-v1'
+    FilesDir='/scratch/hh/dust/naf/cms/user/costanza/NTuple12_V4c/SingleTop/Tbar_schannel'
     Config='config_MC_RA4b.txt'
-    nFiles=3
+    nFiles=4
     script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
     cleanUpDir('./'+Sample+'/'+SubSample)
     Scripts.append(script)
     #============================================
     SubSample='Tbar-t-channel'
-    FilesDir='/pnfs/desy.de/cms/tier2/store/user/eron/nTuple12_v2/mc/Tbar_t-channel_TuneZ2star_8TeV-powheg-tauola/Summer12-PU_S7_START52_V9-v1'
+    FilesDir='/scratch/hh/dust/naf/cms/user/costanza/NTuple12_V4c/SingleTop/Tbar_tchannel'
     Config='config_MC_RA4b.txt'
-    nFiles=3
+    nFiles=4
     script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
     cleanUpDir('./'+Sample+'/'+SubSample)
     Scripts.append(script)
     #============================================
     SubSample='Tbar-tW-channel'
-    FilesDir='/pnfs/desy.de/cms/tier2/store/user/msahin/nTuple12_v2/mc/Tbar_tW-channel-DR_TuneZ2star_8TeV-powheg-tauola/Summer12-PU_S7_START52_V9-v1' 
+    FilesDir='/scratch/hh/dust/naf/cms/user/costanza/NTuple12_V4c/SingleTop/Tbar_tWchannel' 
     Config='config_MC_RA4b.txt'
-    nFiles=3
+    nFiles=5
     script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
     cleanUpDir('./'+Sample+'/'+SubSample)
     Scripts.append(script)
