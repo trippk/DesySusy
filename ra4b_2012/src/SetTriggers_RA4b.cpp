@@ -47,8 +47,8 @@ void SetTriggers_RA4b(SampleInformation mySampleInformation, vector<const char*>
 
   }
   else if(mySampleInformation.GetEstimation()=="RA4b-el"){
-    for (int i=0; i<El_LowPtMenu.size(); ++i){
-      triggernames.push_back(El_LowPtMenu.at(i));
+    for (int i=0; i<El_HighPtMenu.size(); ++i){
+      triggernames.push_back(El_HighPtMenu.at(i));
     }
   }
   else if (mySampleInformation.GetEstimation()=="RA4b-diMu"){
