@@ -28,12 +28,14 @@ class HistoMaker {
 
  public:
   HistoMaker(const TString& pre="", const char* dlm=delimiter);
-    ~HistoMaker(){
-      if(autodump)  dumpToFile();
-    };
+  ~HistoMaker(){
+    if(autodump)  dumpToFile();
+  };
   static double global_event_weight;
   
-  static void setTFile(TFile *);
+  void setTFile(TFile *);
+  void setDir(TDirectory *);
+
   void dumpToFile();
   void MakePlots( const TString&, vector<Muon*> muons, vector<Electron*> electrons, vector<Jet*> jets, LorentzM& met);
   bool autodump;
@@ -76,8 +78,8 @@ class HistoMaker {
   map<TString, TH1D*> PtJet_ABCD[NMonitorJets][4];
 
   // ROOT related
-  static TFile* tfile;
-  static TDirectory* cplotdir;
+  TFile* tfile;
+  TDirectory* cplotdir;
   //TDirectory* tdir;
 
 };

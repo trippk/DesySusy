@@ -365,8 +365,9 @@ int main(int argc, char** argv){
   //SET THE CONTROL PLOTS HISTO MAKER
   //================================ 
   bool DoControlPlots=config.getBool("DoControlPlots",true); 
-  HistoMaker::setTFile(outfile); 
+  //HistoMaker::setTFile(outfile); 
   HistoMaker ControlPlots("AnalyzeSUSY"," "); 
+  ControlPlots.setTFile(outfile); 
   outfile->cd();
 
 

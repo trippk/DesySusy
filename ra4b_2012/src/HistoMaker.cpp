@@ -1,12 +1,9 @@
-
 #include "HistoMaker.h"
 #include "ConfigReader.h"
 
 using namespace std;
 
-//extern double EventWeight;
-
-HistoMaker::HistoMaker(const TString& pre, const char* dlm ):  delim(dlm), autodump(true), prefix(pre){
+HistoMaker::HistoMaker(const TString& pre, const char* dlm ):  delim(dlm), autodump(true), prefix(pre), tfile(0), cplotdir(0){
 
   //TH1::AddDirectory(kFALSE);
   TH1::SetDefaultSumw2(true);
@@ -14,24 +11,28 @@ HistoMaker::HistoMaker(const TString& pre, const char* dlm ):  delim(dlm), autod
 };
 
 double HistoMaker::global_event_weight = 1.;
-TFile* HistoMaker::tfile = 0;
-TDirectory* HistoMaker::cplotdir = 0;
 
 void HistoMaker::setTFile(TFile *f){
 	tfile=f;
 	cplotdir = tfile->mkdir("ControlPlots");
-
+};
+void HistoMaker::setDir(TDirectory *f){
+	cplotdir = f->mkdir("ControlPlots");
 };
 
 void HistoMaker::dumpToFile(){
 
-  TDirectory* keep = gDirectory->GetDirectory("");
+//   TDirectory* keep = gDirectory->GetDirectory("");
 
-  TDirectory* mainDir=0;
-  if(tfile!=0)  mainDir = tfile->GetDirectory("/");
+//   TDirectory* mainDir=0;
+//   if(tfile!=0)  mainDir = tfile->GetDirectory("/");
 
   // tdir->cd();
-  cplotdir->Write();
+
+  if (cplotdir == 0) {
+    cout << "HistoMaker::dumpToFile >> ERROR " << endl; 
+  }
+  else cplotdir->Write();
   
   /*
   for(unsigned c=0; c<allCuts.size(); ++c) {
