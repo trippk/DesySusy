@@ -14,7 +14,7 @@
 #include <set>
 
 
-bool triggers_RA4b(EasyChain* tree, vector<const char*>&, double&);
+bool triggers_RA4b(EasyChain* tree, vector<const char*>&, double&, CutSet* flow_in = 0);
 
 //Added for handling diLeptonTriggers
 enum diLepEvent_t {FAIL=-1,MUMU, MUEL, ELEL};

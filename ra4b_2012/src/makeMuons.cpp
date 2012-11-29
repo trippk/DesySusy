@@ -88,7 +88,7 @@ vector<Muon> makeTrkOrGlobalMuons(EasyChain* tree){
 
 
 
-bool makeLooseMuons(EasyChain* tree, vector<Muon>& AllMuons, vector<Muon*>& LooseMuons){
+bool makeLooseMuons(EasyChain* tree, vector<Muon>& AllMuons, vector<Muon*>& LooseMuons, CutSet* flow_in){
 
 
   //====================================================================
@@ -104,6 +104,12 @@ bool makeLooseMuons(EasyChain* tree, vector<Muon>& AllMuons, vector<Muon*>& Loos
   static CutSet LooseMuonFlow("Loose_Muon_Selection");
   //  LooseMuonFlow.autoprint=true;
   LooseMuonFlow.autodump=true;
+
+  CutSet* flow = &LooseMuonFlow;
+  if (flow_in) {
+    LooseMuonFlow.autodump = false;
+    flow = flow_in;
+  }
 
 
   LooseMuons.clear();
@@ -129,16 +135,16 @@ bool makeLooseMuons(EasyChain* tree, vector<Muon>& AllMuons, vector<Muon*>& Loos
     int indx=AllMuons.at(imu).GetIndexInTree();
 
     OK=AllMuons.at(imu).pt()>=PTMIN;
-    if(!LooseMuonFlow.keepIf("pt>mu_pt_min_low",OK)) continue;
+    if(!flow->keepIf("pt>mu_pt_min_low",OK)) continue;
     //
     OK=fabs(AllMuons.at(imu).eta())<=ETAMAX;
-    if(!LooseMuonFlow.keepIf("abs(eta)<etamax",OK))continue;
+    if(!flow->keepIf("abs(eta)<etamax",OK))continue;
     //
     OK=Mu_isPF.at(indx);
-    if(!LooseMuonFlow.keepIf("is PF",OK)) continue;
+    if(!flow->keepIf("is PF",OK)) continue;
     //
     OK=Mu_IsGlobal.at(indx) || Mu_IsTracker.at(indx);
-    if(!LooseMuonFlow.keepIf("is tracker or reco",OK)) continue;    
+    if(!flow->keepIf("is tracker or reco",OK)) continue;    
     //
     if(pcp)cout<<"through with the loose muon cut"<<endl;    
 
@@ -284,7 +290,7 @@ bool makeSoftMuons(EasyChain* tree, vector<Muon>& AllMuons, vector<Muon*>& SoftM
 
 
 
-bool makeTightMuons(EasyChain* tree, vector<Muon>& AllMuons,vector<Muon*>& TightMuons){
+bool makeTightMuons(EasyChain* tree, vector<Muon>& AllMuons,vector<Muon*>& TightMuons, CutSet* flow_in){
 
 
  
@@ -316,6 +322,13 @@ bool makeTightMuons(EasyChain* tree, vector<Muon>& AllMuons,vector<Muon*>& Tight
   
   static CutSet TightMuonFlow("Tight_Muon_Selection");
   TightMuonFlow.autodump=true;
+
+  CutSet* flow = &TightMuonFlow;
+  if (flow_in) {
+    TightMuonFlow.autodump = false;
+    flow = flow_in;
+  }
+
 
   bool OK=false;
   double highestpt=-1.;
@@ -352,49 +365,49 @@ bool makeTightMuons(EasyChain* tree, vector<Muon>& AllMuons,vector<Muon*>& Tight
     int indx=AllMuons.at(imu).GetIndexInTree();
     
     OK=AllMuons.at(imu).pt() >= PTMIN;
-    if(!TightMuonFlow.keepIf("pt>mu_pt_min_low TIGHT",OK)) continue;
+    if(!flow->keepIf("pt>mu_pt_min_low TIGHT",OK)) continue;
     //
     OK=fabs(AllMuons.at(imu).Eta())<=ETAMAX;
-    if(!TightMuonFlow.keepIf("abs(eta)<etamax TIGHT",OK))continue;
+    if(!flow->keepIf("abs(eta)<etamax TIGHT",OK))continue;
     //
     OK=AllMuons.at(imu).RelIso() < PFIsoCut;
     // OK=true;
-    if(!TightMuonFlow.keepIf("PFIso",OK)) continue;
+    if(!flow->keepIf("PFIso",OK)) continue;
 
     OK=Mu_IsGlobal.at(indx);
-    if(!TightMuonFlow.keepIf("is global",OK)) continue;    
+    if(!flow->keepIf("is global",OK)) continue;    
     //
     OK=Mu_isPF.at(indx);
-    if(!TightMuonFlow.keepIf("is PF",OK)) continue;
+    if(!flow->keepIf("is PF",OK)) continue;
     //
     OK= ((!REQ_ISTRACKER) || Mu_IsTracker.at(indx));
-    if(!TightMuonFlow.keepIf("is Tracker",OK)) continue;
+    if(!flow->keepIf("is Tracker",OK)) continue;
     //
     OK=normalisedchi2.at(indx) <= Chi2MAX;
-    if(!TightMuonFlow.keepIf("normalised chi2 for TIGHT muons",OK)) continue;
+    if(!flow->keepIf("normalised chi2 for TIGHT muons",OK)) continue;
     //
     OK=NValidGlobalTrackHits.at(indx) > NValidGlobalTrackerHitsMIN;
-    if(!TightMuonFlow.keepIf("global tracker hits for TIGHT muons",OK)) continue;
+    if(!flow->keepIf("global tracker hits for TIGHT muons",OK)) continue;
     //
     OK=NMatchedStations.at(indx)>NMatchedStationsMIN;
-    if(!TightMuonFlow.keepIf("N Matched Statios for TIGHT muons",OK)) continue;
+    if(!flow->keepIf("N Matched Statios for TIGHT muons",OK)) continue;
     //
     OK=fabs(Dxy_track.at(indx)) < dxyVertexMAX;
-    if(!TightMuonFlow.keepIf("dxy to vertex position",OK)) continue;
+    if(!flow->keepIf("dxy to vertex position",OK)) continue;
     //
     OK=fabs(Dz_track.at(indx)) < dzVertexMAX;
-    if(!TightMuonFlow.keepIf("dz to vertex position",OK)) continue;
+    if(!flow->keepIf("dz to vertex position",OK)) continue;
     //
     OK=NValidPixelHits.at(indx) > NValidPixelHitsMIN;
-    if(!TightMuonFlow.keepIf("PixelHits min",OK)) continue;
+    if(!flow->keepIf("PixelHits min",OK)) continue;
     //
     OK=NTrackerLayers.at(indx)>NTrackerLayersMIN;
-    if(!TightMuonFlow.keepIf("NTrackerLayers min",OK)) continue;
+    if(!flow->keepIf("NTrackerLayers min",OK)) continue;
  
     //if it got here, it must be a tight lepton
     //     cout <<    Consistency(Mu_p4.at(indx),tree,"muonP4PF") << endl;
     OK= Consistency(Mu_p4.at(indx),tree,"muonP4PF") < PFRECO_MAXDIFF;
-    if(!TightMuonFlow.keepIf("RecoPt-PFPt",OK)) continue;
+    if(!flow->keepIf("RecoPt-PFPt",OK)) continue;
 
     AllMuons.at(imu).SetID("Tight",true);
     TightMuons.push_back(&AllMuons.at(imu));
@@ -408,17 +421,27 @@ bool makeTightMuons(EasyChain* tree, vector<Muon>& AllMuons,vector<Muon*>& Tight
 
 
 
-bool makeVetoMuons(EasyChain* tree, vector<Muon>& AllMuons, vector<Muon*>& VetoMuons){
+bool makeVetoMuons(EasyChain* tree, vector<Muon>& AllMuons, vector<Muon*>& VetoMuons, CutSet* flow_in){
 
   
-  static CutSet VetoMuonFlow("Veto_Muon_Selection");
+
   extern   bool pcp;
   if(pcp){
     cout<<"INSIDE VETOMUONS"<<endl;
   }
-  VetoMuonFlow.autodump=true;
   vector<float>& Dxy_track = tree->Get( &Dxy_track,   "muonInnerTrackDxyPat");
   vector<float>& Dz_track = tree->Get( &Dz_track,   "muonInnerTrackDzPat");
+
+  static CutSet VetoMuonFlow("Veto_Muon_Selection");
+  VetoMuonFlow.autodump=true;
+
+  CutSet* flow = &VetoMuonFlow;
+  if (flow_in) {
+    VetoMuonFlow.autodump = false;
+    flow = flow_in;
+  }
+
+
 
   //====================================================================
   //READ OR DEFINE THE CUTS FOR THE VETO MUONS
@@ -436,7 +459,7 @@ bool makeVetoMuons(EasyChain* tree, vector<Muon>& AllMuons, vector<Muon*>& VetoM
   //LOOP OVER MUONS
   //===========================================================================================
   
-  VetoMuonFlow.keepIf("number of calls to VETO muonRA4b",true);
+  flow->keepIf("number of calls to VETO muonRA4b",true);
   float highestpt=-1.0;
 
   bool OK=false;
@@ -460,14 +483,14 @@ bool makeVetoMuons(EasyChain* tree, vector<Muon>& AllMuons, vector<Muon*>& VetoM
 
     OK=AllMuons.at(iel).RelIso() < ISOMAX;
     // OK=true;
-    if(!VetoMuonFlow.keepIf("PFIso",OK)) continue;
+    if(!flow->keepIf("PFIso",OK)) continue;
    
     if(pcp){
       cout<<"dxy at "<<indx <<" is "<<Dxy_track.at(indx)<<endl;
       cout<<"dxy at "<<0 <<" is "<<Dxy_track.at(0)<<endl;
     }
     OK=fabs(Dxy_track.at(indx)) < dxyVertexMAX;
-    if(!VetoMuonFlow.keepIf("dxy to vertex position",OK)) continue;
+    if(!flow->keepIf("dxy to vertex position",OK)) continue;
     //
     if(pcp){
       cout<<"dz is "<<Dz_track.at(indx)<<endl;
@@ -475,7 +498,7 @@ bool makeVetoMuons(EasyChain* tree, vector<Muon>& AllMuons, vector<Muon*>& VetoM
       //cout<<"the whole vector Dz = "<<Dz_track<<endl;
     }
     OK=fabs(Dz_track.at(indx)) < dzVertexMAX;
-    if(!VetoMuonFlow.keepIf("dz to vertex position",OK)) continue;
+    if(!flow->keepIf("dz to vertex position",OK)) continue;
    
     AllMuons.at(iel).SetID("Veto",true);
     //this muon is NOT tight, but it is SOFT, so its VETO

@@ -7,9 +7,9 @@
 
 vector<Electron> makeAllElectrons(EasyChain* tree );
 bool makeLooseElectrons(EasyChain* tree, vector<Electron>& AllElectrons, vector<Electron*>&  LooseElectrons);
-bool makeTightElectrons(EasyChain* tree, vector<Electron>& AllElectrons, vector<Electron*>&  TightElectrons);
-bool makeVetoElectrons(EasyChain* tree, vector<Electron>& AllElectrons,  vector<Electron*>&  VetoElectrons);
+bool makeTightElectrons(EasyChain* tree, vector<Electron>& AllElectrons, vector<Electron*>&  TightElectrons, CutSet* flow_in = 0);
+bool makeVetoElectrons(EasyChain* tree, vector<Electron>& AllElectrons,  vector<Electron*>&  VetoElectrons, CutSet* flow_in = 0);
 
 
-void makeCleanedElectrons(vector<Electron*>& Electrons_In, vector<Electron*>& Electrons_Out, vector<Muon>& Muons);
+void makeCleanedElectrons(vector<Electron*>& Electrons_In, vector<Electron*>& Electrons_Out, vector<Muon>& Muons, CutSet* flow_in = 0);
 #endif

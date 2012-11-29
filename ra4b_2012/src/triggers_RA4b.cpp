@@ -6,7 +6,7 @@
 using namespace std;
 
 
-bool triggers_RA4b(EasyChain* tree, vector<const char*>& triggernames, double& EventWeight){
+bool triggers_RA4b(EasyChain* tree, vector<const char*>& triggernames, double& EventWeight, CutSet* flow_in){
 
   //extern vector<string>triggernames_short;
   extern bool pcp;
@@ -17,9 +17,14 @@ bool triggers_RA4b(EasyChain* tree, vector<const char*>& triggernames, double& E
   
   static CutSet TriggerFlow("trigger flow");
   //  static string lastsuccesful;
-
   TriggerFlow.autoprint=false;
   TriggerFlow.autodump=true;
+
+  CutSet * flow = &TriggerFlow;
+  if (flow_in) {
+    TriggerFlow.autodump = false;
+    flow = flow_in;
+  }
 
   bool OK=false;
 
@@ -80,7 +85,7 @@ bool triggers_RA4b(EasyChain* tree, vector<const char*>& triggernames, double& E
     //}
     //
     //******if(TriggerFlow.keepIf(tname, HLTtrigger[tname] && HLTprescaled[tname]==1 )){
-    if(TriggerFlow.keepIf(tname, isTriggered && trigPrescale == 1 )){
+    if(flow->keepIf(tname, isTriggered && trigPrescale == 1 )){
 	//if(HLTprescaled[triggernames.at(itr)] > 1.)cout <<"the prescale of the trigger "<<HLTprescaled[triggernames.at(itr)]<<endl;
 	
 	//EventWeight=EventWeight*HLTprescaled[triggernames.at(itr)];

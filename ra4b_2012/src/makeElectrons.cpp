@@ -122,12 +122,19 @@ bool makeLooseElectrons(EasyChain* tree, vector<Electron>& AllElectrons, vector<
 
 
 
-bool makeTightElectrons(EasyChain* tree, vector<Electron>& AllElectrons, vector<Electron*>& TightElectrons){
+bool makeTightElectrons(EasyChain* tree, vector<Electron>& AllElectrons, vector<Electron*>& TightElectrons, CutSet * flow_in){
 
+  extern   bool pcp;
  
   static CutSet ElectronFlow("good tight electron selection");
-  extern   bool pcp;
   ElectronFlow.autodump=true;
+
+  CutSet* flow = &ElectronFlow;
+  if (flow_in) {
+    ElectronFlow.autodump = false;
+    flow = flow_in;
+  }
+
 
   TightElectrons.clear();
   const char* idname="undefined";
@@ -190,7 +197,7 @@ bool makeTightElectrons(EasyChain* tree, vector<Electron>& AllElectrons, vector<
   //LOOP OVER ELECTRONS
   //===========================================================================================
   
-  ElectronFlow.keepIf("number of calls to tight electronRA4b",true);
+  flow->keepIf("number of calls to tight electronRA4b",true);
 
   bool OK=false;
   for(int iel=0;iel<(int)AllElectrons.size();++iel){
@@ -200,28 +207,28 @@ bool makeTightElectrons(EasyChain* tree, vector<Electron>& AllElectrons, vector<
 
     //PT
     OK = (AllElectrons.at(iel).Pt() >= PTMIN);// || fabs(El_SuperClusterPositionETA.at(indx))>1.566);
-    if(!ElectronFlow.keepIf("pt>el_pt_min_low", OK) && quick) continue;
+    if(!flow->keepIf("pt>el_pt_min_low", OK) && quick) continue;
 
     //ETA
     //OK=fabs(AllElectrons.at(iel).Eta()) <= ETAMAX;
     OK=fabs(El_SuperClusterPositionETA.at(indx))<=ETAMAX;
-    if(!ElectronFlow.keepIf("eta max", OK) && quick)continue;
+    if(!flow->keepIf("eta max", OK) && quick)continue;
 
     //ID
     OK=id.at(indx);
-    if(!ElectronFlow.keepIf("Electron_ID",OK) && quick) continue;
+    if(!flow->keepIf("Electron_ID",OK) && quick) continue;
 
     //ADDED FOR HANNES SYNC
     OK=fabs(El_GsfTrackDxy.at(indx)) < trackdxyMAX ;
-    if( !ElectronFlow.keepIf("|dxy|<0.02", OK) && quick ) continue;
+    if( !flow->keepIf("|dxy|<0.02", OK) && quick ) continue;
     OK=fabs(El_GsfTrackDz.at(indx)) < trackdzMAX;
-    if( !ElectronFlow.keepIf("|dz|<0.1"  , OK) && quick ) continue;      
+    if( !flow->keepIf("|dz|<0.1"  , OK) && quick ) continue;      
 
     if(TTver){
       OK=fabs(El_GsfTrackDxy.at(indx)) < trackdxyMAX ;
-      if( !ElectronFlow.keepIf("|dxy|<0.02", OK) && quick ) continue;
+      if( !flow->keepIf("|dxy|<0.02", OK) && quick ) continue;
       OK=fabs(El_GsfTrackDz.at(indx)) < trackdzMAX;
-      if( !ElectronFlow.keepIf("|dz|<0.1"  , OK) && quick ) continue;      
+      if( !flow->keepIf("|dz|<0.1"  , OK) && quick ) continue;      
     }
 
 
@@ -240,11 +247,11 @@ bool makeTightElectrons(EasyChain* tree, vector<Electron>& AllElectrons, vector<
     //OK=fabs(AllElectrons.at(iel).Eta() <1.4442 || fabs(AllElectrons.at(iel).Eta()) >1.566;
     bool NOTINGAP_EXPLICIT = fabs(El_SuperClusterPositionETA.at(indx))<1.4442 || fabs(El_SuperClusterPositionETA.at(indx))>1.566; //Required for Sync with Hannes
     OK=(electronIsEEPat.at(indx) || electronIsEBPat.at(indx)) && (!REQ_NOTINGAP_EXPLICIT || (NOTINGAP_EXPLICIT));
-    if(!ElectronFlow.keepIf("notinetagap",OK) && quick)continue;    
+    if(!flow->keepIf("notinetagap",OK) && quick)continue;    
 
 
     OK=Consistency(Ele_p4.at(indx),tree,"electronP4PF")<PFRECO_MAXDIFF;
-    if(!ElectronFlow.keepIf("RecoPt-PFPt",OK) && quick) continue;
+    if(!flow->keepIf("RecoPt-PFPt",OK) && quick) continue;
   
        
     AllElectrons.at(iel).SetID("Tight",true);
@@ -261,13 +268,19 @@ bool makeTightElectrons(EasyChain* tree, vector<Electron>& AllElectrons, vector<
 
 
 
-bool makeVetoElectrons(EasyChain* tree, vector<Electron>& AllElectrons, vector<Electron*>& VetoElectrons){
+bool makeVetoElectrons(EasyChain* tree, vector<Electron>& AllElectrons, vector<Electron*>& VetoElectrons, CutSet* flow_in){
 
 
   
   static CutSet ElectronFlow("Veto electron selection");
   extern   bool pcp;
   ElectronFlow.autodump=true;
+
+  CutSet* flow = &ElectronFlow;
+  if (flow_in) {
+    ElectronFlow.autodump = false;
+    flow = flow_in;
+  }
 
   VetoElectrons.clear();
   
@@ -286,7 +299,7 @@ bool makeVetoElectrons(EasyChain* tree, vector<Electron>& AllElectrons, vector<E
   static string selection =config.getString("VetoElectron_Selection","Veto");
   //====================================================================
 
-  ElectronFlow.keepIf("number of calls to VETO electronRA4b",true);
+  flow->keepIf("number of calls to VETO electronRA4b",true);
 
 
   //=====================================================
@@ -325,7 +338,7 @@ bool makeVetoElectrons(EasyChain* tree, vector<Electron>& AllElectrons, vector<E
   //LOOP OVER ELECTRONS
   //===========================================================================================
   
-  ElectronFlow.keepIf("number of calls to VETO electronRA4b",true);
+  flow->keepIf("number of calls to VETO electronRA4b",true);
   int NOfVetoElectrons=0;
   bool OK=false;
 
@@ -341,7 +354,7 @@ bool makeVetoElectrons(EasyChain* tree, vector<Electron>& AllElectrons, vector<E
     }
     //
     OK=(AllElectrons.at(iel).Pt() > PTMIN);// || fabs(El_SuperClusterPositionETA.at(indx))>1.566);
-     if(!ElectronFlow.keepIf("ptmin ",OK) && quick)continue;
+     if(!flow->keepIf("ptmin ",OK) && quick)continue;
     //
 
     OK=electronIsEEPat.at(indx) || electronIsEBPat.at(indx);
@@ -350,7 +363,7 @@ bool makeVetoElectrons(EasyChain* tree, vector<Electron>& AllElectrons, vector<E
        cout<<"isEE "<<electronIsEEPat.at(indx)<<endl;
        cout<<"isEB "<<electronIsEBPat.at(indx)<<endl;
      }        
-    if(!ElectronFlow.keepIf("notinetagap",OK) && quick)continue;    
+    if(!flow->keepIf("notinetagap",OK) && quick)continue;    
     
     //
     //
@@ -361,7 +374,7 @@ bool makeVetoElectrons(EasyChain* tree, vector<Electron>& AllElectrons, vector<E
     //
     if(pcp)cout<<"satisfies the id? "<<id.at(indx)<<endl;
     OK=id.at(indx);
-    if(!ElectronFlow.keepIf("Veto_Electron_ID",OK ) && quick ) continue;
+    if(!flow->keepIf("Veto_Electron_ID",OK ) && quick ) continue;
     //
     NOfVetoElectrons++;
     AllElectrons.at(iel).SetID("Veto",true);
@@ -379,7 +392,7 @@ bool makeVetoElectrons(EasyChain* tree, vector<Electron>& AllElectrons, vector<E
 
 };
 
-void makeCleanedElectrons(vector<Electron*>& Electrons_In, vector<Electron*>& Electrons_Out, vector<Muon>& Muons) {
+void makeCleanedElectrons(vector<Electron*>& Electrons_In, vector<Electron*>& Electrons_Out, vector<Muon>& Muons, CutSet* flow_in) {
 
   Electrons_Out.clear();
   
@@ -389,6 +402,13 @@ void makeCleanedElectrons(vector<Electron*>& Electrons_In, vector<Electron*>& El
 
   static CutSet CrossCleaning("Cleaned Electrons");
   CrossCleaning.autodump=true;
+
+  CutSet* flow = &CrossCleaning;
+  if (flow_in) {
+    CrossCleaning.autodump = false;
+    flow = flow_in;
+  }
+
   
   if(pcp){
     cout<<endl;
@@ -407,7 +427,7 @@ void makeCleanedElectrons(vector<Electron*>& Electrons_In, vector<Electron*>& El
       }
     }
 
-    if (!CrossCleaning.keepIf("CrossCleaning Muons",!dumpElectron)) continue;
+    if (!flow->keepIf("CrossCleaning Muons",!dumpElectron)) continue;
 
     Electrons_Out.push_back(Electrons_In.at(iel));
 
