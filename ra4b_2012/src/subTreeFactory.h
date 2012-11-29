@@ -24,7 +24,7 @@ class subTreeFactory
     TObjArray* arr=newdir.Tokenize("/");
     TIter next(arr);
     TString* token;
-    arr->Print();
+    //arr->Print();
     Int_t numsep=arr->GetEntries();
   
     TObjString* tok;
@@ -43,7 +43,18 @@ class subTreeFactory
 	  break; //Protect against NULL 
 	}
 
- 	bool okmkdir=dir->mkdir(newsubdir); //Create the new subdir. If it exists, returns false.
+	//Try to get the new subdir, to see if it exists
+	TDirectory * newdir=(TDirectory*)dir->Get(newsubdir); //Get the new subdir.
+	if (newdir == 0) {
+	  //cout << "Creating dir: " << newsubdir << endl;
+	  bool okmkdir=dir->mkdir(newsubdir); //Create the new subdir. If it exists, returns false.
+	  //cout << "DONE!" << endl;
+	}
+	else {
+	  //cout << "Found exisiting directory!"<< endl;
+	  dir = newdir;
+	}
+
  	//      cout<<"result of mkdir is "<<okmkdir<<endl; 
  	//      cout<<"the current path is "<<newpath<<endl; 
  	//if (!okmkdir){ 
@@ -53,7 +64,7 @@ class subTreeFactory
  	  //	cout<<"trying to get "<<(TString)tok->GetName()<<endl; 
  	  //cout<<"the directory already existed. Now I'm in "<<dir->GetName()<<endl; 
  	//} 
-	dir=(TDirectory*)dir->Get(newsubdir); //Get the new subdir.
+	//dir=(TDirectory*)dir->Get(newsubdir); //Get the new subdir.
     }
     
     //Clear-up memory
