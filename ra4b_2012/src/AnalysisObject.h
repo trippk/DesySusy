@@ -49,6 +49,7 @@ public:
   void SetID(const string & key, bool value);
 
   void Set(int maptotree_In, LorentzM * momuntum_In);
+  void SetP4(const LorentzM & p4_in) {p4 = p4_in;}
 };
 
 #endif
