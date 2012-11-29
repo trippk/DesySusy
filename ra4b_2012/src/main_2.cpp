@@ -63,7 +63,7 @@ int main(int argc, char** argv){
   //CONFIG. The program will always take the file config.txt in the output directory
   //specified in the execution of runOnAll
   string MainDir="./";
-  ConfigReader config(MainDir+"config_2.txt",argc,argv);
+  ConfigReader config(MainDir+"config.txt",argc,argv);
   config.Add(MainDir+"para_config.txt");
   config.Add(MainDir+"pu_config.txt");
 
@@ -209,7 +209,7 @@ int main(int argc, char** argv){
     //Get the systematic options
     sysOpt sysOptions;
     sysOptions.jerDo = config.getBool(*folderNameIt + "_JER_DO", defaultSysOptions.jerDo);
-    sysOptions.jerErr = config.getBool(*folderNameIt + "_JER_ERR", defaultSysOptions.jerErr);
+    sysOptions.jerErr = config.getFloat(*folderNameIt + "_JER_ERR", defaultSysOptions.jerErr);
     sysOptMap.insert( make_pair(*folderNameIt, sysOptions) );
     
     //Create control plots handler
@@ -235,6 +235,7 @@ int main(int argc, char** argv){
   //================================================================
 
   event ev(tree);
+
   if(ev.setSampleInformation()) {
 
     cout << "Entering loop!" << endl;
