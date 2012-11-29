@@ -1,5 +1,7 @@
 #include "Event.h"
 
+extern bool pcp;
+
 event::event(EasyChain * tree_in) : tree(tree_in), ControlPlots(0), outTree(0) {
   return;
 }
@@ -220,6 +222,27 @@ void event::createObjects() {
     AllJets.push_back(&Jets.at(ijet));
   }
 
+  if (!isData) {
+    //Manipulate jets according to systematic options. Simultaneously correct MET.
+    LorentzM metCorr;
+    metCorr.SetPxPyPzE(0.,0.,0.,0.);
+
+    if (sysOptions.jerDo) {
+      if (pcp) cout << "Rescaling jet resolution."<< endl;
+
+      //We need to clean the jet collection of leptons.
+      vector<Jet*> jetsToSmear;
+      makeCleanedJets( AllJets, jetsToSmear, TightMuons, CleanedTightElectrons);
+
+      rescaleJER(tree, jetsToSmear, metCorr, sysOptions.jerErr);
+    }
+
+    //Update the met with the corrections
+    if (pcp) cout << "Implementing met correction: METCORR=(" << metCorr.Px() << ","  << metCorr.Py() << ","  << metCorr.Pz() << ","  << metCorr.E() << ")" << endl;
+    PFmetType1 += metCorr;
+    PFmetRaw += metCorr;
+  }
+
   makeGoodJets(tree,AllJets,GoodJets, cutFlows.jetsGood);
   makeCleanedJets( GoodJets, CleanedJets, TightMuons, CleanedTightElectrons, cutFlows.jetsCleaned); 
 
@@ -374,6 +397,11 @@ bool event::applyCut(const string &cutName, vector<Muon*> * muonsPlot, vector<El
     muonsPlot = &SignalMuons;
     electronsPlot = &SignalElectrons;
   }
+  else if (cutName == "MET_RAW"){
+    OK=SetOfCuts::Event.MET.Examine(PFmetRaw.pt());
+    muonsPlot = &SignalMuons;
+    electronsPlot = &SignalElectrons;
+  }
   else if (cutName == "OS_FLAV_THRESH"){
     OK=chkOsFlavTrigger();
     muonsPlot = &SignalMuons;
@@ -415,7 +443,7 @@ void event::fillTree() {
 
 bool event::chkOsFlavTrigger() {
 
-  const bool isSyncExercise = false; //Set to true for comparison with Hannes
+  const bool isSyncExercise = true; //Set to true for comparison with Hannes
 
   //Look at first trigger in triggernames. Is this a MuMu, ElEl or MuEG *DATASET*?
   diLepEvent_t diLepEventType = getDiLepTrigType( triggernames.at(0) ); 
