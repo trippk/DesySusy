@@ -63,6 +63,10 @@ struct cutFlowSet {
 
 };
 
+struct sysOpt {
+  bool jerDo;
+  float jerErr;
+};
 
 class event {
  public:
@@ -71,6 +75,7 @@ class event {
 
   bool setSampleInformation();
 
+  void setSysOptions(sysOpt& sysOpt_in) {sysOptions = sysOpt_in;}
   void setCutFlows(cutFlowSet cutFlowSet_in) {cutFlows = cutFlowSet_in;}
   void setSubTree(subTree* subTree_in) {outTree = subTree_in;}
   void setControlPlots(HistoMaker* histMaker_in) {ControlPlots = histMaker_in;}
@@ -92,6 +97,8 @@ class event {
   vector<double> PUdata;
 
   bool doControlPlots;
+
+  sysOpt sysOptions;
 
   cutFlowSet cutFlows;
   CutSet * globalflow;

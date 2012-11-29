@@ -131,6 +131,13 @@ int main(int argc, char** argv){
   }
   cout << endl;
 
+  //Get the systematic options
+  sysOpt defaultSysOptions;
+  defaultSysOptions.jerDo  = config.getBool("CENTRAL_JER_DO", false);
+  defaultSysOptions.jerErr = config.getBool("CENTRAL_JER_ERROR", 0.);
+  //For each systematic have a corresponding set of options.
+  std::map<std::string, sysOpt> sysOptMap;
+
   //For each folder name, create a folder in the outfile and treefile
   std::map<std::string, TDirectory*>  outfileDirMap;
   //CutFlows Global
@@ -149,7 +156,9 @@ int main(int argc, char** argv){
   //CutFlows Jets
   std::map<std::string, boost::shared_ptr<CutSet> > jetsGoodMap;
   std::map<std::string, boost::shared_ptr<CutSet> > jetsCleanedMap;
+
   std::map<std::string, cutFlowSet > cutFlowsMap;
+
 
   //Control plots
   std::map<std::string, boost::shared_ptr<HistoMaker> > controlPlotsMap;
@@ -166,6 +175,7 @@ int main(int argc, char** argv){
     if (newDir == 0) cout << "ERROR CREATING FOLDER IN OUTFILE!" << endl;
     else outfileDirMap.insert( make_pair(*folderNameIt, newDir) );
         
+    //Create all of the cut flows.
     globalflowMap.insert( make_pair(*folderNameIt, new CutSet("Global_Flow") ) );
     triggerflowMap.insert( make_pair(*folderNameIt, new CutSet("Trigger_Flow") ) );
     electronTightMap.insert( make_pair(*folderNameIt, new CutSet("Tight_Electron_Selection") ) );
@@ -178,31 +188,38 @@ int main(int argc, char** argv){
     jetsGoodMap.insert( make_pair(*folderNameIt, new CutSet("Good_Jet_Selection") ) );
     jetsCleanedMap.insert( make_pair(*folderNameIt, new CutSet("Cleaned_Jet_Selection") ) );
 
+    //Create cutFlowSet for convenience with passing to the event class
     cutFlowSet cutFlows;
     cutFlows.globalflow = globalflowMap[*folderNameIt].get();
     cutFlows.triggerflow = triggerflowMap[*folderNameIt].get();
-
     cutFlows.electronTight = electronTightMap[*folderNameIt].get();
     cutFlows.electronVeto = electronVetoMap[*folderNameIt].get();
     cutFlows.electronTightCleaned = electronTightCleanedMap[*folderNameIt].get();
     cutFlows.electronVetoCleaned = electronVetoCleanedMap[*folderNameIt].get();
-
     cutFlows.muonLoose  = muonLooseMap[*folderNameIt].get();
     cutFlows.muonTight = muonTightMap[*folderNameIt].get();
     cutFlows.muonVeto  = muonVetoMap[*folderNameIt].get();
-
     cutFlows.jetsGood = jetsGoodMap[*folderNameIt].get();
     cutFlows.jetsCleaned = jetsCleanedMap[*folderNameIt].get();
-
     cutFlowsMap.insert( make_pair(*folderNameIt, cutFlows) );
 
+    //Initialise the globalflow map
+    globalflowMap[*folderNameIt]->initialiseCutNames(cutVec);
+
+    //Get the systematic options
+    sysOpt sysOptions;
+    sysOptions.jerDo = config.getBool(*folderNameIt + "_JER_DO", defaultSysOptions.jerDo);
+    sysOptions.jerErr = config.getBool(*folderNameIt + "_JER_ERR", defaultSysOptions.jerErr);
+    sysOptMap.insert( make_pair(*folderNameIt, sysOptions) );
+    
+    //Create control plots handler
     controlPlotsMap.insert( make_pair(*folderNameIt, new HistoMaker("AnalyzeSUSY", " ") ) );
     controlPlotsMap[*folderNameIt]->setDir(outfileDirMap[*folderNameIt]);
 
+    //Create the subTree analysers
     newDir = treefile->mkdir(folderNameIt->c_str());
     if (newDir == 0) cout << "ERROR CREATING FOLDER IN TREEFILE!"<< endl;
     else treefileDirMap.insert(make_pair(*folderNameIt, newDir));
-    
     subTreeMap.insert( make_pair(*folderNameIt, subTreeFactory::NewTree(treeType,treefile,*folderNameIt) ) );
   }
 
@@ -226,6 +243,8 @@ int main(int argc, char** argv){
 
       for (std::vector<std::string>::const_iterator folderName = folderNames.begin(); folderName != folderNames.end() ; folderName++ ) {
 
+	//Set the systematic options
+	ev.setSysOptions(sysOptMap[*folderName]);
 
 	//Set the cut flows
 	ev.setCutFlows(cutFlowsMap[*folderName]);
