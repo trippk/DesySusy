@@ -9,6 +9,9 @@
 #include "Jet.h"
 
 #include "Math/VectorUtil.h"
+
+#include "makeJets.h"
+
 using namespace std;
 
 extern bool pcp;
@@ -40,9 +43,80 @@ vector<Jet> makeAllJets(EasyChain* tree){
   return Jets;
 }
 
+void rescaleJER(EasyChain* tree, vector<Jet*>& AllJets, LorentzM & metCorr, float jerSF_err) {
+
+  vector<LorentzM>&  genJets_p4 = tree->Get(&genJets_p4, "genak5GenJetsP4");
+  vector<int>&  genJets_matched = tree->Get(&genJets_matched, "ak5JetPFGenJetMatchIndexPat");
+
+  typedef vector<Jet*>::iterator jetIt;
+  for (jetIt jet = AllJets.begin(); jet != AllJets.end(); jet++) {
+    if (  (*jet)->Pt() > 10. ) {
+      //Get core resolution factor.
+      //Numbers taken from the Twiki CMS/JetResolution
+      float jerSF = getJerSF((*jet)->Eta(), jerSF_err);
+      if (pcp) cout << "jerSF: " << jerSF << endl;
+
+      //Get the matched gen level jet.
+      int indexOfMatchedGenJet = genJets_matched.at( (*jet)->GetIndexInTree() );
+      if (pcp) cout << "Matched to gen jet: " << indexOfMatchedGenJet << endl;
+      
+      //Check if matched index is ok.
+      if (indexOfMatchedGenJet < 0 || indexOfMatchedGenJet >= genJets_p4.size() ) continue;
+      
+      //Get the P4 of the matched jet.
+      LorentzM genP4 = genJets_p4.at(indexOfMatchedGenJet);
+      if (pcp) {
+	cout << "Jet P4=(" << (*jet)->Px() << ","  << (*jet)->Py() << ","  << (*jet)->Pz() << ","  << (*jet)->E() << ")" << endl;
+	cout << "Matched gen jet P4=(" << genP4.Px() << ","  << genP4.Py() << ","  << genP4.Pz() << ","  << genP4.E() << ")" << endl;
+      }
+
+      //Get the full factor by which to rescale the jet p4.
+      float jetRescale = genP4.Pt() + jerSF * ( (*jet)->Pt() - genP4.Pt() );
+      jetRescale /= (*jet)->Pt();
+      if (jetRescale < 0.) jetRescale = 0.;
+      if (pcp) cout << "Jet rescale factor: " << jetRescale << endl;
+      
+      //Rescale the Jet's P4.
+      LorentzM oldP4 = (*jet)->P4();
+      metCorr += oldP4 * (1. - jetRescale);
+      (*jet)->SetP4(oldP4 * jetRescale);
+    }
+  }
 
 
-void makeGoodJets(EasyChain* tree, vector<Jet*>& AllJets, vector<Jet*>& goodJets){
+  return;
+}
+
+float getJerSF(float eta, float err_factor) {
+
+  float sf = 1.;
+
+  if ( fabs(eta) < 0.5 ) {
+    sf = 1.052 + err_factor * sqrt( pow(0.012,2) + pow(0.062,2) );
+  }
+  else if (fabs(eta) < 1.1) {
+    sf = 1.057 + err_factor * sqrt( pow(0.012,2) + pow(0.056,2) );
+  }
+  else if (fabs(eta) < 1.7) {
+    sf = 1.096 + err_factor * sqrt( pow(0.017,2) + pow(0.063,2) );
+  }
+  else if (fabs(eta) < 2.3 ){
+    sf = 1.134 + err_factor * sqrt( pow(0.035,2) + pow(0.087,2) );
+  }
+  else {
+    sf = 1.288 + err_factor * sqrt( pow(0.127,2) + pow(0.155,2) );
+  }
+  
+  if (sf < 0.) {
+    cout << "getJerSF >> ERROR sf is negative. Set to zero." << endl;
+    sf = 0.;
+  }
+
+  return sf;
+}
+
+
+void makeGoodJets(EasyChain* tree, vector<Jet*>& AllJets, vector<Jet*>& goodJets, CutSet* flow_in){
 
   if(pcp){
     cout<<endl;
@@ -54,6 +128,12 @@ void makeGoodJets(EasyChain* tree, vector<Jet*>& AllJets, vector<Jet*>& goodJets
 
   static CutSet jetFlow("good_jet_selection");
   jetFlow.autodump=true;
+
+  CutSet* flow = &jetFlow;
+  if(flow_in){
+    flow=flow_in;
+    jetFlow.autodump=false;
+  }
 
 
   //  vector<LorentzM>&  Jets_p4 = tree->Get(&Jets_p4, "ak5JetPFCorrectedP4Pat");
@@ -95,22 +175,22 @@ void makeGoodJets(EasyChain* tree, vector<Jet*>& AllJets, vector<Jet*>& goodJets
 
     if(pcp)cout<<"pt,eta, phi and id -->"<<AllJets.at(ijet)->pt()<<" "<<AllJets.at(ijet)->eta()<<" "<<AllJets.at(ijet)->Phi()<<" "<<Jets_ID.at(indx)<<endl;
 
-    jetFlow.keepIf("before cuts in jets", true);
+    flow->keepIf("before cuts in jets", true);
 
     //
     OK=AllJets.at(ijet)->pt() > PTMIN;
-    if( !jetFlow.keepIf("Jets_PTMIN", OK) && quick) continue;
+    if( !flow->keepIf("Jets_PTMIN", OK) && quick) continue;
 
     // 
     OK=fabs(AllJets.at(ijet)->eta()) < ETAMAX;
-    if( !jetFlow.keepIf("jets_ETAMAX",OK) && quick ) continue;
+    if( !flow->keepIf("jets_ETAMAX",OK) && quick ) continue;
     //
     OK=Jets_ID.at(indx)!=0;
-    if( !jetFlow.keepIf("ak5JetPFPFJetIDloosePat", OK ) && quick ) continue;
+    if( !flow->keepIf("ak5JetPFPFJetIDloosePat", OK ) && quick ) continue;
 
     //
     if(!quick){
-      OK=jetFlow.applyCuts("Jets_PTMIN jets_ETAMAX ak5JetPFPFJetIDloosePat");
+      OK=flow->applyCuts("Jets_PTMIN jets_ETAMAX ak5JetPFPFJetIDloosePat");
       if (!OK)continue;
     }
     
@@ -125,7 +205,7 @@ void makeGoodJets(EasyChain* tree, vector<Jet*>& AllJets, vector<Jet*>& goodJets
   //retun true;
 };
 
-void makeCleanedJets(vector<Jet*>& Jets_In, vector<Jet*>& Jets_Out, vector<Muon>& Muons, vector<Electron>& Electrons){
+void makeCleanedJets(vector<Jet*>& Jets_In, vector<Jet*>& Jets_Out, vector<Muon>& Muons, vector<Electron>& Electrons, CutSet* flow_in){
   
   Jets_Out.clear();
   
@@ -135,6 +215,14 @@ void makeCleanedJets(vector<Jet*>& Jets_In, vector<Jet*>& Jets_Out, vector<Muon>
 
   static CutSet CrossCleaning("Cleaned Jets");
   CrossCleaning.autodump=true;
+
+  CutSet* flow = &CrossCleaning;
+  if(flow_in){
+    flow=flow_in;
+    CrossCleaning.autodump=false;
+  }
+
+
   
   if(pcp){
     cout<<endl;
@@ -170,7 +258,7 @@ void makeCleanedJets(vector<Jet*>& Jets_In, vector<Jet*>& Jets_Out, vector<Muon>
       }
     }
 
-    if (!CrossCleaning.keepIf("CrossCleaning Muons",!dumpJet)) continue;
+    if (!flow->keepIf("CrossCleaning Muons",!dumpJet)) continue;
 
     for(int iel=0; iel<(int)Electrons.size();++iel){
       if(pcp)cout<<"distance from jet "<<ijet<<" to electron "<<iel<< " = "<<
@@ -190,7 +278,7 @@ void makeCleanedJets(vector<Jet*>& Jets_In, vector<Jet*>& Jets_Out, vector<Muon>
 	break;
       }
     }
-    if (!CrossCleaning.keepIf("CrossCleaning Electrons",!dumpJet)) continue;
+    if (!flow->keepIf("CrossCleaning Electrons",!dumpJet)) continue;
 
 
     //WE want this jet, keep it.
@@ -206,7 +294,7 @@ void makeCleanedJets(vector<Jet*>& Jets_In, vector<Jet*>& Jets_Out, vector<Muon>
 }
 
 
-void makeCleanedJets(vector<Jet*>& Jets_In, vector<Jet*>& Jets_Out, vector<Muon*>& Muons, vector<Electron*>& Electrons){
+void makeCleanedJets(vector<Jet*>& Jets_In, vector<Jet*>& Jets_Out, vector<Muon*>& Muons, vector<Electron*>& Electrons, CutSet* flow_in){
   
   Jets_Out.clear();
   
@@ -216,6 +304,12 @@ void makeCleanedJets(vector<Jet*>& Jets_In, vector<Jet*>& Jets_Out, vector<Muon*
 
   static CutSet CrossCleaning("Cleaned Jets");
   CrossCleaning.autodump=true;
+
+  CutSet* flow = &CrossCleaning;
+  if(flow_in){
+    flow=flow_in;
+    CrossCleaning.autodump=false;
+  }
   
   if(pcp){
     cout<<endl;
@@ -233,7 +327,7 @@ void makeCleanedJets(vector<Jet*>& Jets_In, vector<Jet*>& Jets_Out, vector<Muon*
 	break;
       }
     }
-    if (!CrossCleaning.keepIf("CrossCleaning Electrons",!dumpJet)) continue;
+    if (!flow->keepIf("CrossCleaning Electrons",!dumpJet)) continue;
 
     for(int imu=0; imu<(int)Muons.size(); ++imu){
       if(DeltaR(Jets_In.at(ijet)->P4(),Muons.at(imu)->P4())<DELTAR_CUT) {
@@ -241,7 +335,7 @@ void makeCleanedJets(vector<Jet*>& Jets_In, vector<Jet*>& Jets_Out, vector<Muon*
 	break;
       }
     }
-    if (!CrossCleaning.keepIf("CrossCleaning Muons",!dumpJet)) continue;
+    if (!flow->keepIf("CrossCleaning Muons",!dumpJet)) continue;
 
 
     //WE want this jet, keep it.
