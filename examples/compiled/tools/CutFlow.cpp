@@ -19,6 +19,30 @@ TFile* CutSet::tfile = 0;
 CutSet::CutSet(const TString& n, const char* dlm ): delim(dlm), autoprint(false), autodump(false) {
 	Name = n;
 }
+
+void CutSet::initialiseCutNames(const std::vector<std::string> & cutNames) {
+
+  //Clear all
+  allCuts.clear();
+  survivors.clear();
+  rejected.clear();
+  survivors_weighted.clear();
+  rejected_weighted.clear();
+  isRejected.clear();
+
+  //Store the cut names into the vectors and maps.
+  for (int iCut = 0; iCut < cutNames.size() ; iCut++) {
+    allCuts.push_back(cutNames[iCut]);
+    survivors.insert(make_pair(cutNames[iCut], 0));
+    survivors_weighted.insert(make_pair(cutNames[iCut], 0));
+    rejected.insert(make_pair(cutNames[iCut], 0));
+    rejected_weighted.insert(make_pair(cutNames[iCut], 0));
+    isRejected.insert(make_pair(cutNames[iCut], false));
+  }
+
+  return;
+}
+
 void CutSet::printAll() {
 
 	cout<<endl
@@ -110,6 +134,18 @@ void CutSet::setTDir(const TString& dirname){
   tdir=(TDirectory*)tfile->Get(dirname);
 }
 
+void CutSet::setDir(TDirectory* dir){
+  if (dir == 0) {
+    cout << "CutSet::setDir >> ERROR dir ptr is null!" << endl;
+    return;
+  }
+  tdir=dir->mkdir("CutFlow");
+  if(tdir==0) { 
+    cout<<"CutSet::setTFile: cannot create directory in file!"<<endl;
+    exit(0);
+  }
+}
+
 void CutSet::setTFile(TFile *f){
         TDirectory* mainDir=0;
 	if(f!=0)        mainDir = f->GetDirectory("/");
@@ -123,59 +159,59 @@ void CutSet::setTFile(TFile *f){
 
 void CutSet::dumpToHist(){
 
-  cout<<"dumping it "<<endl;
-  	int bins=allCuts.size();
+  //cout<<"dumping it "<<endl;
+  int bins=allCuts.size();
+  
+  // remove spaces from name
+  TString hname;
+  for(Ssiz_t i=0;i<Name.Length();i++) hname.Append( Name[i]==' ' ? '_' : Name[i] );
 
-	// remove spaces from name
-	TString hname;
-	for(Ssiz_t i=0;i<Name.Length();i++) hname.Append( Name[i]==' ' ? '_' : Name[i] );
-
-	TDirectory* keep = gDirectory->GetDirectory("");
-	tdir->cd();
-	autoSavePtr<TH1D> hallCutsWOut = new TH1D(hname+"_WOut",Name+" - single cut out weighted",bins,0,bins);
-	autoSavePtr<TH1I> hallCutsIn   = new TH1I(hname+"_In"  ,Name+" - single cut in"          ,bins,0,bins);
-	autoSavePtr<TH1I> hallCutsOut  = new TH1I(hname+"_Out" ,Name+" - single cut out"         ,bins,0,bins);
+  TDirectory* keep = gDirectory->GetDirectory("");
+  tdir->cd();
+  autoSavePtr<TH1D> hallCutsWOut = new TH1D(hname+"_WOut",Name+" - single cut out weighted",bins,0,bins);
+  autoSavePtr<TH1I> hallCutsIn   = new TH1I(hname+"_In"  ,Name+" - single cut in"          ,bins,0,bins);
+  autoSavePtr<TH1I> hallCutsOut  = new TH1I(hname+"_Out" ,Name+" - single cut out"         ,bins,0,bins);
+  
+  TAxis* axisA =  hallCutsOut->GetXaxis();
+  TAxis* axisR =   hallCutsIn->GetXaxis();
+  TAxis* axisW = hallCutsWOut->GetXaxis();
 	
-	TAxis* axisA =  hallCutsOut->GetXaxis();
-	TAxis* axisR =   hallCutsIn->GetXaxis();
-	TAxis* axisW = hallCutsWOut->GetXaxis();
-	
-	for(unsigned c=0; c<allCuts.size(); ++c) {
-		axisA->SetBinLabel(c+1,allCuts[c]);
-		axisR->SetBinLabel(c+1,allCuts[c]);
-		axisW->SetBinLabel(c+1,allCuts[c]);
-		 hallCutsOut->SetBinContent(c+1, survivors[allCuts[c]]);
-		  hallCutsIn->SetBinContent(c+1, rejected[allCuts[c]]+survivors[allCuts[c]] );
-		hallCutsWOut->SetBinContent(c+1, survivors_weighted[allCuts[c]]);
-        }
-	for(unsigned f=0; f<allFlows.size(); ++f) {
+  for(unsigned c=0; c<allCuts.size(); ++c) {
+    axisA->SetBinLabel(c+1,allCuts[c]);
+    axisR->SetBinLabel(c+1,allCuts[c]);
+    axisW->SetBinLabel(c+1,allCuts[c]);
+    hallCutsOut->SetBinContent(c+1, survivors[allCuts[c]]);
+    hallCutsIn->SetBinContent(c+1, rejected[allCuts[c]]+survivors[allCuts[c]] );
+    hallCutsWOut->SetBinContent(c+1, survivors_weighted[allCuts[c]]);
+  }
+  for(unsigned f=0; f<allFlows.size(); ++f) {
+    
+    TString rawCuts=allFlows[f];
+    
+    vector<TString> vcuts;
+    TString cutFlow;
+    int i=0;
+    while(rawCuts.Tokenize(cutFlow,i,delim)) vcuts.push_back(cutFlow);
+    
+    bins=vcuts.size();
+    autoSavePtr<TH1D> hallCutsWOutFlow = new TH1D(hname+"_WOut_cut_flow",Name+" - cut flow out weighted",bins,0,bins);
+    autoSavePtr<TH1I> hallCutsOutFlow  = new TH1I(hname+"_Out_cut_flow" ,Name+" - cut flow out"         ,bins,0,bins);
+    autoSavePtr<TH1I> hallCutsInFlow   = new TH1I(hname+"_In_cut_flow"  ,Name+" - cut flow in"          ,bins,0,bins);
+    
+    TAxis* axisR =   hallCutsInFlow->GetXaxis();
+    TAxis* axisA =  hallCutsOutFlow->GetXaxis();
+    TAxis* axisW = hallCutsWOutFlow->GetXaxis();
+    
+    for(unsigned c=0; c<bins; ++c) {
+      axisR->SetBinLabel(c+1,vcuts[c]);
+      axisA->SetBinLabel(c+1,vcuts[c]);
+      axisW->SetBinLabel(c+1,vcuts[c]);
+      hallCutsOutFlow->SetBinContent(c+1, flowSurvivors[rawCuts][vcuts[c]]);
+      hallCutsInFlow->SetBinContent(c+1, flowRejected[rawCuts][vcuts[c]]+flowSurvivors[rawCuts][vcuts[c]]);
+      hallCutsWOutFlow->SetBinContent(c+1, flowSurvivors_weighted[rawCuts][vcuts[c]]);
+    }
 
-		TString rawCuts=allFlows[f];
-
-		vector<TString> vcuts;
-		TString cutFlow;
-		int i=0;
-		while(rawCuts.Tokenize(cutFlow,i,delim)) vcuts.push_back(cutFlow);
-
-		bins=vcuts.size();
-		autoSavePtr<TH1D> hallCutsWOutFlow = new TH1D(hname+"_WOut_cut_flow",Name+" - cut flow out weighted",bins,0,bins);
-		autoSavePtr<TH1I> hallCutsOutFlow  = new TH1I(hname+"_Out_cut_flow" ,Name+" - cut flow out"         ,bins,0,bins);
-		autoSavePtr<TH1I> hallCutsInFlow   = new TH1I(hname+"_In_cut_flow"  ,Name+" - cut flow in"          ,bins,0,bins);
-
-		TAxis* axisR =   hallCutsInFlow->GetXaxis();
-		TAxis* axisA =  hallCutsOutFlow->GetXaxis();
-		TAxis* axisW = hallCutsWOutFlow->GetXaxis();
-		
-		for(unsigned c=0; c<bins; ++c) {
-			axisR->SetBinLabel(c+1,vcuts[c]);
-			axisA->SetBinLabel(c+1,vcuts[c]);
-			axisW->SetBinLabel(c+1,vcuts[c]);
-			hallCutsOutFlow->SetBinContent(c+1, flowSurvivors[rawCuts][vcuts[c]]);
-			 hallCutsInFlow->SetBinContent(c+1, flowRejected[rawCuts][vcuts[c]]+flowSurvivors[rawCuts][vcuts[c]]);
-		       hallCutsWOutFlow->SetBinContent(c+1, flowSurvivors_weighted[rawCuts][vcuts[c]]);
-		}
-
-	}
-	// go back to original dir
-	keep->cd();
+  }
+  // go back to original dir
+  keep->cd();
 }

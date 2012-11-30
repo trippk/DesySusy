@@ -65,12 +65,12 @@ public:
   CutSet(const TString&,const char* delim=delimiter);
   CutSet(): delim( delimiter ), autoprint(false), autodump(false) {CutSet("");}
   ~CutSet(){
-
     if(autoprint) printAll();
-
     if(autodump)  dumpToHist();
   }
   static double global_event_weight;
+
+  void initialiseCutNames(const std::vector<std::string> & cutNames);
 
   bool rejectIf(const TString&, bool, double);
   bool keepIf(const TString& n, bool cond, double w) {return !rejectIf(n, !cond, w);}
@@ -101,6 +101,7 @@ public:
   void printFlow(const TString&);
   static void setTFile(TFile *);
   static void setTDir(const TString& );
+  void setDir(TDirectory *);
   void dumpToHist();
   bool autoprint;
   bool autodump;
