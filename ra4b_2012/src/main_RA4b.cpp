@@ -53,6 +53,7 @@
 #include "typelookup.cc"
 #include "Exception.cc"
 #include "TagEff.h"
+
 using namespace std;
 using namespace ROOT::Math::VectorUtil;
 //===================================================================
@@ -93,13 +94,17 @@ int main(int argc, char** argv){
   TString outname = config.getTString("outname",tree->GetUniqeName());
   string outname_string=(string)outname;
   // output directory and output file name(derived from input name)
-  cout<<"the output file name is "<<outname<<endl;;
+  cout<<"-----------------------------------------------"<<endl;
+  cout<<"The output file name is "<<outname<<endl;
+  cout<<"-----------------------------------------------"<<endl;
+
   TFile *outfile = TFile::Open(outname,"RECREATE");
+  
+  
+    
   //TFile *outprovafile = TFile::Open("outprovafile.root","RECREATE");
   // set output root file for cut flow (to be done!)
   //  CutSet::setTFile(outfile);
-  
-
  
   string replacestring=".root";
   string treeFileName="";
@@ -113,7 +118,14 @@ int main(int argc, char** argv){
   //  treeFile->cd();
   TString treeType = config.getTString("treeType","default"); 
   cout<<"going to call new tree with "<<treeFile<<endl;
-  subTree* subTree= subTreeFactory::NewTree(treeType,treeFile,(string)"");
+  
+  
+  subTree* SubTree= subTreeFactory::NewTree(treeType,treeFile,(string)"");
+  
+  //trigStudyTree* TrigStudyTree = subTreeFactory::NewTree("triggerStudyTree",treeFile,(string)"");
+  trigStudyTree* TrigStudyTree = (trigStudyTree*)subTreeFactory::NewTree("trigStudyTree",treeFile,(string)"");
+  //cout<<TrigStudyTree<<endl;
+  
   bool doSmallTree=true;
   outfile->cd();  
 
@@ -586,9 +598,10 @@ int main(int argc, char** argv){
     // PILE UP RW
     //==============================================
     double PUWeight=0;
+    int relevantNumPU=0;
     if(!isData) {
       float PUnumInter    = tree->Get( PUnumInter, "pileupTrueNumInteractionsBX0");
-      int relevantNumPU = (int) PUnumInter;
+      relevantNumPU = (int) PUnumInter;
       if( relevantNumPU >= nobinsmc ) {
 	cout << "something wrong with the pile up info!!! - exceed max number of vertex:     " << nobinsmc <<endl;
 	return 0; 
@@ -998,12 +1011,12 @@ int main(int argc, char** argv){
     //JETS
     //===================================
     //
-    globalFlow.keepIf(">=1 jet",CleanedJets.size()>=1);
-    globalFlow.keepIf(">=2 jet",CleanedJets.size()>=2);
-    globalFlow.keepIf("3>jets",CleanedJets.size()>=3);
-    globalFlow.keepIf("3=>jets and 1=>btags",NumberOfbTags>=1);
-    globalFlow.keepIf(">=4 jet",CleanedJets.size()>=4);
-    globalFlow.keepIf(">=4 and 1=> btagsjeCt",CleanedJets.size()>=4 && NumberOfbTags>=1);
+    //globalFlow.keepIf(">=1 jet",CleanedJets.size()>=1);
+    //globalFlow.keepIf(">=2 jet",CleanedJets.size()>=2);
+    //globalFlow.keepIf("3>jets",CleanedJets.size()>=3);
+    //globalFlow.keepIf("3=>jets and 1=>btags",NumberOfbTags>=1);
+    //globalFlow.keepIf(">=4 jet",CleanedJets.size()>=4);
+    //globalFlow.keepIf(">=4 and 1=> btagsjeCt",CleanedJets.size()>=4 && NumberOfbTags>=1);
     OK=SetOfCuts::Jets.NUM.Examine(CleanedJets.size());
     if(i==0 && isquick){OK=OK&&OKold; OKold=OK;}
     if(!globalFlow.keepIf("Jet_Cuts",OK) && quick) continue;    
@@ -1119,9 +1132,8 @@ int main(int argc, char** argv){
     //===================================================================
     HT=0.0;
     for(int ijet=0;ijet<(int)CleanedJets.size();++ijet){
-      HT=HT+CleanedJets.at(ijet)->Pt();	
+      HT=HT+CleanedJets.at(ijet)->Pt();
     }
-    
     OK=SetOfCuts::Event.HT.Examine(HT);
     if(i==0 && isquick){ OK=OK&&OKold; OKold=OK;}
     if(!globalFlow.keepIf("HT", OK ) && quick ) continue;
@@ -1183,14 +1195,9 @@ int main(int argc, char** argv){
     //treeCuts["MET"]=OK;
     //cout<<"the met here is "<<MET<<endl;
     //====================================================================
-
-
-
-
-
-
-
-
+    
+    
+    
     //===================================================================
     //EXAMINE THE TRIGGERS THAT PASSED ALL THE SELECTION
     //===================================================================
@@ -1199,14 +1206,149 @@ int main(int argc, char** argv){
       bool randombool=triggers_RA4b_frequency(tree,triggernames);
     }
     //===================================================================
-
-
-
-
-
-
-
     
+   
+
+    //------------------------------------------------------------------- Selection and tree-output for the triggerStudy: Mu
+    if(mySampleInfo.GetEstimation()=="TrigStudy-mu"){
+      bool foundDiLepton=false;
+      //cut: check if there is an OS muon pair with 60 < Minv < 120
+      if(TightMuons.size()<2) foundDiLepton=false;
+      else{
+	for(Int_t i=0,N=TightMuons.size();i<N-1; ++i){
+	  for(Int_t j=i+1; j<N; ++j){
+	    if(TightMuons.at(i)->Charge() == TightMuons.at(j)->Charge()) continue;
+	    double diLepMass = (TightMuons.at(i)->P4()+TightMuons.at(j)->P4()).M();
+	    if(diLepMass > 60. && diLepMass < 120.) foundDiLepton=true;
+	  }
+	  if(foundDiLepton) break;
+	}
+      }
+      OK=foundDiLepton;
+
+      vector<string> ElMatchedTriggerFilter; //no electron matching info is needed for the TrigStudy-mu selection
+      map<string,int> HLTprescaled          = tree->Get(&HLTprescaled, "prescaled");
+      map<string,bool> HLTtrigger           = tree->Get(&HLTtrigger, "triggered");
+      vector<string> MuMatchedTriggerFilter = tree->Get(&MuMatchedTriggerFilter, "DESYtriggerMuMatchedTriggerFilter");
+      map<string,string> TriggerMap         = tree->Get(&TriggerMap, "DESYtriggerNameMap");
+      //--------------------------- keep only the trigger Info for the Tight Leptons 
+      //(therefore, the trigger info of other leptons is not saved into the output tree)
+      vector<string> keepMatchingInfoForTightMuon;
+      for(Int_t i=0,N=TightMuons.size(); i<N; ++i){
+	Int_t indx = TightMuons.at(i)->GetIndexInTree();
+	if(indx>= MuMatchedTriggerFilter.size()){
+	  cout<<"WARNING: Asked for Trigger matching info that does not exist!"<<endl;
+	  cout<<"MuMatchedTriggerFilter.size() = " << MuMatchedTriggerFilter.size() << endl;
+	  cout<<"Asking for element " << indx << endl;	  
+	}
+	else keepMatchingInfoForTightMuon.push_back(MuMatchedTriggerFilter.at(indx));
+      }
+      //cout<<"======================================"<<endl;
+      //cout<<"Size: matchFilter | TightMuons | keepFilters = " 
+      //<< MuMatchedTriggerFilter.size() << " | "
+      //<< TightMuons.size() << " | "
+      //<< keepMatchingInfoForTightMuon.size()
+      //<<endl;
+      MuMatchedTriggerFilter = keepMatchingInfoForTightMuon;
+      //fill the leafs which will be saved in TrigStudyTree
+      EventInfo myInfo;
+      myInfo.HLTprescaled           = HLTprescaled;
+      myInfo.HLTtrigger             = HLTtrigger;
+      myInfo.ElMatchedTriggerFilter = ElMatchedTriggerFilter;
+      myInfo.Event                  = Event;
+      myInfo.EventWeight            = EventWeight;
+      myInfo.MuMatchedTriggerFilter = MuMatchedTriggerFilter;
+      myInfo.Run                    = Run;
+      if(!isData) myInfo.PUInter    = relevantNumPU;
+      else        myInfo.PUInter    = goodVert.size();
+      myInfo.PUWeight               = PUWeight;
+      myInfo.TriggerMap             = TriggerMap;
+      
+      if(!globalFlow.keepIf("OS muon pair found", OK ) && quick ) continue;
+//       cout<<"my info blabal"<<myInfo.ElMatchedTriggerFilter.size()<<endl;
+      TrigStudyTree->Fill(&myInfo, tree, TightMuons, TightElectrons, CleanedJets, PFmet);
+
+      //cout<<"---------------------------------------------------------" <<endl;
+      //       cout<<"ElMatchedTriggerFilter.size() = " << ElMatchedTriggerFilter.size() << endl;
+      //       cout<<"MuMatchedTriggerFilter.size() = " << MuMatchedTriggerFilter.size() << endl;
+      //       cout<<"HLTtrigger.size()             = " << HLTtrigger.size() << endl;
+      //       cout<<"HLTprescaled.size()           = " << HLTprescaled.size() << endl;
+      //       cout<<"TriggerMap.size()             = " << TriggerMap.size() << endl;
+      //       for(map<string, bool>::iterator it=HLTtrigger.begin(); it != HLTtrigger.end(); ++it)    cout<<setw(80)<< it->first << " = " << it->second << endl;
+      //       cout<<endl;
+      //       for(map<string, int>::iterator it=HLTprescaled.begin(); it != HLTprescaled.end(); ++it) cout<<setw(80)<< it->first << " = " << it->second << endl;
+      //       cout<<endl;
+      //       for(map<string, string>::iterator it=TriggerMap.begin(); it != TriggerMap.end(); ++it)  cout<<setw(80)<< it->first << " = " << it->second << endl;
+      //       cout<<endl;
+    }
+    
+        //------------------------------------------------------------------- Selection and tree-output for the triggerStudy: El
+    if(mySampleInfo.GetEstimation()=="TrigStudy-el"){
+      //cut: check if there is an OS electron pair with 60 < Minv < 120
+      bool foundDiLepton=false;
+      if(TightElectrons.size()<2) foundDiLepton=false;
+      else{
+	for(Int_t i=0,N=TightElectrons.size();i<N-1; ++i){
+	  for(Int_t j=i+1; j<N; ++j){
+	    if(TightElectrons.at(i)->Charge() == TightElectrons.at(j)->Charge()) continue;
+	    double diLepMass = (TightElectrons.at(i)->P4()+TightElectrons.at(j)->P4()).M();
+	    if(diLepMass > 60. && diLepMass < 120.) foundDiLepton=true;
+	  }
+	  if(foundDiLepton) break;
+	}
+      }
+      OK=foundDiLepton;
+      
+      vector<string> ElMatchedTriggerFilter = tree->Get(&ElMatchedTriggerFilter, "DESYtriggerElMatchedTriggerFilter");
+      map<string,int> HLTprescaled          = tree->Get(&HLTprescaled, "prescaled");
+      map<string,bool> HLTtrigger           = tree->Get(&HLTtrigger, "triggered");
+      vector<string> MuMatchedTriggerFilter; //no muon matching info is needed for the TrigStudy-el selection
+      map<string,string> TriggerMap         = tree->Get(&TriggerMap, "DESYtriggerNameMap");
+      
+      //--------------------------- keep only the trigger Info for the Tight Leptons 
+      //(therefore, the trigger info of other leptons is not saved into the output tree)
+      vector<string> keepMatchingInfoForTightElectron;
+      for(Int_t i=0,N=TightElectrons.size(); i<N; ++i){
+	Int_t indx = TightElectrons.at(i)->GetIndexInTree();
+	if(indx>= ElMatchedTriggerFilter.size()){
+	  cout<<"WARNING: Asked for Trigger matching info that does not exist!"<<endl;
+	  cout<<"ElMatchedTriggerFilter.size() = " << ElMatchedTriggerFilter.size() << endl;
+	  cout<<"Asking for element " << indx << endl;	  
+	}
+	else keepMatchingInfoForTightElectron.push_back(ElMatchedTriggerFilter.at(indx));
+      }
+      ElMatchedTriggerFilter = keepMatchingInfoForTightElectron;
+      //fill the leafs which will be saved in TrigStudyTree
+      EventInfo myInfo;
+      myInfo.HLTprescaled           = HLTprescaled;
+      myInfo.HLTtrigger             = HLTtrigger;
+      myInfo.ElMatchedTriggerFilter = ElMatchedTriggerFilter;
+      myInfo.Event                  = Event;
+      myInfo.EventWeight            = EventWeight;
+      myInfo.MuMatchedTriggerFilter = MuMatchedTriggerFilter;
+      if(!isData) myInfo.PUInter    = relevantNumPU;
+      else        myInfo.PUInter    = goodVert.size();
+      myInfo.Run                    = Run;
+      myInfo.PUWeight               = PUWeight;
+      myInfo.TriggerMap             = TriggerMap;
+      
+      if(!globalFlow.keepIf("OS electron pair found", OK ) && quick ) continue;
+      TrigStudyTree->Fill(&myInfo, tree, TightMuons, TightElectrons, CleanedJets, PFmet);
+      
+      //cout<<"---------------------------------------------------------" <<endl;
+      //       cout<<"ElMatchedTriggerFilter.size() = " << ElMatchedTriggerFilter.size() << endl;
+      //       cout<<"MuMatchedTriggerFilter.size() = " << MuMatchedTriggerFilter.size() << endl;
+      //       cout<<"HLTtrigger.size()             = " << HLTtrigger.size() << endl;
+      //       cout<<"HLTprescaled.size()           = " << HLTprescaled.size() << endl;
+      //       cout<<"TriggerMap.size()             = " << TriggerMap.size() << endl;
+      //       for(map<string, bool>::iterator it=HLTtrigger.begin(); it != HLTtrigger.end(); ++it)    cout<<setw(80)<< it->first << " = " << it->second << endl;
+      //       cout<<endl;
+      //       for(map<string, int>::iterator it=HLTprescaled.begin(); it != HLTprescaled.end(); ++it) cout<<setw(80)<< it->first << " = " << it->second << endl;
+      //       cout<<endl;
+      //       for(map<string, string>::iterator it=TriggerMap.begin(); it != TriggerMap.end(); ++it)  cout<<setw(80)<< it->first << " = " << it->second << endl;
+      //       cout<<endl;
+    }
+
     //====================COPY THE CUTFLOWS
     vector<TString> globalFlowNames;
     //globalFlowNames.push_back("triggers");
@@ -1239,10 +1381,7 @@ int main(int argc, char** argv){
       if(pcp){
 	cout<<"OKall is "<<OKall<<endl;
       }
-
     }
-
-
 
     if(systematics.IsEnabled()){
 
@@ -1334,17 +1473,12 @@ int main(int argc, char** argv){
     //avoid having the first iteration entering here when running in 
     //quick mode
     if(isquick && i==0 && !OK)continue;
-
-
-
+    
     EventInfo info;
-    info.Event=Event;
-    info.Run=Run;
-    info.EventWeight=EventWeight;
-    info.PUWeight=PUWeight;
-
-
-
+    info.Event        = Event;
+    info.Run          = Run;
+    info.EventWeight  = EventWeight;
+    info.PUWeight     = PUWeight;
 
     //=====================FILL THE TREES====================
     //
@@ -1353,7 +1487,7 @@ int main(int argc, char** argv){
     
     if (isquick || (!isquick && OKall)){
       if(doSmallTree){
-	subTree->Fill( &info, tree, SignalMuons, SignalElectrons, CleanedJets, PFmet);
+	SubTree->Fill( &info, tree, SignalMuons, SignalElectrons, CleanedJets, PFmet);
       }
     }
 	
@@ -1438,8 +1572,9 @@ int main(int argc, char** argv){
   globalFlow.dumpToHist(); 
   
 
-
-
+  cout<<"-----------------------------------------------"<<endl;
+  cout<<"Created output file: "<<outname<<endl;
+  cout<<"-----------------------------------------------"<<endl;
   
   //  ControlPlots.HistoMaker::~HistoMaker();
   //  globalFlow.CutSet::~CutSet();
@@ -1451,14 +1586,22 @@ int main(int argc, char** argv){
   //  threejet.close();
   
   //  treeFile->cd();
-
-  
-
-
   //PROGRAM END
   //EndOfProgram:
   
   
   return 0;
 }
+   
+
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
    

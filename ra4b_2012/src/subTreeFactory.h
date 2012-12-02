@@ -7,6 +7,7 @@
 #include "defaultTree.h"
 #include "Nminus1Tree.h"
 #include "anDiLep.h"
+#include "trigStudyTree.h"
 
 #include <iostream>
 
@@ -104,7 +105,7 @@ class subTreeFactory
 	return new defaultTree(tfile, dir);
       }else{
 	//	  std::cout<<"CALLING NEW TREE WITH NO PARAMETERS "<<std::endl;
-	return new defaultTree;	
+	return new defaultTree;
       }
     }
     else if(description == "Nminus1") {
@@ -114,6 +115,16 @@ class subTreeFactory
     else if(description == "anDiLep") {
       std::cout<<"anDiLep subTree will be filled."<<std::endl;
       return new anDiLep;
+    }
+    if(description == "trigStudyTree") {
+      std::cout<<"TrigStudyTree subTree will be filled."<<std::endl;
+      if (tfile!=0){
+	//std::cout<<"CALLING NEW TREE WITH PARAMETERS "<<std::endl;
+	return new trigStudyTree(tfile, dir);
+      }else{
+	//	  std::cout<<"CALLING NEW TREE WITH NO PARAMETERS "<<std::endl;
+	return new trigStudyTree;
+      }
     }
     else{
       std::cout<<"No matching for subTreeType: defaultTree will be used"<<std::endl;

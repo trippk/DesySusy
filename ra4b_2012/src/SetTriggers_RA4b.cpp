@@ -36,7 +36,6 @@ void SetTriggers_RA4b(SampleInformation mySampleInformation, vector<const char*>
     triggernames.push_back("HLT_IsoMu17_eta2p1_TriCentralPFJet30");
     triggernames.push_back("HLT_IsoMu17_eta2p1_TriCentralPFNoPUJet30");
     triggernames.push_back("HLT_IsoMu17_eta2p1_TriCentralPFNoPUJet30_30_20");
-
   }
 
   else if(mySampleInformation.GetEstimation()=="RA4b-el-HighPt"){
@@ -64,6 +63,16 @@ void SetTriggers_RA4b(SampleInformation mySampleInformation, vector<const char*>
   else if (mySampleInformation.GetEstimation()=="RA4b-MuEGSync"){
     triggernames.push_back("HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL");
     triggernames.push_back("HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL");
+    
+  }else if (mySampleInformation.GetEstimation()=="TrigStudy-mu"){
+    triggernames.push_back("HLT_IsoMu17_eta2p1_TriCentralPFJet30");
+    triggernames.push_back("HLT_IsoMu17_eta2p1_TriCentralPFNoPUJet30");
+    triggernames.push_back("HLT_IsoMu17_eta2p1_TriCentralPFNoPUJet30_30_20");
+  }
+  else if (mySampleInformation.GetEstimation()=="TrigStudy-el"){
+    for (int i=0; i<El_HighPtMenu.size(); ++i){
+      triggernames.push_back(El_HighPtMenu.at(i));
+    }
   }
   else {
     cout <<"triggers HAVE NOT been set. Warning"<<endl;

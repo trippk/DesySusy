@@ -15,6 +15,15 @@ struct EventInfo{
 
   float mY;
   float mLsp;
+  map<string, bool> HLTtrigger;
+  map<string, string> TriggerMap;
+  map<string, int> HLTprescaled;
+  
+  int PUInter;
+  vector<string> ElMatchedTriggerFilter;
+  vector<string> MuMatchedTriggerFilter;
 };
 
 #endif
+
+
