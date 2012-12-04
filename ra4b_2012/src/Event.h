@@ -66,6 +66,12 @@ struct cutFlowSet {
 struct sysOpt {
   bool jerDo;
   float jerErr;
+
+  bool jesDo;
+  float jesErr;
+
+  bool murDo;
+  float murErr;
 };
 
 class event {

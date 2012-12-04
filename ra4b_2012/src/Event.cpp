@@ -237,6 +237,22 @@ void event::createObjects() {
       rescaleJER(tree, jetsToSmear, metCorr, sysOptions.jerErr);
     }
 
+    if (sysOptions.jesDo) {
+      if (pcp) cout << "Rescaling jet energy."<< endl;
+
+      //We need to clean the jet collection of leptons.
+      vector<Jet*> jetsToSmear;
+      makeCleanedJets( AllJets, jetsToSmear, TightMuons, CleanedTightElectrons);
+
+      rescaleJES(tree, jetsToSmear, metCorr, sysOptions.jesErr);
+    }
+
+    if (sysOptions.murDo) {
+      if (pcp) cout << "Rescaling muon resolution."<< endl;
+      rescaleMUR(tree, TightMuons, metCorr, sysOptions.murErr);
+    }
+
+
     //Update the met with the corrections
     if (pcp) cout << "Implementing met correction: METCORR=(" << metCorr.Px() << ","  << metCorr.Py() << ","  << metCorr.Pz() << ","  << metCorr.E() << ")" << endl;
     PFmetType1 += metCorr;
@@ -443,7 +459,7 @@ void event::fillTree() {
 
 bool event::chkOsFlavTrigger() {
 
-  const bool isSyncExercise = true; //Set to true for comparison with Hannes
+  const bool isSyncExercise = false; //Set to true for comparison with Hannes
 
   //Look at first trigger in triggernames. Is this a MuMu, ElEl or MuEG *DATASET*?
   diLepEvent_t diLepEventType = getDiLepTrigType( triggernames.at(0) ); 
