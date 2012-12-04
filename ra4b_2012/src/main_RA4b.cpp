@@ -99,8 +99,6 @@ int main(int argc, char** argv){
   cout<<"-----------------------------------------------"<<endl;
 
   TFile *outfile = TFile::Open(outname,"RECREATE");
-  
-  
     
   //TFile *outprovafile = TFile::Open("outprovafile.root","RECREATE");
   // set output root file for cut flow (to be done!)
@@ -128,8 +126,6 @@ int main(int argc, char** argv){
   
   bool doSmallTree=true;
   outfile->cd();  
-
-
 
 
   //data or monte carlo?
@@ -1207,10 +1203,9 @@ int main(int argc, char** argv){
     }
     //===================================================================
     
-   
-
     //------------------------------------------------------------------- Selection and tree-output for the triggerStudy: Mu
-    if(mySampleInfo.GetEstimation()=="TrigStudy-mu"){
+    if(mySampleInfo.GetEstimation()=="TrigStudy-mu" && OK){
+            if(TightElectrons.size() > 0) cout<<"TightElectrons.size() = " << TightElectrons.size() << endl;
       bool foundDiLepton=false;
       //cut: check if there is an OS muon pair with 60 < Minv < 120
       if(TightMuons.size()<2) foundDiLepton=false;
@@ -1243,13 +1238,24 @@ int main(int argc, char** argv){
 	}
 	else keepMatchingInfoForTightMuon.push_back(MuMatchedTriggerFilter.at(indx));
       }
+      MuMatchedTriggerFilter = keepMatchingInfoForTightMuon;
+      
+      //small consistency check
+      if(keepMatchingInfoForTightMuon.size() != TightMuons.size()){
+	cout<<"WARNING: Size of muon vector does not correspond to size of matching info vector!"<<endl;
+	cout<<"TightMuons.size()                   = " << TightMuons.size() << endl;
+	cout<<"keepMatchingInfoForTightMuon.size() = " << keepMatchingInfoForTightMuon.size() << endl;
+      }
+      if(TightElectrons.size()){
+	cout<<"WARNING: Size of muon vector is not zero as it ought to be: "<< TightElectrons.size() << endl;
+      }
       //cout<<"======================================"<<endl;
       //cout<<"Size: matchFilter | TightMuons | keepFilters = " 
       //<< MuMatchedTriggerFilter.size() << " | "
       //<< TightMuons.size() << " | "
       //<< keepMatchingInfoForTightMuon.size()
       //<<endl;
-      MuMatchedTriggerFilter = keepMatchingInfoForTightMuon;
+
       //fill the leafs which will be saved in TrigStudyTree
       EventInfo myInfo;
       myInfo.HLTprescaled           = HLTprescaled;
@@ -1283,7 +1289,7 @@ int main(int argc, char** argv){
     }
     
         //------------------------------------------------------------------- Selection and tree-output for the triggerStudy: El
-    if(mySampleInfo.GetEstimation()=="TrigStudy-el"){
+    if(mySampleInfo.GetEstimation()=="TrigStudy-el" && OK){
       //cut: check if there is an OS electron pair with 60 < Minv < 120
       bool foundDiLepton=false;
       if(TightElectrons.size()<2) foundDiLepton=false;
@@ -1318,6 +1324,16 @@ int main(int argc, char** argv){
 	else keepMatchingInfoForTightElectron.push_back(ElMatchedTriggerFilter.at(indx));
       }
       ElMatchedTriggerFilter = keepMatchingInfoForTightElectron;
+
+      //small consistency check
+      if(keepMatchingInfoForTightElectron.size() != TightElectrons.size()){
+	cout<<"WARNING: Size of electron vector does not correspond to size of matching info vector!"<<endl;
+	cout<<"TightElectrons.size()                   = " << TightElectrons.size() << endl;
+	cout<<"keepMatchingInfoForTightElectron.size() = " << keepMatchingInfoForTightElectron.size() << endl;
+      }
+      if(TightMuons.size()){
+	cout<<"WARNING: Size of muon vector is not zero as it ought to be: "<< TightMuons.size() << endl;
+      }
       //fill the leafs which will be saved in TrigStudyTree
       EventInfo myInfo;
       myInfo.HLTprescaled           = HLTprescaled;
