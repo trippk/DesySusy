@@ -553,7 +553,54 @@ float Consistency( LorentzM vRef, EasyChain* tree, const char* name) {
 }
 
 
-void rescaleMUR(EasyChain* tree, vector<Muon*>&TightMuons, LorentzM& metCorr, float murErr) {
+void rescaleMUR(EasyChain* tree, vector<Muon*>&MuonsToRescale, LorentzM& metCorr, float murSF_err) {
+
+  vector<LorentzM>& genP4 = tree->Get(&genP4, "genP4");
+  vector<int>& genPdgId = tree->Get(&genPdgId, "genPdgId");
+
+  //Loop over Muons
+  for (int iMu = 0; iMu < MuonsToRescale.size(); iMu++) {
+
+    LorentzM oldP4 = MuonsToRescale.at(iMu)->P4();
+
+    //Match to Gen particle by minimising delta_r
+    int MatchedGenParticle = -1;
+    double minDeltaR = 99999999.;
+    for (int iGen = 0; iGen < genP4.size() ; iGen++) {
+      if (abs(genPdgId.at(iGen)) != 13 ) continue;
+      float deltaR = ROOT::Math::VectorUtil::DeltaR(oldP4, genP4.at(iGen) );
+      if (deltaR < minDeltaR) {
+	minDeltaR = deltaR;
+	MatchedGenParticle = iGen;
+      }
+    }
+
+    if (minDeltaR > 0.5) {
+      if (pcp) cout << "rescaleMUR >> No matched gen muon found. minDeltaR = " << minDeltaR << endl;
+      continue;
+    }
+    else {
+      if (pcp) cout << "rescaleMUR >> Matched gen muon found with minDeltaR = " << minDeltaR << endl;
+    }
+
+    if (pcp) {
+      cout << "Muon P4=(" << MuonsToRescale.at(iMu)->Px() << ","  << MuonsToRescale.at(iMu)->Py() << ","  << MuonsToRescale.at(iMu)->Pz() << ","  << MuonsToRescale.at(iMu)->E() << ")" << endl;
+      cout << "Matched gen muon P4=(" << genP4.at(MatchedGenParticle).Px() << ","  << genP4.at(MatchedGenParticle).Py() << ","  << genP4.at(MatchedGenParticle).Pz() << ","  << genP4.at(MatchedGenParticle).E() << ")" << endl;
+    }
+
+    //Create shift, as for jets
+    float murSF = getMurSF(murSF_err);
+    float muRescale = genP4.at(MatchedGenParticle).Pt() + (murSF) * ( oldP4.Pt() - genP4.at(MatchedGenParticle).Pt() );
+    muRescale /= genP4.at(MatchedGenParticle).Pt();
+    if (muRescale < 0.) muRescale = 0.;
+
+    metCorr += oldP4 * (1. - muRescale);
+    MuonsToRescale.at(iMu)->SetP4(oldP4 * muRescale);
+  }
 
   return;
+}
+
+float getMurSF(float err) {
+  return (1.00 + err);
 }

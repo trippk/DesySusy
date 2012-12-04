@@ -13,4 +13,5 @@ bool makeVetoMuons(EasyChain* tree,  vector<Muon>& Muons, vector<Muon*>& VetoMuo
 float Consistency( LorentzM vRef, EasyChain* tree, const char* name);
 
 void rescaleMUR(EasyChain* tree, vector<Muon*>&TightMuons, LorentzM& metCorr, float murErr);
+float getMurSF(float err);
 #endif
