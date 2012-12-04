@@ -50,6 +50,7 @@ class subTreeFactory
 	  //cout << "Creating dir: " << newsubdir << endl;
 	  bool okmkdir=dir->mkdir(newsubdir); //Create the new subdir. If it exists, returns false.
 	  //cout << "DONE!" << endl;
+	  newdir=(TDirectory*)dir->Get(newsubdir); //Get the new subdir.
 	}
 	else {
 	  //cout << "Found exisiting directory!"<< endl;
