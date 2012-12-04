@@ -134,7 +134,12 @@ int main(int argc, char** argv){
   //Get the systematic options
   sysOpt defaultSysOptions;
   defaultSysOptions.jerDo  = config.getBool("CENTRAL_JER_DO", false);
-  defaultSysOptions.jerErr = config.getBool("CENTRAL_JER_ERROR", 0.);
+  defaultSysOptions.jerErr = config.getFloat("CENTRAL_JER_ERROR", 0.);
+  defaultSysOptions.jesDo  = config.getBool("CENTRAL_JES_DO", false);
+  defaultSysOptions.jesErr = config.getFloat("CENTRAL_JES_ERROR", 0.);
+  defaultSysOptions.murDo  = config.getBool("CENTRAL_MUR_DO", false);
+  defaultSysOptions.murErr = config.getFloat("CENTRAL_MUR_ERROR", 0.);
+
   //For each systematic have a corresponding set of options.
   std::map<std::string, sysOpt> sysOptMap;
 
@@ -210,6 +215,10 @@ int main(int argc, char** argv){
     sysOpt sysOptions;
     sysOptions.jerDo = config.getBool(*folderNameIt + "_JER_DO", defaultSysOptions.jerDo);
     sysOptions.jerErr = config.getFloat(*folderNameIt + "_JER_ERR", defaultSysOptions.jerErr);
+    sysOptions.jesDo = config.getBool(*folderNameIt + "_JES_DO", defaultSysOptions.jesDo);
+    sysOptions.jesErr = config.getFloat(*folderNameIt + "_JES_ERR", defaultSysOptions.jesErr);
+    sysOptions.murDo = config.getBool(*folderNameIt + "_MUR_DO", defaultSysOptions.murDo);
+    sysOptions.murErr = config.getFloat(*folderNameIt + "_MUR_ERR", defaultSysOptions.murErr);
     sysOptMap.insert( make_pair(*folderNameIt, sysOptions) );
     
     //Create control plots handler
