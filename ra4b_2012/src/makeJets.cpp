@@ -50,7 +50,7 @@ void rescaleJER(EasyChain* tree, vector<Jet*>& AllJets, LorentzM & metCorr, floa
 
   typedef vector<Jet*>::iterator jetIt;
   for (jetIt jet = AllJets.begin(); jet != AllJets.end(); jet++) {
-    if (  (*jet)->Pt() > 10. ) {
+    if (  (*jet)->Pt() > 10. && fabs((*jet)->Eta()) < 5.) {
       //Get core resolution factor.
       //Numbers taken from the Twiki CMS/JetResolution
       float jerSF = getJerSF((*jet)->Eta(), jerSF_err);
@@ -91,20 +91,21 @@ float getJerSF(float eta, float err_factor) {
 
   float sf = 1.;
 
+  //Values taken from AN-2011-330
   if ( fabs(eta) < 0.5 ) {
-    sf = 1.052 + err_factor * sqrt( pow(0.012,2) + pow(0.062,2) );
+    sf = 1.052 + err_factor * 0.065;
   }
   else if (fabs(eta) < 1.1) {
-    sf = 1.057 + err_factor * sqrt( pow(0.012,2) + pow(0.056,2) );
+    sf = 1.057 + err_factor * 0.059;
   }
   else if (fabs(eta) < 1.7) {
-    sf = 1.096 + err_factor * sqrt( pow(0.017,2) + pow(0.063,2) );
+    sf = 1.096 + err_factor * 0.070;
   }
   else if (fabs(eta) < 2.3 ){
-    sf = 1.134 + err_factor * sqrt( pow(0.035,2) + pow(0.087,2) );
+    sf = 1.134 + err_factor * 0.102;
   }
   else {
-    sf = 1.288 + err_factor * sqrt( pow(0.127,2) + pow(0.155,2) );
+    sf = 1.288 + err_factor * 0.222;
   }
   
   if (sf < 0.) {
@@ -114,6 +115,30 @@ float getJerSF(float eta, float err_factor) {
 
   return sf;
 }
+
+void rescaleJES(EasyChain* tree, vector<Jet*>& AllJets, LorentzM & metCorr, float jesSF_err) {
+
+  vector<float>&  jetJecUnc = tree->Get(&jetJecUnc, "ak5JetPFJecUncPat");
+
+  for (int iJet = 0 ; iJet < AllJets.size(); iJet++) {
+    Jet* cJet = AllJets.at(iJet);
+
+    if (  (cJet)->Pt() > 10. && fabs((cJet)->Eta()) < 5.) {
+      //Get the full factor by which to rescale the jet p4.
+      float jetRescale = 1 + jesSF_err * jetJecUnc.at(iJet);
+      if (jetRescale < 0.) jetRescale = 0.;
+      if (pcp) cout << "Jet rescale factor: " << jetRescale << endl;
+      
+      //Rescale the Jet's P4.
+      LorentzM oldP4 = cJet->P4();
+      metCorr += oldP4 * (1. - jetRescale);
+      cJet->SetP4(oldP4 * jetRescale);
+    }
+  }
+
+  return;
+}
+
 
 
 void makeGoodJets(EasyChain* tree, vector<Jet*>& AllJets, vector<Jet*>& goodJets, CutSet* flow_in){
