@@ -551,3 +551,9 @@ float Consistency( LorentzM vRef, EasyChain* tree, const char* name) {
 
   return result;
 }
+
+
+void rescaleMUR(EasyChain* tree, vector<Muon*>&TightMuons, LorentzM& metCorr, float murErr) {
+
+  return;
+}

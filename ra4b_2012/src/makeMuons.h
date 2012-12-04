@@ -11,4 +11,6 @@ bool makeLooseMuons(EasyChain* tree, vector<Muon>& Muons, vector<Muon*>& LooseMu
 bool makeTightMuons(EasyChain* tree, vector<Muon>& Muons, vector<Muon*>& TightMuons, CutSet* flow_in = 0);
 bool makeVetoMuons(EasyChain* tree,  vector<Muon>& Muons, vector<Muon*>& VetoMuons, CutSet* flow_in = 0);
 float Consistency( LorentzM vRef, EasyChain* tree, const char* name);
+
+void rescaleMUR(EasyChain* tree, vector<Muon*>&TightMuons, LorentzM& metCorr, float murErr);
 #endif
