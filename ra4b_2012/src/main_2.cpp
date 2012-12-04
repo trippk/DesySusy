@@ -134,11 +134,11 @@ int main(int argc, char** argv){
   //Get the systematic options
   sysOpt defaultSysOptions;
   defaultSysOptions.jerDo  = config.getBool("CENTRAL_JER_DO", false);
-  defaultSysOptions.jerErr = config.getFloat("CENTRAL_JER_ERROR", 0.);
+  defaultSysOptions.jerErr = config.getFloat("CENTRAL_JER_ERR", 0.);
   defaultSysOptions.jesDo  = config.getBool("CENTRAL_JES_DO", false);
-  defaultSysOptions.jesErr = config.getFloat("CENTRAL_JES_ERROR", 0.);
+  defaultSysOptions.jesErr = config.getFloat("CENTRAL_JES_ERR", 0.);
   defaultSysOptions.murDo  = config.getBool("CENTRAL_MUR_DO", false);
-  defaultSysOptions.murErr = config.getFloat("CENTRAL_MUR_ERROR", 0.);
+  defaultSysOptions.murErr = config.getFloat("CENTRAL_MUR_ERR", 0.);
 
   //For each systematic have a corresponding set of options.
   std::map<std::string, sysOpt> sysOptMap;
@@ -244,6 +244,8 @@ int main(int argc, char** argv){
   //================================================================
 
   event ev(tree);
+
+  if (pcp) N = 100;
 
   if(ev.setSampleInformation()) {
 
