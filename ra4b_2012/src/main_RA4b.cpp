@@ -593,7 +593,7 @@ int main(int argc, char** argv){
     //==============================================
     // PILE UP RW
     //==============================================
-    double PUWeight=0;
+    double PUWeight=1.;
     int relevantNumPU=0;
     if(!isData) {
       float PUnumInter    = tree->Get( PUnumInter, "pileupTrueNumInteractionsBX0");
