@@ -61,25 +61,43 @@ void rescaleJER(EasyChain* tree, vector<Jet*>& AllJets, LorentzM & metCorr, floa
       if (pcp) cout << "Matched to gen jet: " << indexOfMatchedGenJet << endl;
       
       //Check if matched index is ok.
-      if (indexOfMatchedGenJet < 0 || indexOfMatchedGenJet >= genJets_p4.size() ) continue;
+      if (indexOfMatchedGenJet >= genJets_p4.size() ) continue;
+      else if (indexOfMatchedGenJet >= 0) {
       
-      //Get the P4 of the matched jet.
-      LorentzM genP4 = genJets_p4.at(indexOfMatchedGenJet);
-      if (pcp) {
-	cout << "Jet P4=(" << (*jet)->Px() << ","  << (*jet)->Py() << ","  << (*jet)->Pz() << ","  << (*jet)->E() << ")" << endl;
-	cout << "Matched gen jet P4=(" << genP4.Px() << ","  << genP4.Py() << ","  << genP4.Pz() << ","  << genP4.E() << ")" << endl;
-      }
+	//Get the P4 of the matched jet.
+	LorentzM genP4 = genJets_p4.at(indexOfMatchedGenJet);
+	if (pcp) {
+	  cout << "Jet P4=(" << (*jet)->Px() << ","  << (*jet)->Py() << ","  << (*jet)->Pz() << ","  << (*jet)->E() << ")" << endl;
+	  cout << "Matched gen jet P4=(" << genP4.Px() << ","  << genP4.Py() << ","  << genP4.Pz() << ","  << genP4.E() << ")" << endl;
+	}
 
-      //Get the full factor by which to rescale the jet p4.
-      float jetRescale = genP4.Pt() + jerSF * ( (*jet)->Pt() - genP4.Pt() );
-      jetRescale /= (*jet)->Pt();
-      if (jetRescale < 0.) jetRescale = 0.;
-      if (pcp) cout << "Jet rescale factor: " << jetRescale << endl;
-      
-      //Rescale the Jet's P4.
-      LorentzM oldP4 = (*jet)->P4();
-      metCorr += oldP4 * (1. - jetRescale);
-      (*jet)->SetP4(oldP4 * jetRescale);
+	//Get the full factor by which to rescale the jet p4.
+	float jetRescale = genP4.Pt() + jerSF * ( (*jet)->Pt() - genP4.Pt() );
+	jetRescale /= (*jet)->Pt();
+	if (jetRescale < 0.) jetRescale = 0.;
+	if (pcp) cout << "Jet rescale factor: " << jetRescale << endl;
+	
+	//Rescale the Jet's P4.
+	LorentzM oldP4 = (*jet)->P4();
+	metCorr += oldP4 * (1. - jetRescale);
+	(*jet)->SetP4(oldP4 * jetRescale);
+      }
+      else {
+	
+	LorentzM oldP4 = (*jet)->P4();
+	float oldE = oldP4.E();
+	
+	float jetRes = getJetRes(oldP4.Pt(), oldP4.Eta());
+	
+	TRandom3 rand(0); //Random num gen with seed set by sys time
+	float newE = oldE + rand.Gaus(0., sqrt(fabs(jerSF*jerSF - 1.))*jetRes);
+	float jetRescale = newE / oldE;
+	if (jetRescale < 0.) jetRescale = 0.;
+	if (pcp) cout << "Jet rescale factor: " << jetRescale << endl;
+
+	metCorr += oldP4 * (1. - jetRescale);
+	(*jet)->SetP4(oldP4 * jetRescale);
+      }
     }
   }
 
@@ -369,4 +387,28 @@ void makeCleanedJets(vector<Jet*>& Jets_In, vector<Jet*>& Jets_Out, vector<Muon*
     if(pcp)cout<<"pt and eta of jet "<<ijet<<" = "<<Jets_In.at(ijet)->P4().pt()<<" "<<Jets_In.at(ijet)->P4().eta()<<endl;
 
   }
+}
+
+float getJetRes(double pT, double eta) {
+
+  double N=0., S=0., C=0., m=0.;
+
+  if     ( fabs(eta) < 0.5) {N = -0.34921; S = 0.29783; C = 0.; m = 0.47112;}
+  else if (fabs(eta) < 1.0) {N = -0.49974; S = 0.33639; C = 0.; m = 0.43069;}
+  else if (fabs(eta) < 1.5) {N = -0.56165; S = 0.42029; C = 0.; m = 0.39240;}
+  else if (fabs(eta) < 2.0) {N = -1.12329; S = 0.65789; C = 0.; m = 0.13960;}
+  else if (fabs(eta) < 2.5) {N =  1.04792; S = 0.46676; C = 0.; m = 0.19314;}
+  else if (fabs(eta) < 3.0) {N =  1.89961; S = 0.33432; C = 0.; m = 0.36541;}
+  else if (fabs(eta) < 3.5) {N =  1.66267; S = 0.33780; C = 0.; m = 0.43943;}
+  else if (fabs(eta) < 4.0) {N =  1.50961; S = 0.22757; C = 0.; m = 0.60094;}
+  else if (fabs(eta) < 4.5) {N =  0.99052; S = 0.27026; C = 0.; m = 0.46273;}
+  else                      {N =  1.37916; S = 0.28933; C = 0.; m = 0.61234;}
+
+  double sgnN = N > 0. ? 1. : -1.;
+  double sigma = sgnN * pow( N/pT , 2. ) + pow(S,2.)*pow(pT, m-1.) + pow(C,2.);
+  if (sigma < 0.) sigma = 0.;
+
+  sigma = pT * sqrt(sigma);
+
+  return sigma;    
 }
