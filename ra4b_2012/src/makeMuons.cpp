@@ -590,12 +590,19 @@ void rescaleMUR(EasyChain* tree, vector<Muon*>&MuonsToRescale, LorentzM& metCorr
 
     //Create shift, as for jets
     float murSF = getMurSF(murSF_err);
-    float muRescale = genP4.at(MatchedGenParticle).Pt() + (murSF) * ( oldP4.Pt() - genP4.at(MatchedGenParticle).Pt() );
-    muRescale /= genP4.at(MatchedGenParticle).Pt();
-    if (muRescale < 0.) muRescale = 0.;
+    //float muRescale = genP4.at(MatchedGenParticle).Pt() + (murSF) * ( oldP4.Pt() - genP4.at(MatchedGenParticle).Pt() );
+    //muRescale /= oldP4.Pt();
+    //if (muRescale < 0.) muRescale = 0.;
 
-    metCorr += oldP4 * (1. - muRescale);
-    MuonsToRescale.at(iMu)->SetP4(oldP4 * muRescale);
+    //metCorr += oldP4 * (1. - muRescale);
+    //MuonsToRescale.at(iMu)->SetP4(oldP4 * muRescale);
+
+    //Try smearing the whole P4 vector, not just the Pt.
+    LorentzM newP4 = oldP4 + (murSF_err)*(oldP4 - genP4.at(MatchedGenParticle) );
+    newP4.SetPxPyPzE(newP4.Px(), newP4.Py(), newP4.Pz(), newP4.P() ); //Maintain a zero mass.
+    metCorr += (oldP4 - newP4);
+    MuonsToRescale.at(iMu)->SetP4(newP4);
+
   }
 
   return;
