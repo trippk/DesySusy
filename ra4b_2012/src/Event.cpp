@@ -199,6 +199,27 @@ void event::createObjects() {
   //============================================
   // Make Muons
   Muons=makeAllMuons(tree);
+  std::vector<Muon*> AllMuons;
+  for (int imu=0;imu<(int)Muons.size();++imu){
+    AllMuons.push_back(&Muons.at(imu));
+  }
+
+  if (!isData) {
+    //Manipulate muons according to systematic options. Simultaneously correct MET.
+    LorentzM metCorr;
+    metCorr.SetPxPyPzE(0.,0.,0.,0.);
+
+    if (sysOptions.murDo) {
+      if (pcp) cout << "Rescaling muon resolution."<< endl;
+      rescaleMUR(tree, AllMuons, metCorr, sysOptions.murErr);
+    }
+
+    //Update the met with the corrections
+    if (pcp) cout << "Implementing met correction: METCORR=(" << metCorr.Px() << ","  << metCorr.Py() << ","  << metCorr.Pz() << ","  << metCorr.E() << ")" << endl;
+    PFmetType1 += metCorr;
+    PFmetRaw += metCorr;
+  }
+
   makeTightMuons(tree,Muons,TightMuons, cutFlows.muonTight);
   makeLooseMuons(tree,Muons,LooseMuons, cutFlows.muonLoose);
   makeVetoMuons(tree,Muons,VetoMuons, cutFlows.muonVeto);
@@ -246,12 +267,6 @@ void event::createObjects() {
 
       rescaleJES(tree, jetsToSmear, metCorr, sysOptions.jesErr);
     }
-
-    if (sysOptions.murDo) {
-      if (pcp) cout << "Rescaling muon resolution."<< endl;
-      rescaleMUR(tree, TightMuons, metCorr, sysOptions.murErr);
-    }
-
 
     //Update the met with the corrections
     if (pcp) cout << "Implementing met correction: METCORR=(" << metCorr.Px() << ","  << metCorr.Py() << ","  << metCorr.Pz() << ","  << metCorr.E() << ")" << endl;
