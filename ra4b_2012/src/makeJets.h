@@ -13,6 +13,7 @@ void rescaleJER(EasyChain* tree, vector<Jet*>& AllJets, LorentzM & metCorr, floa
 float getJerSF(float eta, float err_factor);
 float getJetRes(double pT, double eta);
 void rescaleJES(EasyChain* tree, vector<Jet*>& AllJets, LorentzM & metCorr, float jesSF_err);
+void matchJets( const vector<Jet*> & recoJets, const vector<LorentzM> & genJets, vector<int> & recoToGen, vector<int> & genToReco);
 
 void makeGoodJets(EasyChain* tree, vector<Jet*>& AllJets, vector<Jet*>& goodJets, CutSet* flow_in=0 );
 void makeCleanedJets(vector<Jet*>& Jets_In, vector<Jet*>& Jets_Out, vector<Muon>& Muons, vector<Electron>& Electrons, CutSet* flow_in=0);

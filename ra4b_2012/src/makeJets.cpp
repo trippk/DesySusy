@@ -47,7 +47,11 @@ vector<Jet> makeAllJets(EasyChain* tree){
 void rescaleJER(EasyChain* tree, vector<Jet*>& AllJets, LorentzM & metCorr, float jerSF_err, JetMonitor * pJetM) {
 
   vector<LorentzM>&  genJets_p4 = tree->Get(&genJets_p4, "genak5GenJetsP4");
-  vector<int>&  genJets_matched = tree->Get(&genJets_matched, "ak5JetPFGenJetMatchIndexPat");
+  //vector<int>&  genJets_matched = tree->Get(&genJets_matched, "ak5JetPFGenJetMatchIndexPat");
+
+  vector<int> recoToGen(AllJets.size(), -1);
+  vector<int> genToReco(genJets_p4.size(), -1);
+  matchJets(AllJets, genJets_p4, recoToGen, genToReco);
 
   typedef vector<Jet*>::iterator jetIt;
   for (jetIt jet = AllJets.begin(); jet != AllJets.end(); jet++) {
@@ -58,12 +62,12 @@ void rescaleJER(EasyChain* tree, vector<Jet*>& AllJets, LorentzM & metCorr, floa
       if (pcp) cout << "jerSF: " << jerSF << endl;
 
       //Get the matched gen level jet.
-      int indexOfMatchedGenJet = genJets_matched.at( (*jet)->GetIndexInTree() );
+      //int indexOfMatchedGenJet = genJets_matched.at( (*jet)->GetIndexInTree() );
+      int indexOfMatchedGenJet = recoToGen[jet-AllJets.begin()];
       if (pcp) cout << "Matched to gen jet: " << indexOfMatchedGenJet << endl;
       
       //Check if matched index is ok.
-      if (indexOfMatchedGenJet >= genJets_p4.size() ) continue;
-      else if (indexOfMatchedGenJet >= 0) {
+      if (indexOfMatchedGenJet >= 0 && indexOfMatchedGenJet < genJets_p4.size() ) {
       
 	//Get the P4 of the matched jet.
 	LorentzM genP4 = genJets_p4.at(indexOfMatchedGenJet);
@@ -95,7 +99,7 @@ void rescaleJER(EasyChain* tree, vector<Jet*>& AllJets, LorentzM & metCorr, floa
 	
       }
       else {
-	
+
 	LorentzM oldP4 = (*jet)->P4();
 	float oldE = oldP4.E();
 	
@@ -436,4 +440,104 @@ float getJetRes(double pT, double eta) {
   sigma = pT * sqrt(sigma);
 
   return sigma;    
+}
+
+
+//Function for matching jets to genJets.
+//Matching done by minimising deltaR. Ambiguities are resolved.
+void matchJets( const vector<Jet*> & recoJets, const vector<LorentzM> & genJets, vector<int> & recoToGen, vector<int> & genToReco) {
+
+  bool iterate = false;
+
+  if (recoJets.size() != recoToGen.size() ) {
+    cout << "matchJets >> ERROR. Vectors of different sizes!" << endl;
+    return;
+  }
+  if (genJets.size() != genToReco.size() ) {
+    cout << "matchJets >> ERROR. Vectors of different sizes!" << endl;
+    return;
+  }
+
+  vector<vector<int> > genToReco_tmp;
+  for (int iGen = 0; iGen < genToReco.size() ; iGen++ ) {
+    vector<int> temp;
+    if (genToReco[iGen] != -1) temp.push_back(genToReco[iGen]);
+    genToReco_tmp.push_back( temp );
+  }
+
+  //Match any unmatched reco jets to any unmatched gen jet. 
+  //Matching based on minimising deltaR.
+  for (int iJet = 0; iJet <= recoJets.size(); iJet++ ) {
+    if (recoToGen[iJet] != -1) continue;
+
+    int matchedGenJet = -1;
+    double dR_min = 0.5; //Force matching to be within 0.5. Better choice?
+
+    LorentzM recoP4 = recoJets[iJet]->P4();
+
+    for (int iGen = 0; iGen < genToReco.size() ; iGen++) {
+      if (genToReco[iGen] != -1) continue;
+      LorentzM genP4 = genJets[iGen];
+      double dR = DeltaR(genP4, recoP4);
+      if (dR < dR_min) {
+	dR_min = dR;
+	matchedGenJet = iGen;
+      }
+    }
+
+    if (matchedGenJet != -1) {
+      recoToGen[iJet] = matchedGenJet;
+      genToReco_tmp[matchedGenJet].push_back(iJet);
+    }
+
+  }
+
+  //Now search for ambiguities.
+  //Resolve by minimising deltaR.
+  for (int iGen = 0 ; iGen < genToReco_tmp.size() ; iGen++ ) {
+    
+    vector<int> matchedRecoJets = genToReco_tmp[iGen];
+    if (matchedRecoJets.size() == 1) {
+      genToReco[iGen] = matchedRecoJets[0];
+    }
+    else if (matchedRecoJets.size() > 1) {
+      //There is an ambiguity
+      iterate = true;
+
+      double dR_min = 1.0;
+      int resolvedRecoMatch = -1;
+      
+      LorentzM genP4 = genJets[iGen];
+
+      for (int iMatch = 0; iMatch < matchedRecoJets.size() ; iMatch++) {
+	LorentzM recoP4 = recoJets[matchedRecoJets[iMatch]]->P4();
+	double dR = DeltaR(recoP4, genP4);
+	if (dR < dR_min) {
+	  dR_min = dR;
+	  resolvedRecoMatch = iMatch;
+	}
+      }
+      
+      if (resolvedRecoMatch != -1) {
+	genToReco[iGen] = matchedRecoJets[resolvedRecoMatch];
+
+	//Remove the link from the remaining reco jets
+	matchedRecoJets.erase(matchedRecoJets.begin() + resolvedRecoMatch);
+	for (int iMatch = 0; iMatch < matchedRecoJets.size() ; iMatch++ ) {
+	  recoToGen[matchedRecoJets[iMatch]] = -1;
+	}
+      }
+      else {
+	cout << "THERE WAS AN ERROR IN THE MATCHING" << endl;
+      }
+
+    }
+  }
+
+
+  if (iterate) {
+    if (pcp) cout << "matchJets >> ITERATING!" << endl;
+    matchJets(recoJets, genJets, recoToGen, genToReco);
+  }
+  else return;
 }
