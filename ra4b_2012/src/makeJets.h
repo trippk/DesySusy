@@ -6,10 +6,10 @@
 #include "Muon.h"
 #include "Electron.h"
 #include "TRandom3.h"
-
+#include "JetMonitor.h"
 
 vector<Jet> makeAllJets(EasyChain* tree);
-void rescaleJER(EasyChain* tree, vector<Jet*>& AllJets, LorentzM & metCorr, float jerSF_err);
+void rescaleJER(EasyChain* tree, vector<Jet*>& AllJets, LorentzM & metCorr, float jerSF_err, JetMonitor * pJetM);
 float getJerSF(float eta, float err_factor);
 float getJetRes(double pT, double eta);
 void rescaleJES(EasyChain* tree, vector<Jet*>& AllJets, LorentzM & metCorr, float jesSF_err);

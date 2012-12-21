@@ -12,6 +12,7 @@
 
 #include "makeJets.h"
 
+
 using namespace std;
 
 extern bool pcp;
@@ -43,7 +44,7 @@ vector<Jet> makeAllJets(EasyChain* tree){
   return Jets;
 }
 
-void rescaleJER(EasyChain* tree, vector<Jet*>& AllJets, LorentzM & metCorr, float jerSF_err) {
+void rescaleJER(EasyChain* tree, vector<Jet*>& AllJets, LorentzM & metCorr, float jerSF_err, JetMonitor * pJetM) {
 
   vector<LorentzM>&  genJets_p4 = tree->Get(&genJets_p4, "genak5GenJetsP4");
   vector<int>&  genJets_matched = tree->Get(&genJets_matched, "ak5JetPFGenJetMatchIndexPat");
@@ -81,6 +82,17 @@ void rescaleJER(EasyChain* tree, vector<Jet*>& AllJets, LorentzM & metCorr, floa
 	LorentzM oldP4 = (*jet)->P4();
 	metCorr += oldP4 * (1. - jetRescale);
 	(*jet)->SetP4(oldP4 * jetRescale);
+
+	//Store the information in the jet monitor
+	if (pJetM) {
+	  pJetM->hMatched->Fill(oldP4.Pt(), oldP4.Eta());
+	  float deltaR = ROOT::Math::VectorUtil::DeltaR(oldP4, genP4);;
+	  pJetM->hMatchedDeltaR->Fill(oldP4.Pt(), oldP4.Eta(), deltaR);
+	  float deltaPt = oldP4.Pt() - genP4.Pt();
+	  pJetM->hMatchedDeltaPt->Fill(oldP4.Pt(), oldP4.Eta(), deltaPt);
+	  pJetM->hMatchedScaleFactor->Fill(oldP4.Pt(), oldP4.Eta(), jetRescale);
+	}
+	
       }
       else {
 	
@@ -89,14 +101,27 @@ void rescaleJER(EasyChain* tree, vector<Jet*>& AllJets, LorentzM & metCorr, floa
 	
 	float jetRes = getJetRes(oldP4.Pt(), oldP4.Eta());
 	
-	TRandom3 rand(0); //Random num gen with seed set by sys time
-	float newE = oldE + rand.Gaus(0., sqrt(fabs(jerSF*jerSF - 1.))*jetRes);
+	float newE = oldE;
+	float gSigma = jerSF*jerSF - 1.;
+	if (gSigma > 0.) {
+	  gSigma = jetRes * sqrt(gSigma);
+	  TRandom3 rand(0); //Random num gen with seed set by sys time
+	  newE += rand.Gaus(0., gSigma);
+	}
 	float jetRescale = newE / oldE;
 	if (jetRescale < 0.) jetRescale = 0.;
 	if (pcp) cout << "Jet rescale factor: " << jetRescale << endl;
 
 	metCorr += oldP4 * (1. - jetRescale);
 	(*jet)->SetP4(oldP4 * jetRescale);
+
+	//Store the jet info in the jet monitor
+	if (pJetM) {
+	  pJetM->hNotMatched->Fill(oldP4.Pt(), oldP4.Eta());
+	  pJetM->hNotMatchedDeltaE->Fill(oldP4.Pt(), oldP4.Eta(), newE - oldE);
+	  pJetM->hNotMatchedScaleFactor->Fill(oldP4.Pt(), oldP4.Eta(), jetRescale);
+	}
+
       }
     }
   }
