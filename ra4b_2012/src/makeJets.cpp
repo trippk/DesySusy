@@ -467,7 +467,7 @@ void matchJets( const vector<Jet*> & recoJets, const vector<LorentzM> & genJets,
 
   //Match any unmatched reco jets to any unmatched gen jet. 
   //Matching based on minimising deltaR.
-  for (int iJet = 0; iJet <= recoJets.size(); iJet++ ) {
+  for (int iJet = 0; iJet < recoJets.size(); iJet++ ) {
     if (recoToGen[iJet] != -1) continue;
 
     int matchedGenJet = -1;
