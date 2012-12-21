@@ -123,11 +123,13 @@ int main(int argc, char** argv){
   while(sysNamesParser.good()) {
     std::string dummyString;
     sysNamesParser >> dummyString;
-    folderNames.push_back(dummyString);
+    if (dummyString != "" ) folderNames.push_back(dummyString);
   }
-  cout << "Found the following systematics: "<< endl;
-  for (std::vector<std::string>::const_iterator fIt = folderNames.begin() ; fIt != folderNames.end() ; fIt++) {
-    cout << *fIt << endl;
+  if (folderNames.size() > 1) {
+    cout << "Found the following systematics: "<< endl;
+    for (std::vector<std::string>::const_iterator fIt = folderNames.begin() ; fIt != folderNames.end() ; fIt++) {
+      cout << *fIt << endl;
+    }
   }
   cout << endl;
 
@@ -170,6 +172,9 @@ int main(int argc, char** argv){
   //Subtrees
   std::map<std::string, TDirectory*>  treefileDirMap;
   std::map<std::string, subTree*> subTreeMap;
+  //JetMonitor
+  std::map<std::string, boost::shared_ptr<JetMonitor> > jetMonMap;
+
   std::vector<std::string>::iterator folderNameIt;
 
   TString treeType = config.getTString("treeType","default"); 
@@ -177,7 +182,12 @@ int main(int argc, char** argv){
 
   for (folderNameIt = folderNames.begin() ; folderNameIt != folderNames.end() ; folderNameIt++ ) {
     TDirectory * newDir = outfile->mkdir(folderNameIt->c_str());
-    if (newDir == 0) cout << "ERROR CREATING FOLDER IN OUTFILE!" << endl;
+    if (newDir == 0) {
+      cout << "ERROR CREATING FOLDER: " << *folderNameIt << " IN OUTFILE!" << endl;
+      folderNames.erase(folderNameIt); //Remove the offending folder name from the list
+      folderNameIt--; //Skip back to previous element.
+      continue;
+    }
     else outfileDirMap.insert( make_pair(*folderNameIt, newDir) );
         
     //Create all of the cut flows.
@@ -225,6 +235,9 @@ int main(int argc, char** argv){
     controlPlotsMap.insert( make_pair(*folderNameIt, new HistoMaker("AnalyzeSUSY", " ") ) );
     controlPlotsMap[*folderNameIt]->setDir(outfileDirMap[*folderNameIt]);
 
+    //Create the jet monitor
+    jetMonMap.insert( make_pair(*folderNameIt, new JetMonitor(outfileDirMap[*folderNameIt]) ) );
+    
     //Create the subTree analysers
     newDir = treefile->mkdir(folderNameIt->c_str());
     if (newDir == 0) cout << "ERROR CREATING FOLDER IN TREEFILE!"<< endl;
@@ -264,6 +277,7 @@ int main(int argc, char** argv){
 	//Set the control plots and trees
 	ev.setControlPlots(controlPlotsMap[*folderName].get());
 	ev.setSubTree(subTreeMap[*folderName]);
+	ev.setJetMonitor(jetMonMap[*folderName].get());
 
 	//Read in the tree
 	ev.getEntry(i);
