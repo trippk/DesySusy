@@ -181,13 +181,13 @@ void SetConditions_RA4b(SampleInformation mySampleInformation){
     //============================================
     //JETS
     //============================================
-    SetOfCuts::Jets.NUM.Set(1,"above","jets>1");
+    SetOfCuts::Jets.NUM.Set(-1,"above","jets>=0");
     //============================================
     //EVENT
     //============================================
     SetOfCuts::Event.NumberOfBtags.Set(-1,"above","any number of btags");
-    SetOfCuts::Event.HT.Set(0.,"above","HT above 0");
-    SetOfCuts::Event.MET.Set(0.,"above","MET above 0");
+    SetOfCuts::Event.HT.Set(-1.,"above","HT above 0");
+    SetOfCuts::Event.MET.Set(-1.,"above","MET above 0");
     //============================================
     
   }
@@ -210,7 +210,7 @@ void SetConditions_RA4b(SampleInformation mySampleInformation){
     //============================================
     //JETS
     //============================================
-    SetOfCuts::Jets.NUM.Set(1,"above","jets>1");
+    SetOfCuts::Jets.NUM.Set(-1,"above","jets>=0");
     //============================================
     //EVENT
     //============================================
