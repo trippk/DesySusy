@@ -2,7 +2,7 @@
 
 extern bool pcp;
 
-event::event(EasyChain * tree_in) : tree(tree_in), ControlPlots(0), outTree(0) {
+event::event(EasyChain * tree_in) : tree(tree_in), ControlPlots(0), outTree(0), jetMon(0) {
   return;
 }
 
@@ -211,7 +211,8 @@ void event::createObjects() {
 
     if (sysOptions.murDo) {
       if (pcp) cout << "Rescaling muon resolution."<< endl;
-      rescaleMUR(tree, AllMuons, metCorr, sysOptions.murErr);
+      //rescaleMUR(tree, AllMuons, metCorr, sysOptions.murErr);
+      rescaleMUR_simple(tree, AllMuons, metCorr, sysOptions.murErr);
     }
 
     //Update the met with the corrections
@@ -255,7 +256,7 @@ void event::createObjects() {
       vector<Jet*> jetsToSmear;
       makeCleanedJets( AllJets, jetsToSmear, TightMuons, CleanedTightElectrons);
 
-      rescaleJER(tree, jetsToSmear, metCorr, sysOptions.jerErr);
+      rescaleJER(tree, jetsToSmear, metCorr, sysOptions.jerErr, jetMon);
     }
 
     if (sysOptions.jesDo) {

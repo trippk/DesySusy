@@ -40,6 +40,7 @@
 #include "subTreeFactory.h"
 #include "EventInfo.h"
 #include "makeOsLepPairs.h"
+#include "JetMonitor.h"
 
 extern bool pcp;
 
@@ -85,6 +86,7 @@ class event {
   void setCutFlows(cutFlowSet cutFlowSet_in) {cutFlows = cutFlowSet_in;}
   void setSubTree(subTree* subTree_in) {outTree = subTree_in;}
   void setControlPlots(HistoMaker* histMaker_in) {ControlPlots = histMaker_in;}
+  void setJetMonitor(JetMonitor * jetMon_in) {jetMon = jetMon_in;}
 
   void getEntry(int i);
 
@@ -110,6 +112,7 @@ class event {
   CutSet * globalflow;
   HistoMaker * ControlPlots;
   subTree * outTree;
+  JetMonitor * jetMon;
 
   EasyChain * tree;
 
