@@ -611,3 +611,25 @@ void rescaleMUR(EasyChain* tree, vector<Muon*>&MuonsToRescale, LorentzM& metCorr
 float getMurSF(float err) {
   return (1.00 + err);
 }
+
+void rescaleMUR_simple(EasyChain* tree, vector<Muon*>&MuonsToRescale, LorentzM& metCorr, float murSF_err) {
+
+  //Loop over Muons
+  for (int iMu = 0; iMu < MuonsToRescale.size(); iMu++) {
+
+    LorentzM oldP4 = MuonsToRescale.at(iMu)->P4();
+
+    //Smear the energy of the muon
+    float oldE = oldP4.E();
+    TRandom3 rand(0);
+    float newE = oldE + rand.Gaus(0., murSF_err*oldE);
+    if (newE < 0) newE = 0.;
+
+    float muRescale = newE / oldE;
+
+    metCorr += oldP4 * (1. - muRescale);
+    MuonsToRescale.at(iMu)->SetP4(oldP4 * muRescale);
+  }
+
+  return;
+}

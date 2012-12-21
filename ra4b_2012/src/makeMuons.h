@@ -3,6 +3,7 @@
 
 #include "NtupleTools2_h.h"
 #include "Muon.h"
+#include "TRandom3.h"
 
 vector<Muon> makeAllMuons(EasyChain* tree );
 vector<Muon> makeTrkOrGlobalMuons(EasyChain* tree );
@@ -14,4 +15,5 @@ float Consistency( LorentzM vRef, EasyChain* tree, const char* name);
 
 void rescaleMUR(EasyChain* tree, vector<Muon*>&TightMuons, LorentzM& metCorr, float murErr);
 float getMurSF(float err);
+void rescaleMUR_simple(EasyChain* tree, vector<Muon*>&TightMuons, LorentzM& metCorr, float murErr);
 #endif
