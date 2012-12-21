@@ -5,38 +5,6 @@
 ################
 quick       = true
 doSystematics = false
-sysNames = JER JER_UP JER_DOWN JES_UP JES_DOWN MUR
-cutNames = HBHE hcalLaserFilter PV Scraping_Veto trackingFailure ECAL_TP CSC_HALO eeBadSCFilter Triggers One_single_lepton Signal_Muons Signal_Electrons Wide_Muons Wide_Electrons OS_FLAV_THRESH Jet_Cuts HT MET_RAW
-
-################
-#Systematic options
-################
-CENTRAL_JER_DO = false
-CENTRAL_JER_ERR = 0.
-CENTRAL_JES_DO = false
-CENTRAL_JES_ERR = 0.
-CENTRAL_MUR_DO = false
-CENTRAL_MUR_ERR = 0.
-
-JER_JER_DO = true
-
-JER_UP_JER_DO = true
-JER_UP_JER_ERR = 1.0
-
-JER_DOWN_JER_DO = true
-JER_DOWN_JER_ERR = -1.0
-
-JES_UP_JER_DO = true
-JES_UP_JES_DO = true
-JES_UP_JES_ERR = 1.0
-
-JES_DOWN_JER_DO = true
-JES_DOWN_JES_DO = true
-JES_DOWN_JES_ERR = -1.0
-
-MUR_JER_DO = true
-MUR_MUR_DO = true
-MUR_MUR_ERR = 0.01
 
 ################
 #File specific
@@ -45,21 +13,21 @@ isData      = false
 filename    = /scratch/hh/current/cms/user/eron/nTuples/testdir/
 resonance_cut = 8.0
 isolation_cut = 0.1
-SampleName = T2tt
-SubSampleName = NoSub
+SampleName = TTJets
+SubSampleName = SUMMER12
 TurnTriggersOff = false
 
 ###############
 #Analysis Specific
 ###############
 #diLep
-#Estimation = RA4b-diMuSync
+#Estimation = RA4b-MuEGSync
 #treeType = anDiLep
 #TightMuons_PTMIN = 20.0
 
 #diLep Synchro
-Estimation = RA4b-diMuSync
-Tail = NEWAFTERSYNC
+Estimation = RA4b-MuEGSync
+Tail = Quick
 treeType = anDiLep
 
 VertexZ_MC = 24.0

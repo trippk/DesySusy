@@ -5,18 +5,6 @@
 ################
 quick       = true
 doSystematics = false
-sysNames = 
-cutNames = HBHE hcalLaserFilter PV Scraping_Veto trackingFailure ECAL_TP CSC_HALO eeBadSCFilter Triggers One_single_lepton Signal_Muons Signal_Electrons Wide_Muons Wide_Electrons OS_FLAV_THRESH Jet_Cuts HT MET_RAW
-
-################
-#Systematic options
-################
-CENTRAL_JER_DO = false
-CENTRAL_JER_ERR = 0.
-CENTRAL_JES_DO = false
-CENTRAL_JES_ERR = 0.
-CENTRAL_MUR_DO = false
-CENTRAL_MUR_ERR = 0.
 
 ################
 #File specific
@@ -39,7 +27,7 @@ TurnTriggersOff = false
 
 #diLep Synchro
 Estimation = RA4b-diMuSync
-Tail = NEWAFTERSYNC3
+Tail = Quick
 treeType = anDiLep
 
 VertexZ_MC = 24.0
