@@ -45,7 +45,7 @@ echo job start at `date`
 #echo total own running jobs at the NAF `qstat -u eron | grep -i " r " | wc -l`
 #echo this machine is `echo $HOST`
 
-time $EXECUTABLE filename="$1" outname=$2 Estimation=$3 Tail=$4
+time $EXECUTABLE filename="$1" outname=$2 Estimation=$3 Tail=$4 isBatchJob=true
 ##cp $2 $OUTDIR
 ##echo cp $2 $OUTDIR
 echo
