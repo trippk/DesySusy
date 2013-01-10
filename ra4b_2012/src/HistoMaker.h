@@ -18,11 +18,13 @@
 #include "Jet.h"
 #include "TFile.h"
 #include "mt2w_interface.h"
-
+#include <boost/shared_ptr.hpp>
+#include "typedefs.h"
 using namespace std;
 
 #define delimiter " "
-#define NMonitorJets 4
+//#define NMonitorJets 4
+
 
 class HistoMaker {
 
@@ -37,10 +39,13 @@ class HistoMaker {
   void setDir(TDirectory *);
 
   void dumpToFile();
+  void MakePlots( const TString&, vector<Muon*> muons, vector<Electron*> electrons, vector<Ptr_Jet> jets, LorentzM& met);
   void MakePlots( const TString&, vector<Muon*> muons, vector<Electron*> electrons, vector<Jet*> jets, LorentzM& met);
   bool autodump;
   
  protected:
+  static const int NMonitorJets=4;
+
   vector<TString> allCuts;
   TString prefix;
   TString delim;

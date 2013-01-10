@@ -51,6 +51,20 @@ void trigStudyTree::Constructor(){
 
 
 // void trigStudyTree::Fill(EventInfo* info, EasyChain* tree, vector<Muon*>& muons, vector<Electron*>& electrons, vector<Jet*>& jets, LorentzM& met) {
+
+void trigStudyTree::Fill(EventInfo* info, EasyChain* tree, vector<Muon*>& muons, vector<Electron*>& electrons, vector<Ptr_Jet>& jets, LorentzM& met) {
+  vector<Jet*> newJets;
+  for (int iel=0; iel<jets.size();++iel){
+    newJets.push_back(jets.at(iel).get());
+  }
+  //
+  Fill(info,tree,muons,electrons,newJets,met);
+  //
+}
+
+
+
+
 void trigStudyTree::Fill(EventInfo* info, EasyChain* tree, vector<Muon*>& muons, vector<Electron*>& electrons, vector<Jet*>& jets, LorentzM& met) {
   //initialize the variables values; e.g. clear vectors
   initLeafs();
@@ -89,16 +103,16 @@ void trigStudyTree::initLeafs(){
   DESYtriggerNameMap               .clear();
   electronCharge                   .clear();
   electronP4                       .clear();
-  event                            = 0.;
+  event                            = 0;
   HT                               = 0.;
   jetP4                            .clear();
   MET                              = 0.;
   muonCharge                       .clear();
   muonP4                           .clear();
   prescaled                        .clear();
-  PUInter                          = 0.;
+  PUInter                          = 0;
   PUWeight                         = 0.;
-  run                              = 0.;
+  run                              = 0;
   triggered                        .clear();
   weight                           = 0.;
 };

@@ -2,11 +2,11 @@
 
 isData      = false
 filename    = /scratch/hh/current/cms/user/eron/nTuples/testdir/
-quick       = true
+quick       = false
 resonance_cut = 8.0
 isolation_cut = 0.1
-SampleName = TTJets
-SubSampleName = SUMMER12
+SampleName = TTJetsMG
+SubSampleName = Full-DR53
 Estimation = RA4b-mu
 Tail = NoTail
 TightElectrons_PTMIN = 30.0

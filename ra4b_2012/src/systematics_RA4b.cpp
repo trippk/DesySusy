@@ -4,44 +4,48 @@
 #include <iostream>
 #include "Math/VectorUtil.h"
 #include "NtupleTools2.h"
+#include <boost/shared_ptr.hpp>
+#include "typedefs.h"
 using namespace std;
 using namespace ROOT::Math::VectorUtil;
 
 
 void Systematics::Reset(){
 
+  //cout<<"inside of reset"<<endl;
+  sysJet.clear();
+  //cout<<"jets cleared"<<endl;
+  sysMET.clear();
+  //cout<<"sysmet cleared"<<endl;
+  sysHT.clear();
+  //cout<<"sysHT cleared"<<endl;
+  passCuts.clear();
+  //  cout<<"passcuts cleared"<<endl;
+  sysMETVector.clear();
+  //cout<<"sysmetvector cleared"<<endl;
 
+}
   //================================================
-  typedef map<string, vector<Jet*> >::iterator map_it;
+  //typedef boost::shared_ptr<Jet> Ptr_Jet;
+  
+
+  //typedef map<string, vector<Jet*> >::iterator map_it;
   //prevent memory leaks of the Jet objects here:
-  for (map_it iter=sysJet.begin(); iter != sysJet.end(); ++iter){
+  /*  for (map_it iter=sysJet.begin(); iter != sysJet.end(); ++iter){
     //cout<<"considering "<<iter->first<<endl;
     int pos=iter->first.find("_");
     if (pos==string::npos){
-      //      cout<<"    reseting "<<iter->first<<endl;
+      //cout<<"    reseting "<<iter->first<<endl;
       for (int i=0 ; i< (int)(iter->second).size(); ++ i){
-	//      cout<<"reseting at "<<i<<" a pointer with adress "<<iter->second.at(i)<<endl;
+	//cout<<"reseting at "<<i<<" a pointer with adress "<<iter->second.at(i)<<endl;
 	delete((iter->second).at(i));
       }
     }
-    //clear the vector
-    (iter->second).clear();
-  }
+  */
+  //clear the vector
+  // (iter->second).clear();
 
-
-  //delete the lorentz vectors
-  typedef map<string, LorentzM*>::iterator l_it;
-  for(l_it iter =sysMEVector.begin(); iter != sysMEVector.end(); ++iter){
-    delete(iter->second);
-  }
-  //now clear the maps
-  sysJet.clear();
-  sysMET.clear();
-  sysHT.clear();
-  passCuts.clear();
-  sysMEVector.clear();
   
-}
 
 map<string,bool>& Systematics::GetSysMap(){
   return SysMap;
@@ -89,11 +93,11 @@ void Systematics::Print(){
 bool Systematics::IsEnabled(){return Enabled;}
 
 
-void Systematics::SetsysJet(string name, vector<Jet*> vec){
+void Systematics::SetsysJet(string name, vector<Ptr_Jet> vec){
   sysJet[name]=vec;
 }
 
-vector<Jet*>& Systematics::GetsysJet(string name){
+vector<Ptr_Jet>& Systematics::GetsysJet(string name){
   return sysJet[name];
 }
 
@@ -101,15 +105,20 @@ void Systematics::SetsysMET(string name, double newMET){
   sysMET[name]=newMET;
 }
 double& Systematics::GetsysMET(string name){
-  return sysMET[name];
+  return sysMET.at(name);
 }
-void Systematics::SetsysMEVector(string name, double px, double py){
-  
-  sysMEVector[name]= new LorentzM(px,py,0, sqrt(px*px+py*py));
+void Systematics::SetsysMETVector(string name, double px, double py){
+  LorentzM* test =new LorentzM();
+  test->SetPxPyPzE(px,py,0.,sqrt(px*px+py*py));
+  Ptr_LorentzM dummypointer(test);
+  sysMETVector[name]=dummypointer;
 }
-
-LorentzM* Systematics::GetsysMEVector(string name){
-  return sysMEVector[name];
+void Systematics::SetsysMETVector(string name, LorentzM* vec_in ){
+  Ptr_LorentzM dummypointer(vec_in);
+  sysMETVector[name]=dummypointer;
+}
+Ptr_LorentzM Systematics::GetsysMETVector(string name){
+  return sysMETVector[name];
 }
 
 void Systematics::SetsysHT(string name, double newHT){
@@ -128,4 +137,11 @@ void Systematics::CreatesysFlow(string name){
 
 defaultTree* Systematics::GetsysDefaultTree(string name){
   return sysDefaultTree.at(name);
+}
+
+void Systematics::SetTreeJetCollection(string name, string jetcoll){
+  treeJetCollection[name]=jetcoll;
+}
+std::string Systematics::GetTreeJetCollection(string name){
+  return treeJetCollection.at(name);
 }

@@ -1,22 +1,25 @@
-
 #include "Math/VectorUtil.h"
 #include "NtupleTools2_h.h"
 #include "Jet.h"
+#include "genJet.h"
+#include <boost/shared_ptr.hpp>
+#include <boost/weak_ptr.hpp>
+#include "typedefs.h"
 
 using namespace std;
 using namespace ROOT::Math::VectorUtil;
 
 map<string, map<string, double> > Jet::bJetWP;
 
-double Jet::BJetDisc(string key){return bJetDisc[key];};
 
-int    Jet::GenFlavor()      {return genFlavor;};
-bool   Jet::IsMatch()        {return isMatch;};
-double Jet::ScaleCorrFactor(){return scaleCorrFactor;};
-string Jet::Type()           {return type;};
+double Jet::BJetDisc(const string key) const {return bJetDisc.at(key);};
+int    Jet::GenFlavor()const      {return genFlavor;};
+bool   Jet::IsMatch()const        {return isMatch;};
+double Jet::ScaleCorrFactor()const {return scaleCorrFactor;};
+string Jet::Type()const           {return type;};
 
-bool   Jet::IsBJet(string key, double disc_cut){
 
+bool   Jet::IsBJet(const string key, const double disc_cut) const {
   //Find disc value in bJetDisc
   map<string, double>::const_iterator itKey = bJetDisc.find(key);
   if (itKey == bJetDisc.end()) {
@@ -30,7 +33,8 @@ bool   Jet::IsBJet(string key, double disc_cut){
 
 };
 
-bool   Jet::IsBJet(string key, string WP){
+
+bool Jet::IsBJet(const string key, const string WP) const{
 
   //Find the disc cut in the bJetWP table
   map<string, map<string, double> >::const_iterator itKey = bJetWP.find(key);
@@ -50,23 +54,24 @@ bool   Jet::IsBJet(string key, string WP){
 };
 
 
-void Jet::SetGenFlavor(int genFlavor_In){
+void Jet::SetGenFlavor(const int genFlavor_In){
   genFlavor=genFlavor_In;
 };
-void Jet::SetIsMatch(bool isMatch_In){
+void Jet::SetIsMatch(const bool isMatch_In){
   isMatch=isMatch_In;
 };
-void Jet::SetScaleCorrFactor(double scr_In){
+void Jet::SetScaleCorrFactor(const double scr_In){
   scaleCorrFactor=scr_In;
 };
-void Jet::SetType(string type_In){
+void Jet::SetType(const string type_In){
   type=type_In;
 };
 
-void Jet::SetBJetDisc(string key, double value){
+void Jet::SetBJetDisc(const string key, const double value){
   bJetDisc[key]=value;
 };
 
+//void Jet::SetWP(const string cme){
 void Jet::SetWP(string cme){
   bJetWP.clear();
 
@@ -108,7 +113,7 @@ void Jet::SetWP(string cme){
 
 };
 
-void Jet::Set(int maptotree_In, LorentzM * pmomuntum_In, double scaleCorrFactor_In, string type_In){
+void Jet::Set(const int maptotree_In, LorentzM * const pmomuntum_In, const double scaleCorrFactor_In, const string type_In){
   
   AnalysisObject::Set(maptotree_In, pmomuntum_In);
 
@@ -119,7 +124,16 @@ void Jet::Set(int maptotree_In, LorentzM * pmomuntum_In, double scaleCorrFactor_
   type=type_In;
 }
 
+void Jet::Set(const int maptotree_In, Ptr_LorentzM pmomentum_In, const double scaleCorrFactor_In, const string type_In){
+  
+  AnalysisObject::Set(maptotree_In, pmomentum_In);
+  
+  //SET SCALE CORRECTION FACTOR
+  scaleCorrFactor=scaleCorrFactor_In;
 
+  //SET THE TYPE
+  type=type_In;
+}
 /*
 void Jet::Set(int maptotree_In, LorentzM  momuntum_In, double scaleCorrFactor_In, string type_In){
 
@@ -141,10 +155,10 @@ void Jet::Set(int maptotree_In, LorentzM  momuntum_In, double scaleCorrFactor_In
 
 
 
-map<string, map<string, double> > Jet::GetbJetWP(){return Jet::bJetWP;}
+map<string, map<string, double> > Jet::GetbJetWP(){return bJetWP;}
 
 
-void Jet::SetCorrectionUncertainty(string name, double value){
+void Jet::SetCorrectionUncertainty(const string name, const double value){
 
   if (name=="up" || name=="UP" || name == "Up"){
     correctionUncertainty_UP=value;
@@ -160,7 +174,7 @@ void Jet::SetCorrectionUncertainty(string name, double value){
 
 }
 
-double Jet::GetCorrectionUncertainty(string name){
+double Jet::GetCorrectionUncertainty(const string name){
   
   if (name=="up" || name=="UP" || name == "Up"){
     return correctionUncertainty_UP;
@@ -175,7 +189,7 @@ double Jet::GetCorrectionUncertainty(string name){
 }
 
 
-double Jet::GetJetPt_Shifted(string name){
+double Jet::GetJetPt_Shifted(const string name){
 
  if (name=="up" || name=="UP" || name == "Up"){
    return this->Pt()*(1+correctionUncertainty_UP);
@@ -193,3 +207,12 @@ double Jet::GetJetPt_Shifted(string name){
 
 
 }
+
+
+void Jet::SetPartner(Ptr_GenJet matchedGenJet_in){
+  //matchedGenJet.reset(matchedGenJet_in);
+  matchedGenJet=matchedGenJet_in;
+}
+
+//the lock returns a shared_ptr from a weak_ptr
+Ptr_GenJet Jet::GetPartner(){return matchedGenJet.lock();}

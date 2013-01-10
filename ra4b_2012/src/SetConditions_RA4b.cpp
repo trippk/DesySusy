@@ -39,13 +39,13 @@ void SetConditions_RA4b(SampleInformation mySampleInformation){
     //============================================
     //JETS
     //============================================
-      SetOfCuts::Jets.NUM.Set(3,"above","jets>3");
+    SetOfCuts::Jets.NUM.Set(2,"above","jets>2");
     //============================================
     //EVENT
     //============================================
     SetOfCuts::Event.NumberOfBtags.Set(-1,"above","any number of btags");
     SetOfCuts::Event.HT.Set(300.0,"above","HT above 300");
-    SetOfCuts::Event.MET.Set(100.,"above","MET above 60");
+    SetOfCuts::Event.MET.Set(60.,"above","MET above 60");
     //============================================
 
   }  
@@ -64,13 +64,13 @@ void SetConditions_RA4b(SampleInformation mySampleInformation){
     //============================================
     //JETS
     //============================================
-    SetOfCuts::Jets.NUM.Set(3,"above","jets>3");
+    SetOfCuts::Jets.NUM.Set(2,"above","jets>2");
     //============================================
     //EVENT
     //============================================
     SetOfCuts::Event.NumberOfBtags.Set(-1,"above","any number of btags");
     SetOfCuts::Event.HT.Set(300.0,"above","HT above 300");
-    SetOfCuts::Event.MET.Set(100.,"above","MET above 100");
+    SetOfCuts::Event.MET.Set(60.,"above","MET above 100");
     //============================================
 
   }else if(mySampleInformation.GetEstimation()=="RA4b-singleLep" ){
@@ -123,7 +123,7 @@ void SetConditions_RA4b(SampleInformation mySampleInformation){
     //============================================
     //JETS
     //============================================
-    SetOfCuts::Jets.NUM.Set(3,"above","jets>3");
+    SetOfCuts::Jets.NUM.Set(2,"above","jets>2");
     //============================================
     //EVENT
     //============================================
@@ -152,13 +152,13 @@ void SetConditions_RA4b(SampleInformation mySampleInformation){
     //============================================
     //JETS
     //============================================
-    SetOfCuts::Jets.NUM.Set(3,"above","jets>3");
+    SetOfCuts::Jets.NUM.Set(2,"above","jets>2");
     //============================================
     //EVENT
     //============================================
     SetOfCuts::Event.NumberOfBtags.Set(-1,"above","any number of btags");
     SetOfCuts::Event.HT.Set(300.0,"above","HT above 300");
-    SetOfCuts::Event.MET.Set(100.,"above","MET above 100");
+    SetOfCuts::Event.MET.Set(60.,"above","MET above 100");
     //============================================
     
   }

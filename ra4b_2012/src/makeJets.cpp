@@ -18,7 +18,7 @@ using namespace std;
 extern bool pcp;
 
 
-
+/*
 vector<Jet> makeAllJets(EasyChain* tree){
 
  if(pcp){
@@ -43,6 +43,317 @@ vector<Jet> makeAllJets(EasyChain* tree){
   }
   return Jets;
 }
+*/
+
+
+
+
+
+
+void makeAllJets(EasyChain* tree, vector<Ptr_Jet>& AllJets){
+
+ if(pcp){
+    cout<<endl;
+    cout<<"INSIDE makeAllJets "<<endl;
+    cout<<endl;
+ }
+
+ // vector<Jet> Jets; 
+ // Jets.clear();
+ 
+ vector<LorentzM>&  Jets_p4 = tree->Get(&Jets_p4, "ak5JetPFCorrectedP4Pat");
+ vector<float>&     Jets_CorrFactor = tree->Get(&Jets_CorrFactor, "ak5JetPFCorrFactorPat");
+ vector<int>&       Jets_genFlavor = tree->Get(&Jets_genFlavor, "ak5JetPFgenJetFlavourPat");  
+
+
+ for(int ijet = 0; ijet<Jets_p4.size(); ijet++){  
+   //THE LORENTZ VECTOR IS OWNED BY THE TREE
+   //SO NO shared_ptr to LorentzM CAN BE USED HERE
+
+   //new normal shared_pointer-to-jet using a normal pointer-to-LorentzM (so that the jet does not
+   //own the LorentzM)
+
+   //========create the shared_ptr
+   Ptr_Jet dummysharedJet(new Jet(ijet,&(Jets_p4.at(ijet)), Jets_CorrFactor.at(ijet), "AK5")); 
+
+   //======Set the flavour
+   dummysharedJet->SetGenFlavor(Jets_genFlavor.at(ijet)); 
+   AllJets.push_back(dummysharedJet);
+
+
+   //Clarification:
+   //When the last Ptr_Jet is deleted, the Jet object is also deleted.
+   //However, the pointer to the lorentzM is not a shared pointer
+   //and the LorentzM remains alive, because the lorentzM has to be destroyed when 
+   //the TTree goes to the next event.
+ }
+
+ //return Jets;
+}
+
+
+
+
+//makegoodJets with shared pointers
+void makeGoodJets(EasyChain* tree, vector<Ptr_Jet>& AllJets, vector<Ptr_Jet>& goodJets){
+
+  if(pcp){
+    cout<<endl;
+    cout<<"INSIDE makeJets "<<endl;
+    cout<<endl;
+  }
+
+  goodJets.clear();
+
+  static CutSet jetFlow("good_jet_selection");
+  jetFlow.autodump=true;
+
+
+  //  vector<LorentzM>&  Jets_p4 = tree->Get(&Jets_p4, "ak5JetPFCorrectedP4Pat");
+  vector<int>&       Jets_ID = tree->Get(&Jets_ID,"ak5JetPFPFJetIDloosePat");
+  vector<float>&     Jets_CSV = tree->Get(&Jets_CSV, "ak5JetPFCombinedSecondaryVertexBJetTagsPat");
+  vector<float>&     Jets_CSVMVA = tree->Get(&Jets_CSVMVA, "ak5JetPFCombinedSecondaryVertexMVABJetTagsPat");
+  unsigned int Event   = tree->Get(Event,"event");    
+  
+  extern bool pcp;
+
+  if(pcp){
+    cout<<endl;
+    cout<<"=================================================== "<<endl;
+    cout<<"      going to check the jets in event "<< Event <<endl;
+    cout<<"=================================================== "<<endl;
+  }
+
+  if(pcp)cout<<"total number of jets "<<AllJets.size()<<endl;
+
+  //====================================================================
+  //READ OR DEFINE THE CUTS FOR THE JETS
+  //====================================================================
+  ConfigReader config;
+  static float  PTMIN  =  config.getFloat("Jets_PTMIN",  40. );
+  static float  ETAMAX  = config.getFloat("Jets_ETAMAX", 2.4 );
+  static string btagAlgorithm= config.getString("bTagAlgorithm","CSV");
+  static string btagWorkingPoint = config.getString("bTagWorkingPoint","Medium");
+  static bool   quick = config.getBool("quick_JETS",true);
+  //====================================================================
+
+  bool OK=false;
+
+  for(int ijet = 0; (int)ijet<AllJets.size(); ijet++){
+
+    //Jet dummyJet;
+
+    OK=false;
+    int indx = AllJets.at(ijet)->GetIndexInTree();
+    if(pcp)cout<<"pt,eta, phi and id -->"<<AllJets.at(ijet)->pt()<<" "<<AllJets.at(ijet)->eta()<<" "<<AllJets.at(ijet)->Phi()<<" "<<Jets_ID.at(indx)<<endl;
+    jetFlow.keepIf("before cuts in jets", true);
+    //
+    OK=AllJets.at(ijet)->pt() > PTMIN;
+    if( !jetFlow.keepIf("Jets_PTMIN", OK) && quick) continue;
+
+    // 
+    OK=fabs(AllJets.at(ijet)->eta()) < ETAMAX;
+    if( !jetFlow.keepIf("jets_ETAMAX",OK) && quick ) continue;
+    //
+    OK=Jets_ID.at(indx)!=0;
+    if( !jetFlow.keepIf("ak5JetPFPFJetIDloosePat", OK ) && quick ) continue;
+
+    //
+    if(!quick){
+      OK=jetFlow.applyCuts("Jets_PTMIN jets_ETAMAX ak5JetPFPFJetIDloosePat");
+      if (!OK)continue;
+    }
+    
+    //cout<<"jets_csv at "<<ijet<<" is "<<Jets_CSV.at(ijet)<<endl;
+    
+    AllJets.at(ijet)->SetBJetDisc("CSV", Jets_CSV.at(ijet));
+
+    //    cout<<"out of SetBJetDisc"<<endl;
+    AllJets.at(ijet)->SetID("Loose",1);
+    goodJets.push_back(AllJets.at(ijet));
+    //
+    //
+  }//Loop over Jets
+  
+  //  return AllJets;
+  //retun true;
+};
+
+
+
+
+//makeCleanedJets with shared pointers
+void makeCleanedJets(vector<Ptr_Jet>& Jets_In, vector<Ptr_Jet>& Jets_Out, vector<Muon*>& Muons, vector<Electron*>& Electrons){
+  
+  Jets_Out.clear();
+  
+  //Distance between the jet and the iso leptons
+  ConfigReader config;
+  static float  DELTAR_CUT  =  config.getFloat("Jets_CLEANDELTAR",  0.3 );
+
+  static CutSet CrossCleaning("Cleaned Jets");
+  CrossCleaning.autodump=true;
+  
+  if(pcp){
+    cout<<endl;
+    cout<<"INSIDE makeCleanedJets "<<endl;
+    cout<<endl;
+  }
+
+  for(int ijet = 0; ijet<Jets_In.size(); ijet++){
+
+    bool dumpJet=false;
+  
+    for(int imu=0; imu<(int)Muons.size(); ++imu){
+      if(pcp)cout<<"distance from jet "<<ijet<<" to muon "<<imu<< " = "<<
+	//if(pcp)cout<<"the muon "<<imu<<"  "<<imu<< " = "<<
+	
+	DeltaR(Jets_In.at(ijet)->P4(), Muons.at(imu)->P4())<<" lep= "<<Muons.at(imu)->Flavor()<<endl;
+
+      if ( !Muons.at(imu)->IsID("Tight") &&  !Muons.at(imu)->IsID("Veto"))continue;
+
+      if(DeltaR(Jets_In.at(ijet)->P4(),Muons.at(imu)->P4())<DELTAR_CUT) {
+	if (pcp) {
+	  cout<<endl;
+	  cout<<"CLEANING BEING DONE"<<endl;
+	  cout<<"the jet "<< ijet<< "with pt = "<<Jets_In.at(ijet)->Pt()<<endl;
+	  cout<<"is going to be cleaned because of the muon "<<imu<<" with "<<endl;
+	  cout<<"a pt of "<<Muons.at(imu)->Pt()<<endl;
+	  cout<<"this muon has id Tight "<<Muons.at(imu)->IsID("Tight")<<endl;
+	  cout<<"this muon has id Veto "<<Muons.at(imu)->IsID("Veto")<<endl;
+	  cout<<endl;
+	}
+	dumpJet=true;
+	break;
+      }
+    }
+
+    if (!CrossCleaning.keepIf("CrossCleaning Muons",!dumpJet)) continue;
+
+    for(int iel=0; iel<(int)Electrons.size();++iel){
+      if(pcp)cout<<"distance from jet "<<ijet<<" to electron "<<iel<< " = "<<
+	
+	DeltaR(Jets_In.at(ijet)->P4(), Electrons.at(iel)->P4())<<" lep= "<<Electrons.at(iel)->Flavor()<<endl;
+      //if (Electrons.at(iel).IsID("Veto")) cout << "warning" << endl;      
+
+      if ( !Electrons.at(iel)->IsID("Tight") &&  !Electrons.at(iel)->IsID("Veto"))continue;
+
+      if(DeltaR(Jets_In.at(ijet)->P4(),Electrons.at(iel)->P4())< DELTAR_CUT) {
+	if (pcp){
+	  cout<<"the jet "<< ijet<< "with pt = "<<Jets_In.at(ijet)->Pt()<<endl;
+	  cout<<"is going to be cleaned because of the electron "<<iel<<" with "<<endl;
+	  cout<<"a pt of "<<Electrons.at(iel)->Pt()<<endl;
+	}
+	dumpJet=true;
+	break;
+      }
+    }
+    if (!CrossCleaning.keepIf("CrossCleaning Electrons",!dumpJet)) continue;
+
+
+    //WE want this jet, keep it.
+    Jets_Out.push_back(Jets_In.at(ijet));
+
+    if(pcp)cout<<"pt and eta of jet "<<ijet<<" = "<<Jets_In.at(ijet)->P4().pt()<<" "<<Jets_In.at(ijet)->P4().eta()<<endl;
+
+  }
+}
+
+
+
+void makeCleanedJets(vector<Ptr_Jet>& Jets_In, vector<Ptr_Jet>& Jets_Out, vector<Muon>& Muons, vector<Electron>& Electrons){
+
+  cout<<"this function is deprecated, it should not be called!"<<endl;
+
+  void makeCleanedJets(vector<Ptr_Jet>&, vector<Ptr_Jet>&, vector<Muon*>&, vector<Electron*>&); 
+  Jets_Out.clear();
+
+  vector<Muon*>newMuons;
+  vector<Electron*>newElectrons;
+
+  for (int imu=0;imu<Muons.size();++imu){
+    newMuons.push_back(&Muons.at(imu));
+  }
+  for (int iel=0;iel<Electrons.size();++iel){
+    newElectrons.push_back(&Electrons.at(iel));
+  }
+
+  makeCleanedJets(Jets_In,Jets_Out,newMuons,newElectrons);
+
+}
+
+
+
+void makeAllGenJets(EasyChain* tree, vector<Ptr_GenJet>& genjets){
+  vector<LorentzM>&   GenP4 = tree->Get(&GenP4,"genak5GenJetsP4");
+  vector<int>& jetflavor        = tree->Get(&jetflavor,"ak5JetPFgenJetFlavourPat");
+  vector<LorentzM>&  Jets_p4 = tree->Get(&Jets_p4, "ak5JetPFCorrectedP4Pat");
+  /*    if (GenP4.size() != jetflavor.size()){
+      cout<<"warning, the sizes are different in makeAllGenJets"<<endl;
+      cout<<GenP4.size()<<" vs "<<jetflavor.size()<<endl;
+      cout<<"and"<<Jets_p4.size()<<endl;
+      cout<<endl;
+    }
+  */
+  //  }
+
+  for(int ijet = 0; ijet<GenP4.size(); ijet++){
+    Ptr_GenJet dummypointer(new GenJet(ijet,&GenP4.at(ijet),"AK5"));
+    genjets.push_back(dummypointer);
+  }
+}
+
+
+
+//template<typename Ptr_Jet1>
+void matchGenJets(EasyChain* tree, vector<Ptr_GenJet>& genJets, vector<Ptr_Jet>& Jets){
+
+  //extern TH1D* distmatched;
+  
+  vector<int>&   MatchedGenJets = tree->Get(&MatchedGenJets,"ak5JetPFGenJetMatchIndexPat");
+
+
+  for (int ijet=0;ijet<Jets.size();++ijet){
+    int indx=Jets.at(ijet)->GetIndexInTree();
+    int mindex=MatchedGenJets.at(indx);
+    if(mindex==-1 and Jets.at(ijet)->Pt()>40.0)continue;
+    for (int mjet=0;mjet<genJets.size();++mjet){
+      int mndx=genJets.at(mjet)->GetIndexInTree();
+      bool match_found=false;
+      if (mndx == mindex ){
+	Jets.at(ijet)->SetIsMatch(true);
+	genJets.at(mjet)->SetIsMatch(true);
+	Jets.at(ijet)->SetPartner(genJets.at(mjet));
+	genJets.at(mjet)->SetPartner(Jets.at(ijet));
+	//	distmatched->Fill(ROOT::Math::VectorUtil::DeltaR(Jets.at(ijet)->P4(),genJets.at(mjet)->P4()));
+      }
+    }
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//====================================
+// PREVIOUS FUNCTIONS
+//===================================
 
 void rescaleJER(EasyChain* tree, vector<Jet*>& AllJets, LorentzM & metCorr, float jerSF_err, JetMonitor * pJetM) {
 
