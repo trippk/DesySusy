@@ -669,8 +669,8 @@ int main(int argc, char** argv){
 	makeGoodJets(tree,systematics.GetsysJet("jetResup"),systematics.GetsysJet("jetResup_good"));
 	makeGoodJets(tree,systematics.GetsysJet("jetResdown"),systematics.GetsysJet("jetResdown_good"));
 	//======CLEAN THEM
-	makeCleanedJets(systematics.GetsysJet("jetResup_good"),systematics.GetsysJet("jetResup_good_clean"),Muons,Electrons);
-	makeCleanedJets(systematics.GetsysJet("jetResdown_good"),systematics.GetsysJet("jetResdown_good_clean"),Muons,Electrons);
+	makeCleanedJets(systematics.GetsysJet("jetResup_good"),systematics.GetsysJet("jetResup_good_clean"),pMuons,pElectrons);
+	makeCleanedJets(systematics.GetsysJet("jetResdown_good"),systematics.GetsysJet("jetResdown_good_clean"),pMuons,pElectrons);
 	//	cout<<"size of jetResup good jets "<<systematics.GetsysJet("jetResup_good").size()<<endl;
 	//=====GET THE NEW HT
 	rescaleHT(systematics.GetsysJet("jetResup_good_clean"), systematics, "jetResup");
