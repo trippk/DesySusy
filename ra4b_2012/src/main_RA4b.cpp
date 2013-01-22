@@ -67,8 +67,6 @@ using namespace ROOT::Math::VectorUtil;
 //===================================================================
 
 bool pcp = false; //Set to true for debugging.
-//TH1D* distmatched = new TH1D("distmatched","distance between matched ", 20,0.0,1.0);
-//TH1D* mt2wmu_intree = new TH1D("mt2wmu_intree","mt2w in tree", 50,0.0,300.0);
 TH1D* JetUncDiff= new TH1D("JetUncDiff","diff in jet uncertainty",50,-0.02,0.02);
 
 
@@ -78,7 +76,6 @@ TH1D* JetUncDiff= new TH1D("JetUncDiff","diff in jet uncertainty",50,-0.02,0.02)
 //vector<string> triggernames_short;
 //double EventWeight;
 
-//tr1::shared_ptr<int> test;
 
 
 //================================================================================
@@ -87,9 +84,6 @@ int main(int argc, char** argv){
   //PCP=TRUE FOR DEBUGGING
   pcp=false;
 
-
-  //SHARED POINTER TYPE FOR JETS
-  //typedef boost::shared_ptr<Jet> Ptr_Jet;
 
   double EventWeight=1.0;
 
@@ -111,7 +105,11 @@ int main(int argc, char** argv){
   TString outname = config.getTString("outname",tree->GetUniqeName());
   string outname_string=(string)outname;
   // output directory and output file name(derived from input name)
-  cout<<"the output file name is "<<outname<<endl;;
+  cout<<endl;
+  cout<<"-----------------------------------------------"<<endl;
+  cout<<"The output file name is "<<outname<<endl;
+  cout<<"-----------------------------------------------"<<endl;
+  cout<<endl;
   TFile *outfile = TFile::Open(outname,"RECREATE");
   //TFile *outprovafile = TFile::Open("outprovafile.root","RECREATE");
   // set output root file for cut flow (to be done!)
