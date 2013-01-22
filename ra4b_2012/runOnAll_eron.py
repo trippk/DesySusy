@@ -415,8 +415,7 @@ def readCommandLine(commandLine):
 	Sample,SubSample=InfoToConfig(config_filename)
 	#now copy the config file to the output directory
 	out=commands.getoutput('cp '+config_filename+' '+outdir+'/config.txt')
-	out=commands.getoutput('cp para_config.txt '+outdir+'/para_config.txt')
-	out=commands.getoutput('cp pu_config.txt '+outdir+'/pu_config.txt')
+	out=commands.getoutput('cp *_config.txt '+outdir+'/')
 	outname=outname.replace('.root', '_'+Estimation+'_'+Tail+'.root')
 	return
 
