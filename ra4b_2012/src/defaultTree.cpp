@@ -7,9 +7,6 @@
 #include "boost/algorithm/string.hpp"
 #include <boost/shared_ptr.hpp>
 #include "typedefs.h"
-//#include <boost/foreach.hpp>
-//#include <algorithm/string/iter_find.hpp>
-//#include <algorithm>
 
 
 using namespace std;
@@ -38,6 +35,7 @@ defaultTree::defaultTree(TFile* treefile, TString indir){
 
 defaultTree::defaultTree(TFile* treefile, TDirectory* indir){
   tfile=treefile;
+  //
   tfile->cd();
   this->SetTDir(indir);
   dir->cd();
@@ -46,7 +44,12 @@ defaultTree::defaultTree(TFile* treefile, TDirectory* indir){
 
 
 void defaultTree::Fill(EventInfo* info, EasyChain* tree, vector<Muon*>& muons_in, vector<Electron*>& electrons_in, vector<Jet*>& jets_in, LorentzM& met){
-  //cout<<"this function shoult not be called, it's only here to override the virtual function Fill in the base class"<<endl;
+
+
+  //if the jet collection is empty, then its because the default should be used
+  //  if(!jets_in.empty()){
+  //  }
+
 
 
   el->clear();
@@ -60,6 +63,9 @@ void defaultTree::Fill(EventInfo* info, EasyChain* tree, vector<Muon*>& muons_in
   run = info->Run;    
   weight=info->EventWeight;
   PUWeight=info->PUWeight;
+  PUWeight_up=info->PUWeight_up;
+  PUWeight_down=info->PUWeight_down;
+  NPV=info->PUInter;
 
   HT=0;
   double HTx=0;
@@ -91,6 +97,8 @@ void defaultTree::Fill(EventInfo* info, EasyChain* tree, vector<Muon*>& muons_in
   MT2WMu=mt2w_calc.get_mt2w(muons_in, jets_in, met);
 
   //cout<<"in the default tree, mt2WMu is "<<MT2WMu<<endl;
+  //cout<<"the value of met is "<<met.Pt()<<endl;
+  //cout<<"the jet collection has size "<<jets_in.size()<<endl;
   //mt2wmu_intree->Fill(MT2WMu);
   //
 
@@ -161,7 +169,9 @@ void defaultTree::Constructor(){
   MT2WMu=0.0;
   weight=0.0;
   PUWeight=0.0;
-
+  PUWeight_up=0.0;
+  PUWeight_down=0.0;
+  NPV=0.0;
   Jets = new vector<LorentzM>;
 //  Jetset(new vector<LorentzM>);
   el = new vector<LorentzM>;
@@ -197,6 +207,9 @@ void defaultTree::Constructor(){
   mytree->Branch("MT2WMu",&MT2WMu,"MT2WMu/D");
   mytree->Branch("Weight",&weight,"weight/D");
   mytree->Branch("PUWeight",&PUWeight,"PUWeight/D");
+  mytree->Branch("PUWeight_up",&PUWeight_up,"PUWeight_up/D");
+  mytree->Branch("PUWeight_down",&PUWeight_down,"PUWeight_down/D");
+  mytree->Branch("NPV",&NPV,"NPV/I");
   //  mytree->Branch("NJets",&nJets,"nJets/I");
   mytree->Branch("Jets","std::vector<ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<float> > >",&Jets);
   mytree->Branch("Muons","std::vector<ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<float> > >",&mu);

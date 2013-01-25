@@ -3,12 +3,12 @@
 
 isData      = true
 filename    = /pnfs/desy.de/cms/tier2/store/user/schettle/nTuple11_v4/data/MuHad/Run2011A-May10ReReco-v1/SusyCAF_Tree_66_1_orz.root
-quick       = false
+quick       = true
 resonance_cut = 8.0
 isolation_cut = 0.1
-SampleName = SingleElectron
-SubSampleName = Run2012B-PromptReco-v1
-Estimation = RA4b-el-HighPt
+SampleName = MuHad
+SubSampleName = Run2012B-13Jul
+Estimation = RA4b-mu
 TightElectrons_PTMIN = 30.0
 TightMuons_PTMIN = 20.0
 Tail = NoTail

@@ -4,10 +4,13 @@
 #include "TFile.h"
 #include <iostream>
 #include <fstream>
+#include "defaultTreeVariables.h"
+
 
 void subTreeAnalyzer(TString filepath, TString outfilepath="out.root", TString InDir="undef",TString SampleName="undef", TString SubSample="undef", TString Estimation="undef", TString Tail="undef", double TotalScale=1.0){
 
- 
+
+  void DefineBranches(TTree*,TreeVariables&); 
   //INPUT FILE
   TFile* infile = new TFile(filepath,"READ");
   if (!infile->IsOpen()){
@@ -23,59 +26,17 @@ void subTreeAnalyzer(TString filepath, TString outfilepath="out.root", TString I
   events.open("events.dat");
   
 
-  //
+  //============================================
   //GET THE TREE
   TTree* tree= (TTree*)infile->Get("subTree");
-  //
-  //
-  //
-  std::cout<<"what the fuck "<<std::endl;
-  //
+  //============================================
+
   std::cout<<"the entries: "<<tree->GetEntries()<<endl;
   //
   //GET THE BRANCHES
-  int Run=0;
-  tree->SetBranchAddress("Run",&Run);
-  int Event=0;
-  tree->SetBranchAddress("Event",&Event);
-  double MET;
-  tree->SetBranchAddress("MET",&MET);
-  double HT;
-  tree->SetBranchAddress("HT",&HT);
-  double MHT;
-  tree->SetBranchAddress("MHT",&MHT);
-  double Y;
-  tree->SetBranchAddress("Y",&Y);
-  double MT;
-  tree->SetBranchAddress("MT",&MT);
-  double MT2;
-  tree->SetBranchAddress("MT2",&MT2);
-  double MT2WEle;
-  tree->SetBranchAddress("MT2WEle",&MT2WEle);
-  double MT2WMu;
-  tree->SetBranchAddress("MT2WMu",&MT2WMu);
-  double EventWeight;
-  tree->SetBranchAddress("Weight",&EventWeight);
-  int NJets;
-  tree->SetBranchAddress("NJets",&NJets);
-  vector< double >* treeElectron=0;
-  tree->SetBranchAddress("treeEl",&treeElectron);
-  vector< double >* treeMuon=0;
-  tree->SetBranchAddress("treeMu",&treeMuon);
-  vector<double>* jet1=0;
-  tree->SetBranchAddress("jet1",&jet1);
-  vector<double>* jet2=0;
-  tree->SetBranchAddress("jet2",&jet2);
-  vector<double>* jet3=0;
-  tree->SetBranchAddress("jet3",&jet3);
-  vector<double>* jet4=0;
-  tree->SetBranchAddress("jet4",&jet4);
-  vector<double>* jet5=0;
-  tree->SetBranchAddress("jet5",&jet5);
-  vector<double>* jet6=0;
-  tree->SetBranchAddress("jet6",&jet6);
-  vector<double>* jet7=0;
-  tree->SetBranchAddress("jet7",&jet7);
+
+  TreeVariables var;
+  DefineBranches(inputTree,var);
 
 
   //=========CONSTANTS================
@@ -207,3 +168,24 @@ void subTreeAnalyzer(TString filepath, TString outfilepath="out.root", TString I
 
 }
 
+  
+void DefineBranches(TTree* tree,TreeVariables& name){
+    
+  //GET THE BRANCHES
+  tree->SetBranchAddress("Run",&name.Run);
+  tree->SetBranchAddress("Jets",&name.Jets);
+  tree->SetBranchAddress("Event",&name.Event);
+  tree->SetBranchAddress("MET",&name.MET);
+  tree->SetBranchAddress("HT",&name.HT);
+  tree->SetBranchAddress("MHT",&name.MHT);
+  tree->SetBranchAddress("Y",&name.Y);
+  tree->SetBranchAddress("MTEle",&name.MTEle);
+  tree->SetBranchAddress("MTMu",&name.MTMu);
+  tree->SetBranchAddress("MT2",&name.MT2);
+  tree->SetBranchAddress("MT2WEle",&name.MT2WEle);
+  tree->SetBranchAddress("MT2WMu",&name.MT2WMu);
+  tree->SetBranchAddress("Weight",&name.EventWeight);
+  tree->SetBranchAddress("Electrons",&name.Electrons);
+  tree->SetBranchAddress("Muons",&name.Muons);
+  
+}

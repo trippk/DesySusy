@@ -50,7 +50,7 @@ protected:
   TTree* mytree;
   TDirectory* dir;
   TFile* tfile;
-   mt2w_bisect::mt2w_interface mt2w_calc;
+  mt2w_bisect::mt2w_interface mt2w_calc;
   
   int event;
   int run;
@@ -65,23 +65,17 @@ protected:
   double MT2WMu;
   double weight;
   double PUWeight;
-  //  int nJets;
+  double PUWeight_up;
+  double PUWeight_down;
+  int NPV;
+
+
 
   vector<LorentzM>* el;
   vector<LorentzM>* mu;
   vector<LorentzM>* Jets;
 
-  /*   
-   vector<double> el;
-   vector<double> mu;
-   vector<double> jet1;
-   vector<double> jet2;
-   vector<double> jet3;
-   vector<double> jet4;
-   vector<double> jet5;
-   vector<double> jet6;
-   vector<double> jet7;
-  */
+
  };
 
 #endif

@@ -340,7 +340,7 @@ def TTJetsMG():
     Scripts=[]
     Sample='TTJetsMG'
     SubSample='Hadr-DR53'
-    FilesDir='/scratch/hh/dust/naf/cms/user/costanza/NTuple12_V4c/TTJetsMG/HadronicMGDecays-v1/'
+    FilesDir='/scratch/hh/dust/naf/cms/user/costanza/NTuple12_V4c/TTJetsMG/HadronicMGDecays_ext-v1'
     Config='config_MC_RA4b.txt'
     nFiles=3
     script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
@@ -574,7 +574,7 @@ def WJetsToLNu():
     SubSample='HT250To300'
     FilesDir='/scratch/hh/dust/naf/cms/user/costanza/NTuple12_V4c/WJetsToLNu/HT250To300/'
     Config='config_MC_RA4b.txt'
-    nFiles=15
+    nFiles=5
     script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
     cleanUpDir('./'+Sample+'/'+SubSample)
     Scripts.append(script)
@@ -582,7 +582,7 @@ def WJetsToLNu():
     SubSample='HT300To400'
     FilesDir='/scratch/hh/dust/naf/cms/user/costanza/NTuple12_V4c/WJetsToLNu/HT300To400/'
     Config='config_MC_RA4b.txt'
-    nFiles=15
+    nFiles=5
     script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
     cleanUpDir('./'+Sample+'/'+SubSample)
     Scripts.append(script)
@@ -590,7 +590,7 @@ def WJetsToLNu():
     SubSample='HT400ToInf'
     FilesDir='/scratch/hh/dust/naf/cms/user/costanza/NTuple12_V4c/WJetsToLNu/HT400ToInf/'
     Config='config_MC_RA4b.txt'
-    nFiles=15
+    nFiles=5
     script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
     cleanUpDir('./'+Sample+'/'+SubSample)
     Scripts.append(script)

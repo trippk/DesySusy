@@ -264,7 +264,7 @@ void makeCleanedJets(vector<Ptr_Jet>& Jets_In, vector<Ptr_Jet>& Jets_Out, vector
 void makeCleanedJets(vector<Ptr_Jet>& Jets_In, vector<Ptr_Jet>& Jets_Out, vector<Muon>& Muons, vector<Electron>& Electrons){
 
   cout<<"this function is deprecated, it should not be called!"<<endl;
-
+  
   void makeCleanedJets(vector<Ptr_Jet>&, vector<Ptr_Jet>&, vector<Muon*>&, vector<Electron*>&); 
   Jets_Out.clear();
 
@@ -590,8 +590,10 @@ void makeGoodJets(EasyChain* tree, vector<Jet*>& AllJets, vector<Jet*>& goodJets
 
 void makeCleanedJets(vector<Jet*>& Jets_In, vector<Jet*>& Jets_Out, vector<Muon>& Muons, vector<Electron>& Electrons, CutSet* flow_in){
   
+  
   Jets_Out.clear();
   
+
   //Distance between the jet and the iso leptons
   ConfigReader config;
   static float  DELTAR_CUT  =  config.getFloat("Jets_CLEANDELTAR",  0.3 );

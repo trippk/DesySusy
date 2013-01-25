@@ -214,12 +214,18 @@ int main(int argc, char** argv){
 
   vector<double> PUmc;
   vector<double> PUdata;
+  vector<double> PUdata_up;
+  vector<double> PUdata_down;
   int nobinsmc=0;
   int nobinsdata=0;
+  int nobinsdata_up=0;
+  int nobinsdata_down=0;
   if(!isData && !oldpuw){
     nobinsmc = config.getDouble("PU_"+WhatSample+"_"+WhatSubSample+"_mc",PUmc," ");
     nobinsdata = config.getDouble("PU_data",PUdata," ");
-  } 
+    nobinsdata = config.getDouble("PU_data_up",  PUdata_up  ," ");
+    nobinsdata = config.getDouble("PU_data_down",PUdata_down," ");
+  }
   else if(!isData && oldpuw){
     nobinsmc = config.getDouble("oldPU_"+WhatSample+"_"+WhatSubSample+"_mc",PUmc," ");
    } 
@@ -365,10 +371,10 @@ int main(int argc, char** argv){
   Systematics systematics;
   if (!isquick && doSystematics){
     //it cant do systematics on the quick mode
-    systematics.AddUncertainty((string)"jetup",treeFile);
-    systematics.AddUncertainty((string)"jetdown",treeFile);
-    systematics.AddUncertainty((string)"clustersup",treeFile);
-    systematics.AddUncertainty((string)"clustersdown",treeFile);
+    //systematics.AddUncertainty((string)"jetup",treeFile);
+    //systematics.AddUncertainty((string)"jetdown",treeFile);
+    //systematics.AddUncertainty((string)"clustersup",treeFile);
+    //systematics.AddUncertainty((string)"clustersdown",treeFile);
     systematics.AddUncertainty((string)"jetResup",treeFile);
     systematics.AddUncertainty((string)"jetResdown",treeFile);
   }
@@ -441,7 +447,7 @@ int main(int argc, char** argv){
     }
      
     //    pcp=true;
-    //if(i>2000)continue;
+    //if(i>10000)continue;
 
     timer();
 
@@ -499,6 +505,8 @@ int main(int argc, char** argv){
     // PILE UP RW
     //==============================================
     double PUWeight=1;
+    double PUWeight_up=1;
+    double PUWeight_down=1;
     int relevantNumPU=0;
     if(!isData) {
       float PUnumInter    = tree->Get( PUnumInter, "pileupTrueNumInteractionsBX0");
@@ -513,6 +521,8 @@ int main(int argc, char** argv){
       }
       else {
 	PUWeight= PUdata.at( relevantNumPU )/PUmc.at( relevantNumPU );
+	PUWeight_up= PUdata_up.at( relevantNumPU )/PUmc.at( relevantNumPU );
+	PUWeight_down= PUdata_down.at( relevantNumPU )/PUmc.at( relevantNumPU );
       }
       
       EventWeight *= PUWeight;
@@ -1484,41 +1494,70 @@ int main(int argc, char** argv){
     info.Run=Run;
     info.EventWeight=EventWeight;
     info.PUWeight=PUWeight;
-
-
-    //cout<<"the size of ALLJets is 5 "<<AllJets.size()<<endl;   
-
-    //=====================FILL THE TREES====================
+    info.PUWeight_up=PUWeight_up;
+    info.PUWeight_down=PUWeight_down;
+    if(!isData) info.PUInter    = relevantNumPU;
+    else        info.PUInter    = goodVert.size();
     //
     //
-    //
+
     
+
+    //=====================FILL THE subTree====================
+    //
+    //
+    //
+    vector<Jet*> pCleanedJets;
+    for (int ij=0;ij<CleanedJets.size();++ij){
+      pCleanedJets.push_back(CleanedJets.at(ij).get());
+    }    
     if (isquick || (!isquick && OKall)){
       if(doSubTree){
 	vector<Jet*> pCleanedJets;
 	for (int ij=0;ij<CleanedJets.size();++ij){
 	  pCleanedJets.push_back(CleanedJets.at(ij).get());
 	}
+	//cout<<"filling subTree"<<endl;
 	SubTree->Fill( &info, tree, SignalMuons, SignalElectrons, pCleanedJets, PFmet);
       }
     }
 
 
 	
-    //====================SYSTEMATICS TREES
+    //====================SYSTEMATICS TREES=======================================
     if( systematics.IsEnabled()){
       typedef map<string,bool>::iterator map_it;
       for (map_it iter=systematics.GetSysMap().begin(); iter != systematics.GetSysMap().end(); iter++){
 	if(iter->second){    
 	  if(systematics.passCuts.at(iter->first)){
-	    systematics.GetsysDefaultTree(iter->first)->Fill(&info, tree, SignalMuons,SignalElectrons,systematics.GetsysJet("jetup_good_clean"),*systematics.GetsysMETVector(iter->first));
+
+
+	    //maybe there is no jet collection for this systematic calculation:
+	    //then the default cleaned jets should be used
+	    if( systematics.GetsysJet(iter->first+"_good_clean").empty()){
+	      for( int ijet=0; ijet<CleanedJets.size(); ++ijet){
+		systematics.GetsysJet(iter->first+"_good_clean").push_back(CleanedJets.at(ijet));
+	      }
+	    }
+	    //cout<<"just checking "<<info.PU
+	    //FILL THE TREES
+	    systematics.GetsysDefaultTree(iter->first)->Fill(&info, tree, SignalMuons,SignalElectrons,systematics.GetsysJet(iter->first+"_good_clean"),*systematics.GetsysMETVector(iter->first));
 	  }
 	}
       }
     }
-
+    //=============================================================================
 
     //cout<<"the size of ALLJets is 6 "<<AllJets.size()<<endl;   
+
+
+
+
+
+
+
+
+
 
   }//End of the event loop
      
