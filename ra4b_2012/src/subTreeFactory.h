@@ -14,59 +14,43 @@
 class subTreeFactory
 {
  public:
-
+  
   static TDirectory * getDir(TFile * tfile, const TString newdir) {
 
     if (!tfile) {
-      //NULL pointer to tfile. Return null;
       return NULL;
     }
 
-    TObjArray* arr=newdir.Tokenize("/");
-    TIter next(arr);
-    TString* token;
-    //arr->Print();
-    Int_t numsep=arr->GetEntries();
-  
-    TObjString* tok;
-
-    TDirectory * dir = (TDirectory*) tfile;
+    TDirectory * dir = (TDirectory*) tfile;  
     
-    TString newpath="";
+    TObjArray* arr=newdir.Tokenize("/");
+    const Int_t numsep=arr->GetEntries();
     for(Int_t i=0; i<numsep;++i){
       
-	tok=(TObjString*)(*arr)[i];    
-	TString newsubdir=tok->GetName();
-	newpath=newpath+newsubdir+(TString)+"/";
+      TObjString* tok=(TObjString*)(*arr)[i];    
+      TString newsubdir=tok->GetName();
+      
+      if ( !dir ) {
+	cout << "ERROR : Could not create the subdirectory " << newdir << endl;
+	break; //Protect against NULL 
+      }
 
-	if ( !dir ) {
-	  cout << "ERROR : Could not create the subdirectory " << newdir << endl;
-	  break; //Protect against NULL 
-	}
+      //Try to get the new subdir, to see if it exists
+      TDirectory * newdir=(TDirectory*)dir->Get(newsubdir); //Get the new subdir.
+      if (newdir == 0) {
+	//Subdir does not exist. Try to create it.
+	bool okmkdir=dir->mkdir(newsubdir); 
+	newdir=(TDirectory*)dir->Get(newsubdir); 
 
-	//Try to get the new subdir, to see if it exists
-	TDirectory * newdir=(TDirectory*)dir->Get(newsubdir); //Get the new subdir.
+	//If subdir not created, exit
 	if (newdir == 0) {
-	  //cout << "Creating dir: " << newsubdir << endl;
-	  bool okmkdir=dir->mkdir(newsubdir); //Create the new subdir. If it exists, returns false.
-	  //cout << "DONE!" << endl;
-	  newdir=(TDirectory*)dir->Get(newsubdir); //Get the new subdir.
+	  cout << "ERROR: Problem creating the directory: " << newdir << endl;
+	  break;
 	}
-	else {
-	  //cout << "Found exisiting directory!"<< endl;
-	  dir = newdir;
-	}
+      }
 
- 	//      cout<<"result of mkdir is "<<okmkdir<<endl; 
- 	//      cout<<"the current path is "<<newpath<<endl; 
- 	//if (!okmkdir){ 
- 	  //======IT EXISTS, SO CD INTO IT AND REPEAT 
- 	  //	cout<<"so now I'm here"<<endl; 
- 	  //directory aleady exists!, go to it 
- 	  //	cout<<"trying to get "<<(TString)tok->GetName()<<endl; 
- 	  //cout<<"the directory already existed. Now I'm in "<<dir->GetName()<<endl; 
- 	//} 
-	//dir=(TDirectory*)dir->Get(newsubdir); //Get the new subdir.
+      //If here, subdir was either found or successfully created.
+      dir = newdir;
     }
     
     //Clear-up memory
