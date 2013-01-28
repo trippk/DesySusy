@@ -47,10 +47,6 @@ void anDiLep::AllocateMemory() {
   vMET_raw = new LorentzM();
   vMET_type1 = new LorentzM();
 
-  //Ensure that SumW2 is called and declare histograms
-  TH1::SetDefaultSumw2(true);
-  h_Mll = new TH1D("Mll", "Invariant mass of lepton pair;Mll;N", 300, 0., 300.);
-
   return;
 }
 
@@ -230,16 +226,6 @@ void anDiLep::Fill(EventInfo* info, EasyChain* tree, std::vector<Muon*> & muons_
 
   treeToWrite->Fill();
 
-  std::vector<LorentzM> ossfPair;
-  getOsSfPair(ossfPair);
-
-  //Fill the histogram
-  if (ossfPair.size() == 2) {
-    LorentzM pll = ossfPair.at(0);
-    pll = pll + ossfPair.at(1);
-    h_Mll->Fill(pll.M(), weight);
-  }
-
   return;
 }
 
@@ -255,10 +241,6 @@ void anDiLep::Write(){
   if (treeToWrite) {
     cout << "anDiLep::Write >> WRITING TREE!" << endl;
     treeToWrite->Write();
-  }
-  if (h_Mll) {
-    h_Mll->Write();
-    cout << "anDiLep::Write >> WRITING HIST!" << endl;
   }
 };
 

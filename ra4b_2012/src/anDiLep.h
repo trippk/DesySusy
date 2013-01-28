@@ -31,9 +31,6 @@ class anDiLep : public subTree {
 
    void getOsLeptonPair(const std::vector<LorentzM> * leptons, const std::vector<int> * leptonsQ, std::vector<LorentzM> & osPair);
    
-/*    mt2w_bisect::mt2w_interface mt2w_calc; */
-/*    mt2_bisect::mt2 mt2_calc; */
-
    TDirectory * dir; //dir in which tree and hists are created
 
    TTree * treeToRead;
@@ -67,15 +64,6 @@ class anDiLep : public subTree {
    LorentzM *   vMET_raw;
    LorentzM *   vMET_type1;
    
-   //--------------------------
-
-
-   /////////////////
-   //Histograms
-   /////////////////
-
-   TH1D * h_Mll; //Stores the invariant mass of OSSF lepton pair
-
    //--------------------------
 
  public:
