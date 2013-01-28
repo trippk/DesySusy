@@ -125,6 +125,8 @@ class event {
   double PUWeight;
   double EventWeight;
 
+  int nGoodVertices;
+
   unsigned int EventNum;
   unsigned int RunNum;
 

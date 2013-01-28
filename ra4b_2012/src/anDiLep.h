@@ -47,6 +47,7 @@ class anDiLep : public subTree {
    int run;
    double weight;
    double PUWeight;
+   int nvtx;
 
    double mY; //Mass of produced sparticle, used in scans.
    double mLsp; //Mass of the LSP
@@ -97,6 +98,9 @@ class anDiLep : public subTree {
    void getJets(std::vector<LorentzM> & jetsOut);
    void getTaggedJets(std::vector<LorentzM> & jetsOut);
    void getUntaggedJets(std::vector<LorentzM> & jetsOut);
+
+   void getMuons(std::vector<LorentzM> & muOut);
+   void getElectrons(std::vector<LorentzM> & elOut);
    
    double getMT2W(const LorentzM & lepton, const std::vector<LorentzM> & taggedJets, const std::vector<LorentzM> & untaggedJets, const LorentzM & mpt);
 

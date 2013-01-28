@@ -17,7 +17,7 @@ anDiLep::anDiLep(TDirectory * dirIn) : treeToRead(0), treeToWrite(0), nEntries(0
   SetBranchesWrite();
 }
 
-anDiLep::anDiLep(TTree * treeToReadIn) : treeToRead(treeToReadIn), treeToWrite(0), dir(0), nEntries(0), iEntry(0), event(0), run(0), mY(-1.), mLsp(-1.), weight(0), PUWeight(0), el(0), elQ(0), mu(0), muQ(0), jets(0), bjetdisc(0), nbjets(0), isbjet(0), vMET_raw(0), vMET_type1(0) {
+anDiLep::anDiLep(TTree * treeToReadIn) : treeToRead(treeToReadIn), treeToWrite(0), dir(0), nEntries(0), iEntry(0), event(0), run(0), mY(-1.), mLsp(-1.), weight(0), PUWeight(0), nvtx(-1), el(0), elQ(0), mu(0), muQ(0), jets(0), bjetdisc(0), nbjets(0), isbjet(0), vMET_raw(0), vMET_type1(0) {
 
   SetBranchesRead();
 
@@ -103,9 +103,9 @@ void anDiLep::SetToZero(){
   run=0;
   weight=0.0;
   PUWeight=0.0;
+  nvtx=-1;
   mY=-1.;
   mLsp=-1.;
-
 
   el->clear();
   elQ->clear();
@@ -132,6 +132,7 @@ void anDiLep::SetBranchesWrite() {
   treeToWrite->Branch("Run",&run,"run/I");
   treeToWrite->Branch("Weight",&weight,"weight/D");
   treeToWrite->Branch("PUWeight",&PUWeight,"PUWeight/D");
+  treeToWrite->Branch("nvtx",&nvtx,"nvtx/I");
   treeToWrite->Branch("mY"  ,&mY  ,"mY/D");
   treeToWrite->Branch("mLsp",&mLsp,"mLsp/D");
 
@@ -163,6 +164,7 @@ void anDiLep::SetBranchesRead() {
   treeToRead->SetBranchAddress("Run",&run);
   treeToRead->SetBranchAddress("Weight", &weight );
   treeToRead->SetBranchAddress("PUWeight",&PUWeight);
+  treeToRead->SetBranchAddress("nvtx",&nvtx);
   treeToRead->SetBranchAddress("mY",&mY);
   treeToRead->SetBranchAddress("mLsp",&mLsp);
   
@@ -199,6 +201,7 @@ void anDiLep::Fill(EventInfo* info, EasyChain* tree, std::vector<Muon*> & muons_
   run = info->Run;    
   weight = info->EventWeight;
   PUWeight = info->PUWeight;
+  nvtx = info->PUInter;
   mY = info->mY;
   mLsp = info->mLsp;
 
@@ -474,6 +477,21 @@ void anDiLep::getUntaggedJets(std::vector<LorentzM> & jetsOut) {
 
   return;
 }
+
+void anDiLep::getMuons(std::vector<LorentzM> & muOut) {
+  muOut.clear();
+  if (mu == 0) return;
+  muOut = *mu;
+  return;
+}
+void anDiLep::getElectrons(std::vector<LorentzM> & elOut) {
+  elOut.clear();
+  if (el == 0) return;
+  elOut = *el;
+  return;
+}
+
+
 
 double anDiLep::getMT2W (const LorentzM & lepton, const std::vector<LorentzM> & taggedJets, const std::vector<LorentzM> & untaggedJets, const LorentzM & mpt) {
 

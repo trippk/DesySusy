@@ -106,6 +106,8 @@ void event::resetAll() {
   EventWeight = 1.;
   PUWeight = 1.;
 
+  nGoodVertices = -1;
+
   Muons.clear();
   LooseMuons.clear();
   TightMuons.clear();
@@ -164,7 +166,7 @@ void event::doPU_RW() {
   //==============================================
   // PILE UP RW
   //==============================================
-  double PUWeight=1.;
+  PUWeight=1.;
   if(!isData) {
     float PUnumInter    = tree->Get( PUnumInter, "pileupTrueNumInteractionsBX0");
     int relevantNumPU = (int) PUnumInter;
@@ -379,6 +381,7 @@ bool event::applyCut(const string &cutName, vector<Muon*> * muonsPlot, vector<El
   else if (cutName == "PV"){
     vector<int> goodVert;
     OK = vertices_RA4b(tree,goodVert);
+    nGoodVertices = goodVert.size(); //Store the number of good vertices in the event
   }
   else if (cutName == "HBHE"){
     OK = evtqual_RA4b(tree);
@@ -460,6 +463,7 @@ void event::fillTree() {
   info.PUWeight=PUWeight;
   info.mY=mY;
   info.mLsp=mLsp;
+  info.PUInter=nGoodVertices;
 
   //=====================FILL THE TREES====================
   anDiLep * anDiLepTree = dynamic_cast<anDiLep*>(outTree);
