@@ -109,10 +109,14 @@ class anDiLep : public subTree {
    double getWeight();
    int getNtags();
 
+   int getNumVtx() {return nvtx;}
+
    double getMY() const {return mY;}
    double getMLSP() const {return mLsp;}
    bool isSusyScan() const {return (mY >= 0. && mLsp >= 0.);}
    bool isScanPoint(double mY_in, double mLsp_in) const;
+
+   bool isData() {return run != 1;}
 };
 
 
