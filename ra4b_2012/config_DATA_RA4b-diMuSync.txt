@@ -46,8 +46,7 @@ VertexZ_MC = 24.0
 
 LooseMuons_PTMIN = 10.0
 TightMuons_PTMIN = 10.0
-TightMuons_ISOMAX = 0.15
-TightMuons_PFIsoCutMIN = 0.15
+TightMuons_PFRelIso_MAX = 0.15
 TightMuons_dzVertexMAX = 0.1
 TightMuons_PFRECO_MAXDIFF = 999999.
 TightMuons_REQ_ISTRACKER = true
