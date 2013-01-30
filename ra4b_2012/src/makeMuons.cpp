@@ -301,7 +301,7 @@ bool makeTightMuons(EasyChain* tree, vector<Muon>& AllMuons,vector<Muon*>& Tight
 
   static float PTMIN  = config.getFloat("TightMuons_PTMIN",  20. ); //
   static float ETAMAX = config.getFloat("TightMuons_ETAMAX", 2.4 ); //
-  static float ISOMAX = config.getFloat("TightMuons_ISOMAX", 0.12 ); //
+  //static float ISOMAX = config.getFloat("TightMuons_ISOMAX", 0.12 ); //
   static float Chi2MAX = config.getFloat("TightMuons_Chi2MAX",10.0); //
   static int NValidGlobalTrackerHitsMIN = config.getInt("TightMuons_NValidGlobalTrackerHitsMIN", 0); //
   //static int NValidMuonHitsMIN = config.getInt("TightMuons_NValidMuonHitsMIN", 1); // ??
@@ -312,7 +312,7 @@ bool makeTightMuons(EasyChain* tree, vector<Muon>& AllMuons,vector<Muon*>& Tight
   static int NValidPixelHitsMIN=config.getInt("TightMuons_NValidPixelHitsMIN",0); //
   //
   static int NTrackerLayersMIN=config.getInt("TightMuons_NTrackerLayersMIN",5); //
-  static float PFIsoCut          =config.getFloat("TightMuons_PFIsoCutMIN",0.12); //
+  static float PFRelIsoMAX          =config.getFloat("TightMuons_PFRelIso_MAX",0.12); //
   static float PFRECO_MAXDIFF = config.getFloat("TightMuons_PFRECO_MAXDIFF", 5.0);
   static bool REQ_ISTRACKER = config.getBool("TightMuons_REQ_ISTRACKER", false);
 
@@ -370,7 +370,7 @@ bool makeTightMuons(EasyChain* tree, vector<Muon>& AllMuons,vector<Muon*>& Tight
     OK=fabs(AllMuons.at(imu).Eta())<=ETAMAX;
     if(!flow->keepIf("abs(eta)<etamax TIGHT",OK))continue;
     //
-    OK=AllMuons.at(imu).RelIso() < PFIsoCut;
+    OK=AllMuons.at(imu).RelIso() < PFRelIsoMAX;
     // OK=true;
     if(!flow->keepIf("PFIso",OK)) continue;
 
