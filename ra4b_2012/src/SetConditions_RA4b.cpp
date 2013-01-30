@@ -167,17 +167,17 @@ void SetConditions_RA4b(SampleInformation mySampleInformation){
     //============================================
     //ELECTRONS
     //============================================
-    SetOfCuts::SignalElectrons.NUM.Set(-1,"above","Any tight electrons");
-    SetOfCuts::WideElectrons.NUM.Set(-1,"above","Any wider electrons");
+    SetOfCuts::SignalElectrons.NUM.Set(0,"equal","no signal electron");
+    SetOfCuts::WideElectrons.NUM.Set(0,"equal","no wider electrons");
     //============================================
     // MUONS
     //============================================
-    SetOfCuts::SignalMuons.NUM.Set(1,"above","Two or more tight muons");
-    SetOfCuts::WideMuons.NUM.Set(-1,"above","Any wider muons");
+    SetOfCuts::SignalMuons.NUM.Set(1,"equal","one signal muon");
+    SetOfCuts::WideMuons.NUM.Set(0,"equal","no wider muons");
     //============================================
     //LEPTONS
     //============================================
-    SetOfCuts::Leptons.NUM.Set(1,"above","more than one tight lepton");
+    SetOfCuts::Leptons.NUM.Set(1,"equal","one single lepton");
     //============================================
     //JETS
     //============================================
