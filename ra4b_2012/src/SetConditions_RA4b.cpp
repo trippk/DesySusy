@@ -39,13 +39,13 @@ void SetConditions_RA4b(SampleInformation mySampleInformation){
     //============================================
     //JETS
     //============================================
-      SetOfCuts::Jets.NUM.Set(3,"above","jets>3");
+    SetOfCuts::Jets.NUM.Set(2,"above","jets>2");
     //============================================
     //EVENT
     //============================================
     SetOfCuts::Event.NumberOfBtags.Set(-1,"above","any number of btags");
     SetOfCuts::Event.HT.Set(300.0,"above","HT above 300");
-    SetOfCuts::Event.MET.Set(100.,"above","MET above 60");
+    SetOfCuts::Event.MET.Set(60.0,"above","MET above 60");
     //============================================
 
   }  
@@ -159,6 +159,35 @@ void SetConditions_RA4b(SampleInformation mySampleInformation){
     SetOfCuts::Event.NumberOfBtags.Set(-1,"above","any number of btags");
     SetOfCuts::Event.HT.Set(300.0,"above","HT above 300");
     SetOfCuts::Event.MET.Set(100.,"above","MET above 100");
+    //============================================
+    
+  }
+  else if(mySampleInformation.GetEstimation()=="STOP-mu" ){
+    
+    //============================================
+    //ELECTRONS
+    //============================================
+    SetOfCuts::SignalElectrons.NUM.Set(-1,"above","Any tight electrons");
+    SetOfCuts::WideElectrons.NUM.Set(-1,"above","Any wider electrons");
+    //============================================
+    // MUONS
+    //============================================
+    SetOfCuts::SignalMuons.NUM.Set(1,"above","Two or more tight muons");
+    SetOfCuts::WideMuons.NUM.Set(-1,"above","Any wider muons");
+    //============================================
+    //LEPTONS
+    //============================================
+    SetOfCuts::Leptons.NUM.Set(1,"above","more than one tight lepton");
+    //============================================
+    //JETS
+    //============================================
+    SetOfCuts::Jets.NUM.Set(2,"above","jets>=3");
+    //============================================
+    //EVENT
+    //============================================
+    SetOfCuts::Event.NumberOfBtags.Set(-1,"above","any number of btags");
+    SetOfCuts::Event.HT.Set(-1.,"above","HT above 0");
+    SetOfCuts::Event.MET.Set(-1.,"above","MET above 0");
     //============================================
     
   }

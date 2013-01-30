@@ -31,24 +31,26 @@ void SetTriggers_RA4b(SampleInformation mySampleInformation, vector<const char*>
     triggernames.push_back("HLT_IsoMu17_eta2p1_TriCentralPFJet30");
     triggernames.push_back("HLT_IsoMu17_eta2p1_TriCentralPFNoPUJet30");
     triggernames.push_back("HLT_IsoMu17_eta2p1_TriCentralPFNoPUJet30_30_20");
-    
-  }else if (mySampleInformation.GetEstimation()=="RA4b-mu-HighPt"){
+  }
+  else if (mySampleInformation.GetEstimation()=="RA4b-mu-HighPt"){
     triggernames.push_back("HLT_IsoMu17_eta2p1_TriCentralPFJet30");
     triggernames.push_back("HLT_IsoMu17_eta2p1_TriCentralPFNoPUJet30");
     triggernames.push_back("HLT_IsoMu17_eta2p1_TriCentralPFNoPUJet30_30_20");
   }
-
   else if(mySampleInformation.GetEstimation()=="RA4b-el-HighPt"){
     cout<<"setting triggers allright"<<endl;
     for (int i=0; i<El_HighPtMenu.size(); ++i){
       triggernames.push_back(El_HighPtMenu.at(i));
     }
-
   }
   else if(mySampleInformation.GetEstimation()=="RA4b-el"){
     for (int i=0; i<El_HighPtMenu.size(); ++i){
       triggernames.push_back(El_HighPtMenu.at(i));
     }
+  }
+  else if (mySampleInformation.GetEstimation()=="STOP-mu"){
+    triggernames.push_back("HLT_IsoMu24");
+    triggernames.push_back("HLT_IsoMu24_eta2p1");
   }
   else if (mySampleInformation.GetEstimation()=="RA4b-diMu"){
     triggernames.push_back("HLT_Mu17_Mu8");
