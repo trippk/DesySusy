@@ -594,6 +594,23 @@ def WJetsToLNu():
     cleanUpDir('./'+Sample+'/'+SubSample)
     Scripts.append(script)
 
+    SubSample='3Jets'
+    FilesDir='/scratch/hh/dust/naf/cms/user/dhorton/NTuple12_V4c/WJetsToLNu/3Jets/'
+    Config='config_MC_RA4b.txt'
+    nFiles=4
+    script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
+    cleanUpDir('./'+Sample+'/'+SubSample)
+    Scripts.append(script)
+
+    SubSample='4Jets'
+    FilesDir='/scratch/hh/dust/naf/cms/user/dhorton/NTuple12_V4c/WJetsToLNu/4Jets/'
+    Config='config_MC_RA4b.txt'
+    nFiles=4
+    script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)
+    cleanUpDir('./'+Sample+'/'+SubSample)
+    Scripts.append(script)
+
+
 def WWJetsTo2L2Nu():
 
     Scripts=[]
@@ -704,16 +721,16 @@ def LM9():
 if __name__=='__main__':
 
     MuHad()
-    ElectronHad()
-    SingleMu()
-    SingleElectron()
+#    ElectronHad()
+#    SingleMu()
+#    SingleElectron()
     DoubleMu()
     DoubleEl()
-    MuEG()
+#    MuEG()
     TTJets()
     TTJetsMG()
     TTJetsPOWHEG()
-    TTJetsMCatNLO()
+#    TTJetsMCatNLO()
     DYJetsToLL()
     WJetsToLNu()
     ################
@@ -727,6 +744,6 @@ if __name__=='__main__':
     ZZJetsTo2L2Q()
     ################
     SingleTop()
-    LM9()
-    LM6()
+#    LM9()
+#    LM6()
     T2tt()
