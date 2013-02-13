@@ -16,6 +16,8 @@ struct EventInfo{
   float PUWeight_down;
   float EventWeight;
   int NPV;
+  int NBtags;
+
 
   float mY;
   float mLsp;

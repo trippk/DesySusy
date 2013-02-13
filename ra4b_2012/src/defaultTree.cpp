@@ -66,6 +66,8 @@ void defaultTree::Fill(EventInfo* info, EasyChain* tree, vector<Muon*>& muons_in
   PUWeight_up=info->PUWeight_up;
   PUWeight_down=info->PUWeight_down;
   NPV=info->PUInter;
+  NBtags=info->NBtags;
+  //cout<<"receiving "<<NBtags<<endl;
 
   HT=0;
   double HTx=0;
@@ -172,6 +174,7 @@ void defaultTree::Constructor(){
   PUWeight_up=0.0;
   PUWeight_down=0.0;
   NPV=0.0;
+  NBtags=0.0;
   Jets = new vector<LorentzM>;
 //  Jetset(new vector<LorentzM>);
   el = new vector<LorentzM>;
@@ -210,6 +213,7 @@ void defaultTree::Constructor(){
   mytree->Branch("PUWeight_up",&PUWeight_up,"PUWeight_up/D");
   mytree->Branch("PUWeight_down",&PUWeight_down,"PUWeight_down/D");
   mytree->Branch("NPV",&NPV,"NPV/I");
+  mytree->Branch("NBtags",&NBtags,"NBtags/I");
   //  mytree->Branch("NJets",&nJets,"nJets/I");
   mytree->Branch("Jets","std::vector<ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<float> > >",&Jets);
   mytree->Branch("Muons","std::vector<ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<float> > >",&mu);

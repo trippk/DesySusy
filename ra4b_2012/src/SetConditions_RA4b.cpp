@@ -47,6 +47,68 @@ void SetConditions_RA4b(SampleInformation mySampleInformation){
     SetOfCuts::Event.HT.Set(300.0,"above","HT above 300");
     SetOfCuts::Event.MET.Set(60.,"above","MET above 60");
     //============================================
+  }
+
+
+
+  else if(mySampleInformation.GetEstimation()=="RA4b-mu-4Jets" ){
+    
+    //============================================
+    //ELECTRONS
+    //============================================
+    SetOfCuts::SignalElectrons.NUM.Set(0,"equal","no signal electron");
+    SetOfCuts::WideElectrons.NUM.Set(0,"equal","no wider electrons");
+    //============================================
+    // MUONS
+    //============================================
+    SetOfCuts::SignalMuons.NUM.Set(1,"equal","one signal muon");
+    SetOfCuts::WideMuons.NUM.Set(0,"equal","no wider muons");
+    //============================================
+    //LEPTONS
+    //============================================
+    SetOfCuts::Leptons.NUM.Set(1,"equal","one single lepton");
+    //============================================
+    //JETS
+    //============================================
+    SetOfCuts::Jets.NUM.Set(3,"above","jets>3");
+    //============================================
+    //EVENT
+    //============================================
+    SetOfCuts::Event.NumberOfBtags.Set(-1,"above","any number of btags");
+    SetOfCuts::Event.HT.Set(-1.0,"above","HT above 300");
+    SetOfCuts::Event.MET.Set(100.,"above","MET above 100");
+    //============================================
+  }
+
+
+
+  else if(mySampleInformation.GetEstimation()=="RA4b-mu-noBtags" ){
+    
+    //============================================
+    //ELECTRONS
+    //============================================
+    SetOfCuts::SignalElectrons.NUM.Set(0,"equal","no signal electron");
+    SetOfCuts::WideElectrons.NUM.Set(0,"equal","no wider electrons");
+    //============================================
+    // MUONS
+    //============================================
+    SetOfCuts::SignalMuons.NUM.Set(1,"equal","one signal muon");
+    SetOfCuts::WideMuons.NUM.Set(0,"equal","no wider muons");
+    //============================================
+    //LEPTONS
+    //============================================
+    SetOfCuts::Leptons.NUM.Set(1,"equal","one single lepton");
+    //============================================
+    //JETS
+    //============================================
+    SetOfCuts::Jets.NUM.Set(2,"above","jets>2");
+    //============================================
+    //EVENT
+    //============================================
+    SetOfCuts::Event.NumberOfBtags.Set(0,"equal","exacxtly 0 btags");
+    SetOfCuts::Event.HT.Set(-1,"above","Any HT");
+    SetOfCuts::Event.MET.Set(60.,"above","MET above 60");
+    //============================================
 
   }  
   else if(mySampleInformation.GetEstimation()=="RA4b-el" ){
@@ -72,8 +134,39 @@ void SetConditions_RA4b(SampleInformation mySampleInformation){
     SetOfCuts::Event.HT.Set(300.0,"above","HT above 300");
     SetOfCuts::Event.MET.Set(60.,"above","MET above 100");
     //============================================
+  }
 
-  }else if(mySampleInformation.GetEstimation()=="RA4b-singleLep" ){
+  else if(mySampleInformation.GetEstimation()=="RA4b-el-4Jets" ){
+    
+    //============================================
+    //ELECTRONS
+    //============================================
+    SetOfCuts::SignalElectrons.NUM.Set(1,"equal","one signal electron");
+    SetOfCuts::WideElectrons.NUM.Set(0,"equal","no wider electrons");
+    //============================================
+    // MUONS
+    //============================================
+    SetOfCuts::SignalMuons.NUM.Set(0,"equal","no signal muon");
+    SetOfCuts::WideMuons.NUM.Set(0,"equal","no wider muons");
+    //============================================
+    //LEPTONS
+    //============================================
+    SetOfCuts::Leptons.NUM.Set(1,"equal","one single lepton");
+    //============================================
+    //JETS
+    //============================================
+    SetOfCuts::Jets.NUM.Set(3,"above","jets>3");
+    //============================================
+    //EVENT
+    //============================================
+    SetOfCuts::Event.NumberOfBtags.Set(-1,"above","any number of btags");
+    SetOfCuts::Event.HT.Set(0.0,"above","HT above 300");
+    SetOfCuts::Event.MET.Set(100.,"above","MET above 100");
+    //============================================
+  }
+  
+  
+  else if(mySampleInformation.GetEstimation()=="RA4b-singleLep" ){
     
     //============================================
     //ELECTRONS
@@ -280,7 +373,7 @@ void SetConditions_RA4b(SampleInformation mySampleInformation){
   }
     else if(mySampleInformation.GetEstimation()=="TrigStudy-mu" ){
       
-    //============================================
+      //============================================
     //ELECTRONS
     //============================================
     SetOfCuts::SignalElectrons.NUM.Set(0,"equal","Exactly zero signal electron");
@@ -339,7 +432,7 @@ void SetConditions_RA4b(SampleInformation mySampleInformation){
     cout<<"The estimation "<<mySampleInformation.GetEstimation()<<" does not exist"<<endl;
     exit(1);
   }
-}
+  }
 
 
 

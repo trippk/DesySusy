@@ -23,6 +23,7 @@ void Systematics::Reset(){
   //  cout<<"passcuts cleared"<<endl;
   sysMETVector.clear();
   //cout<<"sysmetvector cleared"<<endl;
+  sysNumberOfbTags.clear();
 
 }
   //================================================
@@ -142,6 +143,22 @@ defaultTree* Systematics::GetsysDefaultTree(string name){
 void Systematics::SetTreeJetCollection(string name, string jetcoll){
   treeJetCollection[name]=jetcoll;
 }
-std::string Systematics::GetTreeJetCollection(string name){
-  return treeJetCollection.at(name);
+std::vector<Ptr_Jet>& Systematics::GetTreeJetCollection(string name){
+  return sysJet[treeJetCollection[name]];
 }
+
+void Systematics::CalculateNumberOfbTags(string name, string jetname){
+
+  //
+  sysNumberOfbTags[name]=0;
+  for (int ijets=0;ijets<sysJet[jetname].size();++ijets){
+    if(sysJet[jetname].at(ijets)->IsBJet("CSV","Medium")){
+      sysNumberOfbTags[name]++;
+    }
+  }
+
+  //
+}
+
+
+

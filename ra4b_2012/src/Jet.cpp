@@ -20,6 +20,7 @@ string Jet::Type()const           {return type;};
 
 
 bool   Jet::IsBJet(const string key, const double disc_cut) const {
+  //cout<<"calling is bjet with the disc_cut = "<<disc_cut<<endl;
   //Find disc value in bJetDisc
   map<string, double>::const_iterator itKey = bJetDisc.find(key);
   if (itKey == bJetDisc.end()) {
@@ -41,6 +42,7 @@ bool Jet::IsBJet(const string key, const string WP) const{
   if (itKey != bJetWP.end()) {
     map<string, double>::const_iterator itWP = itKey->second.find(WP);
     //If here, found disc cut. Compare with disc value.
+
     if (itWP != itKey->second.end()) return IsBJet(key, itWP->second);
   }
 

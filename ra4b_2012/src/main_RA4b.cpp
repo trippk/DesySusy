@@ -58,7 +58,7 @@
 #include <boost/shared_ptr.hpp>
 #include "typedefs.h"
 #include "trigStudyTree.h"
-
+#include "FastCheck_RA4b.h"
 
 using namespace std;
 using namespace ROOT::Math::VectorUtil;
@@ -69,6 +69,17 @@ using namespace ROOT::Math::VectorUtil;
 bool pcp = false; //Set to true for debugging.
 TH1D* JetUncDiff= new TH1D("JetUncDiff","diff in jet uncertainty",50,-0.02,0.02);
 
+vector<TH1D*> JetResPtBins;
+vector<TH1D*> JetResEtaBins;
+vector<TH1D*> JetResPtBins_smear;
+vector<TH1D*> JetResEtaBins_smear;
+
+//for (int k=0;k<5;++k){
+//  JetResPtBins.push_back(new TH1D("JetRes_PtBin"+(TString)Form("%d",k),"jet Res Pt bin "+(TString)Form("%d",k),40,-0.2,0.2));
+//  JetResEtaBins.push_back(new TH1D("JetRes_EtaBin"+(TString)Form("%d",k),"jet Res Eta bin "+(TString)Form("%d",k),40,-0.2,0.2));
+//  JetResPtBins_smear.push_back(new TH1D("JetRes_PtBin"+(TString)Form("%d",k)+"_smear","jet Res Pt bin "+(TString)Form("%d",k),40,-0.2,0.2));
+//  JetResEtaBins_smear.push_back(new TH1D("JetRes_EtaBin"+(TString)Form("%d",k)+"_smear","jet Res Eta bin "+(TString)Form("%d",k),40,-0.2,0.2));
+// }
 
 //Globals to remove
 //bool checkthisevent=false;
@@ -340,6 +351,15 @@ int main(int argc, char** argv){
   TH1D* EW_AfterTrigger= new TH1D("EW_AfterTrigger","Event weight after the trigger",30,0.0,100.0);
   TH1D* EW_AfterPU=new TH1D("EW_AfterPU","Event Weight after PU RW",100,0.0,10.0);
   TH1D* checkMET= new TH1D("checkMET","check of the MET",30,0.0,300.0);
+  
+  for (int k=0;k<5;++k){
+    JetResPtBins.push_back(new TH1D("JetRes_PtBin"+(TString)Form("%d",k),"jet Res Pt bin "+(TString)Form("%d",k),40,-0.2,0.2));
+    JetResEtaBins.push_back(new TH1D("JetRes_EtaBin"+(TString)Form("%d",k),"jet Res Eta bin "+(TString)Form("%d",k),40,-0.2,0.2));
+    JetResPtBins_smear.push_back(new TH1D("JetRes_PtBin"+(TString)Form("%d",k)+"_smear","jet Res Pt bin "+(TString)Form("%d",k),40,-0.2,0.2));
+    JetResEtaBins_smear.push_back(new TH1D("JetRes_EtaBin"+(TString)Form("%d",k)+"_smear","jet Res Eta bin "+(TString)Form("%d",k),40,-0.2,0.2));
+  }
+
+
 
 
 
@@ -375,11 +395,12 @@ int main(int argc, char** argv){
     //systematics.AddUncertainty((string)"jetdown",treeFile);
     //systematics.AddUncertainty((string)"clustersup",treeFile);
     //systematics.AddUncertainty((string)"clustersdown",treeFile);
+    systematics.AddUncertainty((string)"jetRescentral",treeFile);
     systematics.AddUncertainty((string)"jetResup",treeFile);
     systematics.AddUncertainty((string)"jetResdown",treeFile);
   }
 
-
+  
   //=============INITIALIZE THE JETUncertainty object
   typedef boost::shared_ptr<JetCorrectorParameters> JetCorrectorParam_Ptr;
   // Instantiate uncertainty sources
@@ -396,7 +417,7 @@ int main(int argc, char** argv){
     
     bool isBatchJob=config.getBool("isBatchJob",false);
     std::string test1="src/Summer12_V2_DATA_AK5PF_UncertaintySources.txt";
-    std::string test2="../../src/Summer12_V2_DATA_AK5PF_UncertaintySources.txt";
+    std::string test2="../../Summer12_V2_DATA_AK5PF_UncertaintySources.txt";
     
     if(!isBatchJob){
       jetuncfile=test1;
@@ -619,7 +640,17 @@ int main(int argc, char** argv){
     static string btagAlgorithm= config.getString("bTagAlgorithm","CSV");
     static string btagWorkingPoint = config.getString("bTagWorkingPoint","Medium");
     int NumberOfbTags=0;
-   
+    
+    for (int ijet=0;ijet<CleanedJets.size();++ijet){
+      if(CleanedJets.at(ijet)->IsBJet("CSV","Medium")){
+	NumberOfbTags++;
+      }
+    }
+
+
+
+
+
 
 
 
@@ -666,9 +697,11 @@ int main(int argc, char** argv){
 
       
       if( systematics.GetSysMap()["jetResup"]){
+	//
+	//
 	rescaleJetsJER(AllJets,systematics);
-	//=======RESCALE MET
 	//=========RESCALE THE MET
+	rescaleMET(tree,AllJets,systematics, "jetRescentral");
 	rescaleMET(tree,AllJets,systematics, "jetResup");
 	rescaleMET(tree,AllJets,systematics, "jetResdown");
 
@@ -676,18 +709,60 @@ int main(int argc, char** argv){
 	//rescaleMET(tree,systematics.GetsysJet("jetResdown"),systematics,"jetResdown");
 	//cout<<"size of jetResup jets "<<systematics.GetsysJet("jetResup").size()<<endl;
 	//======FEED THE RESCALED JETS TO makeGoodJets
+	makeGoodJets(tree,systematics.GetsysJet("jetRescentral"),systematics.GetsysJet("jetRescentral_good"));
 	makeGoodJets(tree,systematics.GetsysJet("jetResup"),systematics.GetsysJet("jetResup_good"));
 	makeGoodJets(tree,systematics.GetsysJet("jetResdown"),systematics.GetsysJet("jetResdown_good"));
 	//======CLEAN THEM
+	makeCleanedJets(systematics.GetsysJet("jetRescentral_good"),systematics.GetsysJet("jetRescentral_good_clean"),pMuons,pElectrons);
 	makeCleanedJets(systematics.GetsysJet("jetResup_good"),systematics.GetsysJet("jetResup_good_clean"),pMuons,pElectrons);
 	makeCleanedJets(systematics.GetsysJet("jetResdown_good"),systematics.GetsysJet("jetResdown_good_clean"),pMuons,pElectrons);
 	//	cout<<"size of jetResup good jets "<<systematics.GetsysJet("jetResup_good").size()<<endl;
 	//=====GET THE NEW HT
+	rescaleHT(systematics.GetsysJet("jetRescentral_good_clean"), systematics, "jetRescentral");
 	rescaleHT(systematics.GetsysJet("jetResup_good_clean"), systematics, "jetResup");
 	rescaleHT(systematics.GetsysJet("jetResdown_good_clean"), systematics, "jetResdown");
-	//=======COLLECTION TO BE STORED IN THE TREE
+	//=======COLLECTION OF JETS TO BE STORED IN THE SYSTEMATICS TREE
+	systematics.SetTreeJetCollection("jetRescentral","jetRescentral_good_clean");
 	systematics.SetTreeJetCollection("jetResup","jetResup_good_clean");
 	systematics.SetTreeJetCollection("jetResdown","jetResdown_good_clean");
+	//======NUMBER OF BTAGS
+	systematics.CalculateNumberOfbTags("jetRescentral","jetRescentral_good_clean");
+	systematics.CalculateNumberOfbTags("jetResup","jetResup_good_clean");
+	systematics.CalculateNumberOfbTags("jetResdown","jetResdown_good_clean");
+
+
+	/*
+	//plot the resolution
+	for( int ijet=0;ijet<(int)CleanedJets.size();++ijet){	
+	  for (int mjet=0;mjet<(int)systematics.GetsysJet("jetResup_good_clean").size();++mjet){
+	    
+	    if(CleanedJets.at(ijet)->GetIndexInTree()==systematics.GetsysJet("jetResup_good_clean").at(mjet)->GetIndexInTree()){
+	      
+	      double pt=CleanedJets.at(ijet)->Pt();
+	      double ptsmear=systematics.GetsysJet("jetResup_good_clean").at(mjet)->Pt();
+	      
+	      int ptbin=-1;
+	      if(CleanedJets.at(ijet)->Pt()<40){ptbin =0;}
+	      else if(CleanedJets.at(ijet)->Pt()<60){ptbin =1;}
+	      else if(CleanedJets.at(ijet)->Pt()<120){ptbin =2;}
+	      else if(CleanedJets.at(ijet)->Pt()<250){ptbin =3;}
+	      else if(CleanedJets.at(ijet)->Pt()>250){ptbin =4;}
+		
+	      JetResPtBins.at(ptbin)->Fill((ptsmear-pt)/pt);
+	  
+	      int etabin=-1;
+	      if(abs(CleanedJets.at(ijet)->Eta())<0.3){etabin =0;}
+	      else if(abs(CleanedJets.at(ijet)->Eta())<0.5){etabin =1;}
+	      else if(abs(CleanedJets.at(ijet)->Eta())<1.0){etabin =2;}
+	      else if(abs(CleanedJets.at(ijet)->Eta())<2.0){etabin =3;}
+	      else if(abs(CleanedJets.at(ijet)->Eta())>2.0){etabin =4;}
+
+	      JetResEtaBins.at(etabin)->Fill((ptsmear-pt)/pt);
+	      
+	    }
+	  }
+	}
+	*/
       }
     }
 
@@ -711,9 +786,14 @@ int main(int argc, char** argv){
 
     if(DoControlPlots)ControlPlots.MakePlots("Before_CutFlow", TightMuons, TightElectrons, CleanedJets, PFmet); 
 
-
-
-
+    bool doFastCheck=config.getBool("doFastCheck",false);
+    //cout<<"fast check is "<<doFastCheck<<endl;
+    if(doFastCheck){
+      OK = FastCheck_RA4b(tree);
+      if(i==0 && isquick){ OK=OK&&OKold; OKold=OK;}
+    }
+    
+    
     //====================================================================
     // TRIGGERS
     //====================================================================
@@ -939,6 +1019,31 @@ int main(int argc, char** argv){
 	OKsyst=SetOfCuts::Jets.NUM.Examine((int)systematics.GetsysJet("jetdown_good_clean").size());
 	globalFlow.keepIf("Jet_Cuts_jetdown",OKsyst);
       }
+      if(systematics.GetSysMap()["jetRescentral"]){
+	OKsyst=SetOfCuts::Jets.NUM.Examine((int)systematics.GetsysJet("jetRescentral_good_clean").size());
+	globalFlow.keepIf("Jet_Cuts_jetRescentral",OKsyst);
+      }
+
+      /*
+      if(OK){
+	cout<<"normal requirement OK"<<endl;
+	cout<<"old jet collection "<<endl;
+	for (int ijet=0;ijet<(int)CleanedJets.size();++ijet){
+	  cout<<"old pt of jet "<<ijet<<" = "<<CleanedJets.at(ijet)->Pt()<<endl;
+	}
+	cout<<endl;
+	cout<<" OKsyst was "<<OKsyst<<endl;
+	cout<<"new jet collection "<<endl;
+	for(int ijet=0;ijet<(int)systematics.GetsysJet("jetRescentral_good_clean").size();++ijet){
+	  cout<<"new pt of jet "<<ijet<<" = "<<systematics.GetsysJet("jetRescentral_good_clean").at(ijet)->Pt()<<endl;
+	}
+	cout<<endl;
+	cout<<endl;
+	cout<<endl;
+
+      }
+      */
+
       if(systematics.GetSysMap()["jetResup"]){
 	OKsyst=SetOfCuts::Jets.NUM.Examine((int)systematics.GetsysJet("jetResup_good_clean").size());
 	globalFlow.keepIf("Jet_Cuts_jetResup",OKsyst);
@@ -946,6 +1051,45 @@ int main(int argc, char** argv){
       if(systematics.GetSysMap()["jetResdown"]){
 	OKsyst=SetOfCuts::Jets.NUM.Examine((int)systematics.GetsysJet("jetResdown_good_clean").size());
 	globalFlow.keepIf("Jet_Cuts_jetResdown",OKsyst);
+      }
+    
+    }
+    //===================================
+
+    
+
+
+
+    //===================================
+    //NUMBER OF BTAGS
+    //===================================
+    OK=SetOfCuts::Event.NumberOfBtags.Examine(NumberOfbTags);
+    if(i==0 && isquick){OK=OK&&OKold; OKold=OK;}
+    if(!globalFlow.keepIf("NBtags",OK) && quick) continue;    
+    if(DoControlPlots && OK)ControlPlots.MakePlots("NBtags", SignalMuons, SignalElectrons, CleanedJets, PFmet);     
+
+    //    cout<<"found NumberOfbTags = "<<NumberOfbTags<<endl;
+    //==========JET SYSTEMATICS===============
+    if (systematics.IsEnabled()){      
+      if(systematics.GetSysMap()["jetup"]){
+	OKsyst=SetOfCuts::Event.NumberOfBtags.Examine(systematics.NumberOfbTags("jetup"));
+	globalFlow.keepIf("NBtags_jetup",OKsyst);
+      }
+      if(systematics.GetSysMap()["jetdown"]){
+	OKsyst=SetOfCuts::Event.NumberOfBtags.Examine(systematics.NumberOfbTags("jetdown"));
+	globalFlow.keepIf("NBtags_jetdown",OKsyst);
+      }
+      if(systematics.GetSysMap()["jetRescentral"]){
+	OKsyst=SetOfCuts::Event.NumberOfBtags.Examine(systematics.NumberOfbTags("jetupRescentral"));
+	globalFlow.keepIf("NBtags_jetRescentral",OKsyst);
+      }
+      if(systematics.GetSysMap()["jetResup"]){
+	OKsyst=SetOfCuts::Event.NumberOfBtags.Examine(systematics.NumberOfbTags("jetResup"));
+	globalFlow.keepIf("NBtags_jetResup",OKsyst);
+      }
+      if(systematics.GetSysMap()["jetResdown"]){
+	OKsyst=SetOfCuts::Event.NumberOfBtags.Examine(systematics.NumberOfbTags("jetResdown"));
+	globalFlow.keepIf("NBtags_jetResdown",OKsyst);
       }
     
     }
@@ -1066,6 +1210,10 @@ int main(int argc, char** argv){
       if (systematics.GetSysMap()["jetdown"]){
 	OKsyst=SetOfCuts::Event.HT.Examine(systematics.GetsysHT("jetdown"));
 	globalFlow.keepIf("HT_jetdown",OKsyst);
+      }
+      if (systematics.GetSysMap()["jetRescentral"]){
+	OKsyst=SetOfCuts::Event.HT.Examine(systematics.GetsysHT("jetRescentral"));
+	globalFlow.keepIf("HT_jetRescentral",OKsyst);
       }
       if (systematics.GetSysMap()["jetResup"]){
 	OKsyst=SetOfCuts::Event.HT.Examine(systematics.GetsysHT("jetResup"));
@@ -1206,7 +1354,8 @@ int main(int argc, char** argv){
       myInfo.EventWeight            = EventWeight;
       myInfo.MuMatchedTriggerFilter = MuMatchedTriggerFilter;
       myInfo.Run                    = Run;
-      if(!isData) myInfo.PUInter    = relevantNumPU;
+      //if(!isData) myInfo.PUInter    = relevantNumPU;
+      if(!isData) myInfo.PUInter    = goodVert.size();
       else        myInfo.PUInter    = goodVert.size();
       myInfo.PUWeight               = PUWeight;
       myInfo.TriggerMap             = TriggerMap;
@@ -1283,7 +1432,8 @@ int main(int argc, char** argv){
       myInfo.Event                  = Event;
       myInfo.EventWeight            = EventWeight;
       myInfo.MuMatchedTriggerFilter = MuMatchedTriggerFilter;
-      if(!isData) myInfo.PUInter    = relevantNumPU;
+      //if(!isData) myInfo.PUInter    = relevantNumPU;
+      if(!isData) myInfo.PUInter    = goodVert.size();
       else        myInfo.PUInter    = goodVert.size();
       myInfo.Run                    = Run;
       myInfo.PUWeight               = PUWeight;
@@ -1338,6 +1488,7 @@ int main(int argc, char** argv){
       globalFlowNames.push_back("Wide_Electrons");
       globalFlowNames.push_back("One_single_lepton");      
       globalFlowNames.push_back("Jet_Cuts");
+      globalFlowNames.push_back("NBtags");
       globalFlowNames.push_back("HT");
       globalFlowNames.push_back("MET");
 
@@ -1367,6 +1518,9 @@ int main(int argc, char** argv){
 	      if (globalFlowNames.at(iname) == "Jet_Cuts"){
 		OK=globalFlow.DidItPass("Jet_Cuts_jetup");
 	      }
+	      else if (globalFlowNames.at(iname) == "NBtags"){
+		OK=globalFlow.DidItPass("NBtags_jetup");
+	      }
 	      else if (globalFlowNames.at(iname) == "HT"){
 		OK=globalFlow.DidItPass("HT_jetup");
 	      }
@@ -1390,6 +1544,9 @@ int main(int argc, char** argv){
 	      //COPY THE CUTFLOW
 	      if (globalFlowNames.at(iname) == "Jet_Cuts"){
 		OK=globalFlow.DidItPass("Jet_Cuts_jetdown");
+	      }
+	      else if (globalFlowNames.at(iname) == "NBtags"){
+		OK=globalFlow.DidItPass("NBtags_jetdown");
 	      }
 	      else if (globalFlowNames.at(iname) == "HT"){
 		OK=globalFlow.DidItPass("HT_jetdown");
@@ -1429,11 +1586,36 @@ int main(int argc, char** argv){
 	      systematics.GetsysFlow("clustersdown")->keepIf(globalFlowNames.at(iname), OK);
 	    }
 	  }
+	  else if(iter->first=="jetRescentral"){
+	    for (int iname=0;iname<(int)globalFlowNames.size();++iname){
+	      //COPY THE CUTFLOW
+	      if (globalFlowNames.at(iname) == "Jet_Cuts"){
+		OK=globalFlow.DidItPass("Jet_Cuts_jetRescentral");
+	      }
+	      else if (globalFlowNames.at(iname) == "NBtags"){
+		OK=globalFlow.DidItPass("NBtags_jetRescentral");
+	      }
+	      else if (globalFlowNames.at(iname) == "HT"){
+		OK=globalFlow.DidItPass("HT_jetRescentral");
+	      }
+	      else if (globalFlowNames.at(iname) == "MET"){
+		OK=globalFlow.DidItPass("MET_jetRescentral");
+	      }
+	      else{
+		OK=globalFlow.DidItPass(globalFlowNames.at(iname));
+	      }
+	      //======copy the global flow
+	      systematics.GetsysFlow("jetRescentral")->keepIf(globalFlowNames.at(iname), OK);
+	    }
+	  }
 	  else if(iter->first=="jetResup"){
 	    for (int iname=0;iname<(int)globalFlowNames.size();++iname){
 	      //COPY THE CUTFLOW
 	      if (globalFlowNames.at(iname) == "Jet_Cuts"){
 		OK=globalFlow.DidItPass("Jet_Cuts_jetResup");
+	      }
+	      else if (globalFlowNames.at(iname) == "NBtags"){
+		OK=globalFlow.DidItPass("NBtags_jetResup");
 	      }
 	      else if (globalFlowNames.at(iname) == "HT"){
 		OK=globalFlow.DidItPass("HT_jetResup");
@@ -1454,6 +1636,9 @@ int main(int argc, char** argv){
 	      if (globalFlowNames.at(iname) == "Jet_Cuts"){
 		OK=globalFlow.DidItPass("Jet_Cuts_jetResdown");
 	      }
+	      else if (globalFlowNames.at(iname) == "NBtags"){
+		OK=globalFlow.DidItPass("NBtags_jetResdown");
+	      }
 	      else if (globalFlowNames.at(iname) == "HT"){
 		OK=globalFlow.DidItPass("HT_jetResdown");
 	      }
@@ -1467,7 +1652,7 @@ int main(int argc, char** argv){
 	      systematics.GetsysFlow("jetResdown")->keepIf(globalFlowNames.at(iname), OK);
 	    }
 	  }
-
+	
 
 	  //======APPLY THE CUTFLOW
 	  //cout<<"applying the cutflow to"<<iter->first<<endl;
@@ -1496,7 +1681,9 @@ int main(int argc, char** argv){
     info.PUWeight=PUWeight;
     info.PUWeight_up=PUWeight_up;
     info.PUWeight_down=PUWeight_down;
-    if(!isData) info.PUInter    = relevantNumPU;
+    info.NBtags=NumberOfbTags;
+    //
+    if(!isData) info.PUInter    = goodVert.size();
     else        info.PUInter    = goodVert.size();
     //
     //
@@ -1530,18 +1717,17 @@ int main(int argc, char** argv){
       for (map_it iter=systematics.GetSysMap().begin(); iter != systematics.GetSysMap().end(); iter++){
 	if(iter->second){    
 	  if(systematics.passCuts.at(iter->first)){
-
-
 	    //maybe there is no jet collection for this systematic calculation:
-	    //then the default cleaned jets should be used
-	    if( systematics.GetsysJet(iter->first+"_good_clean").empty()){
+	    //then the default good cleaned jets should be used
+	    if( systematics.GetTreeJetCollection(iter->first).empty()){
 	      for( int ijet=0; ijet<CleanedJets.size(); ++ijet){
-		systematics.GetsysJet(iter->first+"_good_clean").push_back(CleanedJets.at(ijet));
+		systematics.GetTreeJetCollection(iter->first).push_back(CleanedJets.at(ijet));
 	      }
 	    }
-	    //cout<<"just checking "<<info.PU
+	    //
 	    //FILL THE TREES
-	    systematics.GetsysDefaultTree(iter->first)->Fill(&info, tree, SignalMuons,SignalElectrons,systematics.GetsysJet(iter->first+"_good_clean"),*systematics.GetsysMETVector(iter->first));
+	    //
+	    systematics.GetsysDefaultTree(iter->first)->Fill(&info, tree, SignalMuons,SignalElectrons, systematics.GetTreeJetCollection(iter->first),*systematics.GetsysMETVector(iter->first));
 	  }
 	}
       }
@@ -1644,7 +1830,7 @@ int main(int argc, char** argv){
   //PROGRAM END
   //EndOfProgram:
   
-
+  
   return 0;
-}
+  }
 

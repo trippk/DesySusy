@@ -13,6 +13,8 @@
 #include "Math/VectorUtil.h"
 #include <boost/shared_ptr.hpp>
 #include "typedefs.h"
+#include "makeJets.h"
+#include "TRandom3.h"
 
 //typedef boost::shared_ptr<LorentzM> Ptr_LorentzM;
 //typedef boost::shared_ptr<Jet> Ptr_Jet;
@@ -22,7 +24,7 @@ using namespace ROOT::Math::VectorUtil;
 
 extern bool pcp;
 
-//template<typename Ptr_Jet>
+
 void rescaleHT(vector<Ptr_Jet>& Jets_in,Systematics& systematics, const string name){
   
   double newHT=0;
@@ -32,21 +34,18 @@ void rescaleHT(vector<Ptr_Jet>& Jets_in,Systematics& systematics, const string n
   systematics.SetsysHT(name,newHT);
 }
 
-//template<typename Ptr_Jet>
+
 void rescaleJets(EasyChain* tree, vector<Ptr_Jet>& Jets_in, Systematics& systematics){
 
-  //  template<typename Ptr_Jet>  
+ 
   void JECUncertainty(Ptr_Jet Jet_in, Systematics& systematics, EasyChain* tree);
-  //void JECUncertainty(Ptr_Jet );
-
   /*This function rescales the pt of the jets
     and recalculates HT and MET.
   */
 
-  //cout<<"inside rescaleJetsHTMET"<<endl;
+
 
   ConfigReader config;
-
   static float  PTMIN  =  config.getFloat("Jets_PTMIN");
   //static float Jet_SCALE= config.getFloat(scale,1.0);
   //
@@ -67,8 +66,6 @@ void rescaleJets(EasyChain* tree, vector<Ptr_Jet>& Jets_in, Systematics& systema
     //ONLY RESCALE JETS WITH PT > 10.0
     if (Jets_in.at(i)->Pt()<10.0)continue;
     //===========CONSTRUCT THE NEW LORENTZ VECTOR
-    //LorentzM* dummyLorentz_UP= new LorentzM(Jets_in.at(i)->P4());
-    //LorentzM* dummyLorentz_DOWN= new LorentzM(Jets_in.at(i)->P4());
 
     Ptr_LorentzM dummyLorentz_UP (new LorentzM(Jets_in.at(i)->P4())); 
     Ptr_LorentzM dummyLorentz_DOWN( new LorentzM(Jets_in.at(i)->P4()));
@@ -79,10 +76,6 @@ void rescaleJets(EasyChain* tree, vector<Ptr_Jet>& Jets_in, Systematics& systema
     *dummyLorentz_DOWN *=(1-Jets_in.at(i)->GetCorrectionUncertainty("down"));
     
     //=========CONSTRUCT THE NEW JET OBJECT
-    //    cout<<"feeding dummyjet with "<<dummyLorentz_UP<<endl;
-    //Jet* dummyJet_UP = new Jet(Jets_in.at(i)->GetIndexInTree(),dummyLorentz_UP);
-    //    Jet* dummyJet_DOWN = new Jet(Jets_in.at(i)->GetIndexInTree(),dummyLorentz_DOWN);
-
     
     Ptr_Jet dummyJet_UP(new Jet(Jets_in.at(i)->GetIndexInTree(),dummyLorentz_UP));
     Ptr_Jet dummyJet_DOWN(new Jet(Jets_in.at(i)->GetIndexInTree(),dummyLorentz_DOWN));
@@ -95,7 +88,6 @@ void rescaleJets(EasyChain* tree, vector<Ptr_Jet>& Jets_in, Systematics& systema
   //  cout<<endl;
 }
 
-//template<typename Ptr_Jet>
 void rescaleClusters(vector<Ptr_Jet>& Jets_in,Systematics& systematics){
 
   for (int i=0;i<Jets_in.size();++i){
@@ -230,7 +222,6 @@ void rescaleMET(EasyChain* tree, vector<Jet*>& Jets_in, Systematics& systematics
 
 
 
-//template<typename Ptr_Jet>
 void JECUncertainty(Ptr_Jet Jet_in, Systematics& systematics, EasyChain* tree){
 
 
@@ -278,9 +269,6 @@ void JECUncertainty(Ptr_Jet Jet_in, Systematics& systematics, EasyChain* tree){
   // Check that quadratic sum of sources equals total uncertainty
   assert(fabs(uncert_up -   sqrt(sum2_up)) < 1e-3);
   //assert(fabs(uncert_down - sqrt(sum2_dw)) < 1e-3);
-
-
-
 }
 
 
@@ -289,45 +277,128 @@ void JECUncertainty(Ptr_Jet Jet_in, Systematics& systematics, EasyChain* tree){
 //template<typename Ptr_Jet>
 
 void rescaleJetsJER(vector<Ptr_Jet>& Jets, Systematics& systematics){
+  
   double getJerSF(double, double);
+  float getJetRes(double,double);
+  
   for (int ijet=0; ijet<Jets.size();++ijet){
     
     if(Jets.at(ijet)->Pt()<10.0)continue;
-    
+
+    double etajet=Jets.at(ijet)->Eta();
+    double ptjet =Jets.at(ijet)->Pt();    
     //===========GENJET MATCHED TO IT
     double ptGen=-1.0;
-    if(Jets.at(ijet)->IsMatch()){
-      ptGen=Jets.at(ijet)->GetPartner()->Pt();
-    }
-    else{
-      continue;
-    }
-    //===========OBTAIN THE SCALE FACTOR
-    double etajet=Jets.at(ijet)->Eta();
-    double ptjet =Jets.at(ijet)->Pt();
+    double oldE=Jets.at(ijet)->P4().E();
+    double JerSF_CENTRAL=getJerSF(etajet,0.0);
     double JerSF_UP=getJerSF(etajet,1.0);
     double JerSF_DOWN=getJerSF(etajet,-1.0);
+    
+    Ptr_Jet newJet_CENTRAL(new Jet(Jets.at(ijet)));
+    Ptr_Jet newJet_UP(new Jet(Jets.at(ijet)));
+    Ptr_Jet newJet_DOWN(new Jet(Jets.at(ijet)));
+
+    //===========OBTAIN THE SCALE FACTOR
+    double ratio_CENTRAL=0.0;
+    double ratio_UP=0.0;
+    double ratio_DOWN=0.0;
+    
+
+    //MATCHED JETS
+    if(Jets.at(ijet)->IsMatch()){
+      ptGen=Jets.at(ijet)->GetPartner()->Pt();
+
+      //===========RESCALE IT
+      double rescFactor_CENTRAL=max(0.,ptGen+JerSF_CENTRAL*(ptjet-ptGen));
+      double rescFactor_UP=max(0.,ptGen+JerSF_UP*(ptjet-ptGen));
+      double rescFactor_DOWN=max(0.,ptGen+JerSF_DOWN*(ptjet-ptGen));
+      ratio_CENTRAL=rescFactor_CENTRAL/newJet_CENTRAL->Pt();
+      ratio_UP    =rescFactor_UP/newJet_UP->Pt();
+      ratio_DOWN  =rescFactor_DOWN/newJet_DOWN->Pt();
+    }
+    else{
+      //if they are not matched, put the unsmeared ones 
+      double newE=0;
+      double newJetRes=getJetRes(ptjet, etajet);
+      //
+      double gSigma_CENTRAL=JerSF_CENTRAL*JerSF_CENTRAL-1.0;
+      double gSigma_UP=JerSF_UP*JerSF_UP-1.0;
+      double gSigma_DOWN=JerSF_DOWN*JerSF_DOWN-1.0;
+      //
+      newE=oldE;
+      if(gSigma_CENTRAL>0.0){
+	gSigma_CENTRAL=newJetRes*sqrt(gSigma_CENTRAL);
+	TRandom3 rand1(0);
+	newE+=rand1.Gaus(0.0,gSigma_CENTRAL);
+      }
+      ratio_CENTRAL=newE/oldE;
+      //
+      newE=oldE;
+      if(gSigma_UP>0.0){
+	gSigma_UP=newJetRes*sqrt(gSigma_UP);
+	TRandom3 rand2(0);
+	newE+=rand2.Gaus(0.0,gSigma_UP);
+      }
+      ratio_UP=newE/oldE;
+      //
+      newE=oldE;
+      if(gSigma_DOWN>0.0){
+	gSigma_DOWN=newJetRes*sqrt(gSigma_DOWN);
+	TRandom3 rand3(0);
+	newE+=rand3.Gaus(0.0,gSigma_DOWN);
+      }
+      ratio_DOWN=newE/oldE;
+
+    }
+      
     //cout<<"the correction factor UP is "<<JerSF_UP<<endl;
     //===========CONSTRUCT THE NEW JET OBJECTS
     //Jet* newJet_UP =new Jet(Jets.at(ijet));
     //Jet* newJet_DOWN =new Jet(Jets.at(ijet));
-    Ptr_Jet newJet_UP(new Jet(Jets.at(ijet)));
-    Ptr_Jet newJet_DOWN(new Jet(Jets.at(ijet)));
+
     //cout<<"the new pt up is "<<newJet_UP->Pt()<<endl;
-    //===========RESCALE IT
-    double rescFactor_UP=max(0.,ptGen+JerSF_UP*(ptjet-ptGen));
-    double rescFactor_DOWN=max(0.,ptGen+JerSF_DOWN*(ptjet-ptGen));
-    double ratio_UP    =rescFactor_UP/newJet_UP->Pt();
-    double ratio_DOWN  =rescFactor_DOWN/newJet_DOWN->Pt();
+
+    newJet_CENTRAL->SetP4(newJet_CENTRAL->P4()*ratio_CENTRAL);
     newJet_UP->SetP4(newJet_UP->P4()*ratio_UP);
     newJet_DOWN->SetP4(newJet_DOWN->P4()*ratio_DOWN);
     //=====================
+    systematics.GetsysJet("jetRescentral").push_back(newJet_CENTRAL);
     systematics.GetsysJet("jetResup").push_back(newJet_UP);
     systematics.GetsysJet("jetResdown").push_back(newJet_DOWN);
-    //    cout<<"new jet up "<<newJet_UP->Pt()<<endl;
-    //    cout<<"new jet down "<<newJet_DOWN->Pt()<<endl;
-    //    cout<<"central value"<<ptjet<<endl;
-    //cout<<endl;
+
+    double ptsmear=newJet_UP->Pt();
+
+    extern vector<TH1D*> JetResPtBins;
+    extern vector<TH1D*> JetResEtaBins;
+    extern vector<TH1D*> JetResPtBins_smear;
+    extern vector<TH1D*> JetResEtaBins_smear;
+ 
+    int ptbin=-1;
+    if(Jets.at(ijet)->Pt()<30){ptbin =0;}
+    else if(Jets.at(ijet)->Pt()<50){ptbin =1;}
+    else if(Jets.at(ijet)->Pt()<80){ptbin =2;}
+    else if(Jets.at(ijet)->Pt()<150){ptbin =3;}
+    else if(Jets.at(ijet)->Pt()>150){ptbin =4;}
+    
+    if(Jets.at(ijet)->IsMatch()){ 
+      JetResPtBins.at(ptbin)->Fill((ptsmear-ptjet)/ptjet);
+    }else{
+      JetResPtBins_smear.at(ptbin)->Fill((ptsmear-ptjet)/ptjet);
+    }
+    
+    int etabin=-1;
+    if(abs(Jets.at(ijet)->Eta())<0.3){etabin =0;}
+    else if(abs(Jets.at(ijet)->Eta())<0.5){etabin =1;}
+    else if(abs(Jets.at(ijet)->Eta())<1.0){etabin =2;}
+    else if(abs(Jets.at(ijet)->Eta())<2.0){etabin =3;}
+    else if(abs(Jets.at(ijet)->Eta())>2.0){etabin =4;}
+    
+    if(Jets.at(ijet)->IsMatch()){ 
+      JetResEtaBins.at(etabin)->Fill((ptsmear-ptjet)/ptjet);
+    }else{
+      JetResEtaBins_smear.at(etabin)->Fill((ptsmear-ptjet)/ptjet);
+    }
+
   }
 }
 
@@ -409,6 +480,14 @@ void ShiftJetEnergyScale(EasyChain* tree, Systematics& systematics, vector<Ptr_J
   //=====GET THE NEW HT
   rescaleHT(systematics.GetsysJet("jetup_good_clean"), systematics, "jetup");
   rescaleHT(systematics.GetsysJet("jetdown_good_clean"), systematics, "jetdown");
+  //=======COLLECTION OF JETS TO BE STORED IN THE SYSTEMATICS TREE
+  systematics.SetTreeJetCollection("jetup","jetup_good_clean");
+  systematics.SetTreeJetCollection("jetdown","jetdown_good_clean");
+  //
+  //======NUMBER OF BTAGS
+  systematics.CalculateNumberOfbTags("jetup","jetup_good_clean");
+  systematics.CalculateNumberOfbTags("jetdown","jetdown_good_clean");
+
 }
 
 void ShiftClustersEnergyScale(EasyChain* tree, Systematics& systematics, vector<Ptr_Jet>& jets, vector<Muon*>& Muons, vector<Electron*>& Electrons){

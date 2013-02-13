@@ -68,7 +68,7 @@ protected:
   double PUWeight_up;
   double PUWeight_down;
   int NPV;
-
+  int NBtags;
 
 
   vector<LorentzM>* el;

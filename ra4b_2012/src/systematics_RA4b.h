@@ -22,19 +22,18 @@ class Systematics{
 
 private:
 
-
   std::map<std::string,bool> SysMap;
   bool Enabled;
   std::map<std::string, CutSet*> sysFlow;
   std::map<std::string, defaultTree*> sysDefaultTree;
-  std::map<std::string,std::string> treeJetCollection;
+  std::map<std::string, std::string > treeJetCollection;
 
   //this should be cleared once per event loop
   std::map<std::string, std::vector<Ptr_Jet> >  sysJet;
   std::map<std::string, double> sysMET;
   std::map<std::string, Ptr_LorentzM> sysMETVector;  
   std::map<std::string, double> sysHT;
-
+  std::map<std::string, int> sysNumberOfbTags;
 
 public:
 
@@ -58,6 +57,7 @@ public:
     }
   }
 
+  
   std::map<std::string,bool>& GetSysMap();
   std::map<std::string, bool> passCuts;
   void Reset();
@@ -91,7 +91,15 @@ public:
   vector<JetCorrectionUncertainty*> vsrc;  
 
   void SetTreeJetCollection(std::string name1, std::string name2);
-  std::string GetTreeJetCollection(std::string);
+  std::vector<Ptr_Jet>& GetTreeJetCollection(std::string);
+
+  int NumberOfbTags(std::string name){return sysNumberOfbTags[name];}
+
+  void CalculateNumberOfbTags(std::string name, std::string jetname);
+
+
+
+  
 };
 
 #endif

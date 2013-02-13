@@ -316,7 +316,7 @@ void matchGenJets(EasyChain* tree, vector<Ptr_GenJet>& genJets, vector<Ptr_Jet>&
   for (int ijet=0;ijet<Jets.size();++ijet){
     int indx=Jets.at(ijet)->GetIndexInTree();
     int mindex=MatchedGenJets.at(indx);
-    if(mindex==-1 and Jets.at(ijet)->Pt()>40.0)continue;
+    //if(mindex==-1 and Jets.at(ijet)->Pt()>40.0)continue;
     for (int mjet=0;mjet<genJets.size();++mjet){
       int mndx=genJets.at(mjet)->GetIndexInTree();
       bool match_found=false;
