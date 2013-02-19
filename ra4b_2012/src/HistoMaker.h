@@ -31,6 +31,7 @@ class HistoMaker {
  public:
   HistoMaker(const TString& pre="", const char* dlm=delimiter);
   ~HistoMaker(){
+    cout<<"removing Histomaker"<<endl;
     if(autodump)  dumpToFile();
   };
   static double global_event_weight;

@@ -70,6 +70,7 @@ bool pcp = false; //Set to true for debugging.
 TH1D* JetUncDiff= new TH1D("JetUncDiff","diff in jet uncertainty",50,-0.02,0.02);
 
 vector<TH1D*> JetResPtBins;
+vector<TH1D*> SMfactor_PtBins;
 vector<TH1D*> JetResEtaBins;
 vector<TH1D*> JetResPtBins_smear;
 vector<TH1D*> JetResEtaBins_smear;
@@ -299,6 +300,8 @@ int main(int argc, char** argv){
   else{isdata->SetBinContent(1,0);}
   //================================================================
  
+
+
   //================================================================   
   TH1I* num_entries = new TH1I("num_entries","number of entries",1,0,1);
   num_entries->SetBinContent(1,N);
@@ -345,24 +348,59 @@ int main(int argc, char** argv){
   //===========================================
 
 
-
-
+  string smearing = config.getString("JetRes_smearing","mixed");
+  cout<<"the smearing is "<<smearing<<" "<<endl;
+  //  cout<<smearing==(string)"mixed"<<endl;
 
   TH1D* EW_AfterTrigger= new TH1D("EW_AfterTrigger","Event weight after the trigger",30,0.0,100.0);
   TH1D* EW_AfterPU=new TH1D("EW_AfterPU","Event Weight after PU RW",100,0.0,10.0);
   TH1D* checkMET= new TH1D("checkMET","check of the MET",30,0.0,300.0);
   
+  vector<TH1D*> JetResPtBins_Matched;  
+  vector<TH1D*> JetResEtaBins_Matched;  
   for (int k=0;k<5;++k){
-    JetResPtBins.push_back(new TH1D("JetRes_PtBin"+(TString)Form("%d",k),"jet Res Pt bin "+(TString)Form("%d",k),40,-0.2,0.2));
-    JetResEtaBins.push_back(new TH1D("JetRes_EtaBin"+(TString)Form("%d",k),"jet Res Eta bin "+(TString)Form("%d",k),40,-0.2,0.2));
+    JetResPtBins.push_back(new TH1D("JetRes_PtBin"+(TString)Form("%d",k),"jet Res Pt bin "+(TString)Form("%d",k),40,-1.,1.5));
+    SMfactor_PtBins.push_back(new TH1D("SMfactor_PtBin"+(TString)Form("%d",k),"jet Res Pt bin "+(TString)Form("%d",k),40,-0.2,0.2));
+    JetResEtaBins.push_back(new TH1D("JetRes_EtaBin"+(TString)Form("%d",k),"jet Res Eta bin "+(TString)Form("%d",k),40,-1.5,1.));
     JetResPtBins_smear.push_back(new TH1D("JetRes_PtBin"+(TString)Form("%d",k)+"_smear","jet Res Pt bin "+(TString)Form("%d",k),40,-0.2,0.2));
     JetResEtaBins_smear.push_back(new TH1D("JetRes_EtaBin"+(TString)Form("%d",k)+"_smear","jet Res Eta bin "+(TString)Form("%d",k),40,-0.2,0.2));
+    JetResPtBins_Matched.push_back(new TH1D("JetRes_PtBin"+(TString)Form("%d",k)+"_matched","jet Res Pt bin "+(TString)Form("%d",k)+" matched jets",40,-1.,1.5));
+    JetResEtaBins_Matched.push_back(new TH1D("JetRes_EtaBin"+(TString)Form("%d",k)+"_matched","jet Res Eta bin "+(TString)Form("%d",k)+" matched jets",40,-1.,1.5));
+  }
+  TH1D* METRes= new TH1D("METRes","resolution of MET",30,-1.0,2.0);
+  TH1D* METChange= new TH1D("METChange","change induced",30,-0.2,0.2);
+  TH1D* newMETRes= new TH1D("newMETRes","new resolution of MET",30,-1.0,2.);
+  TH1D* METRes_ACF= new TH1D("METRes_AfterCutF","resolution of MET after CutFlow",30,-1.0,2.0);
+  TH1D* METChange_ACF= new TH1D("METChange_AfterCutF","change induced after CutFlow",30,-0.2,0.2);
+  TH1D* newMETRes_ACF= new TH1D("newMETRes_AfterCutF","new resolution of MET after CutFlow",30,-1.0,2.);
+
+  
+  vector<TH1D*> METRes_METBins;
+  vector<TH1D*> METRes_NMatchedJets_Bins;
+  vector<TH1D*> METChange_NMatchedJets_Bins;
+  vector<TH1D*> METRes_NJets_Bins;
+  vector<TH1D*> METChange_METBins;
+  vector<TH1D*> METRes_NMatchedJets_NJets;
+  vector<TH1D*> METChange_NMatchedJets_NJets;
+
+  for (int k=0;k<5;++k){
+    METRes_METBins.push_back(new TH1D("METRes_METBin"+(TString)Form("%d",k),"MET Res MET bin "+(TString)Form("%d",k),30,-1.0,2.0));
+    METChange_METBins.push_back(new TH1D("METChange_METBin"+(TString)Form("%d",k),"MET Change MET bin "+(TString)Form("%d",k),30,-0.2,0.2));
+    METRes_NMatchedJets_Bins.push_back(new TH1D("METRes_NMatchedJets_Bin"+(TString)Form("%d",k),"MET Res NMatchedJets Bin "+(TString)Form("%d",k),30,-1.,1.5));
+    METChange_NMatchedJets_Bins.push_back(new TH1D("METChange_NMatchedJets_Bin"+(TString)Form("%d",k),"MET Change NMatchedJets Bin "+(TString)Form("%d",k),30,-1.,1.5));
+    METRes_NJets_Bins.push_back(new TH1D("METRes_NJets_Bin"+(TString)Form("%d",k),"MET Change NJets Bin "+(TString)Form("%d",k),30,-1.0,1.5));
   }
 
-
-
-
-
+  for (int k=0;k<5;++k){
+    for (int j=0;j<5;++j){
+      METRes_NMatchedJets_NJets.push_back(new TH1D("METRes_NMatchedJets_NJet_Bin"+(TString)Form("%d",k)+(TString)Form("%d",j),"MET Res NMatchedJets Bin "+(TString)Form("%d",k),30,-1.,1.5));
+      METChange_NMatchedJets_NJets.push_back(new TH1D("METChange_NMatchedJets_NJet_Bin"+(TString)Form("%d",k)+(TString)Form("%d",j),"MET Change NMatchedJets Bin "+(TString)Form("%d",k),30,-1.,1.5));
+    }
+  }
+  
+  TH2D* METRes_vs_MET=new TH2D("METRes_vs_MET","METRes_vs_MET",40,0.0,400.0,20,-1.0,3.0);
+  
+  
   if(pcp)cout<<"check point before the event loop"<<endl;
 
   bool isquick=config.getBool("quick",true);
@@ -372,11 +410,6 @@ int main(int argc, char** argv){
   cout<<"isquick is"<<isquick<<endl;
   cout<<endl;
   cout<<endl;
-
- 
-
-
-
 
 
 
@@ -467,6 +500,7 @@ int main(int argc, char** argv){
       quick=isquick;
     }
      
+    //continue;
     //    pcp=true;
     //if(i>10000)continue;
 
@@ -675,6 +709,10 @@ int main(int argc, char** argv){
     double MET=(double)PFmet.Et() ;
     //============================================
 
+    //RESOLUTION
+    LorentzM& TrueME = tree->Get(&TrueME,"genmetP4True");
+    double TrueMET=TrueME.Pt();
+    METRes->Fill((MET-TrueMET)/TrueMET,EventWeight);
 
     if (pcp){
       cout<<endl;
@@ -729,6 +767,115 @@ int main(int argc, char** argv){
 	systematics.CalculateNumberOfbTags("jetRescentral","jetRescentral_good_clean");
 	systematics.CalculateNumberOfbTags("jetResup","jetResup_good_clean");
 	systematics.CalculateNumberOfbTags("jetResdown","jetResdown_good_clean");
+
+
+	//CHANGE INDUCED IN MET
+	double newMET=systematics.GetsysMETVector("jetResup")->Pt();
+	METChange->Fill((newMET-MET)/MET,EventWeight);
+	//RESOLUTION IN MET
+	newMETRes->Fill((newMET-TrueMET)/TrueMET,EventWeight);
+
+	//IN BINS OF HT
+	//LorentzM& TrueME = tree->Get(&TrueME,"genmetP4True");
+	int METbin=-1.0;
+	int METbin2=-1.0;
+	if (TrueMET < 50){
+x	  METbin=0;
+	}else if(TrueMET<100){
+	  METbin=1;
+	}else{
+	  METbin=2;
+	}
+	
+	if(TrueMET<100){
+	  METbin2=3;
+	}else {
+	  METbin2=4;
+	}
+	METRes_METBins.at(METbin)->Fill((newMET-TrueMET)/TrueMET,EventWeight);//
+	METRes_METBins.at(METbin2)->Fill((newMET-TrueMET)/TrueMET,EventWeight);
+	METChange_METBins.at(METbin)->Fill((newMET-MET)/MET,EventWeight);
+
+
+
+	//Resolution of the matched jets:
+	for(int ijet=0;ijet<(int)AllJets.size();++ijet){
+	  int ptbin=-1;
+	  int etabin=-1;
+	  double ptGen=0;
+	  double ptJet=0;
+	  double etaJet=0;
+
+	  if(AllJets.at(ijet)->IsMatch()){
+
+	    ptGen=AllJets.at(ijet)->GetPartner()->Pt();
+	    ptJet=AllJets.at(ijet)->Pt();
+	    if(ptJet<30){ptbin =0;}
+	    else if(ptJet<50){ptbin =1;}
+	    else if(ptJet<80){ptbin =2;}
+	    else if(ptJet<150){ptbin =3;}
+	    else {ptbin =4;}
+	    JetResPtBins_Matched.at(ptbin)->Fill((ptJet-ptGen)/ptGen,EventWeight);
+	    
+	    etaJet=AllJets.at(ijet)->Eta();
+	    if(fabs(etaJet)<0.5){etabin =0;}
+	    else if(fabs(etaJet)<1.1){etabin =1;}
+	    else if(fabs(etaJet)<1.7){etabin =2;}
+	    else if(fabs(etaJet)<2.3){etabin =3;}
+	    else {etabin =4;}
+	    JetResEtaBins_Matched.at(etabin)->Fill((ptJet-ptGen)/ptGen,EventWeight);
+
+	  }
+
+	}
+
+	//RESOLUTION AS A FUNCTION OF NUMBER OF MATCHED JETS
+	int N_matchedJets=0;
+	for(int ijet=0;ijet<(int)AllJets.size();++ijet){
+	  if(AllJets.at(ijet)->IsMatch()){
+	    N_matchedJets++;
+	  }
+	}
+	int njetsbin=(int)AllJets.size();
+	int nmatchedjetsbin=N_matchedJets;
+
+	if((int)AllJets.size()==0){
+	  njetsbin=0;
+	}else if((int)AllJets.size()==1 || (int)AllJets.size()==2){ 
+	  njetsbin=1;
+	}else if((int)AllJets.size()==3 || (int)AllJets.size()==4){
+	  njetsbin=2;
+	}else if((int)AllJets.size()==5 || (int)AllJets.size()==6){
+	  njetsbin=3;	
+	}else{
+	  njetsbin=4;
+	}
+
+	if(N_matchedJets==0){
+	  nmatchedjetsbin=0;
+	}else if(N_matchedJets==1 || N_matchedJets==2){ 
+	  nmatchedjetsbin=1;
+	}else if(N_matchedJets==3 || N_matchedJets==4){
+	  nmatchedjetsbin=2;
+	}else if(N_matchedJets==5 || N_matchedJets==6){
+	  nmatchedjetsbin=3;	
+	}else{
+	  nmatchedjetsbin=4;
+	}
+
+
+	if(newMET>100.){
+	  METRes_NMatchedJets_Bins.at(nmatchedjetsbin)->Fill((newMET-TrueMET)/TrueMET,EventWeight);
+	  METChange_NMatchedJets_Bins.at(nmatchedjetsbin)->Fill((newMET-MET)/MET,EventWeight);
+	  METRes_NJets_Bins.at(njetsbin)->Fill((newMET-TrueMET)/TrueMET,EventWeight);
+	  METRes_NMatchedJets_NJets.at(njetsbin*5+nmatchedjetsbin)->Fill((newMET-TrueMET)/TrueMET,EventWeight);
+	  METChange_NMatchedJets_NJets.at(njetsbin*5+nmatchedjetsbin)->Fill((newMET-MET)/MET,EventWeight);
+	}
+	METRes_vs_MET->Fill(MET,(MET-TrueMET)/TrueMET,EventWeight);
+
+	
+	
+
 
 
 	/*
@@ -788,10 +935,10 @@ int main(int argc, char** argv){
 
     bool doFastCheck=config.getBool("doFastCheck",false);
     //cout<<"fast check is "<<doFastCheck<<endl;
-    if(doFastCheck){
-      OK = FastCheck_RA4b(tree);
-      if(i==0 && isquick){ OK=OK&&OKold; OKold=OK;}
-    }
+    //if(doFastCheck){
+      //OK = FastCheck_RA4b(tree);
+      //if(i==0 && isquick){ OK=OK&&OKold; OKold=OK;}
+    //}
     
     
     //====================================================================
@@ -1468,7 +1615,7 @@ int main(int argc, char** argv){
 
 
     
-    //====================COPY THE CUTFLOWS
+    //====================COPY AND APPLY THE CUTFLOWS
     vector<TString> globalFlowNames;
     //globalFlowNames.push_back("triggers");
     TString rawString;
@@ -1502,12 +1649,25 @@ int main(int argc, char** argv){
 	cout<<"OKall is "<<OKall<<endl;
       }
 
+
+
+      //METResolution AFTER THE CUTFLOW
+      if(OKall){
+	LorentzM& TrueME = tree->Get(&TrueME,"genmetP4True");
+	double TrueMET=TrueME.Pt();
+	METRes_ACF->Fill((MET-TrueMET)/TrueMET,EventWeight);
+
+      }
+
+
+
+
     }
 
-
-
+    
+    
     if(systematics.IsEnabled()){
-
+      
       typedef map<string,bool>::iterator map_it;
       for (map_it iter=systematics.GetSysMap().begin(); iter != systematics.GetSysMap().end(); iter++){
 	if(iter->second){
@@ -1659,6 +1819,17 @@ int main(int argc, char** argv){
 	  OK=systematics.GetsysFlow(iter->first)->applyCuts(EventWeight);
 	  //record it
 	  systematics.passCuts[iter->first]=OK;
+
+	  if(iter->first=="jetResup"){
+	    if(OK){
+	      double newMET=systematics.GetsysMETVector("jetResup")->Pt();
+	      METChange_ACF->Fill((newMET-MET)/MET,EventWeight);
+	      //RESOLUTION IN MET
+	      newMETRes_ACF->Fill((newMET-TrueMET)/TrueMET,EventWeight);
+	    }
+	  }
+
+
 	}
       }
 
@@ -1743,10 +1914,15 @@ int main(int argc, char** argv){
 
 
 
-
-
+    if (i==N-1){
+      cout<<"last event in the loop "<<i<<endl;
+    }
+    
   }//End of the event loop
-     
+  
+  cout<<"end of the event loop"<<endl;
+
+
   if(pcp)cout<<"out of the event loop"<<endl;
 
 
@@ -1761,6 +1937,7 @@ int main(int argc, char** argv){
       }
     }
   }
+  cout<<"dumped the flows"<<endl;
   //subTree->Write();
   //==========WRITE THE TREES
   //   if(systematics.IsEnabled()){
@@ -1771,9 +1948,10 @@ int main(int argc, char** argv){
   //       }
   //     }
   //   }
+  cout<<"writing the treeFile"<<endl;
   treeFile->Write(); //Write all hists and tree associated with treeFile
   treeFile->Close();
-
+  cout<<"wrote and closed the treeFile"<<endl;
 
 
   //==================================================
@@ -1781,11 +1959,13 @@ int main(int argc, char** argv){
   //==================================================
   CutSet::setTDir("CutFlow");
   outfile->cd();
+  cout<<"writing the histos"<<endl;
   TListIter* list = new TListIter(gDirectory->GetList()); //-->iterates over list of objects in memory
   TObject *nobj=(TObject*) list->Next(); //nobj now points to the first object in memory
   while(nobj){
 
     if(nobj->IsA()->InheritsFrom("TH1")){
+
       nobj->Write();
       //nobj->Write("",TObject::kOverwrite) -->Overwrites the histogram if alredy present
     }
@@ -1794,6 +1974,7 @@ int main(int argc, char** argv){
     nobj=list->Next();   //nobj point now to the next object
   }
   delete(list);
+  cout<<"wrote the histos"<<endl;
   //==================================================
 
   
@@ -1807,23 +1988,18 @@ int main(int argc, char** argv){
   //tag.finalize(); //write the files
   //config.printUsed();
   //  globalFlow.printAll();
+  cout<<"dumping the main cutflow"<<endl;
   globalFlow.dumpToHist(); 
-  
+  cout<<"cutflow dumped"<<endl;
   
   //systematics.~Systematics();
   
   
   //  ControlPlots.HistoMaker::~HistoMaker();
   //  globalFlow.CutSet::~CutSet();
+  //cout<<"closing the file"<<endl;
   //outfile->Close();
-  //  events1.close();
-  //  events2.close();
-  //  onejet.close();
-  //  twojet.close();
-  //  threejet.close();
-  
-  //  treeFile->cd();
-
+  //cout<<"file closed"<<endl;
   
 
 

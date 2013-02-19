@@ -114,7 +114,6 @@ void rescaleClusters(vector<Ptr_Jet>& Jets_in,Systematics& systematics){
     //==========STORE IT IN systematics
     systematics.GetsysJet("clustersup").push_back(dummyJet_UP);
     systematics.GetsysJet("clusterdown").push_back(dummyJet_DOWN);
-
   }
 }
     
@@ -124,11 +123,9 @@ void rescaleClusters(vector<Ptr_Jet>& Jets_in,Systematics& systematics){
 //template<typename Ptr_Jet>
 void rescaleMET(EasyChain* tree, vector<Ptr_Jet>& Jets_in, Systematics& systematics, string name){
 
-  //cout<<"doing rescale MET for "<<name<<endl;
   LorentzM& PFmet = tree->Get(&PFmet, "metP4TypeIPF");
   
-  //  cout<<endl;
-  //  cout<<endl;
+
   double sum_px=0.0;
   double sum_py=0.0;
   double sum_pz=0.0;
@@ -171,9 +168,6 @@ void rescaleMET(EasyChain* tree, vector<Ptr_Jet>& Jets_in, Systematics& systemat
   //  cout<<"====old met was "<<PFmet.Et()<<endl;
   //  cout<<"in systematics, I stored"<<systematics.GetsysMETVector(name)->Et()<<endl;
   //  cout<<"and the value "<<systematics.GetsysMET(name)<<endl;
-
-  //
-  //
 
 }
 
@@ -280,10 +274,15 @@ void rescaleJetsJER(vector<Ptr_Jet>& Jets, Systematics& systematics){
   
   double getJerSF(double, double);
   float getJetRes(double,double);
-  
+
+  ConfigReader config;
+  string smearing = config.getString("JetRes_smearing","mixed");
+  //cout<<"fucking smearing"<<endl;
+
   for (int ijet=0; ijet<Jets.size();++ijet){
     
     if(Jets.at(ijet)->Pt()<10.0)continue;
+
 
     double etajet=Jets.at(ijet)->Eta();
     double ptjet =Jets.at(ijet)->Pt();    
@@ -302,21 +301,29 @@ void rescaleJetsJER(vector<Ptr_Jet>& Jets, Systematics& systematics){
     double ratio_CENTRAL=0.0;
     double ratio_UP=0.0;
     double ratio_DOWN=0.0;
-    
-
+    //
+    //
     //MATCHED JETS
     if(Jets.at(ijet)->IsMatch()){
       ptGen=Jets.at(ijet)->GetPartner()->Pt();
+    }
+    else{
+      ptGen=0;
+    }
 
+    if(Jets.at(ijet)->IsMatch() && smearing=="mixed"){
+
+      //cout<<"here!!!"<<endl;
       //===========RESCALE IT
       double rescFactor_CENTRAL=max(0.,ptGen+JerSF_CENTRAL*(ptjet-ptGen));
       double rescFactor_UP=max(0.,ptGen+JerSF_UP*(ptjet-ptGen));
       double rescFactor_DOWN=max(0.,ptGen+JerSF_DOWN*(ptjet-ptGen));
-      ratio_CENTRAL=rescFactor_CENTRAL/newJet_CENTRAL->Pt();
-      ratio_UP    =rescFactor_UP/newJet_UP->Pt();
-      ratio_DOWN  =rescFactor_DOWN/newJet_DOWN->Pt();
+      ratio_CENTRAL=rescFactor_CENTRAL/Jets.at(ijet)->Pt();
+      ratio_UP    =rescFactor_UP/Jets.at(ijet)->Pt();
+      ratio_DOWN  =rescFactor_DOWN/newJet_UP->Pt();
     }
     else{
+    //else if (smearing=="reco_smearing" || (smearing=="mixed" && !Jets.at(ijet)->IsMatch()) ){
       //if they are not matched, put the unsmeared ones 
       double newE=0;
       double newJetRes=getJetRes(ptjet, etajet);
@@ -369,6 +376,7 @@ void rescaleJetsJER(vector<Ptr_Jet>& Jets, Systematics& systematics){
     double ptsmear=newJet_UP->Pt();
 
     extern vector<TH1D*> JetResPtBins;
+    extern vector<TH1D*> SMfactor_PtBins;
     extern vector<TH1D*> JetResEtaBins;
     extern vector<TH1D*> JetResPtBins_smear;
     extern vector<TH1D*> JetResEtaBins_smear;
@@ -378,25 +386,32 @@ void rescaleJetsJER(vector<Ptr_Jet>& Jets, Systematics& systematics){
     else if(Jets.at(ijet)->Pt()<50){ptbin =1;}
     else if(Jets.at(ijet)->Pt()<80){ptbin =2;}
     else if(Jets.at(ijet)->Pt()<150){ptbin =3;}
-    else if(Jets.at(ijet)->Pt()>150){ptbin =4;}
+    else {ptbin =4;}
     
+    //if(!(ptbin ==0 || ptbin==1 || ptbin ==2 || ptbin ==3 || ptbin==4)){
+    //cout<<"aqui ptbin = "<<ptbin<<" "<<Jets.at(ijet)->Pt()<<endl;
+    //}
     if(Jets.at(ijet)->IsMatch()){ 
-      JetResPtBins.at(ptbin)->Fill((ptsmear-ptjet)/ptjet);
+      JetResPtBins.at(ptbin)->Fill((ptsmear-ptGen)/ptGen);
+      SMfactor_PtBins.at(ptbin)->Fill((ptsmear-ptjet)/ptjet);
     }else{
-      JetResPtBins_smear.at(ptbin)->Fill((ptsmear-ptjet)/ptjet);
+      //JetResPtBins_smear.at(ptbin)->Fill((ptsmear-ptjet)/ptjet);
     }
     
     int etabin=-1;
-    if(abs(Jets.at(ijet)->Eta())<0.3){etabin =0;}
-    else if(abs(Jets.at(ijet)->Eta())<0.5){etabin =1;}
-    else if(abs(Jets.at(ijet)->Eta())<1.0){etabin =2;}
-    else if(abs(Jets.at(ijet)->Eta())<2.0){etabin =3;}
-    else if(abs(Jets.at(ijet)->Eta())>2.0){etabin =4;}
+    if(fabs(Jets.at(ijet)->Eta())<0.5){etabin =0;}
+    else if(fabs(Jets.at(ijet)->Eta())<1.1){etabin =1;}
+    else if(fabs(Jets.at(ijet)->Eta())<1.7){etabin =2;}
+    else if(fabs(Jets.at(ijet)->Eta())<2.3){etabin =3;}
+    else {etabin =4;}
     
+    //if(!(etabin ==0 || etabin==1 || etabin ==2 || etabin ==3 || etabin==4)){
+    //cout<<"aqui etabin = "<<etabin<<" "<<abs(Jets.at(ijet)->Eta())<<endl;
+    //}
     if(Jets.at(ijet)->IsMatch()){ 
-      JetResEtaBins.at(etabin)->Fill((ptsmear-ptjet)/ptjet);
+      JetResEtaBins.at(etabin)->Fill((ptsmear-ptjet)/ptGen);
     }else{
-      JetResEtaBins_smear.at(etabin)->Fill((ptsmear-ptjet)/ptjet);
+      //JetResEtaBins_smear.at(etabin)->Fill((ptsmear-ptjet)/ptjet);
     }
 
   }

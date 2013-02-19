@@ -32,7 +32,10 @@ void HistoMaker::dumpToFile(){
   if (cplotdir == 0) {
     cout << "HistoMaker::dumpToFile >> ERROR " << endl; 
   }
-  else cplotdir->Write();
+  else {
+    cout<<"cplotdir is "<<cplotdir<<endl;
+    cplotdir->Write();
+  }
   
   /*
   for(unsigned c=0; c<allCuts.size(); ++c) {
