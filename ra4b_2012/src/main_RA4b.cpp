@@ -74,6 +74,8 @@ vector<TH1D*> SMfactor_PtBins;
 vector<TH1D*> JetResEtaBins;
 vector<TH1D*> JetResPtBins_smear;
 vector<TH1D*> JetResEtaBins_smear;
+TH1D* distmatched;
+TH1D* distmatched_cut;
 
 //for (int k=0;k<5;++k){
 //  JetResPtBins.push_back(new TH1D("JetRes_PtBin"+(TString)Form("%d",k),"jet Res Pt bin "+(TString)Form("%d",k),40,-0.2,0.2));
@@ -348,6 +350,9 @@ int main(int argc, char** argv){
   //===========================================
 
 
+  distmatched=new TH1D("distmatched","distance",40,0.0,0.6);
+  distmatched_cut=new TH1D("distmatched_cut","distance",40,0.0,0.6);
+
   string smearing = config.getString("JetRes_smearing","mixed");
   cout<<"the smearing is "<<smearing<<" "<<endl;
   //  cout<<smearing==(string)"mixed"<<endl;
@@ -364,8 +369,8 @@ int main(int argc, char** argv){
     JetResEtaBins.push_back(new TH1D("JetRes_EtaBin"+(TString)Form("%d",k),"jet Res Eta bin "+(TString)Form("%d",k),40,-1.5,1.));
     JetResPtBins_smear.push_back(new TH1D("JetRes_PtBin"+(TString)Form("%d",k)+"_smear","jet Res Pt bin "+(TString)Form("%d",k),40,-0.2,0.2));
     JetResEtaBins_smear.push_back(new TH1D("JetRes_EtaBin"+(TString)Form("%d",k)+"_smear","jet Res Eta bin "+(TString)Form("%d",k),40,-0.2,0.2));
-    JetResPtBins_Matched.push_back(new TH1D("JetRes_PtBin"+(TString)Form("%d",k)+"_matched","jet Res Pt bin "+(TString)Form("%d",k)+" matched jets",40,-1.,1.5));
-    JetResEtaBins_Matched.push_back(new TH1D("JetRes_EtaBin"+(TString)Form("%d",k)+"_matched","jet Res Eta bin "+(TString)Form("%d",k)+" matched jets",40,-1.,1.5));
+    JetResPtBins_Matched.push_back(new TH1D("JetRes_PtBin"+(TString)Form("%d",k)+"_matched","jet Res Pt bin "+(TString)Form("%d",k)+" matched jets",40,-1.5,2.5));
+    JetResEtaBins_Matched.push_back(new TH1D("JetRes_EtaBin"+(TString)Form("%d",k)+"_matched","jet Res Eta bin "+(TString)Form("%d",k)+" matched jets",40,-1.5,2.5));
   }
   TH1D* METRes= new TH1D("METRes","resolution of MET",30,-1.0,2.0);
   TH1D* METChange= new TH1D("METChange","change induced",30,-0.2,0.2);
@@ -780,7 +785,7 @@ int main(int argc, char** argv){
 	int METbin=-1.0;
 	int METbin2=-1.0;
 	if (TrueMET < 50){
-x	  METbin=0;
+	  METbin=0;
 	}else if(TrueMET<100){
 	  METbin=1;
 	}else{

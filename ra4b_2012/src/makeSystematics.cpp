@@ -277,6 +277,8 @@ void rescaleJetsJER(vector<Ptr_Jet>& Jets, Systematics& systematics){
 
   ConfigReader config;
   string smearing = config.getString("JetRes_smearing","mixed");
+  bool doRecoSmearing=config.getBool("doRecoSmearing",true);
+
   //cout<<"fucking smearing"<<endl;
 
   for (int ijet=0; ijet<Jets.size();++ijet){
@@ -306,12 +308,31 @@ void rescaleJetsJER(vector<Ptr_Jet>& Jets, Systematics& systematics){
     //MATCHED JETS
     if(Jets.at(ijet)->IsMatch()){
       ptGen=Jets.at(ijet)->GetPartner()->Pt();
+      
     }
     else{
       ptGen=0;
     }
 
+    
+    //string doCut_ = config.getString("JetRes_smearing","mixed");
+
+    bool doGenMethod=false;
     if(Jets.at(ijet)->IsMatch() && smearing=="mixed"){
+      doGenMethod=true;
+
+      //double newptreco=max(0.,ptGen+JerSF_UP*(ptjet-ptGen));
+      if(fabs(ptjet-ptGen)/ptGen>0.5){
+	doGenMethod=false;
+      }    
+    }
+    
+    //if(doGenMethod != (Jets.at(ijet)->IsMatch() && smearing=="mixed") ){
+    //cout<<"whaaaaaat"<<endl;
+    //cout<<doGenMethod<<" "<<Jets.at(ijet)->IsMatch() << smearing <<endl;
+    //}
+    //if(Jets.at(ijet)->IsMatch() && smearing=="mixed"){
+    if(doGenMethod){
 
       //cout<<"here!!!"<<endl;
       //===========RESCALE IT
@@ -323,38 +344,40 @@ void rescaleJetsJER(vector<Ptr_Jet>& Jets, Systematics& systematics){
       ratio_DOWN  =rescFactor_DOWN/newJet_UP->Pt();
     }
     else{
-    //else if (smearing=="reco_smearing" || (smearing=="mixed" && !Jets.at(ijet)->IsMatch()) ){
-      //if they are not matched, put the unsmeared ones 
-      double newE=0;
-      double newJetRes=getJetRes(ptjet, etajet);
-      //
-      double gSigma_CENTRAL=JerSF_CENTRAL*JerSF_CENTRAL-1.0;
-      double gSigma_UP=JerSF_UP*JerSF_UP-1.0;
-      double gSigma_DOWN=JerSF_DOWN*JerSF_DOWN-1.0;
-      //
-      newE=oldE;
-      if(gSigma_CENTRAL>0.0){
-	gSigma_CENTRAL=newJetRes*sqrt(gSigma_CENTRAL);
-	TRandom3 rand1(0);
-	newE+=rand1.Gaus(0.0,gSigma_CENTRAL);
+      if(doRecoSmearing){
+	//else if (smearing=="reco_smearing" || (smearing=="mixed" && !Jets.at(ijet)->IsMatch()) ){
+	//if they are not matched, put the unsmeared ones 
+	double newE=0;
+	double newJetRes=getJetRes(ptjet, etajet);
+	//
+	double gSigma_CENTRAL=JerSF_CENTRAL*JerSF_CENTRAL-1.0;
+	double gSigma_UP=JerSF_UP*JerSF_UP-1.0;
+	double gSigma_DOWN=JerSF_DOWN*JerSF_DOWN-1.0;
+	//
+	newE=oldE;
+	if(gSigma_CENTRAL>0.0){
+	  gSigma_CENTRAL=newJetRes*sqrt(gSigma_CENTRAL);
+	  TRandom3 rand1(0);
+	  newE+=rand1.Gaus(0.0,gSigma_CENTRAL);
+	}
+	ratio_CENTRAL=newE/oldE;
+	//
+	newE=oldE;
+	if(gSigma_UP>0.0){
+	  gSigma_UP=newJetRes*sqrt(gSigma_UP);
+	  TRandom3 rand2(0);
+	  newE+=rand2.Gaus(0.0,gSigma_UP);
+	}
+	ratio_UP=newE/oldE;
+	//
+	newE=oldE;
+	if(gSigma_DOWN>0.0){
+	  gSigma_DOWN=newJetRes*sqrt(gSigma_DOWN);
+	  TRandom3 rand3(0);
+	  newE+=rand3.Gaus(0.0,gSigma_DOWN);
+	}
+	ratio_DOWN=newE/oldE;
       }
-      ratio_CENTRAL=newE/oldE;
-      //
-      newE=oldE;
-      if(gSigma_UP>0.0){
-	gSigma_UP=newJetRes*sqrt(gSigma_UP);
-	TRandom3 rand2(0);
-	newE+=rand2.Gaus(0.0,gSigma_UP);
-      }
-      ratio_UP=newE/oldE;
-      //
-      newE=oldE;
-      if(gSigma_DOWN>0.0){
-	gSigma_DOWN=newJetRes*sqrt(gSigma_DOWN);
-	TRandom3 rand3(0);
-	newE+=rand3.Gaus(0.0,gSigma_DOWN);
-      }
-      ratio_DOWN=newE/oldE;
 
     }
       
@@ -391,6 +414,7 @@ void rescaleJetsJER(vector<Ptr_Jet>& Jets, Systematics& systematics){
     //if(!(ptbin ==0 || ptbin==1 || ptbin ==2 || ptbin ==3 || ptbin==4)){
     //cout<<"aqui ptbin = "<<ptbin<<" "<<Jets.at(ijet)->Pt()<<endl;
     //}
+    
     if(Jets.at(ijet)->IsMatch()){ 
       JetResPtBins.at(ptbin)->Fill((ptsmear-ptGen)/ptGen);
       SMfactor_PtBins.at(ptbin)->Fill((ptsmear-ptjet)/ptjet);

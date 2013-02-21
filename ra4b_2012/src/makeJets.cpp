@@ -308,7 +308,8 @@ void makeAllGenJets(EasyChain* tree, vector<Ptr_GenJet>& genjets){
 //template<typename Ptr_Jet1>
 void matchGenJets(EasyChain* tree, vector<Ptr_GenJet>& genJets, vector<Ptr_Jet>& Jets){
 
-  //extern TH1D* distmatched;
+  extern TH1D* distmatched;
+  extern TH1D* distmatched_cut;
   
   vector<int>&   MatchedGenJets = tree->Get(&MatchedGenJets,"ak5JetPFGenJetMatchIndexPat");
 
@@ -325,7 +326,13 @@ void matchGenJets(EasyChain* tree, vector<Ptr_GenJet>& genJets, vector<Ptr_Jet>&
 	genJets.at(mjet)->SetIsMatch(true);
 	Jets.at(ijet)->SetPartner(genJets.at(mjet));
 	genJets.at(mjet)->SetPartner(Jets.at(ijet));
-	//	distmatched->Fill(ROOT::Math::VectorUtil::DeltaR(Jets.at(ijet)->P4(),genJets.at(mjet)->P4()));
+
+	double deltaR=ROOT::Math::VectorUtil::DeltaR(Jets.at(ijet)->P4(),genJets.at(mjet)->P4());
+	distmatched->Fill(deltaR);
+	if( fabs(Jets.at(ijet)->Pt() - genJets.at(mjet)->Pt())/ genJets.at(mjet)->Pt()>0.5 ){
+	  distmatched_cut->Fill(deltaR);
+	}
+	//
       }
     }
   }
