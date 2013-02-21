@@ -8,6 +8,7 @@ def SetUpSampleAndScript(Sample,SubSample,FilesDir,ConfigFile,nFiles):
     command='runOnAll'
     Executable='myAnalysis'
     optclean='cleanUp'
+    topdir='/scratch/hh/dust/naf/cms/user/eron/RA4b/'
     #
     #
     #
@@ -22,15 +23,17 @@ def SetUpSampleAndScript(Sample,SubSample,FilesDir,ConfigFile,nFiles):
  #   print
   #  print
    # print
-    out=com.getoutput('ls -lrt '+TargetDir)
+    out=com.getoutput('ls -lrt '+topdir+TargetDir)
     if out.find('No such')>=0:
         print 'lets make the directory'
-        out=com.getoutput('ls '+Sample)
+        out=com.getoutput('ls '+topdir+Sample)
         if out.find('No such')>=0:
-            mkd=com.getoutput('mkdir '+Sample)
+            mkd=com.getoutput('mkdir '+topdir+Sample)
         #
-        mkd=com.getoutput('mkdir '+TargetDir)
+        mkd=com.getoutput('mkdir '+topdir+TargetDir)
     #
+    out=com.getoutput('ln -fs ' + topdir + Sample + ' ./' )
+    print 'out is ',out
     #name of the script
     scriptname='runall_'+Sample+'_'+SubSample
 

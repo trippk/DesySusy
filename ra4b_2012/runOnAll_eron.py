@@ -23,7 +23,7 @@ batch_script = \
 ##(send mail on job's end and abort)
 #$ -m a
 #$ -l site=hh
-## define output dir,executable,config file and LD_LIBRARY_PATH
+## define outputdir,executable,config file and LD_LIBRARY_PATH
 #$ -v OUTDIR=
 #$ -v EXECUTABLE=
 #$ -v CONFIG=
@@ -35,7 +35,7 @@ cd $OUTDIR
 ini glite
 ini dctools
 ##pwd
-cp ../../src/Summer12_V2_DATA_AK5PF_UncertaintySources.txt /tmp/
+#cp ../../src/Summer12_V2_DATA_AK5PF_UncertaintySources.txt /tmp/
 ##ls -lrt /tmp
 echo job start at `date`
 
@@ -305,9 +305,11 @@ def readCommandLine(commandLine):
 		# outdir is not given, assume cwd
 		outdir     = os.getcwd()
 		executable = something
+		print 'in here 1 ', outdir
  	else:
 		outdir     = something
-		executable = commandLine.pop(1)		
+		executable = commandLine.pop(1)
+		print 'in here 2 ', outdir		
 		#randstr = str(abs(hash(asctime())))
 		#outdir='/tmp/batchjobs/out_'+randstr
 		#if not os.path.isdir('/tmp/batchjobs'):
@@ -322,7 +324,10 @@ def readCommandLine(commandLine):
 
 	
 	#full names
+	print 'outdir before absolute path',outdir
 	outdir = os.path.abspath(outdir)
+	print 'currently in the directory ',commands.getoutput('pwd')
+	print 'absolute path is then ', outdir
 	executable = os.path.abspath(executable)
 
 	#outdir relative to the main directory
