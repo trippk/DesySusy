@@ -1,7 +1,0 @@
-# prelim RA5_config
-
-isData      = true
-filename    = /scratch/hh/current/cms/user/kruecker/ntuples/data2011/Run2011A/DoubleMu/SusyCAF_Tree_1_1_TYA.root
-quick       = true
-# triggerlist is not complete!
-triggerlist = HLT_Mu8_v1 HLT_DoubleMu3_v3
