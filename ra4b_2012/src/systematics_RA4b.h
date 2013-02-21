@@ -12,31 +12,52 @@
 #include "defaultTree.h"
 #include "Math/VectorUtil.h"
 #include "NtupleTools2.h"
+#include <boost/shared_ptr.hpp>
+
 
 using namespace ROOT::Math::VectorUtil;
+typedef boost::shared_ptr<Jet> Ptr_Jet;
 //
 class Systematics{
 
 private:
 
-
   std::map<std::string,bool> SysMap;
   bool Enabled;
   std::map<std::string, CutSet*> sysFlow;
   std::map<std::string, defaultTree*> sysDefaultTree;
+  std::map<std::string, std::string > treeJetCollection;
 
   //this should be cleared once per event loop
-  std::map<std::string, std::vector<Jet*> >  sysJet;
+  std::map<std::string, std::vector<Ptr_Jet> >  sysJet;
   std::map<std::string, double> sysMET;
-  std::map<std::string, LorentzM*> sysMEVector;  
+  std::map<std::string, Ptr_LorentzM> sysMETVector;  
   std::map<std::string, double> sysHT;
+  std::map<std::string, int> sysNumberOfbTags;
 
 public:
 
   Systematics(){   
     Enabled=false;
   }
+  ~Systematics(){
+    if(Enabled){
+      cout<<"removing the instance of systematics"<<endl;
+      this->Reset();
+      //typedef map<string,bool>::iterator map_it;
+      //      for (map_it iter=this->GetSysMap().begin(); iter != this->GetSysMap().end(); iter++){
+      //if(iter->second){    
+      //	  GetsysDefaultTree(iter->first)->~defaultTree();
+      //}
+      //
+      for (int i=0;i<this->vsrc.size();++i){
+	delete(this->vsrc.at(i));
+      }
+      delete(this->total);
+    }
+  }
 
+  
   std::map<std::string,bool>& GetSysMap();
   std::map<std::string, bool> passCuts;
   void Reset();
@@ -48,13 +69,15 @@ public:
   bool IsEnabled();
 
 
-  void SetsysJet(std::string,std::vector<Jet*>);
-  std::vector<Jet*>& GetsysJet(std::string);
+  void SetsysJet(std::string,std::vector<Ptr_Jet>);
+  std::vector<Ptr_Jet>& GetsysJet(std::string);
   
   void SetsysMET(std::string, double);
   double& GetsysMET(std::string);
-  void SetsysMEVector(std::string, double px, double py);
-  LorentzM* GetsysMEVector(std::string);
+  void SetsysMETVector(std::string, double px, double py);
+  void SetsysMETVector(std::string name, LorentzM* vec_in);
+  //
+  Ptr_LorentzM GetsysMETVector(std::string);
 
   void SetsysHT(std::string, double);
   double& GetsysHT(std::string);
@@ -67,6 +90,16 @@ public:
   JetCorrectionUncertainty* total;
   vector<JetCorrectionUncertainty*> vsrc;  
 
+  void SetTreeJetCollection(std::string name1, std::string name2);
+  std::vector<Ptr_Jet>& GetTreeJetCollection(std::string);
+
+  int NumberOfbTags(std::string name){return sysNumberOfbTags[name];}
+
+  void CalculateNumberOfbTags(std::string name, std::string jetname);
+
+
+
+  
 };
 
 #endif

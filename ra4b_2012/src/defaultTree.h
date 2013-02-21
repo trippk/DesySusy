@@ -11,11 +11,12 @@
 #include "Muon.h"
 #include "Jet.h"
 #include "mt2w_interface.h"
-
 #include <iostream>
 #include <fstream>
 #include <map>
 #include <vector>
+#include <boost/shared_ptr.hpp>
+#include "typedefs.h"
 
 using namespace std;
 using namespace ROOT::Math::VectorUtil;
@@ -25,13 +26,22 @@ class defaultTree: public subTree {
 
   defaultTree();
   defaultTree(TFile*, TString);
-
+  defaultTree(TFile*,TDirectory*);
+  ~defaultTree(){
+    //delete all the pointers
+    delete(el);
+    delete(mu);
+    delete(Jets);
+  }
+  //
   void Constructor();
-
+  //void Fill(EventInfo* info, EasyChain* tree, vector<Muon*>& muons, vector<Electron*>& electrons, vector<Jet*>& jets, double& met);
   void Fill(EventInfo* info, EasyChain* tree, vector<Muon*>& muons, vector<Electron*>& electrons, vector<Jet*>& jets, LorentzM& met);
-  void Fill(EventInfo* info, EasyChain* tree, vector<Muon*>& muons, vector<Electron*>& electrons, vector<Jet*>& jets, double& met);
+  void Fill(EventInfo* info, EasyChain* tree, vector<Muon*>& muons_in, vector<Electron*>& electrons_in, vector<Ptr_Jet>& jets_in, LorentzM& met_in);
+  //
   virtual void Write();
   void SetTDir(TString);
+  void SetTDir(TDirectory*);
   void SetTFile(TFile*);
 protected:
   
@@ -40,7 +50,7 @@ protected:
   TTree* mytree;
   TDirectory* dir;
   TFile* tfile;
-   mt2w_bisect::mt2w_interface mt2w_calc;
+  mt2w_bisect::mt2w_interface mt2w_calc;
   
   int event;
   int run;
@@ -55,18 +65,17 @@ protected:
   double MT2WMu;
   double weight;
   double PUWeight;
-  int nJets;
-   
-   vector<double> el;
-   vector<double> mu;
-   vector<double> jet1;
-   vector<double> jet2;
-   vector<double> jet3;
-   vector<double> jet4;
-   vector<double> jet5;
-   vector<double> jet6;
-   vector<double> jet7;
-   
+  double PUWeight_up;
+  double PUWeight_down;
+  int NPV;
+  int NBtags;
+
+
+  vector<LorentzM>* el;
+  vector<LorentzM>* mu;
+  vector<LorentzM>* Jets;
+
+
  };
 
 #endif

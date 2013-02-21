@@ -44,8 +44,19 @@ class subTreeFactory
 
 	//If subdir not created, exit
 	if (newdir == 0) {
+	  //<<<<<<< subTreeFactory.h
 	  cout << "ERROR: Problem creating the directory: " << newdir << endl;
 	  break;
+	  //=======
+	  //cout << "Creating dir: " << newsubdir << endl;
+	  bool okmkdir=dir->mkdir(newsubdir); //Create the new subdir. If it exists, returns false.
+	  //cout << "DONE!" << endl;
+	  dir=(TDirectory*)dir->Get(newsubdir); //Get the new subdir.
+	}
+	else {
+	  //cout << "Found exisiting directory!"<< endl;
+	  dir = newdir;
+	  //>>>>>>> 1.7.2.1
 	}
       }
 
@@ -87,7 +98,7 @@ class subTreeFactory
       std::cout<<"default subTree will be filled."<<std::endl;
       if (tfile!=0){
 	//std::cout<<"CALLING NEW TREE WITH PARAMETERS "<<std::endl;
-	return new defaultTree(tfile, dir);
+	return new defaultTree(tfile, treeDir);
       }else{
 	//	  std::cout<<"CALLING NEW TREE WITH NO PARAMETERS "<<std::endl;
 	return new defaultTree;

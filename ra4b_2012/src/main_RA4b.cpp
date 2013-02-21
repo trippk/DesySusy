@@ -20,6 +20,9 @@
 #include "CutFlow.h"
 #include "eventselection.h"
 #include "SampleInformation.h"
+#include "Electron.h"
+#include "Muon.h"
+#include "Jet.h"
 #include "makeElectrons.h"
 #include "makeMuons.h"
 #include "triggers_RA4b.h"
@@ -34,8 +37,6 @@
 #include "THTools.h"
 #include "TStopwatch.h"
 #include "Electron.h"
-#include "Muon.h"
-#include "Jet.h"
 #include "makeJets.h"
 #include "HistoMaker.h"
 #include "mt2w_interface.h"
@@ -53,6 +54,10 @@
 #include "typelookup.cc"
 #include "Exception.cc"
 #include "TagEff.h"
+#include "genJet.h"
+#include <boost/shared_ptr.hpp>
+#include "typedefs.h"
+#include "trigStudyTree.h"
 
 using namespace std;
 using namespace ROOT::Math::VectorUtil;
@@ -61,6 +66,22 @@ using namespace ROOT::Math::VectorUtil;
 //===================================================================
 
 bool pcp = false; //Set to true for debugging.
+TH1D* JetUncDiff= new TH1D("JetUncDiff","diff in jet uncertainty",50,-0.02,0.02);
+
+vector<TH1D*> JetResPtBins;
+vector<TH1D*> SMfactor_PtBins;
+vector<TH1D*> JetResEtaBins;
+vector<TH1D*> JetResPtBins_smear;
+vector<TH1D*> JetResEtaBins_smear;
+TH1D* distmatched;
+TH1D* distmatched_cut;
+
+//for (int k=0;k<5;++k){
+//  JetResPtBins.push_back(new TH1D("JetRes_PtBin"+(TString)Form("%d",k),"jet Res Pt bin "+(TString)Form("%d",k),40,-0.2,0.2));
+//  JetResEtaBins.push_back(new TH1D("JetRes_EtaBin"+(TString)Form("%d",k),"jet Res Eta bin "+(TString)Form("%d",k),40,-0.2,0.2));
+//  JetResPtBins_smear.push_back(new TH1D("JetRes_PtBin"+(TString)Form("%d",k)+"_smear","jet Res Pt bin "+(TString)Form("%d",k),40,-0.2,0.2));
+//  JetResEtaBins_smear.push_back(new TH1D("JetRes_EtaBin"+(TString)Form("%d",k)+"_smear","jet Res Eta bin "+(TString)Form("%d",k),40,-0.2,0.2));
+// }
 
 //Globals to remove
 //bool checkthisevent=false;
@@ -68,11 +89,14 @@ bool pcp = false; //Set to true for debugging.
 //vector<string> triggernames_short;
 //double EventWeight;
 
+
+
 //================================================================================
 int main(int argc, char** argv){
 
   //PCP=TRUE FOR DEBUGGING
   pcp=false;
+
 
   double EventWeight=1.0;
 
@@ -94,15 +118,17 @@ int main(int argc, char** argv){
   TString outname = config.getTString("outname",tree->GetUniqeName());
   string outname_string=(string)outname;
   // output directory and output file name(derived from input name)
+  cout<<endl;
   cout<<"-----------------------------------------------"<<endl;
   cout<<"The output file name is "<<outname<<endl;
   cout<<"-----------------------------------------------"<<endl;
-
+  cout<<endl;
   TFile *outfile = TFile::Open(outname,"RECREATE");
-    
   //TFile *outprovafile = TFile::Open("outprovafile.root","RECREATE");
   // set output root file for cut flow (to be done!)
   //  CutSet::setTFile(outfile);
+  
+
  
   string replacestring=".root";
   string treeFileName="";
@@ -112,121 +138,37 @@ int main(int argc, char** argv){
     treeFileName= outname_string.replace(pos,thelength,"_tree.root");
   }
   //
-  TFile* treeFile=TFile::Open((TString)treeFileName,"RECREATE");
-  //  treeFile->cd();
-  TString treeType = config.getTString("treeType","default"); 
-  cout<<"going to call new tree with "<<treeFile<<endl;
-  
-  
-  subTree* SubTree= subTreeFactory::NewTree(treeType,treeFile,(string)"");
-  
-  //trigStudyTree* TrigStudyTree = subTreeFactory::NewTree("triggerStudyTree",treeFile,(string)"");
-  trigStudyTree* TrigStudyTree = (trigStudyTree*)subTreeFactory::NewTree("trigStudyTree",treeFile,(string)"");
-  //cout<<TrigStudyTree<<endl;
-  
-  bool doSmallTree=true;
+
+  //==============SUBTREE
+  //
+  TFile *treeFile=0;
+  subTree* SubTree=0;
+  bool doSubTree=config.getBool("doSubTree",true);
+  if(doSubTree){
+    treeFile=TFile::Open((TString)treeFileName,"RECREATE");
+    TString treeType = config.getTString("treeType","default"); 
+    SubTree= subTreeFactory::NewTree(treeType,treeFile,(string)"");
+  }
+  //==========================================
+
+
+  //==============SUBTREE FOR THE TRIGGER STUDY
+  bool doTrigStudy=config.getBool("doTrigStudy",true);
+  trigStudyTree* TrigStudyTree=0;
+  if(TrigStudyTree){
+    if(!treeFile) treeFile=TFile::Open((TString)treeFileName,"RECREATE");
+    TrigStudyTree = (trigStudyTree*)subTreeFactory::NewTree("trigStudyTree",treeFile,(string)"");
+  }
+  //===========================================
+
   outfile->cd();  
+
+
 
 
   //data or monte carlo?
   bool isData=config.getBool("isData");
   //=================================================================
-
-
-  //ofstream events1;
-  //  ofstream events2;
-  //  ofstream onejet;
-  //  ofstream twojet;
-  //  ofstream threejet;
-  
-  //events1.open("afterjets_fast.txt");
-  //events2.open("after_1ele_nomu.txt");
-  //  onejet.open("after_1jet.txt");
-  //  twojet.open("after_2jet.txt");
-  //  threejet.open("after_3jet.txt");
-  /*
-
-  tree->SetBranchStatus("*",0);
-
-  tree->SetBranchStatus("event",1);
-  tree->SetBranchStatus("run",1);
-  tree->SetBranchStatus("metP4PF",1);
-  tree->SetBranchStatus("nTracksAll",1);
-  tree->SetBranchStatus("nTracksHighPurity",1);
-  tree->SetBranchStatus("ecalDeadCellTPFilterFlag",1);
-  tree->SetBranchStatus("ak5JetPFTrkCountingHighEffBJetTagsPat",1);
-  tree->SetBranchStatus("electronP4Pat",1);
-  tree->SetBranchStatus("electronChargePat",1);
-  tree->SetBranchStatus("electronDr03EcalRecHitSumEtPat",1);
-  tree->SetBranchStatus("electronDr03HcalTowerSumEtPat",1);
-  tree->SetBranchStatus("electronDr03TkSumPtPat",1);
-  tree->SetBranchStatus("electronP4Pat",1);
-  tree->SetBranchStatus("electronESuperClusterEtaPat",1);
-  tree->SetBranchStatus("electronGsfTrackDxyPat",1);
-  tree->SetBranchStatus("electronGsfTrackDzPat",1);
-  tree->SetBranchStatus("electronFbremPat",1);
-  tree->SetBranchStatus("electronESuperClusterOverPPat",1);
-  tree->SetBranchStatus("electronIdTightPat",1);
-  tree->SetBranchStatus("electronIdMediumPat",1);
-  tree->SetBranchStatus("DESYelectronIdTriggerTightPat",1);
-  tree->SetBranchStatus("electronESuperClusterEtaPat",1);
-  tree->SetBranchStatus("ak5JetPFPFJetIDloosePat",1);
-  tree->SetBranchStatus("ak5JetPFCorrectedP4Pat",1);
-  tree->SetBranchStatus("ak5JetPFCorrFactorPat",1);
-  tree->SetBranchStatus("ak5JetPFCombinedSecondaryVertexBJetTagsPat",1);
-  tree->SetBranchStatus("ak5JetPFCombinedSecondaryVertexMVABJetTagsPat",1);
-  tree->SetBranchStatus("muonP4Pat",1);
-  tree->SetBranchStatus("muonChargePat",1);
-  tree->SetBranchStatus("muonPfIsolationR04DeltaBCorrectedPat",1);
-  tree->SetBranchStatus("muonIsPFMuonPat",1);
-  tree->SetBranchStatus("muonIsGlobalMuonPat",1);
-  tree->SetBranchStatus("muonIsTrackerMuonPat",1);
-  tree->SetBranchStatus("muonP4Pat",1);
-  tree->SetBranchStatus("muonIsGlobalMuonPat",1);
-  tree->SetBranchStatus("muonIsTrackerMuonPat",1);
-  tree->SetBranchStatus("muonTMOneStationTightPat",1);
-  tree->SetBranchStatus("muonNumberOfTrackerLayersWithMeasurementPat",1);
-  tree->SetBranchStatus("muonInnerTrackNormalizedChi2Pat",1);
-  tree->SetBranchStatus("muonInnerTrackDxyPat",1);
-  tree->SetBranchStatus("muonInnerTrackDzPat",1);
-  tree->SetBranchStatus("muonNumberOfValidPixelHitsPat",1);
-  tree->SetBranchStatus("muonP4Pat",1);
-  tree->SetBranchStatus("muonChargePat",1);
-  tree->SetBranchStatus("muonIsGlobalMuonPat",1);
-  tree->SetBranchStatus("muonGlobalTrackDxyBSPat",1);
-  tree->SetBranchStatus("muonGlobalTrackDzPat",1);
-  tree->SetBranchStatus("muonEcalIsoPat",1);
-  tree->SetBranchStatus("muonHcalIsoPat",1);
-  tree->SetBranchStatus("muonTrackIsoPat",1);
-  tree->SetBranchStatus("muonIDGlobalMuonPromptTightPat",1);
-  tree->SetBranchStatus("muonGlobalTracknumberOfValidHitsPat",1);
-  tree->SetBranchStatus("muonGlobalTracknormalizedChi2Pat",1);
-  tree->SetBranchStatus("muonGlobalTracknumberOfValidMuonHitsPat",1);
-  tree->SetBranchStatus("muonNumberOfMatchedStationsPat",1);
-  tree->SetBranchStatus("muonInnerTrackDxyPat",1);
-  tree->SetBranchStatus("muonInnerTrackDzPat",1);
-  tree->SetBranchStatus("muonNumberOfValidPixelHitsPat",1);
-  tree->SetBranchStatus("muonNumberOfTrackerLayersWithMeasurementPat",1);
-  tree->SetBranchStatus("muonIsPFMuonPat",1);
-  tree->SetBranchStatus("muonIsGlobalMuonPat",1);
-  tree->SetBranchStatus("muonSelectedPF",1);
-  tree->SetBranchStatus("metP4PF",1);
-  tree->SetBranchStatus("metP4TC",1);
-  tree->SetBranchStatus("trackingFailureFilterFlag",1);
-  tree->SetBranchStatus("prescaled",1);
-  tree->SetBranchStatus("triggered",1);
-  tree->SetBranchStatus("DESYtriggerNameMap",1);
-  tree->SetBranchStatus("vertexPosition",1);
-  tree->SetBranchStatus("vertexIsFake",1);
-  tree->SetBranchStatus("vertexNdof",1);
-  tree->SetBranchStatus("vertexNtrks",1);
-  if(!isData){
-      tree->SetBranchStatus("pileupTrueNumInteractionsBX0",1);
-  }
-
-  */
-
-
 
 
 
@@ -285,12 +227,18 @@ int main(int argc, char** argv){
 
   vector<double> PUmc;
   vector<double> PUdata;
+  vector<double> PUdata_up;
+  vector<double> PUdata_down;
   int nobinsmc=0;
   int nobinsdata=0;
+  int nobinsdata_up=0;
+  int nobinsdata_down=0;
   if(!isData && !oldpuw){
     nobinsmc = config.getDouble("PU_"+WhatSample+"_"+WhatSubSample+"_mc",PUmc," ");
     nobinsdata = config.getDouble("PU_data",PUdata," ");
-  } 
+    nobinsdata = config.getDouble("PU_data_up",  PUdata_up  ," ");
+    nobinsdata = config.getDouble("PU_data_down",PUdata_down," ");
+  }
   else if(!isData && oldpuw){
     nobinsmc = config.getDouble("oldPU_"+WhatSample+"_"+WhatSubSample+"_mc",PUmc," ");
    } 
@@ -307,41 +255,6 @@ int main(int argc, char** argv){
   bin = config.getInt("lasttagbin",3); // set the lasttagbin i.e 3 to get tag weightings for 0,1,2,3+
   //TagEff tag(WhatSample,WhatSubSample);
   //tag.lastbin(bin);
-
-
-
-
-  //REWEIGHT DUE TO THE DATA LUMINOSITY
-  //this should be done offline
-  bool DoOnlineRW=false;
-  if(DoOnlineRW){
-    cout<<"GOING TO REWEIGHT THE MC SAMPLE TO THE DATA LUMI "<<endl;
-    double xsecMC=1.0;                         //Monte Carlo Cross Section
-    double Lumidata=5097.2;                    //Luminosity of the data
-    double FilterEff=1.0;                      //Filter Efficiency
-    long   Ntotal_MC=-1;                       //Total events in Monte Carlo
-   
-    if(!isData){
-      FilterEff=config.getDouble("FE_"+WhatSample+"_"+WhatSubSample);
-      xsecMC=config.getDouble("xs_"+WhatSample+"_"+WhatSubSample);
-      Ntotal_MC=config.getLong("TNoE_"+WhatSample+"_"+WhatSubSample);
-      cout<<"FILTER EFFICIENCY FOR THIS SUBSAMPLE  "<<FilterEff<<endl;
-      cout<<"CROSS SECTION OF THIS SUBSAMPLE "<<xsecMC<<endl;
-      cout<<"TOTAL NUMBER OF ENTRIES "<<Ntotal_MC<<endl;
-      cout<<"LUMINOSITY OF THE DATA TO COMPARE THE MC "<<Lumidata<<endl;
-      
-      InitialEventWeight=Lumidata*xsecMC*FilterEff/Ntotal_MC;
-      if(Ntotal_MC<=0){
-	cout<<"The denominator is 0 or negative, this should NEVER happen. ERROR "<<endl;
-	cout<<"Leaving the program "<<endl;
-	return 0;
-      }
-      cout<< " THE EVENT WEIGHT DUE TO FilterEff*xSec(*Lumi/TNoE) = "<< InitialEventWeight<<endl;
-    }
-  }
- 
-  //CutSet::global_event_weight  = InitialEventWeight;
-  //========================================================
 
 
 
@@ -375,7 +288,7 @@ int main(int argc, char** argv){
   bool DoControlPlots=config.getBool("DoControlPlots",true); 
   //HistoMaker::setTFile(outfile); 
   HistoMaker ControlPlots("AnalyzeSUSY"," "); 
-  ControlPlots.setTFile(outfile); 
+  ControlPlots.setTFile(outfile);
   outfile->cd();
 
 
@@ -388,6 +301,8 @@ int main(int argc, char** argv){
   else{isdata->SetBinContent(1,0);}
   //================================================================
  
+
+
   //================================================================   
   TH1I* num_entries = new TH1I("num_entries","number of entries",1,0,1);
   num_entries->SetBinContent(1,N);
@@ -417,35 +332,88 @@ int main(int argc, char** argv){
   //===========================================
 
     
+
   //===========================================
   bool turntriggersoff=config.getBool("TurnTriggersOff",false);
   if(turntriggersoff){
     cout<<"-----------TURNTRIGGERSOFF IS true!!-----------"<<endl;
     if(isData){
-      cout<<"--------NO TRIGGERS, NO DATA--------------------"<<endl;
+      cout<<endl;
+      cout<<endl;
+      cout<<"--------NO TRIGGERS, NO DATA------------------"<<endl;
+      cout<<endl;
+      cout<<endl;
       exit(1);
     }
   }
   //===========================================
 
 
+  distmatched=new TH1D("distmatched","distance",40,0.0,0.6);
+  distmatched_cut=new TH1D("distmatched_cut","distance",40,0.0,0.6);
+
+  string smearing = config.getString("JetRes_smearing","mixed");
+  cout<<"the smearing is "<<smearing<<" "<<endl;
+  //  cout<<smearing==(string)"mixed"<<endl;
 
   TH1D* EW_AfterTrigger= new TH1D("EW_AfterTrigger","Event weight after the trigger",30,0.0,100.0);
   TH1D* EW_AfterPU=new TH1D("EW_AfterPU","Event Weight after PU RW",100,0.0,10.0);
-  //TH1D* triggers_prescale= new TH1D("trigger_prescale","the prescale of the trigger",50,0.0,10.0);
+  TH1D* checkMET= new TH1D("checkMET","check of the MET",30,0.0,300.0);
+  
+  vector<TH1D*> JetResPtBins_Matched;  
+  vector<TH1D*> JetResEtaBins_Matched;  
+  for (int k=0;k<5;++k){
+    JetResPtBins.push_back(new TH1D("JetRes_PtBin"+(TString)Form("%d",k),"jet Res Pt bin "+(TString)Form("%d",k),40,-1.,1.5));
+    SMfactor_PtBins.push_back(new TH1D("SMfactor_PtBin"+(TString)Form("%d",k),"jet Res Pt bin "+(TString)Form("%d",k),40,-0.2,0.2));
+    JetResEtaBins.push_back(new TH1D("JetRes_EtaBin"+(TString)Form("%d",k),"jet Res Eta bin "+(TString)Form("%d",k),40,-1.5,1.));
+    JetResPtBins_smear.push_back(new TH1D("JetRes_PtBin"+(TString)Form("%d",k)+"_smear","jet Res Pt bin "+(TString)Form("%d",k),40,-0.2,0.2));
+    JetResEtaBins_smear.push_back(new TH1D("JetRes_EtaBin"+(TString)Form("%d",k)+"_smear","jet Res Eta bin "+(TString)Form("%d",k),40,-0.2,0.2));
+    JetResPtBins_Matched.push_back(new TH1D("JetRes_PtBin"+(TString)Form("%d",k)+"_matched","jet Res Pt bin "+(TString)Form("%d",k)+" matched jets",40,-1.5,2.5));
+    JetResEtaBins_Matched.push_back(new TH1D("JetRes_EtaBin"+(TString)Form("%d",k)+"_matched","jet Res Eta bin "+(TString)Form("%d",k)+" matched jets",40,-1.5,2.5));
+  }
+  TH1D* METRes= new TH1D("METRes","resolution of MET",30,-1.0,2.0);
+  TH1D* METChange= new TH1D("METChange","change induced",30,-0.2,0.2);
+  TH1D* newMETRes= new TH1D("newMETRes","new resolution of MET",30,-1.0,2.);
+  TH1D* METRes_ACF= new TH1D("METRes_AfterCutF","resolution of MET after CutFlow",30,-1.0,2.0);
+  TH1D* METChange_ACF= new TH1D("METChange_AfterCutF","change induced after CutFlow",30,-0.2,0.2);
+  TH1D* newMETRes_ACF= new TH1D("newMETRes_AfterCutF","new resolution of MET after CutFlow",30,-1.0,2.);
 
+  
+  vector<TH1D*> METRes_METBins;
+  vector<TH1D*> METRes_NMatchedJets_Bins;
+  vector<TH1D*> METChange_NMatchedJets_Bins;
+  vector<TH1D*> METRes_NJets_Bins;
+  vector<TH1D*> METChange_METBins;
+  vector<TH1D*> METRes_NMatchedJets_NJets;
+  vector<TH1D*> METChange_NMatchedJets_NJets;
 
+  for (int k=0;k<5;++k){
+    METRes_METBins.push_back(new TH1D("METRes_METBin"+(TString)Form("%d",k),"MET Res MET bin "+(TString)Form("%d",k),30,-1.0,2.0));
+    METChange_METBins.push_back(new TH1D("METChange_METBin"+(TString)Form("%d",k),"MET Change MET bin "+(TString)Form("%d",k),30,-0.2,0.2));
+    METRes_NMatchedJets_Bins.push_back(new TH1D("METRes_NMatchedJets_Bin"+(TString)Form("%d",k),"MET Res NMatchedJets Bin "+(TString)Form("%d",k),30,-1.,1.5));
+    METChange_NMatchedJets_Bins.push_back(new TH1D("METChange_NMatchedJets_Bin"+(TString)Form("%d",k),"MET Change NMatchedJets Bin "+(TString)Form("%d",k),30,-1.,1.5));
+    METRes_NJets_Bins.push_back(new TH1D("METRes_NJets_Bin"+(TString)Form("%d",k),"MET Change NJets Bin "+(TString)Form("%d",k),30,-1.0,1.5));
+  }
+
+  for (int k=0;k<5;++k){
+    for (int j=0;j<5;++j){
+      METRes_NMatchedJets_NJets.push_back(new TH1D("METRes_NMatchedJets_NJet_Bin"+(TString)Form("%d",k)+(TString)Form("%d",j),"MET Res NMatchedJets Bin "+(TString)Form("%d",k),30,-1.,1.5));
+      METChange_NMatchedJets_NJets.push_back(new TH1D("METChange_NMatchedJets_NJet_Bin"+(TString)Form("%d",k)+(TString)Form("%d",j),"MET Change NMatchedJets Bin "+(TString)Form("%d",k),30,-1.,1.5));
+    }
+  }
+  
+  TH2D* METRes_vs_MET=new TH2D("METRes_vs_MET","METRes_vs_MET",40,0.0,400.0,20,-1.0,3.0);
+  
+  
   if(pcp)cout<<"check point before the event loop"<<endl;
-
 
   bool isquick=config.getBool("quick",true);
   bool quick=false;
+  cout<<endl;
+  cout<<endl;
   cout<<"isquick is"<<isquick<<endl;
- 
-
-
-
-
+  cout<<endl;
+  cout<<endl;
 
 
 
@@ -460,14 +428,18 @@ int main(int argc, char** argv){
   Systematics systematics;
   if (!isquick && doSystematics){
     //it cant do systematics on the quick mode
-    systematics.AddUncertainty((string)"jetup",treeFile);
-    systematics.AddUncertainty((string)"jetdown",treeFile);
-    systematics.AddUncertainty((string)"clustersup",treeFile);
-    systematics.AddUncertainty((string)"clustersdown",treeFile);
+    //systematics.AddUncertainty((string)"jetup",treeFile);
+    //systematics.AddUncertainty((string)"jetdown",treeFile);
+    //systematics.AddUncertainty((string)"clustersup",treeFile);
+    //systematics.AddUncertainty((string)"clustersdown",treeFile);
+    systematics.AddUncertainty((string)"jetRescentral",treeFile);
+    systematics.AddUncertainty((string)"jetResup",treeFile);
+    systematics.AddUncertainty((string)"jetResdown",treeFile);
   }
 
-
+  
   //=============INITIALIZE THE JETUncertainty object
+  typedef boost::shared_ptr<JetCorrectorParameters> JetCorrectorParam_Ptr;
   // Instantiate uncertainty sources
   const int nsrc = 16;
   const char* srcnames[nsrc] =
@@ -476,26 +448,33 @@ int main(int argc, char** argv){
      "RelativeStatEC2", "RelativeStatHF", "RelativeFSR",
      "PileUpDataMC", "PileUpOOT", "PileUpPt", "PileUpBias", "PileUpJetRate"};
 
+  string jetuncfile;
   for (int isrc = 0; isrc < nsrc; isrc++) {
     const char *name = srcnames[isrc];
-    std::string test="src/Summer12_V2_DATA_AK5PF_UncertaintySources.txt";
-    //std::string test="/tmp/Summer12_V2_DATA_AK5PF_UncertaintySources.txt";
-    JetCorrectorParameters *p ;
+    
+    bool isBatchJob=config.getBool("isBatchJob",false);
+    std::string test1="src/Summer12_V2_DATA_AK5PF_UncertaintySources.txt";
+    std::string test2="../../Summer12_V2_DATA_AK5PF_UncertaintySources.txt";
+    
+    if(!isBatchJob){
+      jetuncfile=test1;
+    }else{
+      jetuncfile=test2;
+    }
+
+    JetCorrectorParameters *p;
     if (systematics.IsEnabled()){
-      p= new JetCorrectorParameters(test, name);
+      p= new JetCorrectorParameters(jetuncfile, name);
       systematics.vsrc.push_back(new JetCorrectionUncertainty(*p));
     }
   }
   //==========Total uncertainty for reference
   //  std::string test  ="/tmp/Summer12_V2_DATA_AK5PF_UncertaintySources.txt";
-    std::string test="src/Summer12_V2_DATA_AK5PF_UncertaintySources.txt";
+  //std::string test="src/Summer12_V2_DATA_AK5PF_UncertaintySources.txt";
 
   if(systematics.IsEnabled()){
-    systematics.total = new JetCorrectionUncertainty(*(new JetCorrectorParameters(test, "Total")));
+    systematics.total = new JetCorrectionUncertainty(*(new JetCorrectorParameters(jetuncfile, "Total")));
   }
-
-
-
 
 
 
@@ -525,8 +504,9 @@ int main(int argc, char** argv){
       quick=isquick;
     }
      
+    //continue;
     //    pcp=true;
-    //    if(i>10)continue;
+    //if(i>10000)continue;
 
     timer();
 
@@ -546,7 +526,9 @@ int main(int argc, char** argv){
     if(pcp)cout<<"check point got the Event "<< i<< " "<<Event<<endl;    
 
     
-
+    //clear all the vectors inside systematics
+    //otherwise they accumulate
+    if (systematics.IsEnabled())systematics.Reset();
 
 
     //    pcp=true;
@@ -556,18 +538,6 @@ int main(int argc, char** argv){
     //      continue;
     //    }
     //    cout<<Event<<endl;
-    //CHECK dz_track and dy_track due to the differences with other groups
-    if(pcp){
-      vector<LorentzM>& Muons = tree->Get(&Muons, "muonP4Pat");
-      vector<float>& Dxy_track = tree->Get( &Dxy_track,   "muonInnerTrackDxyPat");
-      vector<float>& Dz_track = tree->Get( &Dz_track,   "muonInnerTrackDzPat");
-      cout<<"dz and dxy of ALL MUONS"<<endl;
-      for (int imu=0;imu<(int)Muons.size();++imu){
-	cout<<"dz of "<<imu<< " = "<<Dz_track.at(imu)<<endl;
-	cout<<"dxy of "<<imu<< " = "<<Dxy_track.at(imu)<<endl;
-      }
-    }
-
 
 
     //DEBUGGING:
@@ -593,7 +563,9 @@ int main(int argc, char** argv){
     //==============================================
     // PILE UP RW
     //==============================================
-    double PUWeight=1.;
+    double PUWeight=1;
+    double PUWeight_up=1;
+    double PUWeight_down=1;
     int relevantNumPU=0;
     if(!isData) {
       float PUnumInter    = tree->Get( PUnumInter, "pileupTrueNumInteractionsBX0");
@@ -608,6 +580,8 @@ int main(int argc, char** argv){
       }
       else {
 	PUWeight= PUdata.at( relevantNumPU )/PUmc.at( relevantNumPU );
+	PUWeight_up= PUdata_up.at( relevantNumPU )/PUmc.at( relevantNumPU );
+	PUWeight_down= PUdata_down.at( relevantNumPU )/PUmc.at( relevantNumPU );
       }
       
       EventWeight *= PUWeight;
@@ -649,6 +623,7 @@ int main(int argc, char** argv){
     //============================================
     // Make Muons
     vector<Muon> Muons;
+    vector<Muon*> pMuons;
     vector<Muon*> LooseMuons;
     vector<Muon*> TightMuons;
     vector<Muon*> VetoMuons;
@@ -656,7 +631,9 @@ int main(int argc, char** argv){
     makeTightMuons(tree,Muons,TightMuons);
     makeLooseMuons(tree,Muons,LooseMuons);
     makeVetoMuons(tree,Muons,VetoMuons);
-
+    for (int imu=0; imu<Muons.size();++imu){
+      pMuons.push_back(&Muons.at(imu));
+    }
     //  makeSoftMuons(tree ,Muons,SoftMuons);
     //============================================
 
@@ -664,6 +641,7 @@ int main(int argc, char** argv){
     //============================================
     // Make Electrons
     vector<Electron>  Electrons;
+    vector<Electron*> pElectrons;
     vector<Electron*> LooseElectrons;
     vector<Electron*> TightElectrons;
     vector<Electron*> VetoElectrons;
@@ -671,38 +649,51 @@ int main(int argc, char** argv){
     //    makeLooseElectrons(tree,Electrons,LooseElectrons);
     makeTightElectrons(tree,Electrons,TightElectrons);
     makeVetoElectrons(tree, Electrons,VetoElectrons);
+    for (int iel=0; iel<Electrons.size();++iel){
+      pElectrons.push_back(&Electrons.at(iel));
+    }
     //============================================
+
 
 
     //============================================    
     // Make Jets
-    vector<Jet>  Jets;
-    vector<Jet*> AllJets;
-    vector<Jet*> GoodJets;
-    vector<Jet*> CleanedJets;
-
-    Jets=makeAllJets(tree);
-    for (int ijet=0;ijet<(int)Jets.size();++ijet){
-      AllJets.push_back(&Jets.at(ijet));
-    }
-    //    cout<<"size of the collection "<<Jets.size()<<endl;
+    //cout<<"vector of jets declared"<<endl;
+    vector<Ptr_Jet> AllJets;
+    vector<Ptr_Jet> GoodJets;
+    vector<Ptr_Jet> CleanedJets;
+    makeAllJets(tree,AllJets);
     makeGoodJets(tree,AllJets,GoodJets);
-    //    cout<<"size of all jets is "<<AllJets.size()<<endl;
-    //    cout<<"size of the thing! "<<GoodJets.size()<<endl;
-    makeCleanedJets( GoodJets, CleanedJets, Muons, Electrons);
+    makeCleanedJets( GoodJets, CleanedJets, pMuons, pElectrons);
+
+    //=======MATCHING OF JETS
+    vector<Ptr_GenJet> allGenJets;
+    if(!isData){
+      makeAllGenJets(tree,allGenJets);
+      matchGenJets(tree,allGenJets,AllJets);
+    }
     //============================================
-    
 
     //Define TAG algorithm & working points==============================
     static string btagAlgorithm= config.getString("bTagAlgorithm","CSV");
     static string btagWorkingPoint = config.getString("bTagWorkingPoint","Medium");
     int NumberOfbTags=0;
-   
+    
+    for (int ijet=0;ijet<CleanedJets.size();++ijet){
+      if(CleanedJets.at(ijet)->IsBJet("CSV","Medium")){
+	NumberOfbTags++;
+      }
+    }
+
+
+
+
+
 
 
 
     //============================================
-    //Make HT
+    //Make HT AND MHT
     //============================================
     double HT=0;
     double px=0;
@@ -722,6 +713,10 @@ int main(int argc, char** argv){
     double MET=(double)PFmet.Et() ;
     //============================================
 
+    //RESOLUTION
+    LorentzM& TrueME = tree->Get(&TrueME,"genmetP4True");
+    double TrueMET=TrueME.Pt();
+    METRes->Fill((MET-TrueMET)/TrueMET,EventWeight);
 
     if (pcp){
       cout<<endl;
@@ -732,62 +727,158 @@ int main(int argc, char** argv){
 
 
 
+
     //===========================================
-    //CALCULATE SYSTEMATICS VARIATIONS    
+    //CALCULATE SYSTEMATICS VARIATIONS: JETS
     //===========================================
     if (systematics.IsEnabled()){
 
-      //clear all the vectors inside systematics
-      //otherwise they accumulate
-      systematics.Reset();
-      if (systematics.DoJetUp() || systematics.DoJetDown()){
-	//=========RESCALE THE JETS
-	rescaleJets(tree,AllJets,systematics);
+
+      ShiftJetEnergyScale(tree,systematics,AllJets,pMuons,pElectrons);
+      ShiftClustersEnergyScale(tree,systematics,AllJets,pMuons,pElectrons);
+
       
+      if( systematics.GetSysMap()["jetResup"]){
+	//
+	//
+	rescaleJetsJER(AllJets,systematics);
 	//=========RESCALE THE MET
-	rescaleMET(tree,systematics.GetsysJet("jetup"),systematics, "jetup");
-	rescaleMET(tree,systematics.GetsysJet("jetdown"),systematics, "jetdown");
-	//now systematics contain the varied jet collection
-	//and also the MET
+	rescaleMET(tree,AllJets,systematics, "jetRescentral");
+	rescaleMET(tree,AllJets,systematics, "jetResup");
+	rescaleMET(tree,AllJets,systematics, "jetResdown");
 
+	//rescaleMET(tree,systematics.GetsysJet("jetResup"),systematics,"jetResup");
+	//rescaleMET(tree,systematics.GetsysJet("jetResdown"),systematics,"jetResdown");
+	//cout<<"size of jetResup jets "<<systematics.GetsysJet("jetResup").size()<<endl;
 	//======FEED THE RESCALED JETS TO makeGoodJets
-	makeGoodJets(tree,systematics.GetsysJet("jetup"),systematics.GetsysJet("jetup_good"));
-	//
-	makeGoodJets(tree,systematics.GetsysJet("jetdown"),systematics.GetsysJet("jetdown_good"));
-	//
+	makeGoodJets(tree,systematics.GetsysJet("jetRescentral"),systematics.GetsysJet("jetRescentral_good"));
+	makeGoodJets(tree,systematics.GetsysJet("jetResup"),systematics.GetsysJet("jetResup_good"));
+	makeGoodJets(tree,systematics.GetsysJet("jetResdown"),systematics.GetsysJet("jetResdown_good"));
 	//======CLEAN THEM
-	makeCleanedJets(systematics.GetsysJet("jetup_good"),systematics.GetsysJet("jetup_good_clean"),Muons,Electrons);
-	makeCleanedJets(systematics.GetsysJet("jetdown_good"),systematics.GetsysJet("jetdown_good_clean"),Muons,Electrons);
-
+	makeCleanedJets(systematics.GetsysJet("jetRescentral_good"),systematics.GetsysJet("jetRescentral_good_clean"),pMuons,pElectrons);
+	makeCleanedJets(systematics.GetsysJet("jetResup_good"),systematics.GetsysJet("jetResup_good_clean"),pMuons,pElectrons);
+	makeCleanedJets(systematics.GetsysJet("jetResdown_good"),systematics.GetsysJet("jetResdown_good_clean"),pMuons,pElectrons);
+	//	cout<<"size of jetResup good jets "<<systematics.GetsysJet("jetResup_good").size()<<endl;
 	//=====GET THE NEW HT
-	rescaleHT(systematics.GetsysJet("jetup_good_clean"), systematics, "jetup");
-	rescaleHT(systematics.GetsysJet("jetdown_good_clean"), systematics, "jetdown");
-      }
-      
+	rescaleHT(systematics.GetsysJet("jetRescentral_good_clean"), systematics, "jetRescentral");
+	rescaleHT(systematics.GetsysJet("jetResup_good_clean"), systematics, "jetResup");
+	rescaleHT(systematics.GetsysJet("jetResdown_good_clean"), systematics, "jetResdown");
+	//=======COLLECTION OF JETS TO BE STORED IN THE SYSTEMATICS TREE
+	systematics.SetTreeJetCollection("jetRescentral","jetRescentral_good_clean");
+	systematics.SetTreeJetCollection("jetResup","jetResup_good_clean");
+	systematics.SetTreeJetCollection("jetResdown","jetResdown_good_clean");
+	//======NUMBER OF BTAGS
+	systematics.CalculateNumberOfbTags("jetRescentral","jetRescentral_good_clean");
+	systematics.CalculateNumberOfbTags("jetResup","jetResup_good_clean");
+	systematics.CalculateNumberOfbTags("jetResdown","jetResdown_good_clean");
 
-      if(systematics.GetSysMap()["clustersup"]){
 
-	rescaleClusters(AllJets,systematics);
-	//RESCALE THE MET
-	rescaleMET(tree,systematics.GetsysJet("clustersup"),systematics,"clustersup");
-	rescaleMET(tree,systematics.GetsysJet("clustersdown"),systematics,"clustersdown");
+	//CHANGE INDUCED IN MET
+	double newMET=systematics.GetsysMETVector("jetResup")->Pt();
+	METChange->Fill((newMET-MET)/MET,EventWeight);
+	//RESOLUTION IN MET
+	newMETRes->Fill((newMET-TrueMET)/TrueMET,EventWeight);
+
+	//IN BINS OF HT
+	//LorentzM& TrueME = tree->Get(&TrueME,"genmetP4True");
+	int METbin=-1.0;
+	int METbin2=-1.0;
+	if (TrueMET < 50){
+	  METbin=0;
+	}else if(TrueMET<100){
+	  METbin=1;
+	}else{
+	  METbin=2;
+	}
+	
+	if(TrueMET<100){
+	  METbin2=3;
+	}else {
+	  METbin2=4;
+	}
+	METRes_METBins.at(METbin)->Fill((newMET-TrueMET)/TrueMET,EventWeight);//
+	METRes_METBins.at(METbin2)->Fill((newMET-TrueMET)/TrueMET,EventWeight);
+	METChange_METBins.at(METbin)->Fill((newMET-MET)/MET,EventWeight);
+
+
+
+	//Resolution of the matched jets:
+	for(int ijet=0;ijet<(int)AllJets.size();++ijet){
+	  int ptbin=-1;
+	  int etabin=-1;
+	  double ptGen=0;
+	  double ptJet=0;
+	  double etaJet=0;
+
+	  if(AllJets.at(ijet)->IsMatch()){
+
+	    ptGen=AllJets.at(ijet)->GetPartner()->Pt();
+	    ptJet=AllJets.at(ijet)->Pt();
+	    if(ptJet<30){ptbin =0;}
+	    else if(ptJet<50){ptbin =1;}
+	    else if(ptJet<80){ptbin =2;}
+	    else if(ptJet<150){ptbin =3;}
+	    else {ptbin =4;}
+	    JetResPtBins_Matched.at(ptbin)->Fill((ptJet-ptGen)/ptGen,EventWeight);
+	    
+	    etaJet=AllJets.at(ijet)->Eta();
+	    if(fabs(etaJet)<0.5){etabin =0;}
+	    else if(fabs(etaJet)<1.1){etabin =1;}
+	    else if(fabs(etaJet)<1.7){etabin =2;}
+	    else if(fabs(etaJet)<2.3){etabin =3;}
+	    else {etabin =4;}
+	    JetResEtaBins_Matched.at(etabin)->Fill((ptJet-ptGen)/ptGen,EventWeight);
+
+	  }
+
+	}
+
+	//RESOLUTION AS A FUNCTION OF NUMBER OF MATCHED JETS
+	int N_matchedJets=0;
+	for(int ijet=0;ijet<(int)AllJets.size();++ijet){
+	  if(AllJets.at(ijet)->IsMatch()){
+	    N_matchedJets++;
+	  }
+	}
+	int njetsbin=(int)AllJets.size();
+	int nmatchedjetsbin=N_matchedJets;
+
+	if((int)AllJets.size()==0){
+	  njetsbin=0;
+	}else if((int)AllJets.size()==1 || (int)AllJets.size()==2){ 
+	  njetsbin=1;
+	}else if((int)AllJets.size()==3 || (int)AllJets.size()==4){
+	  njetsbin=2;
+	}else if((int)AllJets.size()==5 || (int)AllJets.size()==6){
+	  njetsbin=3;	
+	}else{
+	  njetsbin=4;
+	}
+
+	if(N_matchedJets==0){
+	  nmatchedjetsbin=0;
+	}else if(N_matchedJets==1 || N_matchedJets==2){ 
+	  nmatchedjetsbin=1;
+	}else if(N_matchedJets==3 || N_matchedJets==4){
+	  nmatchedjetsbin=2;
+	}else if(N_matchedJets==5 || N_matchedJets==6){
+	  nmatchedjetsbin=3;	
+	}else{
+	  nmatchedjetsbin=4;
+	}
+
+
+	if(newMET>100.){
+	  METRes_NMatchedJets_Bins.at(nmatchedjetsbin)->Fill((newMET-TrueMET)/TrueMET,EventWeight);
+	  METChange_NMatchedJets_Bins.at(nmatchedjetsbin)->Fill((newMET-MET)/MET,EventWeight);
+	  METRes_NJets_Bins.at(njetsbin)->Fill((newMET-TrueMET)/TrueMET,EventWeight);
+	  METRes_NMatchedJets_NJets.at(njetsbin*5+nmatchedjetsbin)->Fill((newMET-TrueMET)/TrueMET,EventWeight);
+	  METChange_NMatchedJets_NJets.at(njetsbin*5+nmatchedjetsbin)->Fill((newMET-MET)/MET,EventWeight);
+	}
+	METRes_vs_MET->Fill(MET,(MET-TrueMET)/TrueMET,EventWeight);
+
       }
-      //
-      //
-      //
-      //test this
-      //      cout<<"the size of input jets "<<systematics.GetsysJet("down").size()<<endl;
-      //      cout<<"size of cleaned jets down"<<systematics.GetsysJet("down_good_clean").size()<<endl;
-      //      cout<<"size of cleaned jets up"<<systematics.GetsysJet("up_good_clean").size()<<endl;
-      //      for (int ijet=0;ijet<systematics.GetsysJet("up_good_clean").size(); ++ijet){
-      //	cout<<"loop is "<<ijet<<endl;
-      //	cout<<"pt up "<<systematics.GetsysJet("up_good_clean").at(ijet)->Pt()<<endl;
-      //      }
-      //for (int ijet=0;ijet<systematics.GetsysJet("down_good_clean").size(); ++ijet){
-      //cout<<"pt down "<<systematics.GetsysJet("down_good_clean").at(ijet)->Pt()<<endl;
-      //}
     }
-
 
 
     //=====================================================================   
@@ -806,11 +897,9 @@ int main(int argc, char** argv){
 
 
 
-    ControlPlots.MakePlots("Before_CutFlow", TightMuons, TightElectrons, CleanedJets, PFmet); 
+    if(DoControlPlots)ControlPlots.MakePlots("Before_CutFlow", TightMuons, TightElectrons, CleanedJets, PFmet); 
 
-
-
-
+    
     //====================================================================
     // TRIGGERS
     //====================================================================
@@ -988,6 +1077,7 @@ int main(int argc, char** argv){
     }
 
    
+
     //===============================================
     //SINGLE LEPTON
     //===============================================
@@ -998,8 +1088,10 @@ int main(int argc, char** argv){
 
     OK=SetOfCuts::Leptons.NUM.Examine((int)SignalElectrons.size()+(int)SignalMuons.size());
     if(i==0 && isquick){OK=OK&&OKold; OKold=OK;}
+    //cout<<"the size of ALLJets is -1 "<<AllJets.size()<<endl;       
     if(!globalFlow.keepIf("One_single_lepton",OK) && quick) continue;    
-    
+
+
     //number of tags & tag w.
     //NumberOfbTags = tag.JetLoop(CleanedJets); //cout << "number of btags " << NumberOfbTags << endl; // loop over jets to get tag w., return number of btags
 
@@ -1024,15 +1116,88 @@ int main(int argc, char** argv){
 
 
     //==========JET SYSTEMATICS===============
-    if (systematics.IsEnabled()){
-      if(systematics.DoJetUp()){
+    if (systematics.IsEnabled()){      
+      if(systematics.GetSysMap()["jetup"]){
 	OKsyst=SetOfCuts::Jets.NUM.Examine((int)systematics.GetsysJet("jetup_good_clean").size());
-	globalFlow.keepIf("Jet_Cuts_JetUp",OKsyst);
+	globalFlow.keepIf("Jet_Cuts_jetup",OKsyst);
       }
-      if(systematics.DoJetUp()){
+      if(systematics.GetSysMap()["jetdown"]){
 	OKsyst=SetOfCuts::Jets.NUM.Examine((int)systematics.GetsysJet("jetdown_good_clean").size());
-	globalFlow.keepIf("Jet_Cuts_JetDown",OKsyst);
+	globalFlow.keepIf("Jet_Cuts_jetdown",OKsyst);
       }
+      if(systematics.GetSysMap()["jetRescentral"]){
+	OKsyst=SetOfCuts::Jets.NUM.Examine((int)systematics.GetsysJet("jetRescentral_good_clean").size());
+	globalFlow.keepIf("Jet_Cuts_jetRescentral",OKsyst);
+      }
+
+      /*
+      if(OK){
+	cout<<"normal requirement OK"<<endl;
+	cout<<"old jet collection "<<endl;
+	for (int ijet=0;ijet<(int)CleanedJets.size();++ijet){
+	  cout<<"old pt of jet "<<ijet<<" = "<<CleanedJets.at(ijet)->Pt()<<endl;
+	}
+	cout<<endl;
+	cout<<" OKsyst was "<<OKsyst<<endl;
+	cout<<"new jet collection "<<endl;
+	for(int ijet=0;ijet<(int)systematics.GetsysJet("jetRescentral_good_clean").size();++ijet){
+	  cout<<"new pt of jet "<<ijet<<" = "<<systematics.GetsysJet("jetRescentral_good_clean").at(ijet)->Pt()<<endl;
+	}
+	cout<<endl;
+	cout<<endl;
+	cout<<endl;
+
+      }
+      */
+
+      if(systematics.GetSysMap()["jetResup"]){
+	OKsyst=SetOfCuts::Jets.NUM.Examine((int)systematics.GetsysJet("jetResup_good_clean").size());
+	globalFlow.keepIf("Jet_Cuts_jetResup",OKsyst);
+      }
+      if(systematics.GetSysMap()["jetResdown"]){
+	OKsyst=SetOfCuts::Jets.NUM.Examine((int)systematics.GetsysJet("jetResdown_good_clean").size());
+	globalFlow.keepIf("Jet_Cuts_jetResdown",OKsyst);
+      }
+    
+    }
+    //===================================
+
+    
+
+
+
+    //===================================
+    //NUMBER OF BTAGS
+    //===================================
+    OK=SetOfCuts::Event.NumberOfBtags.Examine(NumberOfbTags);
+    if(i==0 && isquick){OK=OK&&OKold; OKold=OK;}
+    if(!globalFlow.keepIf("NBtags",OK) && quick) continue;    
+    if(DoControlPlots && OK)ControlPlots.MakePlots("NBtags", SignalMuons, SignalElectrons, CleanedJets, PFmet);     
+
+    //    cout<<"found NumberOfbTags = "<<NumberOfbTags<<endl;
+    //==========JET SYSTEMATICS===============
+    if (systematics.IsEnabled()){      
+      if(systematics.GetSysMap()["jetup"]){
+	OKsyst=SetOfCuts::Event.NumberOfBtags.Examine(systematics.NumberOfbTags("jetup"));
+	globalFlow.keepIf("NBtags_jetup",OKsyst);
+      }
+      if(systematics.GetSysMap()["jetdown"]){
+	OKsyst=SetOfCuts::Event.NumberOfBtags.Examine(systematics.NumberOfbTags("jetdown"));
+	globalFlow.keepIf("NBtags_jetdown",OKsyst);
+      }
+      if(systematics.GetSysMap()["jetRescentral"]){
+	OKsyst=SetOfCuts::Event.NumberOfBtags.Examine(systematics.NumberOfbTags("jetupRescentral"));
+	globalFlow.keepIf("NBtags_jetRescentral",OKsyst);
+      }
+      if(systematics.GetSysMap()["jetResup"]){
+	OKsyst=SetOfCuts::Event.NumberOfBtags.Examine(systematics.NumberOfbTags("jetResup"));
+	globalFlow.keepIf("NBtags_jetResup",OKsyst);
+      }
+      if(systematics.GetSysMap()["jetResdown"]){
+	OKsyst=SetOfCuts::Event.NumberOfBtags.Examine(systematics.NumberOfbTags("jetResdown"));
+	globalFlow.keepIf("NBtags_jetResdown",OKsyst);
+      }
+    
     }
     //===================================
 
@@ -1053,6 +1218,8 @@ int main(int argc, char** argv){
     if(!globalFlow.keepIf("Signal_Muons",OK) && quick) continue;
     if(DoControlPlots && OK)ControlPlots.MakePlots("Signal_Muons", SignalMuons, TightElectrons, CleanedJets, PFmet); 
     //treeCuts["Signal_Muons"]=OK;
+
+    //cout<<"the size of ALLJets is "<<AllJets.size()<<endl;   
     //
     //
     //
@@ -1092,7 +1259,7 @@ int main(int argc, char** argv){
 
 
 
-
+    //cout<<"the size of ALLJets is 1 "<<AllJets.size()<<endl;   
 
 
 
@@ -1128,24 +1295,39 @@ int main(int argc, char** argv){
     //===================================================================
     HT=0.0;
     for(int ijet=0;ijet<(int)CleanedJets.size();++ijet){
-      HT=HT+CleanedJets.at(ijet)->Pt();
+      HT=HT+CleanedJets.at(ijet)->Pt();	
     }
+    
     OK=SetOfCuts::Event.HT.Examine(HT);
     if(i==0 && isquick){ OK=OK&&OKold; OKold=OK;}
     if(!globalFlow.keepIf("HT", OK ) && quick ) continue;
     if(DoControlPlots && OK)ControlPlots.MakePlots("HT", SignalMuons, SignalElectrons, CleanedJets, PFmet); 
 
 
+    //cout<<"the size of ALLJets is 2 "<<AllJets.size()<<endl;   
+
     if (systematics.IsEnabled()){
       if (systematics.GetSysMap()["jetup"]){
 	//cout<<"testing HT = "<<systematics.GetsysHT("jetup")<<endl;
 	OKsyst=SetOfCuts::Event.HT.Examine(systematics.GetsysHT("jetup"));
 	//cout<<"pointer to the flow = "<<systematics.GetsysFlow("jetup")<<endl;
-	globalFlow.keepIf("HT_JetUp",OKsyst);
+	globalFlow.keepIf("HT_jetup",OKsyst);
       }
       if (systematics.GetSysMap()["jetdown"]){
 	OKsyst=SetOfCuts::Event.HT.Examine(systematics.GetsysHT("jetdown"));
-	globalFlow.keepIf("HT_JetDown",OKsyst);
+	globalFlow.keepIf("HT_jetdown",OKsyst);
+      }
+      if (systematics.GetSysMap()["jetRescentral"]){
+	OKsyst=SetOfCuts::Event.HT.Examine(systematics.GetsysHT("jetRescentral"));
+	globalFlow.keepIf("HT_jetRescentral",OKsyst);
+      }
+      if (systematics.GetSysMap()["jetResup"]){
+	OKsyst=SetOfCuts::Event.HT.Examine(systematics.GetsysHT("jetResup"));
+	globalFlow.keepIf("HT_jetResup",OKsyst);
+      }
+      if (systematics.GetSysMap()["jetResdown"]){
+	OKsyst=SetOfCuts::Event.HT.Examine(systematics.GetsysHT("jetResdown"));
+	globalFlow.keepIf("HT_jetResdown",OKsyst);
       }
     }
     //===================================================================
@@ -1156,6 +1338,7 @@ int main(int argc, char** argv){
 
 
 
+    //cout<<"the size of ALLJets is 3 "<<AllJets.size()<<endl;   
 
     //====================================================================
     // CHECK MET 
@@ -1167,33 +1350,23 @@ int main(int argc, char** argv){
     if(pcp)cout<<"check point out of MET_HT"<<endl;
     if(DoControlPlots && OK)ControlPlots.MakePlots("MET", SignalMuons, SignalElectrons, CleanedJets, PFmet); 
 
-    
+    //SYSTEMATICS- CUT ON MET    
     if (systematics.IsEnabled()){
-      if (systematics.GetSysMap()["jetup"]){
-	//	cout<<"feeding up "<<systematics.GetsysMET("jetup")<<endl;
-	OKsyst=SetOfCuts::Event.MET.Examine(systematics.GetsysMET("jetup"));
-	globalFlow.keepIf("MET_JetUp", OKsyst);
-      }
-      if (systematics.GetSysMap()["jetdown"]){
-	//	cout<<"feeding down "<<systematics.GetsysMET("jetdown")<<endl;
-	OKsyst=SetOfCuts::Event.MET.Examine(systematics.GetsysMET("jetdown"));
-	globalFlow.keepIf("MET_JetDown", OKsyst);
-      }
-      if(systematics.GetSysMap()["clustersup"]){
-	OKsyst=SetOfCuts::Event.MET.Examine(systematics.GetsysMET("clustersup"));
-	globalFlow.keepIf("MET_clustersup", OKsyst);
-      }
-      if(systematics.GetSysMap()["clustersdown"]){
-	OKsyst=SetOfCuts::Event.MET.Examine(systematics.GetsysMET("clustersdown"));
-	globalFlow.keepIf("MET_clustersdown", OKsyst);
+      typedef map<string, bool>::iterator iter;
+      for(iter it=systematics.GetSysMap().begin(); it!=systematics.GetSysMap().end();++it){
+	OKsyst=false;
+	if(it->second){ //--->this "if" is redundant in principle//
+	  OKsyst=SetOfCuts::Event.MET.Examine(systematics.GetsysMET(it->first));
+	  globalFlow.keepIf("MET_"+it->first, OKsyst);
+	}
       }
     }
-    //treeCuts["MET"]=OK;
-    //cout<<"the met here is "<<MET<<endl;
     //====================================================================
-    
-    
-    
+
+
+
+
+
     //===================================================================
     //EXAMINE THE TRIGGERS THAT PASSED ALL THE SELECTION
     //===================================================================
@@ -1202,8 +1375,30 @@ int main(int argc, char** argv){
       bool randombool=triggers_RA4b_frequency(tree,triggernames);
     }
     //===================================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     
-    //------------------------------------------------------------------- Selection and tree-output for the triggerStudy: Mu
+    //-- Selection and tree-output for the triggerStudy: Mu
     if(mySampleInfo.GetEstimation()=="TrigStudy-mu" && OK){
             if(TightElectrons.size() > 0) cout<<"TightElectrons.size() = " << TightElectrons.size() << endl;
       bool foundDiLepton=false;
@@ -1226,7 +1421,7 @@ int main(int argc, char** argv){
       map<string,bool> HLTtrigger           = tree->Get(&HLTtrigger, "triggered");
       vector<string> MuMatchedTriggerFilter = tree->Get(&MuMatchedTriggerFilter, "DESYtriggerMuMatchedTriggerFilter");
       map<string,string> TriggerMap         = tree->Get(&TriggerMap, "DESYtriggerNameMap");
-      //--------------------------- keep only the trigger Info for the Tight Leptons 
+      //--------------- keep only the trigger Info for the Tight Leptons 
       //(therefore, the trigger info of other leptons is not saved into the output tree)
       vector<string> keepMatchingInfoForTightMuon;
       for(Int_t i=0,N=TightMuons.size(); i<N; ++i){
@@ -1265,7 +1460,8 @@ int main(int argc, char** argv){
       myInfo.EventWeight            = EventWeight;
       myInfo.MuMatchedTriggerFilter = MuMatchedTriggerFilter;
       myInfo.Run                    = Run;
-      if(!isData) myInfo.PUInter    = relevantNumPU;
+      //if(!isData) myInfo.PUInter    = relevantNumPU;
+      if(!isData) myInfo.PUInter    = goodVert.size();
       else        myInfo.PUInter    = goodVert.size();
       myInfo.PUWeight               = PUWeight;
       myInfo.TriggerMap             = TriggerMap;
@@ -1342,7 +1538,8 @@ int main(int argc, char** argv){
       myInfo.Event                  = Event;
       myInfo.EventWeight            = EventWeight;
       myInfo.MuMatchedTriggerFilter = MuMatchedTriggerFilter;
-      if(!isData) myInfo.PUInter    = relevantNumPU;
+      //if(!isData) myInfo.PUInter    = relevantNumPU;
+      if(!isData) myInfo.PUInter    = goodVert.size();
       else        myInfo.PUInter    = goodVert.size();
       myInfo.Run                    = Run;
       myInfo.PUWeight               = PUWeight;
@@ -1365,7 +1562,19 @@ int main(int argc, char** argv){
       //       cout<<endl;
     }
 
-    //====================COPY THE CUTFLOWS
+
+
+
+
+
+
+
+
+
+
+
+    
+    //====================COPY AND APPLY THE CUTFLOWS
     vector<TString> globalFlowNames;
     //globalFlowNames.push_back("triggers");
     TString rawString;
@@ -1385,6 +1594,7 @@ int main(int argc, char** argv){
       globalFlowNames.push_back("Wide_Electrons");
       globalFlowNames.push_back("One_single_lepton");      
       globalFlowNames.push_back("Jet_Cuts");
+      globalFlowNames.push_back("NBtags");
       globalFlowNames.push_back("HT");
       globalFlowNames.push_back("MET");
 
@@ -1393,14 +1603,30 @@ int main(int argc, char** argv){
       }
       
       OKall=globalFlow.applyCuts(rawString);
-	//events1<<Event<<endl;
+      //events1<<Event<<endl;
       if(pcp){
 	cout<<"OKall is "<<OKall<<endl;
       }
+
+
+
+      //METResolution AFTER THE CUTFLOW
+      if(OKall){
+	LorentzM& TrueME = tree->Get(&TrueME,"genmetP4True");
+	double TrueMET=TrueME.Pt();
+	METRes_ACF->Fill((MET-TrueMET)/TrueMET,EventWeight);
+
+      }
+
+
+
+
     }
 
+    
+    
     if(systematics.IsEnabled()){
-
+      
       typedef map<string,bool>::iterator map_it;
       for (map_it iter=systematics.GetSysMap().begin(); iter != systematics.GetSysMap().end(); iter++){
 	if(iter->second){
@@ -1409,13 +1635,17 @@ int main(int argc, char** argv){
 	    for (int iname=0;iname<(int)globalFlowNames.size();++iname){
 	      //COPY THE CUTFLOW
 	      if (globalFlowNames.at(iname) == "Jet_Cuts"){
-		OK=globalFlow.DidItPass("Jet_Cuts_JetUp");
+		OK=globalFlow.DidItPass("Jet_Cuts_jetup");
+	      }
+	      else if (globalFlowNames.at(iname) == "NBtags"){
+		OK=globalFlow.DidItPass("NBtags_jetup");
 	      }
 	      else if (globalFlowNames.at(iname) == "HT"){
-		OK=globalFlow.DidItPass("HT_JetUp");
+		OK=globalFlow.DidItPass("HT_jetup");
 	      }
 	      else if (globalFlowNames.at(iname) == "MET"){
-		OK=globalFlow.DidItPass("MET_JetUp");
+		OK=globalFlow.DidItPass("MET_jetup");
+		//cout<<"did it pass "<<OK<<endl;
 	      }
 	      else{
 		OK=globalFlow.DidItPass(globalFlowNames.at(iname));
@@ -1432,13 +1662,16 @@ int main(int argc, char** argv){
 	    for (int iname=0;iname<(int)globalFlowNames.size();++iname){
 	      //COPY THE CUTFLOW
 	      if (globalFlowNames.at(iname) == "Jet_Cuts"){
-		OK=globalFlow.DidItPass("Jet_Cuts_JetDown");
+		OK=globalFlow.DidItPass("Jet_Cuts_jetdown");
+	      }
+	      else if (globalFlowNames.at(iname) == "NBtags"){
+		OK=globalFlow.DidItPass("NBtags_jetdown");
 	      }
 	      else if (globalFlowNames.at(iname) == "HT"){
-		OK=globalFlow.DidItPass("HT_JetDown");
+		OK=globalFlow.DidItPass("HT_jetdown");
 	      }
 	      else if (globalFlowNames.at(iname) == "MET"){
-		OK=globalFlow.DidItPass("MET_JetDown");
+		OK=globalFlow.DidItPass("MET_jetdown");
 	      }
 	      else{
 		OK=globalFlow.DidItPass(globalFlowNames.at(iname));
@@ -1472,11 +1705,90 @@ int main(int argc, char** argv){
 	      systematics.GetsysFlow("clustersdown")->keepIf(globalFlowNames.at(iname), OK);
 	    }
 	  }
+	  else if(iter->first=="jetRescentral"){
+	    for (int iname=0;iname<(int)globalFlowNames.size();++iname){
+	      //COPY THE CUTFLOW
+	      if (globalFlowNames.at(iname) == "Jet_Cuts"){
+		OK=globalFlow.DidItPass("Jet_Cuts_jetRescentral");
+	      }
+	      else if (globalFlowNames.at(iname) == "NBtags"){
+		OK=globalFlow.DidItPass("NBtags_jetRescentral");
+	      }
+	      else if (globalFlowNames.at(iname) == "HT"){
+		OK=globalFlow.DidItPass("HT_jetRescentral");
+	      }
+	      else if (globalFlowNames.at(iname) == "MET"){
+		OK=globalFlow.DidItPass("MET_jetRescentral");
+	      }
+	      else{
+		OK=globalFlow.DidItPass(globalFlowNames.at(iname));
+	      }
+	      //======copy the global flow
+	      systematics.GetsysFlow("jetRescentral")->keepIf(globalFlowNames.at(iname), OK);
+	    }
+	  }
+	  else if(iter->first=="jetResup"){
+	    for (int iname=0;iname<(int)globalFlowNames.size();++iname){
+	      //COPY THE CUTFLOW
+	      if (globalFlowNames.at(iname) == "Jet_Cuts"){
+		OK=globalFlow.DidItPass("Jet_Cuts_jetResup");
+	      }
+	      else if (globalFlowNames.at(iname) == "NBtags"){
+		OK=globalFlow.DidItPass("NBtags_jetResup");
+	      }
+	      else if (globalFlowNames.at(iname) == "HT"){
+		OK=globalFlow.DidItPass("HT_jetResup");
+	      }
+	      else if (globalFlowNames.at(iname) == "MET"){
+		OK=globalFlow.DidItPass("MET_jetResup");
+	      }
+	      else{
+		OK=globalFlow.DidItPass(globalFlowNames.at(iname));
+	      }
+	      //======copy the global flow
+	      systematics.GetsysFlow("jetResup")->keepIf(globalFlowNames.at(iname), OK);
+	    }
+	  }
+	  else if(iter->first=="jetResdown"){
+	    for (int iname=0;iname<(int)globalFlowNames.size();++iname){
+	      //COPY THE CUTFLOW
+	      if (globalFlowNames.at(iname) == "Jet_Cuts"){
+		OK=globalFlow.DidItPass("Jet_Cuts_jetResdown");
+	      }
+	      else if (globalFlowNames.at(iname) == "NBtags"){
+		OK=globalFlow.DidItPass("NBtags_jetResdown");
+	      }
+	      else if (globalFlowNames.at(iname) == "HT"){
+		OK=globalFlow.DidItPass("HT_jetResdown");
+	      }
+	      else if (globalFlowNames.at(iname) == "MET"){
+		OK=globalFlow.DidItPass("MET_jetResdown");
+	      }
+	      else{
+		OK=globalFlow.DidItPass(globalFlowNames.at(iname));
+	      }
+	      //======copy the global flow
+	      systematics.GetsysFlow("jetResdown")->keepIf(globalFlowNames.at(iname), OK);
+	    }
+	  }
+	
+
 	  //======APPLY THE CUTFLOW
 	  //cout<<"applying the cutflow to"<<iter->first<<endl;
 	  OK=systematics.GetsysFlow(iter->first)->applyCuts(EventWeight);
 	  //record it
 	  systematics.passCuts[iter->first]=OK;
+
+	  if(iter->first=="jetResup"){
+	    if(OK){
+	      double newMET=systematics.GetsysMETVector("jetResup")->Pt();
+	      METChange_ACF->Fill((newMET-MET)/MET,EventWeight);
+	      //RESOLUTION IN MET
+	      newMETRes_ACF->Fill((newMET-TrueMET)/TrueMET,EventWeight);
+	    }
+	  }
+
+
 	}
       }
 
@@ -1489,43 +1801,87 @@ int main(int argc, char** argv){
     //avoid having the first iteration entering here when running in 
     //quick mode
     if(isquick && i==0 && !OK)continue;
-    
-    EventInfo info;
-    info.Event        = Event;
-    info.Run          = Run;
-    info.EventWeight  = EventWeight;
-    info.PUWeight     = PUWeight;
 
-    //=====================FILL THE TREES====================
+
+
+    EventInfo info;
+    info.Event=Event;
+    info.Run=Run;
+    info.EventWeight=EventWeight;
+    info.PUWeight=PUWeight;
+    info.PUWeight_up=PUWeight_up;
+    info.PUWeight_down=PUWeight_down;
+    info.NBtags=NumberOfbTags;
+    //
+    if(!isData) info.PUInter    = goodVert.size();
+    else        info.PUInter    = goodVert.size();
     //
     //
-    //
+
     
+
+    //=====================FILL THE subTree====================
+    //
+    //
+    //
+    vector<Jet*> pCleanedJets;
+    for (int ij=0;ij<CleanedJets.size();++ij){
+      pCleanedJets.push_back(CleanedJets.at(ij).get());
+    }    
     if (isquick || (!isquick && OKall)){
-      if(doSmallTree){
-	SubTree->Fill( &info, tree, SignalMuons, SignalElectrons, CleanedJets, PFmet);
+      if(doSubTree){
+	vector<Jet*> pCleanedJets;
+	for (int ij=0;ij<CleanedJets.size();++ij){
+	  pCleanedJets.push_back(CleanedJets.at(ij).get());
+	}
+	//cout<<"filling subTree"<<endl;
+	SubTree->Fill( &info, tree, SignalMuons, SignalElectrons, pCleanedJets, PFmet);
       }
     }
-	
 
-    //====================SYSTEMATICS TREES
+
+	
+    //====================SYSTEMATICS TREES=======================================
     if( systematics.IsEnabled()){
       typedef map<string,bool>::iterator map_it;
       for (map_it iter=systematics.GetSysMap().begin(); iter != systematics.GetSysMap().end(); iter++){
 	if(iter->second){    
 	  if(systematics.passCuts.at(iter->first)){
-	    systematics.GetsysDefaultTree(iter->first)->Fill(&info, tree, SignalMuons,SignalElectrons,systematics.GetsysJet("jetup_good_clean"),*systematics.GetsysMEVector(iter->first));
+	    //maybe there is no jet collection for this systematic calculation:
+	    //then the default good cleaned jets should be used
+	    if( systematics.GetTreeJetCollection(iter->first).empty()){
+	      for( int ijet=0; ijet<CleanedJets.size(); ++ijet){
+		systematics.GetTreeJetCollection(iter->first).push_back(CleanedJets.at(ijet));
+	      }
+	    }
+	    //
+	    //FILL THE TREES
+	    //
+	    systematics.GetsysDefaultTree(iter->first)->Fill(&info, tree, SignalMuons,SignalElectrons, systematics.GetTreeJetCollection(iter->first),*systematics.GetsysMETVector(iter->first));
 	  }
 	}
       }
     }
+    //=============================================================================
+
+    //cout<<"the size of ALLJets is 6 "<<AllJets.size()<<endl;   
 
 
 
 
-   
+
+
+
+
+    if (i==N-1){
+      cout<<"last event in the loop "<<i<<endl;
+    }
+    
   }//End of the event loop
-     
+  
+  cout<<"end of the event loop"<<endl;
+
+
   if(pcp)cout<<"out of the event loop"<<endl;
 
 
@@ -1540,19 +1896,21 @@ int main(int argc, char** argv){
       }
     }
   }
+  cout<<"dumped the flows"<<endl;
   //subTree->Write();
   //==========WRITE THE TREES
-//   if(systematics.IsEnabled()){
-//     typedef map<string,bool>::iterator map_it;
-//     for (map_it iter=systematics.GetSysMap().begin(); iter != systematics.GetSysMap().end(); iter++){
-//       if(iter->second){
-// 	systematics.GetsysDefaultTree((string)iter->first)->Write();
-//       }
-//     }
-//   }
-  treeFile->Write(); //Write all hists and tree assoc with treeFile
+  //   if(systematics.IsEnabled()){
+  //     typedef map<string,bool>::iterator map_it;
+  //     for (map_it iter=systematics.GetSysMap().begin(); iter != systematics.GetSysMap().end(); iter++){
+  //       if(iter->second){
+  // 	systematics.GetsysDefaultTree((string)iter->first)->Write();
+  //       }
+  //     }
+  //   }
+  cout<<"writing the treeFile"<<endl;
+  treeFile->Write(); //Write all hists and tree associated with treeFile
   treeFile->Close();
-
+  cout<<"wrote and closed the treeFile"<<endl;
 
 
   //==================================================
@@ -1560,11 +1918,13 @@ int main(int argc, char** argv){
   //==================================================
   CutSet::setTDir("CutFlow");
   outfile->cd();
+  cout<<"writing the histos"<<endl;
   TListIter* list = new TListIter(gDirectory->GetList()); //-->iterates over list of objects in memory
   TObject *nobj=(TObject*) list->Next(); //nobj now points to the first object in memory
   while(nobj){
 
     if(nobj->IsA()->InheritsFrom("TH1")){
+
       nobj->Write();
       //nobj->Write("",TObject::kOverwrite) -->Overwrites the histogram if alredy present
     }
@@ -1573,51 +1933,39 @@ int main(int argc, char** argv){
     nobj=list->Next();   //nobj point now to the next object
   }
   delete(list);
+  cout<<"wrote the histos"<<endl;
   //==================================================
 
-
+  
+  //distmatched->Write();
   //mytree->Write();
-
-
+  JetUncDiff->Write();
+  
   //write the control plots
 
   //other dir
   //tag.finalize(); //write the files
-  config.printUsed();
+  //config.printUsed();
   //  globalFlow.printAll();
+  cout<<"dumping the main cutflow"<<endl;
   globalFlow.dumpToHist(); 
+  cout<<"cutflow dumped"<<endl;
   
-
-  cout<<"-----------------------------------------------"<<endl;
-  cout<<"Created output file: "<<outname<<endl;
-  cout<<"-----------------------------------------------"<<endl;
+  //systematics.~Systematics();
+  
   
   //  ControlPlots.HistoMaker::~HistoMaker();
   //  globalFlow.CutSet::~CutSet();
+  //cout<<"closing the file"<<endl;
   //outfile->Close();
-  //  events1.close();
-  //  events2.close();
-  //  onejet.close();
-  //  twojet.close();
-  //  threejet.close();
+  //cout<<"file closed"<<endl;
   
-  //  treeFile->cd();
+
+
   //PROGRAM END
   //EndOfProgram:
   
   
   return 0;
-}
-   
+  }
 
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   

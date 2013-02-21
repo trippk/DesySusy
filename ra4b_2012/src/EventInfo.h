@@ -1,3 +1,4 @@
+
 #ifndef EventInfo_h
 #define EventInfo_h
 
@@ -11,7 +12,12 @@ struct EventInfo{
   float FE; 
   float GlobalWeight;
   float PUWeight;
+  float PUWeight_up;
+  float PUWeight_down;
   float EventWeight;
+  int NPV;
+  int NBtags;
+
 
   float mY;
   float mLsp;

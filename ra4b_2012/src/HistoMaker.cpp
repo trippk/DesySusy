@@ -32,7 +32,10 @@ void HistoMaker::dumpToFile(){
   if (cplotdir == 0) {
     cout << "HistoMaker::dumpToFile >> ERROR " << endl; 
   }
-  else cplotdir->Write();
+  else {
+    cout<<"cplotdir is "<<cplotdir<<endl;
+    cplotdir->Write();
+  }
   
   /*
   for(unsigned c=0; c<allCuts.size(); ++c) {
@@ -83,7 +86,19 @@ void HistoMaker::dumpToFile(){
   */
 }
   
+void HistoMaker::MakePlots( const TString& cutName, vector<Muon*> muons, vector<Electron*> electrons, vector<Ptr_Jet> shared_ptr_jets, LorentzM& met){  
   
+  //convert the shared pointers into normal pointers and call the old MakePlots
+  vector<Jet*>jets;
+  for (int ijet=0;ijet<(int)shared_ptr_jets.size();++ijet){
+    Jet* dummypointer=shared_ptr_jets.at(ijet).get();
+    jets.push_back(dummypointer);
+  }
+  this->MakePlots(cutName,muons,electrons,jets,met);
+}
+//
+//
+//
 void HistoMaker::MakePlots( const TString& cutName, vector<Muon*> muons, vector<Electron*> electrons, vector<Jet*> jets, LorentzM& met){
 
   ConfigReader config;
