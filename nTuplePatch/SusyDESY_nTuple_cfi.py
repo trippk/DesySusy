@@ -90,8 +90,6 @@ class SusyCAF(object) :
         
         self.process.load('RecoMET.METFilters.ecalLaserCorrFilter_cfi')
         self.process.ecalLaserCorrFilterFlag = self.process.ecalLaserCorrFilter.clone(taggingMode = True)
-
-        process.load('RecoMET.METAnalyzers.CSCHaloFilter_cfi')
         
         return ( self.patJet() + self.PileUpJetID() +
                  self.patLepton('Electron') + self.patLepton('Muon') +
