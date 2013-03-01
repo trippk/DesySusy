@@ -127,10 +127,10 @@ class SusyCAF(object) :
     def patJet(self) :
         import SUSYBSMAnalysis.SusyCAF.SusyCAF_Jet_cfi as jets
 
-        jets.susycafak5pfjet.InputTag = cms.InputTag("selectionsusycafak5pfjetMatched0")
-        jets.susycafak5pfjet.AllJets  = cms.InputTag("selectionsusycafak5pfjetMatched0")
-        jets.susycafak5pfjetMatched.InputTag = cms.InputTag("selectionsusycafak5pfjetMatched0")
-        jets.susycafak5pfjetMatched.AllJets  = cms.InputTag("selectionsusycafak5pfjetMatched0")
+        jets.susycafak5pfjet.InputTag = cms.InputTag("selectedPatJetsAK5PF")
+        jets.susycafak5pfjet.AllJets  = cms.InputTag("selectedPatJetsAK5PF")
+        jets.susycafak5pfjetMatched.InputTag = cms.InputTag("selectedPatJetsAK5PF")
+        jets.susycafak5pfjetMatched.AllJets  = cms.InputTag("selectedPatJetsAK5PF")
         
         for mod in filter(lambda mod: mod.startswith('susycaf'), dir(jets)) :
             if mod.endswith('reco') : exec('self.process.%s = jets.%s'%(mod,mod))
@@ -157,7 +157,9 @@ class SusyCAF(object) :
         from CMGTools.External.pujetidproducer_cfi import pileupJetIdProducer
 
         full_53x.tmvaWeights = cms.string("CMGTools/External/data/TMVAClassificationCategory_JetID_53X_Dec2012.weights.xml")
-
+        full_53x.label = cms.string("full53x")
+        full_5x.label = cms.string("full5x")
+        
         self.process.puJetId = pileupJetIdProducer.clone(
             produceJetIds = cms.bool(True),
             jetids = cms.InputTag(""),
@@ -173,6 +175,6 @@ class SusyCAF(object) :
             runMvas = cms.bool(True),
             jets = cms.InputTag("selectionsusycafak5pfjetMatched0"),
             vertexes = cms.InputTag("offlinePrimaryVertices"),
-            algos = cms.VPSet(full_5x,full_53x)
+            algos = cms.VPSet(full_53x, full_5x)
             )
         return (self.process.puJetId * self.process.puJetMva )
