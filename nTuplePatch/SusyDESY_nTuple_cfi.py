@@ -158,7 +158,7 @@ class SusyCAF(object) :
 
         full_53x.tmvaWeights = cms.string("CMGTools/External/data/TMVAClassificationCategory_JetID_53X_Dec2012.weights.xml")
 
-        puJetId = pileupJetIdProducer.clone(
+        self.process.puJetId = pileupJetIdProducer.clone(
             produceJetIds = cms.bool(True),
             jetids = cms.InputTag(""),
             runMvas = cms.bool(False),
@@ -167,7 +167,7 @@ class SusyCAF(object) :
             algos = cms.VPSet(cutbased)
             )
         
-        puJetMva = pileupJetIdProducer.clone(
+        self.process.puJetMva = pileupJetIdProducer.clone(
             produceJetIds = cms.bool(False),
             jetids = cms.InputTag("puJetId"),
             runMvas = cms.bool(True),
@@ -175,8 +175,4 @@ class SusyCAF(object) :
             vertexes = cms.InputTag("offlinePrimaryVertices"),
             algos = cms.VPSet(full_5x,full_53x)
             )
-        
-        self.process.load("CMGTools.External.pujetidsequence_cff")
-        self.process.puJetId.jets = cms.InputTag("selectionsusycafak5pfjetMatched0")
-        self.process.puJetMva.jets = cms.InputTag("selectionsusycafak5pfjetMatched0")
         return (self.process.puJetId * self.process.puJetMva )
