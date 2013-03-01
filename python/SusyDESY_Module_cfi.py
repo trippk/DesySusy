@@ -44,8 +44,6 @@ susydesypfmuons = cms.EDProducer("SusyDESY_Muon",
                                PatMuons     = cms.InputTag('patAllMuonsPF'),
                                )
 
-<<<<<<< SusyDESY_Module_cfi.py
-
 susydesyjets = cms.EDProducer("SusyDESY_Jet",
                               Prefix          = cms.string('DESYak5JetPF'),
                               Suffix          = cms.string('Pat'),                              
@@ -84,8 +82,6 @@ susydesytau =  cms.EDProducer("SusyDESY_PatTau",
                                                    'decayModeFinding')
                               )
 
-=======
->>>>>>> 1.12
 susydesytrigger = cms.EDProducer("SusyDESY_Trigger",
                                  Prefix       = cms.string('DESYtrigger'),
                                  Suffix       = cms.string(''),
@@ -94,12 +90,7 @@ susydesytrigger = cms.EDProducer("SusyDESY_Trigger",
                                  electrons    = cms.InputTag("electronTriggerMatchHLTElectronsEmbedder")
                                  )
 
-<<<<<<< SusyDESY_Module_cfi.py
-
 susydesypu = cms.EDProducer("SusyDESY_PileUp",
-=======
-susydesypu = cms.EDProducer("SusyDESY_PU",
->>>>>>> 1.12
                             PileUp     = cms.InputTag('susycafpileupsummary:pileupTrueNumInteractionsBX0')
                             )
 
