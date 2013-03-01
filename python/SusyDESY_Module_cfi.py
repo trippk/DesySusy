@@ -54,7 +54,6 @@ susydesyjets = cms.EDProducer("SusyDESY_Jet",
                                                             'L3Absolute'),
                               Discriminators  = cms.VInputTag("puJetMva:full53xDiscriminant","puJetMva:full5xDiscriminant"),
                               Flags           = cms.VInputTag("puJetMva:full53xId","puJetMva:full5xId"),
-                              #JECfile         = cms.string('/scratch/hh/dust/naf/cms/user/costanza/NTuple12_MTSync/CMSSW_5_3_3_patch2/src/SUSYBSMAnalysis/DesySusy/data/JECuncertainties/Fall12_V7_MC_Uncertainty_AK5PF.txt')
                               JECfile         = cms.string('SUSYBSMAnalysis/DesySusy/data/JECuncertainties/Fall12_V7_MC_Uncertainty_AK5PF.txt')
                               )
 
