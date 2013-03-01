@@ -12,7 +12,7 @@ class SusyCAF(object) :
         return cms.Path( ( self.common() +
                            [ self.reco,  self.pat][self.options.patify]() +
                            self.allTracks() )
-                         * self.reducer()
+                         * self.reducer() * self.trackIsolation()
                          * self.tree() )
     
     def tree(self) :
@@ -51,6 +51,10 @@ class SusyCAF(object) :
         from SUSYBSMAnalysis.SusyCAF.SusyCAF_Scan_cfi import susycafscanFunc as susycafscanFunc
         self.process.susycafscan = susycafscanFunc(self.options.scan) if self.options.scan else self.empty
         self.process.susycaftriggers.SourceName  = self.options.SourceName
+        
+        from SUSYBSMAnalysis.SusyCAF.SusyCAF_MET_cfi import met
+        self.process.patMETsPF.metSource = cms.InputTag("pfMet")
+        self.process.susydesymetPF         = met('Pat' , 'patMETsPF', 'PF', 'DESYmet', calo=False)
 
         return ( self.evalSequence('susycafhcalnoise%s', ['filter','filternoiso','rbx','summary']) +
                  self.evalSequence('susycaf%s', (['event','track','pfsump4','beamspot','logerror','vertex','calotowers','rho','rho25','TrackerIsolation'] +
@@ -61,7 +65,8 @@ class SusyCAF(object) :
                  self.evalSequence('susycaf%srechit', [ 'hbhe', 'hf', 'eb', 'ee' ]) +
                  self.evalSequence('susycafpfrechitcluster%s', ['ecal','hcal','hfem','hfhad','ps']) +
                  self.evalSequence('susycafpfrechit%s',        ['ecal','hcal','hfem','hfhad','ps']) +
-                 
+
+                 self.process.susydesymetPF +
                  self.evalSequence(*[ ('susycaf%s',['gen','genMetCalo','genMetCaloAndNonPrompt','genMetTrue','scan','pileupsummary']), # Gen
                                       ('susycaf%s',['dqmflags','dcsbits'][(not self.options.dqm):]) # Data
                                       ][self.options.isData])
@@ -70,6 +75,7 @@ class SusyCAF(object) :
     def reco(self) :
         for module in ['Jet','Photon','Muon','Electron','PFTau'] :
             self.process.load('SUSYBSMAnalysis.SusyCAF.SusyCAF_%s_cfi'%module)
+            
         return sum( [ self.evalSequence('susycaf%sjetreco', filter(lambda x:"pf2pat" not in x, self.options.jetCollections)),
                       self.evalSequence('susycaf%sreco', ['photon','electron','muon'])],
                     [ self.process.susycafPFtau ] if self.options.taus else [] )
@@ -81,42 +87,35 @@ class SusyCAF(object) :
             self.process.load('SUSYBSMAnalysis.DesySusy.SusyDESY_%s_cfi'%module)
         #self.process.load('RecoMET.METFilters.eeBadScFilter_cfi')
         #self.process.eeBadScFilterFlag = self.process.eeBadScFilter.clone(taggingMode = True)
+        
         self.process.load('RecoMET.METFilters.ecalLaserCorrFilter_cfi')
         self.process.ecalLaserCorrFilterFlag = self.process.ecalLaserCorrFilter.clone(taggingMode = True)
-        self.process.load("PhysicsTools.PatAlgos.triggerLayer1.triggerProducer_cff")
-        #from PhysicsTools.PatAlgos.tools.trigTools import *
-        self.process.patTriggerSequence = cms.Sequence(self.process.patTrigger)
-        
-        
-        #switchOnTrigger( self.process )
-        #switchOnTriggerMatching( self.process, triggerMatchers = [ 'muonTriggerMatchHLTMuons' , 'electronTriggerMatchHLTElectrons' ] )
-        #switchOnTriggerMatchEmbedding( self.process, triggerMatchers = [ 'muonTriggerMatchHLTMuons' , 'electronTriggerMatchHLTElectrons' ] )
 
-        return ( self.patJet() +
+        process.load('RecoMET.METAnalyzers.CSCHaloFilter_cfi')
+        
+        return ( self.patJet() + self.PileUpJetID() +
                  self.patLepton('Electron') + self.patLepton('Muon') +
                  self.evalSequence('susycaf%s',  ['photon']+(['tau','HPStau','pftau'] if self.options.taus else [])) +
                  self.evalSequence('susycafmet%s', ['AK5','AK5TypeII','AK5TypeI','PF','TypeIPFPat','TypeIPF','TC']) +
                  #self.process.eeBadScFilterFlag +
                  self.process.ecalLaserCorrFilterFlag +
-                 self.process.patTriggerSequence +
-                 self.process.muonTriggerMatchHLTMuons + 
-                 self.process.muonTriggerMatchHLTMuonsEmbedder +
-                 self.process.electronTriggerMatchHLTElectrons +
-                 self.process.electronTriggerMatchHLTElectronsEmbedder +
-                 #self.process.patTriggerEvent.patTriggerMatches = [ "muonTriggerMatchHLTMuons" , "electronTriggerMatchHLTElectrons" ] +
-                 self.evalSequence('susydesy%s', ['patelectrons','pfelectrons','patmuons','pfmuons','trigger'] +
-                                   ([] if self.options.isData else ['pu'])) +
+                 self.evalSequence('susydesy%s', ['patelectrons','pfelectrons','patmuons','pfmuons','jets','tau','trigger']+
+                                   ([] if self.options.isData else ['pu']))+
                  self.evalSequence('filterResult%s', ['OneLepton']) +
                  self.evalSequence('filter%s'      , ['OneLepton'])
-                 #self.process.patTriggerSequence +
-                 #self.process.muonTriggerMatchHLTMuons + 
-                 #self.process.muonTriggerMatchHLTMuonsEmbedder +
-                 #self.process.electronTriggerMatchHLTElectrons +
-                 #self.process.electronTriggerMatchHLTElectronsEmbedder
                  )
 
     def patLepton(self,lepton) :
         self.process.load('SUSYBSMAnalysis.SusyCAF.SusyCAF_%s_cfi'%lepton)
+
+        if (lepton.find("Muon") > -1 ):
+            self.process.susycafmuon.InputTag = cms.InputTag("selectedPatMuons")
+            self.process.susycafmuon.SelectedMuons = cms.InputTag("cleanPatMuons") 
+
+        if (lepton.find("Electron") > -1 ):
+            self.process.susycafelectron.InputTag = cms.InputTag("selectedPatElectrons")
+            self.process.susycafelectron.SelectedElectrons = cms.InputTag("cleanPatElectrons")
+        
         exec('from SUSYBSMAnalysis.SusyCAF.SusyCAF_Selection.selectors_cfi import pat%sSelector as patSelector'%lepton)
         selectors = cms.Sequence()
         setattr(self.process,'SusyCAFPat%sSelectors'%lepton, selectors)
@@ -128,6 +127,12 @@ class SusyCAF(object) :
 
     def patJet(self) :
         import SUSYBSMAnalysis.SusyCAF.SusyCAF_Jet_cfi as jets
+
+        jets.susycafak5pfjet.InputTag = cms.InputTag("selectedPatJetsAK5PF")
+        jets.susycafak5pfjet.AllJets  = cms.InputTag("selectedPatJetsAK5PF")
+        jets.susycafak5pfjetMatched.InputTag = cms.InputTag("selectedPatJetsAK5PF")
+        jets.susycafak5pfjetMatched.AllJets  = cms.InputTag("selectedPatJetsAK5PF")
+        
         for mod in filter(lambda mod: mod.startswith('susycaf'), dir(jets)) :
             if mod.endswith('reco') : exec('self.process.%s = jets.%s'%(mod,mod))
             else : exec('self.process.%s = jets.%s.clone( JetCorrections = [%s])'%(mod,mod,','.join(["'%s'"%s for s in self.options.jetCorrections])))
@@ -136,10 +141,20 @@ class SusyCAF(object) :
         from SUSYBSMAnalysis.SusyCAF.SusyCAF_Selection.selectors_cfi import patJetSelector
         selectors = self.process.SusyCAFPatJetSelectors = cms.Sequence()
         for module in modules :
-            selectors += helpers.applySelection(self.process, module, "pt > 15", patJetSelector)[0]
-        return selectors + sum(modules,self.empty)
+            selectors += helpers.applySelection(self.process, module, "pt > 10", patJetSelector)[0]
+        return selectors + sum(modules,self.empty)    
 
     def allTracks(self) :
         if not self.options.AllTracks : return self.empty
-        process.load('SUSYBSMAnalysis.SusyCAF.SusyCAF_AllTracks_cfi')
-        return process.susycafalltracks
+        self.process.load('SUSYBSMAnalysis.SusyCAF.SusyCAF_AllTracks_cfi')
+        return self.process.susycafalltracks
+
+    def trackIsolation(self) :
+        self.process.load("SUSYBSMAnalysis.DesySusy.trackIsolationMaker_cfi")
+        return self.process.susydesytrackIsolationMaker
+
+    def PileUpJetID(self) :
+        self.process.load("CMGTools.External.pujetidsequence_cff")
+        self.process.puJetId.jets = cms.InputTag("selectionsusycafak5pfjetMatched0")
+        self.process.puJetMva.jets = cms.InputTag("selectionsusycafak5pfjetMatched0")
+        return (self.process.puJetId * self.process.puJetMva )
