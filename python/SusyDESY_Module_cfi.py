@@ -1,37 +1,91 @@
 import FWCore.ParameterSet.Config as cms
 
-susydesypatelectrons = cms.EDProducer("SusyDESY_Electrons",
+def kargs() :
+    return {
+        "rhoIsoInputTag": cms.InputTag("kt6PFJetsForIsolation", "rho"),
+        "isoValInputTags": cms.VInputTag(cms.InputTag('elPFIsoValueCharged03PFIdPFIso'),
+                                         cms.InputTag('elPFIsoValueGamma03PFIdPFIso'),
+                                         cms.InputTag('elPFIsoValueNeutral03PFIdPFIso')
+                                         ),
+        }
+
+
+susydesypatelectrons = cms.EDProducer("SusyDESY_Electron",
                                       Prefix       = cms.string('DESYelectron'),
                                       Suffix       = cms.string('Pat'),
                                       
-                                      PatElectrons = cms.InputTag('cleanPatElectrons'),
+                                      PatElectrons = cms.InputTag('selectedPatElectrons'),
                                       beamSpotInputTag = cms.InputTag('offlineBeamSpot'),
-                                      conversionsInputTag = cms.InputTag('allConversions')
+                                      conversionsInputTag = cms.InputTag('allConversions'),
+                                      **kargs()
                                       )
 
-susydesypfelectrons = cms.EDProducer("SusyDESY_Electrons",
+susydesypfelectrons = cms.EDProducer("SusyDESY_Electron",
                                      Prefix       = cms.string('DESYelectron'),
                                      Suffix       = cms.string('PF'),
                                      
                                      PatElectrons = cms.InputTag('patAllElectronsPF'),
                                      beamSpotInputTag = cms.InputTag('offlineBeamSpot'),
-                                     conversionsInputTag = cms.InputTag('allConversions')
+                                     conversionsInputTag = cms.InputTag('allConversions'),
+                                     **kargs()
                                      )
 
-susydesypatmuons = cms.EDProducer("SusyDESY_Muons",
+susydesypatmuons = cms.EDProducer("SusyDESY_Muon",
                                Prefix       = cms.string('DESYmuon'),
                                Suffix       = cms.string('Pat'),
                                    
-                               PatMuons     = cms.InputTag('cleanPatMuons'),
+                               PatMuons     = cms.InputTag('selectedPatMuons'),
                                )
 
-susydesypfmuons = cms.EDProducer("SusyDESY_Muons",
+susydesypfmuons = cms.EDProducer("SusyDESY_Muon",
                                Prefix       = cms.string('DESYmuon'),
                                Suffix       = cms.string('PF'),
                                    
                                PatMuons     = cms.InputTag('patAllMuonsPF'),
                                )
 
+<<<<<<< SusyDESY_Module_cfi.py
+
+susydesyjets = cms.EDProducer("SusyDESY_Jet",
+                              Prefix          = cms.string('DESYak5JetPF'),
+                              Suffix          = cms.string('Pat'),                              
+                              JetsTag         = cms.InputTag('selectionsusycafak5pfjetMatched0'),
+                              SelectedJetsTag = cms.InputTag('cleanPatJetsAK5PF'),
+                              JetCorrections  = cms.vstring('L1FastJet', 
+                                                            'L2Relative', 
+                                                            'L3Absolute'),
+                              Discriminators  = cms.VInputTag("puJetMva:full53xDiscriminant","puJetMva:full5xDiscriminant"),
+                              Flags           = cms.VInputTag("puJetMva:full53xId","puJetMva:full5xId"),
+                              #JECfile         = cms.string('/scratch/hh/dust/naf/cms/user/costanza/NTuple12_MTSync/CMSSW_5_3_3_patch2/src/SUSYBSMAnalysis/DesySusy/data/JECuncertainties/Fall12_V7_MC_Uncertainty_AK5PF.txt')
+                              JECfile         = cms.string('SUSYBSMAnalysis/DesySusy/data/JECuncertainties/Fall12_V7_MC_Uncertainty_AK5PF.txt')
+                              )
+
+susydesytau =  cms.EDProducer("SusyDESY_PatTau",
+                              InputTag = cms.InputTag('selectedPatTaus'), 
+                              Prefix = cms.string('DESYtau'),
+                              Suffix = cms.string('Pat'),
+                              TauIds = cms.vstring('byVLooseCombinedIsolationDeltaBetaCorr',
+                                                   'byLooseCombinedIsolationDeltaBetaCorr',
+                                                   'byMediumCombinedIsolationDeltaBetaCorr',
+                                                   'byTightCombinedIsolationDeltaBetaCorr',
+                                                   'byCombinedIsolationDeltaBetaCorrRaw',
+                                                   'byLooseCombinedIsolationDeltaBetaCorr3Hits',
+                                                   'byMediumCombinedIsolationDeltaBetaCorr3Hits',
+                                                   'byTightCombinedIsolationDeltaBetaCorr3Hits',
+                                                   'byCombinedIsolationDeltaBetaCorrRaw3Hits',
+                                                   'byLooseIsolationMVA',
+                                                   'byMediumIsolationMVA',
+                                                   'byTightIsolationMVA',
+                                                   'byIsolationMVAraw',
+                                                   'byLooseIsolationMVA2',
+                                                   'byMediumIsolationMVA2',
+                                                   'byTightIsolationMVA2',
+                                                   'byIsolationMVA2raw',
+                                                   'decayModeFinding')
+                              )
+
+=======
+>>>>>>> 1.12
 susydesytrigger = cms.EDProducer("SusyDESY_Trigger",
                                  Prefix       = cms.string('DESYtrigger'),
                                  Suffix       = cms.string(''),
@@ -40,7 +94,12 @@ susydesytrigger = cms.EDProducer("SusyDESY_Trigger",
                                  electrons    = cms.InputTag("electronTriggerMatchHLTElectronsEmbedder")
                                  )
 
+<<<<<<< SusyDESY_Module_cfi.py
+
+susydesypu = cms.EDProducer("SusyDESY_PileUp",
+=======
 susydesypu = cms.EDProducer("SusyDESY_PU",
+>>>>>>> 1.12
                             PileUp     = cms.InputTag('susycafpileupsummary:pileupTrueNumInteractionsBX0')
                             )
 
