@@ -13,6 +13,7 @@
 #include <string>
 #include <vector>
 #include <iostream>
+#include "TMath.h"
 using namespace std;
 
 template< typename T >
@@ -28,7 +29,7 @@ class SusyDESY_Tau : public edm::EDProducer {
   void produceRECO(edm::Event &, const edm::EventSetup &, edm::Handle<std::vector<T> > &);
   void producePAT(edm::Event &, const edm::EventSetup &, edm::Handle<std::vector<T> > &);
 
-  typedef reco::Candidate::LorentzVector LorentzVector;
+  typedef ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<float> > LorentzM;
   const edm::InputTag inputTag;
   const std::string Prefix,Suffix;
   const std::vector<std::string> TauIds;
@@ -60,7 +61,7 @@ template<typename T>
 void SusyDESY_Tau<T>::initRECO()
 {
   produces <bool> (Prefix + "HandleValid" + Suffix);
-  produces <std::vector<LorentzVector> > ( Prefix + "P4" + Suffix );
+  produces <std::vector<LorentzM> > ( Prefix + "P4" + Suffix );
   produces <std::vector<int> > (  Prefix + "Charge" + Suffix);
   produces <std::vector<math::XYZPoint> > (Prefix + "Vertex" + Suffix);
 
@@ -98,7 +99,7 @@ void SusyDESY_Tau<T>::
 produceRECO(edm::Event& iEvent, const edm::EventSetup& iSetup, edm::Handle<std::vector<T> >& collection) {
 
   std::auto_ptr<bool> isHandleValid (new bool(collection.isValid()) );
-  std::auto_ptr<std::vector<LorentzVector> > p4 ( new std::vector<LorentzVector>() );
+  std::auto_ptr<std::vector<LorentzM> > p4 ( new std::vector<LorentzM>() );
   std::auto_ptr<std::vector<int> >  charge   ( new std::vector<int>()  ) ;
   std::auto_ptr<std::vector<math::XYZPoint> > vertex (new std::vector<math::XYZPoint>() );
 
@@ -118,7 +119,8 @@ produceRECO(edm::Event& iEvent, const edm::EventSetup& iSetup, edm::Handle<std::
   if(collection.isValid()){
     uint itau=0;
     for(typename std::vector<T>::const_iterator it = collection->begin(); it!=collection->end(); it++) {
-      p4->push_back(it->p4());
+      LorentzM tau_p4( it->p4().pt(), it->p4().eta(), it->p4().phi(), it->p4().M());
+      p4->push_back(tau_p4);
       charge->push_back(it->charge());
       
       bool pfVertex = (it->signalPFChargedHadrCands().size() && 
