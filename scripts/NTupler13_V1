@@ -41,8 +41,7 @@ addpkg RecoTauTag/Configuration V01-04-10
 cvs up -r 1.31.6.4 PhysicsTools/PatAlgos/python/producersLayer1/tauProducer_cfi.py
 cvs up -r 1.52.10.4 PhysicsTools/PatAlgos/python/tools/tauTools.py
 
-# pdf reweighting utilities ( needed for proper setup of lhapdffull 
-https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideEWKUtilities#Code_and_tags)
+# pdf reweighting utilities ( needed for proper setup of lhapdffull https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideEWKUtilities#Code_and_tags)
 cvs co -r CMSSW_5_3_3_patch2 ElectroWeakAnalysis/Utilities
 
 ## TopAnalysis scripts (such as nafJobSplitter.pl)
