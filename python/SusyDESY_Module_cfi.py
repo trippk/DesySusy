@@ -93,6 +93,15 @@ susydesypu = cms.EDProducer("SusyDESY_PileUp",
                             PileUp     = cms.InputTag('susycafpileupsummary:pileupTrueNumInteractionsBX0')
                             )
 
+susydesyscanTemp = cms.EDProducer("SusyDESY_Scan",
+                                  InputTag  = cms.InputTag('source'),
+                                  Prefix    = cms.string('susyScan'),
+                                  Suffix    = cms.string(''),
+                                  ScanFormat = cms.string(''),
+                                  ScanParameters = cms.vstring(),
+                                  Debug    = cms.untracked.bool (False)
+                                  )
+
 muonTriggerMatchHLTMuons = cms.EDProducer(
   "PATTriggerMatcherDRLessByR"
   , src     = cms.InputTag( 'cleanPatMuons' )

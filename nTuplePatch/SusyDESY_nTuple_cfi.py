@@ -50,6 +50,14 @@ class SusyCAF(object) :
 
         from SUSYBSMAnalysis.SusyCAF.SusyCAF_Scan_cfi import susycafscanFunc as susycafscanFunc
         self.process.susycafscan = susycafscanFunc(self.options.scan) if self.options.scan else self.empty
+        if self.options.scan.find("T2tt") > -1 :
+            self.process.susycafscan.ScanFormat = r"# model T2tt_(\\d*\.\\d*)_(\\d*\.\\d*)\\s\\s(\\d*\.\\d*)\\s*"
+            self.process.susycafscan.ScanParameters = ['mStop', 'mLSP', 'XSEC']
+        from SUSYBSMAnalysis.DesySusy.SusyDESY_Module_cfi import susydesyscanTemp
+        self.process.susydesyscan = susydesyscanTemp.clone( ScanFormat = self.process.susycafscan.ScanFormat,
+                                                            ScanParameters = self.process.susycafscan.ScanParameters) if self.options.scan else self.empty
+
+                
         self.process.susycaftriggers.SourceName  = self.options.SourceName
         
         from SUSYBSMAnalysis.SusyCAF.SusyCAF_MET_cfi import met
@@ -66,7 +74,7 @@ class SusyCAF(object) :
                  self.evalSequence('susycafpfrechitcluster%s', ['ecal','hcal','hfem','hfhad','ps']) +
                  self.evalSequence('susycafpfrechit%s',        ['ecal','hcal','hfem','hfhad','ps']) +
 
-                 self.process.susydesymetPF +
+                 self.process.susydesymetPF + self.process.susydesyscan +
                  self.evalSequence(*[ ('susycaf%s',['gen','genMetCalo','genMetCaloAndNonPrompt','genMetTrue','scan','pileupsummary']), # Gen
                                       ('susycaf%s',['dqmflags','dcsbits'][(not self.options.dqm):]) # Data
                                       ][self.options.isData])
