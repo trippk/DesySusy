@@ -7,6 +7,7 @@
 #include "SUSYBSMAnalysis/DesySusy/interface/SusyDESY_Muon.h"
 #include "SUSYBSMAnalysis/DesySusy/interface/SusyDESY_Tau.h"
 #include "SUSYBSMAnalysis/DesySusy/interface/SusyDESY_Jet.h"
+#include "SUSYBSMAnalysis/DesySusy/interface/SusyDESY_Track.h"
 #include "SUSYBSMAnalysis/DesySusy/interface/SusyDESY_Trigger.h"
 #include "SUSYBSMAnalysis/DesySusy/interface/SusyDESY_PileUp.h"
 #include "SUSYBSMAnalysis/DesySusy/interface/SusyDESY_PDFweights.h"
@@ -28,3 +29,4 @@ DEFINE_FWK_MODULE(SusyDESY_TotalKinematicsFilterResult);
 DEFINE_FWK_MODULE(SusyDESY_FilterResultProducerOneLepton);
 DEFINE_FWK_MODULE(SusyDESY_Filter);
 DEFINE_FWK_MODULE(SusyDESY_PileUp);
+DEFINE_FWK_MODULE(SusyDESY_Track);
