@@ -1,17 +1,5 @@
-// -*- C++ -*-
-//
-// Package:    NtupleMaker
-// Class:      NtupleMaker
-// 
-/**\class NtupleMaker NtupleMaker.cc CMS2/NtupleMaker/src/NtupleMaker.cc
-
-   Description: <one line class summary>
-
-   Implementation:
-   <Notes on implementation>
-*/
-#ifndef NTUPLEMAKER_TRACKISOLATIONMAKER_H
-#define NTUPLEMAKER_TRACKISOLATIONMAKER_H
+#ifndef SUSY_DESY_TRACK
+#define SUSY_DESY_TRACK
 
 // system include files
 #include <memory>
@@ -29,10 +17,10 @@
 // class decleration
 //
 
-class TrackIsolationMaker : public edm::EDProducer {
+class SusyDESY_Track : public edm::EDProducer {
 public:
-     explicit TrackIsolationMaker (const edm::ParameterSet&);
-     ~TrackIsolationMaker();
+     explicit SusyDESY_Track (const edm::ParameterSet&);
+     ~SusyDESY_Track();
 
 private:
   //  virtual void beginJob() ;
@@ -44,17 +32,15 @@ private:
   float getFixGridRho(std::vector<float>& etabins,std::vector<float>& phibins);
   
   // ----------member data ---------------------------
-  double dRcut;
-  double dzcut;
-  double minPt;
-  double minLepPt;
-  double minTrkIso;
+
+  const std::string Prefix;
+  const std::string Suffix;
 
   const edm::InputTag PfCandidatesTag;
   const edm::InputTag VertexTag;
 
-  const std::string Prefix;
-  const std::string Suffix;
+  double dRcut;
+  double dzcut;
 
   const reco::PFCandidateCollection *pfCandidates;
 
