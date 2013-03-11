@@ -46,7 +46,8 @@ susydesypfmuons = cms.EDProducer("SusyDESY_Muon",
 
 susydesyjets = cms.EDProducer("SusyDESY_Jet",
                               Prefix          = cms.string('DESYak5JetPF'),
-                              Suffix          = cms.string('Pat'),                              
+                              Suffix          = cms.string('Pat'),
+                              VertexInputTag  = cms.InputTag("offlinePrimaryVertices"),
                               JetsTag         = cms.InputTag('selectionsusycafak5pfjetMatched0'),
                               SelectedJetsTag = cms.InputTag('cleanPatJetsAK5PF'),
                               JetCorrections  = cms.vstring('L1FastJet', 
@@ -56,6 +57,15 @@ susydesyjets = cms.EDProducer("SusyDESY_Jet",
                               Flags           = cms.VInputTag("puJetMva:full53xId","puJetMva:full5xId"),
                               JECfile         = cms.string('SUSYBSMAnalysis/DesySusy/data/JECuncertainties/Fall12_V7_MC_Uncertainty_AK5PF.txt')
                               )
+
+susydesytrack = cms.EDProducer("SusyDESY_Track",
+                               PfCandidatesTag     = cms.InputTag("particleFlow"),
+                               VertexInputTag      = cms.InputTag("offlinePrimaryVertices"),
+                               dR_ConeSize         = cms.double(0.3),
+                               dz_CutValue         = cms.double(0.1),
+                               Prefix       = cms.string('DESYtracks'),
+                               Suffix       = cms.string('PF')
+                               )
 
 susydesytau =  cms.EDProducer("SusyDESY_PatTau",
                               InputTag = cms.InputTag('selectedPatTaus'), 
