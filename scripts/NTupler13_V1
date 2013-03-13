@@ -22,7 +22,12 @@ addpkg PhysicsTools/Configuration V00-12-03
 
 #MET filters (https://twiki.cern.ch/twiki/bin/view/CMS/MissingETOptionalFilters) 
 addpkg RecoMET/METAnalyzers V00-00-08 
-addpkg RecoMET/METFilters V00-00-10
+addpkg RecoMET/METFilters V00-00-13
+#Track POG Filters
+cvs co -r V01-00-11-01 DPGAnalysis/Skims
+cvs co -r V00-11-17 DPGAnalysis/SiStripTools
+cvs co -r V00-00-08 DataFormats/TrackerCommon
+cvs co -r V01-09-05 RecoLocalTracker/SubCollectionProducers
 
 # functions to compute electron and photon IDs 
 cvs co -r V00-00-31 -d EGamma/EGammaAnalysisTools UserCode/EGamma/EGammaAnalysisTools
@@ -48,7 +53,7 @@ cvs co -r CMSSW_5_3_3_patch2 ElectroWeakAnalysis/Utilities
 cvs co -d TopAnalysis/TopUtils UserCode/Bromo/TopAnalysis/TopUtils
 
 cvs co -dSUSYBSMAnalysis/SusyCAF -r V17-13 UserCode/SusyCAF
-cvs co -dSUSYBSMAnalysis/DesySusy -r V00-13 UserCode/DesySusy
+cvs co -dSUSYBSMAnalysis/DesySusy -r V00-15 UserCode/DesySusy
 
 cp SUSYBSMAnalysis/DesySusy/nTuplePatch/susydesy_cfg.py SUSYBSMAnalysis/SusyCAF/test
 cp SUSYBSMAnalysis/DesySusy/nTuplePatch/SusyDESY_nTuple_cfi.py SUSYBSMAnalysis/SusyCAF/python
