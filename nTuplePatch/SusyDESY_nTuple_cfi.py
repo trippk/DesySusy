@@ -62,19 +62,30 @@ class SusyCAF(object) :
         
         from SUSYBSMAnalysis.SusyCAF.SusyCAF_MET_cfi import met
         self.process.patMETsPF.metSource = cms.InputTag("pfMet")
-        self.process.susydesymetPF         = met('Pat' , 'patMETsPF', 'PF', 'DESYmet', calo=False)
+        
+        self.process.susydesymetPF  = met('Pat' , 'patMETsPF', 'PF', 'DESYmet', calo=False)
+        
+        self.process.susydesycorMetGlobalMuons = met('Calo', 'corMetGlobalMuons', 'Calo',  'corMetGlobalMuons')
+        self.process.susydesymetHO = met('Calo', 'metHO', 'Calo',  'metHO')
+        self.process.susydesytcMet = met('Calo', 'tcMet', 'Calo',  'tcMet')
+        self.process.susydesytcMetWithPFclusters = met('Calo', 'tcMetWithPFclusters', 'Calo',  'tcMetWithPFclusters')
 
+        self.process.susydesyCaloMET = cms.Sequence( self.process.susydesycorMetGlobalMuons +
+                                                     self.process.susydesymetHO +
+                                                     self.process.susydesytcMet +
+                                                     self.process.susydesytcMetWithPFclusters
+                                                     )
+        
         return ( self.evalSequence('susycafhcalnoise%s', ['filter','filternoiso','rbx','summary']) +
                  self.evalSequence('susycaf%s', (['event','track','pfsump4','beamspot','logerror','vertex','calotowers','rho','rho25'] +
                                                  (['beamhalosummary'] if self.options.beamHaloVars else [] ) +
                                                  (['triggers','L1triggers','l1extra'] if self.options.triggers else [])) ) +
-                 self.process.susycafmet + self.process.susycafmetnohf +
                  self.evalSequence('susycaf%sdeadchannels', ['ecal','hcal']) +
                  self.evalSequence('susycaf%srechit', [ 'hbhe', 'hf', 'eb', 'ee' ]) +
                  self.evalSequence('susycafpfrechitcluster%s', ['ecal','hcal','hfem','hfhad','ps']) +
                  self.evalSequence('susycafpfrechit%s',        ['ecal','hcal','hfem','hfhad','ps']) +
 
-                 self.process.susydesymetPF + self.process.susydesyscan +
+                 self.process.susydesymetPF + self.process.susydesyCaloMET + self.process.susydesyscan +
                  self.evalSequence(*[ ('susycaf%s',['gen','genMetCalo','genMetCaloAndNonPrompt','genMetTrue','scan','pileupsummary']), # Gen
                                       ('susycaf%s',['dqmflags','dcsbits'][(not self.options.dqm):]) # Data
                                       ][self.options.isData])
@@ -95,6 +106,10 @@ class SusyCAF(object) :
         for module in ['Module','FilterResultProducer','Filter'] :
             self.process.load('SUSYBSMAnalysis.DesySusy.SusyDESY_%s_cfi'%module)
 
+        #SusyDESY_Jet
+        from SUSYBSMAnalysis.DesySusy.SusyDESY_Module_cfi import susydesyjets
+        self.process.susydesyjets = susydesyjets.clone (JetsTag = "selectionsusycafak5pfjet" + ("Matched" if not self.options.isData else "") +"0" )
+                                    
         ## ecalDeadCellBEFilterFlag
         from RecoMET.METFilters.EcalDeadCellBoundaryEnergyFilter_cfi import EcalDeadCellBoundaryEnergyFilter
 
@@ -111,27 +126,33 @@ class SusyCAF(object) :
         self.process.load('RecoMET.METFilters.ecalLaserCorrFilter_cfi')
         self.process.ecalLaserCorrFilterFlag = self.process.ecalLaserCorrFilter.clone(taggingMode = True)
 
-        ## The tracking POG filters __________________________________________________||
-        from RecoMET.METFilters.trackingPOGFilters_cff import *
+        #hcalLaserFilterFlag
+        from SUSYBSMAnalysis.DesySusy.SusyDESY_Module_cfi import EventFilterFromList
+        self.process.hcalLaser2012EventFilterFlag = EventFilterFromList.clone( ListFile  = 'EventFilter/HcalRawToDigi/data/HCALLaser2012AllDatasets.txt.gz',
+                                                                               taggingMode = cms.untracked.bool (True)
+                                                                               ) if self.options.isData else self.empty
+        
+        ## The tracking POG filters _________________________________________________
+        ## The following filters output a flag with an opposite meaning to what we have for the other MET cleaning filters. In thi case: true = bad event; false = good event
+        
+        from RecoMET.METFilters.trackingPOGFilters_cff import logErrorTooManyClusters, logErrorTooManyTripletsPairs, logErrorTooManySeeds, logErrorTooManySeedsDefault, manystripclus53X, toomanystripclus53X, logErrorTooManyTripletsPairsMainIterations, logErrorTooManySeedsMainIterations
 
-        self.process.logErrorTooManyClustersFilterFlag = logErrorTooManyClusters.clone ( taggingMode = cms.untracked.bool(True),
-                                                                                         forcedValue = cms.untracked.bool(False) )
-        self.process.logErrorTooManyTripletsPairsFilterFlag = logErrorTooManyTripletsPairs.clone ( taggingMode = cms.untracked.bool(True),
-                                                                                                   forcedValue = cms.untracked.bool(False) )
-        self.process.logErrorTooManySeedsFilterFlag = logErrorTooManySeeds.clone ( taggingMode = cms.untracked.bool(True),
-                                                                                   forcedValue = cms.untracked.bool(False) )
-        self.process.logErrorTooManySeedsDefaultFilterFlag = logErrorTooManySeedsDefault.clone ( taggingMode = cms.untracked.bool(True),
-                                                                                                 forcedValue = cms.untracked.bool(False) )
-        self.process.manystripclus53XFilterFlag = manystripclus53X.clone ( taggingMode = cms.untracked.bool(True),
-                                                                           forcedValue = cms.untracked.bool(False) )
-        self.process.toomanystripclus53XFilterFlag = toomanystripclus53X.clone ( taggingMode = cms.untracked.bool(True),
-                                                                                 forcedValue = cms.untracked.bool(False) )
-        self.process.logErrorTooManyTripletsPairsMainIterationsFilterFlag = logErrorTooManyTripletsPairsMainIterations.clone ( taggingMode = cms.untracked.bool(True),
-                                                                                                                               forcedValue = cms.untracked.bool(False) )
-        self.process.logErrorTooManySeedsMainIterationsFilterFlag = logErrorTooManySeedsMainIterations.clone ( taggingMode = cms.untracked.bool(True),
-                                                                                                               forcedValue = cms.untracked.bool(False) )
-        self.process.tobtecfakesfilterFilterFlag = tobtecfakesfilter.clone ( taggingMode = cms.untracked.bool(True),
-                                                                             forcedValue = cms.untracked.bool(False) )
+        self.process.logErrorTooManyClustersFilterFlag = logErrorTooManyClusters.clone ( taggedMode = cms.untracked.bool(True),
+                                                                                         forcedValue = cms.untracked.bool(True) )
+        self.process.logErrorTooManyTripletsPairsFilterFlag = logErrorTooManyTripletsPairs.clone ( taggedMode = cms.untracked.bool(True),
+                                                                                                   forcedValue = cms.untracked.bool(True) )
+        self.process.logErrorTooManySeedsFilterFlag = logErrorTooManySeeds.clone ( taggedMode = cms.untracked.bool(True),
+                                                                                   forcedValue = cms.untracked.bool(True) )
+        self.process.logErrorTooManySeedsDefaultFilterFlag = logErrorTooManySeedsDefault.clone ( taggedMode = cms.untracked.bool(True),
+                                                                                                 forcedValue = cms.untracked.bool(True) )
+        self.process.manystripclus53XFilterFlag = manystripclus53X.clone ( taggedMode = cms.untracked.bool(True),
+                                                                           forcedValue = cms.untracked.bool(True) )
+        self.process.toomanystripclus53XFilterFlag = toomanystripclus53X.clone ( taggedMode = cms.untracked.bool(True),
+                                                                                 forcedValue = cms.untracked.bool(True) )
+        self.process.logErrorTooManyTripletsPairsMainIterationsFilterFlag = logErrorTooManyTripletsPairsMainIterations.clone ( taggedMode = cms.untracked.bool(True),
+                                                                                                                               forcedValue = cms.untracked.bool(True) )
+        self.process.logErrorTooManySeedsMainIterationsFilterFlag = logErrorTooManySeedsMainIterations.clone ( taggedMode = cms.untracked.bool(True),
+                                                                                                               forcedValue = cms.untracked.bool(True) )
 
         self.process.trkPOGFilters = cms.Sequence( self.process.logErrorTooManyClustersFilterFlag +
                                                    self.process.logErrorTooManyTripletsPairsFilterFlag +
@@ -140,18 +161,20 @@ class SusyCAF(object) :
                                                    self.process.manystripclus53XFilterFlag +
                                                    self.process.toomanystripclus53XFilterFlag +
                                                    self.process.logErrorTooManyTripletsPairsMainIterationsFilterFlag +
-                                                   self.process.logErrorTooManySeedsMainIterationsFilterFlag +
-                                                   self.process.tobtecfakesfilterFilterFlag )
+                                                   self.process.logErrorTooManySeedsMainIterationsFilterFlag
+                                                   )
 
         return ( self.patJet() + self.PileUpJetID() +
                  self.patLepton('Electron') + self.patLepton('Muon') +
                  self.evalSequence('susycaf%s',  ['photon']+(['tau','HPStau','pftau'] if self.options.taus else [])) +
                  self.evalSequence('susycafmet%s', ['AK5','AK5TypeII','AK5TypeI','PF','TypeIPFPat','TypeIPF','TC']) +
-                 #self.process.eeBadScFilterFlag +
+                 self.process.hcalLaser2012EventFilterFlag +
                  self.process.ecalDeadCellBEFilterFlag +
-                 self.process.ecalLaserCorrFilterFlag + self.process.trkPOGFilters +
-                 self.evalSequence('susydesy%s', ['patelectrons','pfelectrons','patmuons','pfmuons','jets','tau','trigger', 'track']+
+                 self.process.ecalLaserCorrFilterFlag +
+                 self.process.trkPOGFilters +
+                 self.evalSequence('susydesy%s', ['patelectrons','pfelectrons','patmuons','pfmuons','tau','trigger', 'track', 'tobtecfakesProducer']+
                                    ([] if self.options.isData else ['pu']))+
+                 self.process.susydesyjets +
                  self.evalSequence('filterResult%s', ['OneLepton']) +
                  self.evalSequence('filter%s'      , ['OneLepton'])
                  )
@@ -192,7 +215,7 @@ class SusyCAF(object) :
         from SUSYBSMAnalysis.SusyCAF.SusyCAF_Selection.selectors_cfi import patJetSelector
         selectors = self.process.SusyCAFPatJetSelectors = cms.Sequence()
         for module in modules :
-            selectors += helpers.applySelection(self.process, module, "pt > 0", patJetSelector)[0]
+            selectors += helpers.applySelection(self.process, module, "pt > 10", patJetSelector)[0]
         return selectors + sum(modules,self.empty)    
 
     def allTracks(self) :
@@ -211,12 +234,14 @@ class SusyCAF(object) :
         full_53x.tmvaWeights = cms.string("CMGTools/External/data/TMVAClassificationCategory_JetID_53X_Dec2012.weights.xml")
         full_53x.label = cms.string("full53x")
         full_5x.label = cms.string("full5x")
+
+        JetCollection = "selectionsusycafak5pfjet" + ("Matched0" if not self.options.isData else "0")
         
         self.process.puJetId = pileupJetIdProducer.clone(
             produceJetIds = cms.bool(True),
             jetids = cms.InputTag(""),
             runMvas = cms.bool(False),
-            jets = cms.InputTag("selectionsusycafak5pfjetMatched0"),
+            jets = cms.InputTag( JetCollection),
             vertexes = cms.InputTag("offlinePrimaryVertices"),
             algos = cms.VPSet(cutbased)
             )
@@ -225,7 +250,7 @@ class SusyCAF(object) :
             produceJetIds = cms.bool(False),
             jetids = cms.InputTag("puJetId"),
             runMvas = cms.bool(True),
-            jets = cms.InputTag("selectionsusycafak5pfjetMatched0"),
+            jets = cms.InputTag( JetCollection),
             vertexes = cms.InputTag("offlinePrimaryVertices"),
             algos = cms.VPSet(full_53x, full_5x)
             )
