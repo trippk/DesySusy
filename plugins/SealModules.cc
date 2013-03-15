@@ -14,6 +14,7 @@
 #include "SUSYBSMAnalysis/DesySusy/interface/SusyDESY_TotalKinematicsFilter.h"
 #include "SUSYBSMAnalysis/DesySusy/interface/SusyDESY_FilterResultProducer.h"
 #include "SUSYBSMAnalysis/DesySusy/interface/SusyDESY_Filter.h"
+#include "SUSYBSMAnalysis/DesySusy/interface/SusyDESY_EventFilterFromList.h"
 
 DEFINE_FWK_MODULE(SusyDESY_Electron);
 DEFINE_FWK_MODULE(SusyDESY_Muon);
@@ -30,3 +31,4 @@ DEFINE_FWK_MODULE(SusyDESY_FilterResultProducerOneLepton);
 DEFINE_FWK_MODULE(SusyDESY_Filter);
 DEFINE_FWK_MODULE(SusyDESY_PileUp);
 DEFINE_FWK_MODULE(SusyDESY_Track);
+DEFINE_FWK_MODULE(SusyDESY_EventFilterFromList);

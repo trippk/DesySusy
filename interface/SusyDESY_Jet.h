@@ -15,17 +15,12 @@
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h" 
 #include <vector>
 
-/* #include "DataFormats/HLTReco/interface/TriggerEvent.h" */
-/* #include "DataFormats/Common/interface/TriggerResults.h" */
-/* #include "FWCore/Common/interface/TriggerNames.h" */
-/* #include "HLTrigger/HLTcore/interface/HLTConfigProvider.h" */
-
 namespace SusyDESY_Tools{
 
   template<class T>
     bool isInCollection(const T& e, const std::vector<T>& ve) {
     typename std::vector<T>::const_iterator it(ve.begin()),end(ve.end());
-    for(;it!=end;++it)
+    for(;it!=end;++it) 
       if( e.p4() == it->p4() ) return true;
     return false;
   }
@@ -42,6 +37,7 @@ private:
      void beginJob();
 
      const std::string Prefix,Suffix;
+     const edm::InputTag VertexTag;
      const edm::InputTag JetsTag;
      const edm::InputTag SelectedJetsTag;
      const std::string JECfile;

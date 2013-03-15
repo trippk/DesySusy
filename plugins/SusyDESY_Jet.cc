@@ -41,26 +41,11 @@ SusyDESY_Jet::SusyDESY_Jet(const edm::ParameterSet& iConfig)
   for(std::vector<std::string>::const_iterator corr = JetsCorrections.begin(); corr!=JetsCorrections.end(); corr++)
     produces <std::vector<float> > (Prefix + *corr + "CorrFactor" + Suffix );
 
-  /*produces <std::vector<float> > (Prefix + "PileUpId" + "dZ"          + Suffix );
-  produces <std::vector<float> > (Prefix + "PileUpId" + "nCharged"    + Suffix );
-  produces <std::vector<float> > (Prefix + "PileUpId" + "nNeutrals"   + Suffix );
-  produces <std::vector<float> > (Prefix + "PileUpId" + "nParticles"  + Suffix );
-  produces <std::vector<float> > (Prefix + "PileUpId" + "dR2Mean" + Suffix );
-  produces <std::vector<float> > (Prefix + "PileUpId" + "dRMean"  + Suffix );
-  produces <std::vector<float> > (Prefix + "PileUpId" + "frac01"  + Suffix );
-  produces <std::vector<float> > (Prefix + "PileUpId" + "frac02"  + Suffix );
-  produces <std::vector<float> > (Prefix + "PileUpId" + "frac03"  + Suffix );
-  produces <std::vector<float> > (Prefix + "PileUpId" + "frac04"  + Suffix );
-  produces <std::vector<float> > (Prefix + "PileUpId" + "frac05"  + Suffix );
-  produces <std::vector<float> > (Prefix + "PileUpId" + "frac06"  + Suffix );
-  produces <std::vector<float> > (Prefix + "PileUpId" + "frac07"  + Suffix );*/
   produces <std::vector<float> > (Prefix + "PileUpId" + "beta"            + Suffix );
   produces <std::vector<float> > (Prefix + "PileUpId" + "betaStar"        + Suffix );
   produces <std::vector<float> > (Prefix + "PileUpId" + "betaClassic"     + Suffix );
   produces <std::vector<float> > (Prefix + "PileUpId" + "betaStarClassic" + Suffix );
   produces <std::vector<float> > (Prefix + "PileUpId" + "beta2" + Suffix );
-  /*  produces <std::vector<float> > (Prefix + "PileUpId" + "ptD"  + Suffix );
-      produces <std::vector<float> > (Prefix + "PileUpId" + "nvtx" + Suffix );*/
 
   for(std::vector<edm::InputTag>::const_iterator puid = PUJetIDdiscriminators.begin(); puid!=PUJetIDdiscriminators.end(); puid++) {
     produces <std::vector<float> > (Prefix + "PileUpId" + puid->instance() + Suffix );
@@ -80,26 +65,11 @@ void SusyDESY_Jet::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
     corrections.push_back( std::auto_ptr<std::vector<float> >(new std::vector<float>()) );
   }
 
-  /*std::auto_ptr<std::vector<float> > dZ( new std::vector<float>() ) ;
-  std::auto_ptr<std::vector<float> > nCharged( new std::vector<float>() );
-  std::auto_ptr<std::vector<float> > nNeutrals( new std::vector<float>() ); 
-  std::auto_ptr<std::vector<float> > nParticles( new std::vector<float>() );
-  std::auto_ptr<std::vector<float> > dR2Mean( new std::vector<float>() );
-  std::auto_ptr<std::vector<float> > dRMean( new std::vector<float>() ); 
-  std::auto_ptr<std::vector<float> > frac01( new std::vector<float>() );
-  std::auto_ptr<std::vector<float> > frac02( new std::vector<float>() );
-  std::auto_ptr<std::vector<float> > frac03( new std::vector<float>() ); 
-  std::auto_ptr<std::vector<float> > frac04( new std::vector<float>() );
-  std::auto_ptr<std::vector<float> > frac05( new std::vector<float>() );
-  std::auto_ptr<std::vector<float> > frac06( new std::vector<float>() );
-  std::auto_ptr<std::vector<float> > frac07( new std::vector<float>() );*/
   std::auto_ptr<std::vector<float> > beta( new std::vector<float>() );
   std::auto_ptr<std::vector<float> > betaStar( new std::vector<float>() ); 
   std::auto_ptr<std::vector<float> > betaClassic( new std::vector<float>() );
   std::auto_ptr<std::vector<float> > betaStarClassic( new std::vector<float>() );
   std::auto_ptr<std::vector<float> > beta2( new std::vector<float>() );
-  /*std::auto_ptr<std::vector<float> > ptD( new std::vector<float>() ); 
-    std::auto_ptr<std::vector<float> > nvtx( new std::vector<float>() );*/
 
   std::vector<std::auto_ptr<std::vector<float> > > puidDiscriminators;
   std::vector<std::auto_ptr<std::vector<int> > > puidLoose;
@@ -205,25 +175,10 @@ void SusyDESY_Jet::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
 	//if (jet.pt() > 30 )std::cout << "jet " << ijet << " pt " << jet.pt() << " eta " << jet.eta() << " PU JetID MVA " << mva << " " << PUJetIDdiscriminators.at(ipuid).label() << ":" << PUJetIDdiscriminators.at(ipuid).instance() << std::endl; 
       }
 
-      /*dZ->push_back( ((*puJetId)[JetColl->refAt(ijet)]).dZ());
-      nCharged->push_back( ((*puJetId)[JetColl->refAt(ijet)]).nCharged());  
-      nNeutrals->push_back( ((*puJetId)[JetColl->refAt(ijet)]).nNeutrals());
-      nParticles->push_back( ((*puJetId)[JetColl->refAt(ijet)]).nParticles());
-      dR2Mean->push_back( ((*puJetId)[JetColl->refAt(ijet)]).dR2Mean());
-      dRMean->push_back( ((*puJetId)[JetColl->refAt(ijet)]).dRMean());  
-      frac01->push_back( ((*puJetId)[JetColl->refAt(ijet)]).frac01());  
-      frac02->push_back( ((*puJetId)[JetColl->refAt(ijet)]).frac02()); 
-      frac03->push_back( ((*puJetId)[JetColl->refAt(ijet)]).frac03()); 
-      frac04->push_back( ((*puJetId)[JetColl->refAt(ijet)]).frac04()); 
-      frac05->push_back( ((*puJetId)[JetColl->refAt(ijet)]).frac05()); 
-      frac06->push_back( ((*puJetId)[JetColl->refAt(ijet)]).frac06()); 
-      frac07->push_back( ((*puJetId)[JetColl->refAt(ijet)]).frac07()); */
       beta->push_back( ((*puJetId)[JetColl->refAt(ijet)]).beta());     
       betaStar->push_back( ((*puJetId)[JetColl->refAt(ijet)]).betaStar()); 
       betaClassic->push_back( ((*puJetId)[JetColl->refAt(ijet)]).betaClassic()); 
       betaStarClassic->push_back( ((*puJetId)[JetColl->refAt(ijet)]).betaStarClassic()); 
-      /*ptD->push_back( ((*puJetId)[JetColl->refAt(ijet)]).ptD());   
-	nvtx->push_back( ((*puJetId)[JetColl->refAt(ijet)]).nvtx());*/
       
       //beta2 definition:
       float pt_tot = 0.;
@@ -254,26 +209,11 @@ void SusyDESY_Jet::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
   for(unsigned int icorr = 0; icorr < corrections.size(); icorr++) 
     iEvent.put( corrections.at(icorr), Prefix + JetsCorrections.at(icorr) + "CorrFactor" + Suffix );
 
-  /*iEvent.put( dZ, Prefix + "PileUpId" + "dZ"          + Suffix );
-  iEvent.put(nCharged, Prefix + "PileUpId" + "nCharged"    + Suffix );
-  iEvent.put(nNeutrals, Prefix + "PileUpId" + "nNeutrals"   + Suffix );
-  iEvent.put(nParticles, Prefix + "PileUpId" + "nParticles"  + Suffix );
-  iEvent.put(dR2Mean, Prefix + "PileUpId" + "dR2Mean" + Suffix );
-  iEvent.put(dRMean, Prefix + "PileUpId" + "dRMean"  + Suffix );
-  iEvent.put(frac01, Prefix + "PileUpId" + "frac01"  + Suffix );
-  iEvent.put(frac02, Prefix + "PileUpId" + "frac02"  + Suffix );
-  iEvent.put(frac03, Prefix + "PileUpId" + "frac03"  + Suffix );
-  iEvent.put(frac04, Prefix + "PileUpId" + "frac04"  + Suffix );
-  iEvent.put(frac05, Prefix + "PileUpId" + "frac05"  + Suffix );
-  iEvent.put(frac06, Prefix + "PileUpId" + "frac06"  + Suffix );
-  iEvent.put(frac07, Prefix + "PileUpId" + "frac07"  + Suffix );*/
   iEvent.put(beta,   Prefix + "PileUpId" + "beta"            + Suffix );
   iEvent.put(betaStar, Prefix + "PileUpId" + "betaStar"        + Suffix );
   iEvent.put(betaClassic, Prefix + "PileUpId" + "betaClassic"     + Suffix );
   iEvent.put(betaStarClassic, Prefix + "PileUpId" + "betaStarClassic" + Suffix );
   iEvent.put(beta2, Prefix + "PileUpId" + "beta2" + Suffix );
-  /*iEvent.put(ptD, Prefix + "PileUpId" + "ptD"  + Suffix );
-    iEvent.put(nvtx, Prefix + "PileUpId" + "nvtx" + Suffix );*/
 
   for(unsigned int ipuid = 0; ipuid < puidDiscriminators.size(); ipuid++) {
     iEvent.put( puidDiscriminators.at(ipuid), Prefix + "PileUpId" + PUJetIDdiscriminators.at(ipuid).instance() + Suffix );
