@@ -17,7 +17,7 @@ filterResultOneLepton = cms.EDProducer('SusyDESY_FilterResultProducerOneLepton',
 
                                        Prescale           = cms.int32(10),
 
-                                       minLepPt           = cms.double(10.),
+                                       minLepPt           = cms.double(15.),
                                        maxLepEta          = cms.double(2.5)
                                        
                                        )
