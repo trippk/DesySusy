@@ -13,7 +13,7 @@
 //
 // Original Author:  Hannes Schettler,,,uni-hamburg
 //         Created:  Mon Mar 19 11:55:58 CET 2012
-// $Id: SusyDESY_FilterResultProducer.cc,v 1.2 2012/06/13 13:38:04 schettle Exp $
+// $Id: SusyDESY_FilterResultProducer.cc,v 1.1 2012/06/08 08:39:51 schettle Exp $
 //
 //
 
@@ -29,9 +29,7 @@ SusyDESY_FilterResultProducerOneLepton::SusyDESY_FilterResultProducerOneLepton(c
   StdMuCollectionPF ( iConfig.getParameter<vector<string> > (  "StdMuCollectionPF") ),
   AltMuCollectionPF ( iConfig.getParameter<vector<string> > (  "AltMuCollectionPF") ),
   StdElCollectionPF ( iConfig.getParameter<vector<string> > (  "StdElCollectionPF") ),
-  AltElCollectionPF ( iConfig.getParameter<vector<string> > (  "AltElCollectionPF") ),
-  minLepPt          ( iConfig.getParameter<double> (  "minLepPt"         ) ),
-  maxLepEta         ( iConfig.getParameter<double> (  "maxLepEta"        ) )
+  AltElCollectionPF ( iConfig.getParameter<vector<string> > (  "AltElCollectionPF") )
 {
  
   produces < int > ("DESYfilterPassedOneLepton");
@@ -72,8 +70,8 @@ SusyDESY_FilterResultProducerOneLepton::produce(edm::Event& iEvent, const edm::E
 
   unsigned nGoodMuons=0;
   for(size_t mu = 0; mu<MuonP4->size(); mu++) {
-    if( fabs(MuonP4->at(mu).eta()) >  maxLepEta  ) continue;
-    if( MuonP4->at(mu).pt()        < minLepPt   ) continue;
+    if( fabs(MuonP4->at(mu).eta()) >  2.5  ) continue;
+    if( MuonP4->at(mu).pt()        < 10.   ) continue;
 //      double RelIso_max20 = (MuEcalIso->at(mu)+MuHcalIso->at(mu)+MuTrackIso->at(mu))/std::max((float)20.,(float)MuonColl->at(mu).Pt());
 //      if( RelIso_max20                 >   .15 ) continue;
      
@@ -89,8 +87,8 @@ SusyDESY_FilterResultProducerOneLepton::produce(edm::Event& iEvent, const edm::E
 
   unsigned nGoodMuonsPF=0;
   for(size_t mu = 0; mu<MuonP4PF->size(); mu++) {
-    if( fabs(MuonP4PF->at(mu).eta()) >  maxLepEta  ) continue;
-    if( MuonP4PF->at(mu).pt()        < minLepPt   ) continue;
+    if( fabs(MuonP4PF->at(mu).eta()) >  2.5  ) continue;
+    if( MuonP4PF->at(mu).pt()        < 10.   ) continue;
      
     ++nGoodMuonsPF;
   }
@@ -105,8 +103,8 @@ SusyDESY_FilterResultProducerOneLepton::produce(edm::Event& iEvent, const edm::E
 
   unsigned nGoodElectrons=0;
   for(size_t el = 0; el<ElectronP4->size(); el++) {
-    if( fabs(ElectronP4->at(el).eta()) >  maxLepEta ) continue;
-    if( ElectronP4->at(el).pt()        < minLepPt  ) continue;
+    if( fabs(ElectronP4->at(el).eta()) >  2.5 ) continue;
+    if( ElectronP4->at(el).pt()        < 10.  ) continue;
 
     ++nGoodElectrons;
   }
@@ -120,8 +118,8 @@ SusyDESY_FilterResultProducerOneLepton::produce(edm::Event& iEvent, const edm::E
 
   unsigned nGoodElectronsPF=0;
   for(size_t el = 0; el<ElectronP4PF->size(); el++) {
-    if( fabs(ElectronP4PF->at(el).eta()) >  maxLepEta ) continue;
-    if( ElectronP4PF->at(el).pt()        < minLepPt  ) continue;
+    if( fabs(ElectronP4PF->at(el).eta()) >  2.5 ) continue;
+    if( ElectronP4PF->at(el).pt()        < 10.  ) continue;
 
     ++nGoodElectronsPF;
   }

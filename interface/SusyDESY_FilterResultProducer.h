@@ -38,9 +38,6 @@ class SusyDESY_FilterResultProducerOneLepton : public edm::EDProducer {
       const vector<string> StdElCollection,   AltElCollection;
       const vector<string> StdMuCollectionPF, AltMuCollectionPF;
       const vector<string> StdElCollectionPF, AltElCollectionPF;
-      double minLepPt;
-      double maxLepEta;
-
       TRandom3* rnd;
 
       // collGetter: meant to replace the 'iEvent.getByLabel(...)' in the code.
