@@ -1,29 +1,10 @@
-<use name="CommonTools/ParticleFlow"/>
+<use name="FWCore/Framework"/>
 <use name="CommonTools/UtilAlgos"/>
-
-<use name="CondFormats/JetMETObjects"/>
-
-<use name="DataFormats/Common"/>
-<use name="DataFormats/GsfTrackReco"/>
-<use name="DataFormats/Math"/>
-<use name="DataFormats/ParticleFlowCandidate"/>
-<use name="DataFormats/ParticleFlowReco"/>
 <use name="DataFormats/PatCandidates"/>
-<use name="DataFormats/VertexReco"/>
-<use name="DataFormats/TauReco"/>
-
-<use name="EGamma/EGammaAnalysisTools"/>
+<use name="SimDataFormats/GeneratorProducts"/>
 
 <use name="FastSimulation/BaseParticlePropagator"/>
-
-<use name="FWCore/Framework"/>
-<use name="FWCore/ParameterSet"/>
-<use name="FWCore/Utilities"/>
-
-<use name="RecoParticleFlow/PFProducer"/>
-
-<use name="SimDataFormats/GeneratorProducts"/>
-<use name="SimDataFormats/PileupSummaryInfo"/>
+<use name="EGamma/EGammaAnalysisTools"/>
 
 <library file="*.cc" name="SUSYBSMAnalysisDesySusyPlugins">
     <flags EDM_PLUGIN="1"/>

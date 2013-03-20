@@ -15,11 +15,7 @@ filterResultOneLepton = cms.EDProducer('SusyDESY_FilterResultProducerOneLepton',
                                        StdElCollectionPF  = cms.vstring("susycafpfelectron",    "electron","PF" ),
                                        AltElCollectionPF  = cms.vstring("susydesyelectron" ,"DESYelectron","PF" ),
 
-                                       Prescale           = cms.int32(10),
-
-                                       minLepPt           = cms.double(15.),
-                                       maxLepEta          = cms.double(2.5)
-                                       
+                                       Prescale           = cms.int32(10)
                                        )
 
 
