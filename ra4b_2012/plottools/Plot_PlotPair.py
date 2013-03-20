@@ -1,9 +1,9 @@
 import os,sys 
 from ROOT import TFile, TCanvas, THStack,TLegend,gPad,gROOT
 
-import plottools.Plot_RootObjects as rootobj
-import plottools.Plot_SetRootObjectsOptions as setopt
-import plottools.Plot_PlottingStyles as plotSt
+import Plot_RootObjects as rootobj
+import Plot_SetRootObjectsOptions as setopt
+import Plot_PlottingStyles as plotSt
 
 
 

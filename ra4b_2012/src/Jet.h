@@ -36,7 +36,7 @@ class Jet: public AnalysisObject {
  public:
   //  static void SetWP(const string cme="8TeV");
   static void SetWP(string cme="8TeV");
-  virtual void Set(const int maptotree_In, LorentzM * const momuntum_In, const double scaleCorrFactor_In=1., const string type_In="");
+  virtual void Set(const int maptotree_In, LorentzM * const momentum_In, const double scaleCorrFactor_In=1., const string type_In="");
   virtual void Set(const int maptotree_In, Ptr_LorentzM momentum_In, const double scaleCorrFactor_In=1., const string type_In="");
 
   Jet(){
@@ -127,7 +127,7 @@ class Jet: public AnalysisObject {
   void SetBJetDisc(const string key, const double value);
 
 
-  //  virtual void Set(int maptotree_In, LorentzM momuntum_In, double scaleCorrFactor_In=1., string type_In="");
+  //  virtual void Set(int maptotree_In, LorentzM momentum_In, double scaleCorrFactor_In=1., string type_In="");
   map<string, map<string, double> > GetbJetWP();
   void SetCorrectionUncertainty(const string name, double const value);
   double GetCorrectionUncertainty(const string name);

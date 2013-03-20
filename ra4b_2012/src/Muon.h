@@ -13,8 +13,6 @@ using namespace ROOT::Math::VectorUtil;
 class Muon: public Particle {
 
  public:
-  
-
   Muon(){
     charge=99;
     flavor="mu";
@@ -24,9 +22,9 @@ class Muon: public Particle {
 
   ~Muon(){}
 
-  void Set(int maptotree_In, LorentzM * momentum_In, int particleID_In, int charge_In, string flavor_In, double relIso_In);
-  void Set(int maptotree_In, LorentzM * momentum_In, int charge_In, double relIso_In);
-/*   void Set(int maptotree_In, LorentzM * momentum_In); */
+  void Set(int maptotree_In, LorentzM& momentum_In, int particleID_In, int charge_In, string flavor_In, double relIso_In);
+  void Set(int maptotree_In, LorentzM& momentum_In, int charge_In, double relIso_In);
+
 
 };
 
