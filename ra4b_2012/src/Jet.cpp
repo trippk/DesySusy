@@ -12,6 +12,96 @@ using namespace ROOT::Math::VectorUtil;
 map<string, map<string, double> > Jet::bJetWP;
 
 
+//=======CONSTRUCTORS=============//
+
+
+Jet::Jet(){this->Initializer();}
+
+Jet::Jet(const int maptotree_In, Ptr_LorentzM momentum_In, const double scaleCorrFactor_In=1., const string type_In=""){
+  //CONSTRUCTOR WITH SHARED POINTER
+  //the jet owns the lorentz vector
+  this->Initializer();
+  this->AnalysisObject::Set(maptotree_In,momentum_In);
+  scaleCorrFactor=scaleCorrFactor_In;
+  type=type_In;
+}
+
+
+Jet(const int maptotree_In, LorentzM * const momentum_In, const double scaleCorrFactor_In=1., const string type_In=""){
+  //CONSTRUCTOR WITH NORMAL POINTER
+  //the jet DOES NOT own the lorentz vector
+  this->Initializer();
+  this->Set(maptotree_In,momentum_In,scaleCorrFactor_In,type_In);
+}
+
+
+Jet(const int maptotree_In, LorentzM const momentum_In, const double scaleCorrFactor_In=1., const string type_In=""){
+  //CONSTRUCTOR WITH LORENTZM OBJECT
+  //the LORENTZM lives inside the jet
+  this->Initializer();
+  this->Set(maptotree_In,momentum_In,scaleCorrFactor_In,type_In);
+}
+
+
+//COPY CONSTUCTOR
+Jet(Ptr_Jet copy){
+  if (bJetWP.size() == 0)SetWP();
+  genFlavor=copy->genFlavor;
+  isMatch=copy->isMatch;
+  bJetDisc=copy->bJetDisc;
+  correctionUncertainty_UP=copy->correctionUncertainty_UP;
+  correctionUncertainty_DOWN=copy->correctionUncertainty_DOWN;
+  matchedGenJet=copy->matchedGenJet;
+  id=copy->id;
+  scaleCorrFactor=copy->scaleCorrFactor;
+  type=copy->type;
+  this->AnalysisObject::CopyLorentzM(copy.get());
+}
+
+
+Jet(Jet& copy){
+  //COPY CONSTUCTOR WITH THE OBJECT
+  if (bJetWP.size() == 0)SetWP();
+  genFlavor=copy.genFlavor;
+  isMatch=copy.isMatch;
+  bJetDisc=copy.bJetDisc;
+  correctionUncertainty_UP=copy.correctionUncertainty_UP;
+  correctionUncertainty_DOWN=copy.correctionUncertainty_DOWN;
+  matchedGenJet=copy.matchedGenJet;
+  id=copy.id;
+  scaleCorrFactor=copy.scaleCorrFactor;
+  type=copy.type;
+  this->AnalysisObject::CopyLorentzM(copy.get());
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Jet::Initializer(){
+  if (bJetWP.size() == 0)SetWP();
+  genFlavor=0;
+  isMatch=0;
+  scaleCorrFactor=0.;
+  type = "";
+  bJetDisc.clear();
+  correctionUncertainty_UP=99;
+  correctionUncertainty_DOWN=99;
+
+}
+
+~Jet(){}
+
+
 double Jet::BJetDisc(const string key) const {return bJetDisc.at(key);};
 int    Jet::GenFlavor()const      {return genFlavor;};
 bool   Jet::IsMatch()const        {return isMatch;};
@@ -116,23 +206,17 @@ void Jet::SetWP(string cme){
 };
 
 void Jet::Set(const int maptotree_In, LorentzM * const pmomuntum_In, const double scaleCorrFactor_In, const string type_In){
-  
   AnalysisObject::Set(maptotree_In, pmomuntum_In);
-
   //SET SCALE CORRECTION FACTOR
   scaleCorrFactor=scaleCorrFactor_In;
-
   //SET THE TYPE
   type=type_In;
 }
 
 void Jet::Set(const int maptotree_In, Ptr_LorentzM pmomentum_In, const double scaleCorrFactor_In, const string type_In){
-  
   AnalysisObject::Set(maptotree_In, pmomentum_In);
-  
   //SET SCALE CORRECTION FACTOR
   scaleCorrFactor=scaleCorrFactor_In;
-
   //SET THE TYPE
   type=type_In;
 }
@@ -215,6 +299,7 @@ void Jet::SetPartner(Ptr_GenJet matchedGenJet_in){
   //matchedGenJet.reset(matchedGenJet_in);
   matchedGenJet=matchedGenJet_in;
 }
+
 
 //the lock returns a shared_ptr from a weak_ptr
 Ptr_GenJet Jet::GetPartner(){return matchedGenJet.lock();}

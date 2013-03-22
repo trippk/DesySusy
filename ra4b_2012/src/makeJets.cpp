@@ -341,10 +341,9 @@ void matchGenJets(EasyChain* tree, vector<Ptr_GenJet>& genJets, vector<Ptr_Jet>&
 
 
 double makeHT(vector<Ptr_Jet>& Jets){
-
   double HT=0;
   for (int ijet(0); ijet<Jets.size();++ijet){
-    HT+=Jets.at(ijet)->Pt():
+    HT+=Jets.at(ijet)->Pt();
   }
   return HT;
 }
