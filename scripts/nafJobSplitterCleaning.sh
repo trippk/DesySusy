@@ -2,9 +2,10 @@
 
 for dir in `ls | grep naf_`  
 do
-for completefile in `ls $dir/*.root`
+task=`echo $dir | sed 's/naf_//g'`
+for file in `ls $dir/out*.txt`
 do
-rm -f $completefile.part*
+remove=`echo $file | sed 's/out/'$task'-/g' | sed 's/.txt/.root.part/g'`
+rm -f $remove\*
 done
 done
-

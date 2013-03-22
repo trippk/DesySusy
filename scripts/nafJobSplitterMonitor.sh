@@ -5,6 +5,8 @@ then
 REPEAT=$1
 fi
 
+echo $HOST
+echo $$
 for ((i = 0; i < $REPEAT; i++))
 do
 for dir in `ls | grep naf_ | grep _cfg`
