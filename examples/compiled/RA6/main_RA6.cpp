@@ -46,6 +46,8 @@ int main(int argc, char** argv){
   static bool isScan      = config.getBool( "isScan",      false );
   static bool isLeptScan  = config.getBool( "isLeptScan",  false );
 
+  static TString scanType = config.getTString( "scanType", "TChiSlepSnu");//T3lh
+
   static bool allowPrescale = config.getBool( "allowPrescale", false );
 
   static float          HT_min = config.getFloat(          "HT_min",  0. );
@@ -79,15 +81,25 @@ int main(int argc, char** argv){
 
   //Pile-up handling
   vector<float> PUweights;
-  static TString PU_weightList = config.getTString( "PU_weightList", " " );
 
-  cout<<"PU_weightList: "<<PU_weightList<<endl;
 
-  int PU_weightListSIZE=0;
-  if( PU_weightList != " " ) {
-    PU_weightListSIZE = config.ListSize("PU_weightList");
-    for(int i=0; i<PU_weightListSIZE; ++i)
-      PUweights.push_back( atof( config.getString( "PU_weightList" , i).c_str() ) );
+  static TString PU_data = config.getTString( "PU_data", " " );
+  static TString PU_MC   = config.getTString( "PU_MC"  , " " );
+
+  //cout<<"PU_data: "<<PU_data<<endl;
+  //cout<<"PU_MC: "  <<PU_MC  <<endl; 
+
+  //int PU_SIZE=0;
+  if( PU_data != " " && PU_MC != " " ) {
+    int PU_SIZE = config.ListSize("PU_data");
+    //cout<<config.ListSize("PU_MC")<<" VS "<< PU_SIZE<<endl;
+    if( config.ListSize("PU_MC") == PU_SIZE ) {
+      for(int i=0; i<PU_SIZE; ++i) {
+	float dpu=atof( config.getString( "PU_data" , i).c_str() );
+	float mpu=atof( config.getString( "PU_MC"   , i).c_str() );	
+	PUweights.push_back( dpu/mpu );
+      }
+    }
   }
 
   static bool TotKinFilt = config.getBool("TotKinFilt", true);
@@ -96,8 +108,8 @@ int main(int argc, char** argv){
 
   //N=10000;
 
-  map< pair<float,float>, unsigned > scanPointCounter;
-  map< pair<float,float>, plotSet  > scanPlotSets;
+  map< vector<float>, unsigned > scanPointCounter;
+  map< vector<float>, plotSet  > scanPlotSets;
 
   bool OK=false;
   for(int i=0;i<N;++i){
@@ -123,21 +135,74 @@ int main(int argc, char** argv){
     tree->GetEntry(i);
 
 
-    /////////
-    // PU
-    /////////
+
 
     if(!isData) {
+
+    /////////
+    // SCAN
+    /////////
       
       if(isScan) {
 	bool susyScanHandleValid   = tree->Get( susyScanHandleValid  , "susyScanHandleValid" );
-	float susyScanM0           = tree->Get( susyScanM0           , "susyScanM0"          );
-	float susyScanM12          = tree->Get( susyScanM12          , "susyScanM12"         );
+	
+// 	float scanPara1, scanPara2;
+// 	float scanParaOpt=-99;
 
-	//if(susyScanM0 != 1240 || susyScanM12 != 660) continue;
-	if( isLeptScan ) {
-	  float susyScanSelectionEff = tree->Get( susyScanSelectionEff , "susyScanSelectionEff");
-	  float susyScanXSection     = tree->Get( susyScanXSection     , "susyScanXSection"    );
+	vector<float> para;
+
+	if( scanType == "T3lh" ) {
+	  float mGl  = tree->Get( mGl , "susyScanmGL" );
+	  float mLSP = tree->Get( mLSP, "susyScanmLSP");
+	  float xChi = tree->Get( xChi, "susyScanxCHI");
+	  float xSec = tree->Get( xSec, "susyScanxSEC");
+	  ps.addPlot("susyScan_xCHI", 
+		     76,100., 2000., mGl,
+		     80,  0., 2000., mLSP, xChi );
+	  ps.addPlot("susyScan_xSec", 
+		     76,100., 2000., mGl,
+		     80,  0., 2000., mLSP, xSec );
+	  ps.addPlot("susyScan_nEv", 
+		     76,100., 2000., mGl,
+		     80,  0., 2000., mLSP, 1. );
+// 	  scanPara1 = mGl;
+// 	  scanPara2 = mLSP;
+	  para.push_back(mGl);
+	  para.push_back(mLSP);
+	}
+	else if( scanType =="TChiSlepSnu" ) {
+	  float mChi  = tree->Get( mChi , "susyScanmCHI" );
+	  float mLSP  = tree->Get( mLSP , "susyScanmLSP" );
+	  float xSlep = tree->Get( xSlep, "susyScanxSLEP");
+	  TString xspln="susyScan_xSLEP_";
+	  xspln       +=xSlep;
+	  ps.addPlot(xspln, 
+		     37,100., 1025., mChi,
+		     40,  0., 1000., mLSP, xSlep );
+	  TString nepln="susyScan_nEv_";
+	  nepln       +=xSlep;	  
+	  ps.addPlot(nepln, 
+		     37,100., 1025., mChi,
+		     40,  0., 1000., mLSP, 1. );
+// 	  scanPara1   = mChi;
+// 	  scanPara2   = mLSP;
+// 	  scanParaOpt = xSlep;
+	  para.push_back(mChi);
+	  para.push_back(mLSP);
+	  para.push_back(xSlep);
+	}
+	else {
+	  float susyScanM0           = tree->Get( susyScanM0           , "susyScanM0"          );
+	  float susyScanM12          = tree->Get( susyScanM12          , "susyScanM12"         );
+// 	  scanPara1 = susyScanM0;
+// 	  scanPara2 = susyScanM12;
+	  para.push_back(susyScanM0);
+	  para.push_back(susyScanM12);
+	  
+	  //if(susyScanM0 != 1240 || susyScanM12 != 660) continue;
+	  if( isLeptScan ) {
+	    float susyScanSelectionEff = tree->Get( susyScanSelectionEff , "susyScanSelectionEff");
+	    float susyScanXSection     = tree->Get( susyScanXSection     , "susyScanXSection"    );
 	    ps.addPlot("selEff", 
 		       149, 40., 3020., susyScanM0,
 		       46, 100., 1020., susyScanM12, susyScanSelectionEff );
@@ -145,29 +210,43 @@ int main(int argc, char** argv){
 		       149, 40., 3020., susyScanM0,
 		       46, 100., 1020., susyScanM12, susyScanXSection );
 
+	  }
+
+	  ps.addPlot("allEv", 
+		     149, 40., 3020., susyScanM0,
+		     46, 100., 1020., susyScanM12, 1 );
 	}
-	ps.addPlot("allEv", 
-		   149, 40., 3020., susyScanM0,
-		   46, 100., 1020., susyScanM12, 1 );
-       
-	++scanPointCounter[make_pair(susyScanM0,susyScanM12)];
-	if( scanPlotSets.find(make_pair(susyScanM0,susyScanM12)) == scanPlotSets.end() ) {
+// 	vector<float> para;
+// 	para.push_back(scanPara1);
+// 	para.push_back(scanPara2);
+// 	para.push_back(scanParaOpt);
+	++scanPointCounter[para];
+	if( scanPlotSets.find(para) == scanPlotSets.end() ) {
 	  TString PSname = "RA6";
-	  PSname += "_";
-	  PSname += susyScanM0;
-	  PSname += "_";
-	  PSname += susyScanM12;
+// 	  PSname += "_";
+// 	  PSname += scanPara1;
+// 	  PSname += "_";
+// 	  PSname += scanPara2;
+// 	  PSname += "_";
+// 	  PSname += scanParaOpt;
+	  for(size_t pa=0; pa<para.size(); ++pa) {
+	    PSname += "_";
+	    PSname += para.at(pa);
+	  }
+	  while (PSname.First('.') != -1 ) {
+	    PSname.Replace(PSname.First('.'),1,'p');
+	  }
 
 	  plotSet TMP(PSname,true,false);
 	  TMP.setTFile(outfile);
-	  scanPlotSets[make_pair(susyScanM0,susyScanM12)] = TMP;
+	  scanPlotSets[para] = TMP;
 
 // 	  if( isLeptScan ) {
-	  float susyScanSelectionEff = tree->Get( susyScanSelectionEff , "susyScanSelectionEff");
-	  float susyScanXSection     = tree->Get( susyScanXSection     , "susyScanXSection"    );
+// 	  float susyScanSelectionEff = tree->Get( susyScanSelectionEff , "susyScanSelectionEff");
+// 	  float susyScanXSection     = tree->Get( susyScanXSection     , "susyScanXSection"    );
 
- 	    cout<< susyScanM0<<"  "<<susyScanM12<<": eff = "<<susyScanSelectionEff<<endl;
- 	    cout<< "                   : xsec = "<<susyScanXSection<<endl;
+//  	    cout<< scanPara1<<"  "<<scanPara2<<": eff = "<<susyScanSelectionEff<<endl;
+//  	    cout<< "                   : xsec = "<<susyScanXSection<<endl;
 
 // 	    ps.addPlot("selEff", 
 // 		       149, 40., 3020., susyScanM0,
@@ -185,11 +264,14 @@ int main(int argc, char** argv){
 	  //plotsId = &TMP;	  
 	}
 	//else
-	plotsId = &scanPlotSets[make_pair(susyScanM0,susyScanM12)];
+	plotsId = &scanPlotSets[para];
 	//cout<<susyScanM0<<"   "<<susyScanM12<<endl;
-	
+	//}
       }
 
+    /////////
+    // PU
+    /////////
 
       vector<float>& PUnumInter    = tree->Get( &PUnumInter      , "pileupTrueNumInteractions" );
       vector<int>& PUbunchCrossing = tree->Get( &PUbunchCrossing , "pileupBX"                  );
@@ -205,9 +287,14 @@ int main(int argc, char** argv){
       }
       ps.addPlot_withUnweighted( "relevantNumPU", 100,0.,100., relevantNumPU );
 
-      if( PU_weightList == " " ) continue;
+      //cout<<"PUweights.size() "<<PUweights.size()<<endl;
 
-      if( relevantNumPU >= PU_weightListSIZE ) {
+      if( PUweights.size() == 0 ) {
+	cout<<" NO PROPPER PU INFORMATION"<<endl;
+	continue;
+      }
+
+      if( relevantNumPU >= PUweights.size() ) {
 	plotSet::global_event_weight = 0;
 	CutSet::global_event_weight  = 0;
       } else {
@@ -242,12 +329,17 @@ int main(int argc, char** argv){
      if( !globalFlow.keepIf("trackFailFilter"   ,    tffPassed ) && quick ) continue;
      bool edcfPassed = tree->Get( edcfPassed, "ecalDeadCellTPFilterFlag"  );
      if( !globalFlow.keepIf("ecalDeadCellFilter",   edcfPassed ) && quick ) continue;
-     bool bhctFailed = tree->Get( bhctFailed, "beamHaloCSCTightHaloId"    );
-     if( !globalFlow.keepIf("beamHaloCSCFilter" ,  !bhctFailed ) && quick ) continue;//   stimmt das?? Dass die Flag das Failed angibt?
+     if( !isScan ) {
+       bool bhctFailed = tree->Get( bhctFailed, "beamHaloCSCTightHaloId"    );
+       if( !globalFlow.keepIf("beamHaloCSCFilter" ,  !bhctFailed ) && quick ) continue;//   stimmt das?? Dass die Flag das Failed angibt?
+     }
      bool eeBadSCPassed = tree->Get( eeBadSCPassed, "eeBadScFilterFlag"   );
      if( !globalFlow.keepIf("eeBadSCFilter"     , eeBadSCPassed) && quick ) continue;
 
-
+     if(isData) {
+       bool ecalLaserCorrFilterPassed = tree->Get( ecalLaserCorrFilterPassed, "ecalLaserCorrFilterFlag"   );
+       if( !globalFlow.keepIf("ecalLaserCorrFilter"     , ecalLaserCorrFilterPassed) && quick ) continue;
+     }
 
     //cout<<"dev filter"<<endl;
 
@@ -348,7 +440,7 @@ if(run==195398 && event==242173458) isOneProbl=true;
     if(isOneProbl) cout<<run<<","<<event<<": nothing survived"<<endl;
 
 
-    if(isOneProbl) cout<<run<<","<<event<<": filter: "<<HBHEnoiseNoIsoFilterResult<<hcalLaserEventFilterFlag<<tffPassed<<edcfPassed<<bhctFailed<<eeBadSCPassed<<endl;
+    //if(isOneProbl) cout<<run<<","<<event<<": filter: "<<HBHEnoiseNoIsoFilterResult<<hcalLaserEventFilterFlag<<tffPassed<<edcfPassed<<bhctFailed<<eeBadSCPassed<<endl;
     if(isOneProbl) cout<<run<<","<<event<<": vertices: "<<RA6_selectedVx.size()<<endl;
     if(isOneProbl) cout<<run<<","<<event<<": nTracks: "<<Ntracks<<", hpTracks: "<<NHPtracks<<endl;
 
@@ -785,7 +877,7 @@ if(run==195398 && event==242173458) isOneProbl=true;
     LorentzM* metP4TypeIPF   = tree->Get( &metP4TypeIPF  , "metP4TypeIPF"  );
     LorentzM* metP4AK5       = tree->Get( &metP4AK5      , "metP4AK5"      );
     LorentzM* metP4AK5TypeII = tree->Get( &metP4AK5TypeII, "metP4AK5TypeII");
-    LorentzM* metP4Calo      = tree->Get( &metP4Calo     , "metP4Calo"     );
+    //LorentzM* metP4Calo      = tree->Get( &metP4Calo     , "metP4Calo"     );
 
     double HT_selectedJet=0;
 
@@ -892,22 +984,25 @@ if(run==195398 && event==242173458) isOneProbl=true;
     
     globalFlow.keepIf("exact2bTags", bTagedJets.size()==2 );
 
-    if(quick || globalFlow.applyCuts("RA6 common cuts", 
-		"HBHEnoiseNoIsoFilter hcalLaserFilter at_least_1_vertex FracOfHPtracks trackFailFilter ecalDeadCellFilter beamHaloCSCFilter eeBadSCFilter "+nJ_cutString+" "+HT_cutString+" "+MET_cutString ) ) {
+    TString globFlo = "HBHEnoiseNoIsoFilter hcalLaserFilter at_least_1_vertex FracOfHPtracks trackFailFilter ecalDeadCellFilter beamHaloCSCFilter eeBadSCFilter ";
+    if(isData)
+      globFlo+= "ecalLaserCorrFilter ";
+
+    if(quick || globalFlow.applyCuts("RA6 common cuts", globFlo ) ) {
       
       if(isOneProbl) cout<<run<<","<<event<<": common cuts survived. Trig: "<<TrigName<<endl;
 
       //MuMu:
-      if(globalFlow.applyCuts("RA6 MuMu",
-			      TrigName+" at_least_1_MuMu_pair highPtOSMuMuPair")) isRA6highPtMuMu=true;
+      if(globalFlow.applyCuts("RA6 MuMu"+TrigName,
+			      TrigName+" at_least_1_MuMu_pair highPtOSMuMuPair "+nJ_cutString+" "+HT_cutString+" "+MET_cutString)) isRA6highPtMuMu=true;
 
       //MuEl:
       if(globalFlow.applyCuts("RA6 MuEl",
-			      AltTrigName+" at_least_1_MuEl_pair highPtOSMuElPair")) isRA6highPtMuEl=true;
+			      AltTrigName+" at_least_1_MuEl_pair highPtOSMuElPair "+nJ_cutString+" "+HT_cutString+" "+MET_cutString)) isRA6highPtMuEl=true;
 
       //ElEl:
       if(globalFlow.applyCuts("RA6 ElEl",
-			      AltAltAltTrigName+" at_least_1_ElEl_pair highPtOSElElPair")) isRA6highPtElEl=true;
+			      AltAltAltTrigName+" at_least_1_ElEl_pair highPtOSElElPair "+nJ_cutString+" "+HT_cutString+" "+MET_cutString)) isRA6highPtElEl=true;
 
       //bb:
       if(globalFlow.applyCuts("diBtag", "exact2bTags") ) isDiBJet=true;
@@ -994,10 +1089,15 @@ if(run==195398 && event==242173458) isOneProbl=true;
     double selectedPz=0;
     LorentzM selctedVecSum;
 
+    vector<int> idxBjets;
+
     for(size_t j=0; j<RA6_selectedJet.size(); ++j) {
       selectedPz += JetsPF.at(RA6_selectedJet.at(j)).Pz();
       selctedVecSum += JetsPF.at(RA6_selectedJet.at(j));
-      if(CSV_bTag.at(RA6_selectedJet.at(j)) > CSVbTag_cutVal) ++numBTags;
+      if(CSV_bTag.at(RA6_selectedJet.at(j)) > CSVbTag_cutVal) {
+	++numBTags;
+	idxBjets.push_back(RA6_selectedJet.at(j));
+      }
       if(fabs(DeltaPhi( JetsPF.at(RA6_selectedJet.at(j)), *metP4PF ) ) < DphiMetClosestJet )
 	DphiMetClosestJet = fabs(DeltaPhi( JetsPF.at(RA6_selectedJet.at(j)), *metP4PF ) );
     }
@@ -1014,6 +1114,26 @@ if(run==195398 && event==242173458) isOneProbl=true;
       selctedVecSum += Electrons.at(RA6_selectedEl.at(el));
       if(fabs(DeltaPhi( Electrons.at(RA6_selectedEl.at(el)), *metP4PF ) ) < DphiMetClosestElectron )
 	DphiMetClosestElectron = fabs(DeltaPhi( Electrons.at(RA6_selectedEl.at(el)), *metP4PF ) );
+    }
+
+    double sophSelectedPz=firstLept.Pz()+secondLept.Pz();
+    LorentzM sophSelctedVecSum=firstLept+secondLept;
+
+    if(numBTags==0) {
+      sophSelectedPz += RA6_selectedJet.size()>0 ? JetsPF.at(RA6_selectedJet.at(0)).Pz() : 0.;
+      sophSelectedPz += RA6_selectedJet.size()>1 ? JetsPF.at(RA6_selectedJet.at(1)).Pz() : 0.;
+      sophSelctedVecSum += RA6_selectedJet.size()>0 ? JetsPF.at(RA6_selectedJet.at(0)) : LorentzM(0,0,0,0);
+      sophSelctedVecSum += RA6_selectedJet.size()>1 ? JetsPF.at(RA6_selectedJet.at(1)) : LorentzM(0,0,0,0);
+    } else if(numBTags==1) {
+      sophSelectedPz += JetsPF.at(idxBjets.at(0)).Pz();
+      sophSelectedPz += idxBjets.at(0)==RA6_selectedJet.at(0)&&RA6_selectedJet.size()>1 ? JetsPF.at(RA6_selectedJet.at(1)).Pz() : JetsPF.at(RA6_selectedJet.at(0)).Pz();
+      sophSelctedVecSum += JetsPF.at(idxBjets.at(0));
+      sophSelctedVecSum += idxBjets.at(0)==RA6_selectedJet.at(0)&&RA6_selectedJet.size()>1 ? JetsPF.at(RA6_selectedJet.at(1)) : JetsPF.at(RA6_selectedJet.at(0));
+    } else {
+      sophSelectedPz += JetsPF.at(idxBjets.at(0)).Pz();
+      sophSelectedPz += JetsPF.at(idxBjets.at(1)).Pz();
+      sophSelctedVecSum += JetsPF.at(idxBjets.at(0));
+      sophSelctedVecSum += JetsPF.at(idxBjets.at(1));
     }
 
     if(isOneProbl) cout<<run<<","<<event<<": to be stored in top: "<<top<<endl;
@@ -1051,7 +1171,7 @@ if(run==195398 && event==242173458) isOneProbl=true;
      plotsId->addLeaf( top, "METTypeIPF"  ,      metP4TypeIPF->Et()     );
      plotsId->addLeaf( top, "METAK5"      ,      metP4AK5->Et()         );
      plotsId->addLeaf( top, "METAK5TypeII",      metP4AK5TypeII->Et()   );
-     plotsId->addLeaf( top, "METCalo"     ,      metP4Calo->Et()        );
+     //plotsId->addLeaf( top, "METCalo"     ,      metP4Calo->Et()        );
 
      if((firstLept + secondLept).mass() > 80 && (firstLept + secondLept).mass() < 100) {
        plotsId->addLeaf( top+"ZWIN", "METTypeIPF_Zwindow"  ,      metP4TypeIPF->Et()     );
@@ -1060,7 +1180,8 @@ if(run==195398 && event==242173458) isOneProbl=true;
 
     plotsId->addLeaf( top, "selectedPz"   , selectedPz    );
     plotsId->addLeaf( top, "selctedVecSum", selctedVecSum.mass() );
-
+    plotsId->addLeaf( top, "sophSelectedPz"   , sophSelectedPz    );
+    plotsId->addLeaf( top, "sophSelctedVecSum", sophSelctedVecSum.mass() );
     //cout<<((*metP4PF)-JetVecSum+smearedJetVecSum).Et()<<endl;
   
     //cout<<"met: "<<(*metP4PF).Px()<<"  "<<(*metP4PF).Py()<<"  "<<(*metP4PF).Pz()<<"  "<<(*metP4PF).E()<<endl;
@@ -1238,8 +1359,8 @@ if(run==195398 && event==242173458) isOneProbl=true;
     //cout<<"end of loop"<<endl;
   } // event loop
 
-  for(map< pair<float,float>, unsigned >::iterator pt=scanPointCounter.begin(); pt!=scanPointCounter.end(); ++pt)
-    cout<<pt->first.first<<"  "<<pt->first.second<<"  "<<pt->second<<endl;
+  for(map< vector<float>, unsigned >::iterator pt=scanPointCounter.begin(); pt!=scanPointCounter.end(); ++pt)
+    cout<<pt->first.at(0)<<"  "<<pt->first.at(1)<<"  "<<pt->second<<endl;
 
   RA6_Mu_selectionCuts.printAll();
   RA6_El_selectionCuts.printAll();

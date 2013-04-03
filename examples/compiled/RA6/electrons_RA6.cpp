@@ -146,7 +146,7 @@ if(run==195398 && event==242173458) isOneProbl=true;
 
 
 
-    if( !selCut.keepIf("dz<=0.1" , GsfTrackDzPat.at(el) <= 0.1         ) && quick ) continue;
+    if( !selCut.keepIf("dz<=0.1" , fabs(GsfTrackDzPat.at(el)) <= 0.1         ) && quick ) continue;
 
     if( !selCut.keepIf("gapVeto", fabs(ESuperClusterEtaPat.at(el))<=1.4442 || fabs(ESuperClusterEtaPat.at(el))>=1.566 ) && quick ) continue;
 

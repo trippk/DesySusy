@@ -21,8 +21,11 @@ bool vertices_RA6(EasyChain* tree, vector<unsigned>& selVx, CutSet& selCut) {
 
   vector<XYZp>& Vertices       = tree->Get( &Vertices,      "vertexPosition");
 
-  for( unsigned vx=0; vx < Vertices.size(); ++vx ) {
+  if( Vertices.size() == 0 ) return false;
+
+  for( unsigned vx=0; vx < 1 /*Vertices.size()*/; ++vx ) {
     vector<int>&       Vertex_isFake  = tree->Get( &Vertex_isFake, "vertexIsFake"  );
+    //unsigned vx=0;
 
     if( !selCut.keepIf( "IsNoFake", !Vertex_isFake.at(vx)              ) && quick ) continue;
     if( !selCut.keepIf( "|Z|<=24" , fabs(Vertices.at(vx).z())   <= 24. ) && quick ) continue; // MC:15, Data:24

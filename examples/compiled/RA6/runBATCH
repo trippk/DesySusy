@@ -69,18 +69,22 @@ for (( i=1; i<=$sampleCounter; ++i )); do
 
 	while read line
 	  do
-	  if [[ $line == ${dataPU}* ]]; then
-	      echo $line >> ${codeLoc}/ConfigTMP/config.txt
+	  if [[ ! ${dataPU} == "" ]]; then
+	      if [[ $line == ${dataPU}* ]]; then
+		  echo $line >> ${codeLoc}/ConfigTMP/config.txt
+	      fi
 	  fi
 	  echo >> ${codeLoc}/ConfigTMP/config.txt
-	  if [[ $line == ${samplePU[$i]}* ]]; then
-	      #echo $line
-	      echo ${line/${samplePU[$i]}/PU_MC} >> ${codeLoc}/ConfigTMP/config.txt
+	  if [[ ! ${samplePU[$i]} == "" ]]; then
+	      if [[ $line == ${samplePU[$i]}* ]]; then
+		  echo ..${samplePU[$i]}.." line: " $line
+		  echo ${line/${samplePU[$i]}/PU_MC} >> ${codeLoc}/ConfigTMP/config.txt
+	      fi
 	  fi
 	done < $PUfile
-#	${scriptLoc}/./runOnAll2 ${sampleSource[$i]} \
-#	    ${codeLoc}/myAnalysis ${codeLoc}/ConfigTMP/config.txt \
-#	    cleanUp nFiles=${sampleNfiles[$i]}
+	${scriptLoc}/./runOnAll2 ${sampleSource[$i]} \
+	    ${codeLoc}/myAnalysis ${codeLoc}/ConfigTMP/config.txt \
+	    cleanUp nFiles=${sampleNfiles[$i]}
 	echo
     fi
 done

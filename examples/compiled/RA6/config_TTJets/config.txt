@@ -1,7 +1,7 @@
 # prelim gen config
 
 isData        = false
-quick         = true
+quick         = false
 allowPrescale = false
 
 # up to run 196531
@@ -9,8 +9,12 @@ allowPrescale = false
 
 filename = /pnfs/desy.de/cms/tier2/store/user/schettle/nTuple12_v2/mc/TTJets_MassiveBinDECAY_TuneZ2star_8TeV-madgraph-tauola/Summer12-PU_S7_START52_V9-v2/SusyCAF_Tree_5_3_jBs.root
 
-trigList = HLT_DoubleMu6 HLT_DoubleMu7 HLT_DoubleMu8 HLT_Mu13_Mu8 HLT_Mu17_Mu8
+#trigList = HLT_DoubleMu6 HLT_DoubleMu7 HLT_DoubleMu8 HLT_Mu13_Mu8 HLT_Mu17_Mu8
+trigList = HLT_Mu17_Mu8 HLT_Mu17_TkMu8
 trigAltList = HLT_Mu17_Ele8_CaloIdL HLT_Mu17_Ele8_CaloIdT_CaloIsoVL HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL
 trigAltAltList = HLT_Mu8_Ele17_CaloIdL HLT_Mu8_Ele17_CaloIdT_CaloIsoVL HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL
 trigAltAltAltList = HLT_Ele17_CaloIdL_CaloIsoVL_Ele8_CaloIdL_CaloIsoVL HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL
 
+#HT_min=100
+#MET_min=150
+#nJet_min=2
