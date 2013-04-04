@@ -21,7 +21,7 @@ simpleAnalysisObject::simpleAnalysisObject(const simpleAnalysisObject& copy){
 int simpleAnalysisObject::GetIndexInTree()const {return maptotree;}
 
 
-
+LorentzM simpleAnalysisObject::P4() const{return p4;}
 LorentzM* simpleAnalysisObject::GetPointerP4() const {return pp4;}
 
 
