@@ -59,6 +59,9 @@
 #include "typedefs.h"
 #include "trigStudyTree.h"
 #include "makePileUp.h"
+#include "simpleElectron.h"
+#include "simpleMuon.h"
+#include "simpleJet.h"
 
 using namespace std;
 using namespace ROOT::Math::VectorUtil;
@@ -425,13 +428,10 @@ int main(int argc, char** argv){
     vector<Ptr_Jet> AllJets;
     vector<Ptr_Jet> GoodJets;
     vector<Ptr_Jet> CleanedJets;
-    cout<<"size of AllJets  is "<<AllJets.size()<<endl;
     makeAllJets(tree,AllJets);
     for(int ijet = 0; (int)ijet<AllJets.size(); ijet++){
-      cout<<"the index in here bitch "<<AllJets.at(ijet)->GetIndexInTree()<<endl;
     }
     makeGoodJets(tree,AllJets,GoodJets);
-    cout<<"out of good jets"<<endl;
     makeCleanedJets( GoodJets, CleanedJets, pMuons, pElectrons);
 
     //=======MATCHING OF JETS
@@ -471,11 +471,8 @@ int main(int argc, char** argv){
     //CALCULATE SYSTEMATICS VARIATIONS: JETS
     //===========================================
     if (systematics.IsEnabled()){
-      cout<<"one"<<endl;
       ShiftJetEnergyScale(tree,systematics,AllJets,pMuons,pElectrons);
-      cout<<"two"<<endl;
       ShiftClustersEnergyScale(tree,systematics,AllJets,pMuons,pElectrons);
-      cout<<"three"<<endl;      
       JetResolutionSmearing(tree,systematics,AllJets,pMuons,pElectrons);
     }
 
@@ -494,6 +491,26 @@ int main(int argc, char** argv){
     else        info.PUInter    = goodVert.size();
     //
     //
+
+
+
+
+    //==========SIMPLIFY JETS,MUONS AND ELECTRONS========//
+    //
+    vector<simpleJet> mySimpleJets;
+    for (int ijet=0;ijet<AllJets.size();++ijet){
+      mySimpleJets.push_back(AllJets.at(ijet)->makeSimpleJet());
+    }
+    vector<simpleMuon> mySimpleMuons;
+    for (int imu=0;imu<Muons.size();++imu){
+      mySimpleMuons.push_back(Muons.at(imu).makeSimpleMuon());
+    }
+    vector<simpleElectron> mySimpleElectrons;
+    for (int iel=0;iel<Electrons.size();++iel){
+      mySimpleElectrons.push_back(Electrons.at(iel).makeSimpleElectron());
+    }
+    
+    
 
 
 

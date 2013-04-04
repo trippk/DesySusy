@@ -34,17 +34,23 @@ void Particle::Set(int maptotree_In, LorentzM * momentum_In, int particleID_In, 
 
 }
 
-// void Particle::Set(int maptotree_In, LorentzM * momentum_In){
+void Particle::Set(int maptotree_In, LorentzM momentum_In, int particleID_In, int charge_In, string flavor_In, double relIso_In){
 
-//   //SET THE FOURVECTOR
-//   pp4=momentum_In;
-//   p4=*pp4;
+  AnalysisObject::Set(maptotree_In, momentum_In);
 
-//   //SET THE MAP TO THE TREE
-//   maptotree=maptotree_In;
- 
-// }
+  //SET THE PARTICLE ID
+  particleID=particleID_In;
 
+  //SET THE CHARGE
+  SetCharge(charge_In);
+  
+  //SET THE FLAVOUR
+  SetFlavor(flavor_In);
+
+  //SET relIso:
+  SetRelIso(relIso_In);
+
+}
 
 void Particle::Set(int maptotree_In, LorentzM* momentum_In, int charge_In, double relIso_In){
 
@@ -56,6 +62,20 @@ void Particle::Set(int maptotree_In, LorentzM* momentum_In, int charge_In, doubl
   //SET THE ISO
   SetRelIso(relIso_In);
 }
+
+void Particle::Set(int maptotree_In, LorentzM momentum_In, int charge_In, double relIso_In){
+
+  AnalysisObject::Set(maptotree_In, momentum_In);
+
+  //SET THE CHARGE
+  SetCharge(charge_In);
+
+  //SET THE ISO
+  SetRelIso(relIso_In);
+}
+
+
+
 
 bool compare_Particle_Pt(Particle* p1, Particle* p2) {
 

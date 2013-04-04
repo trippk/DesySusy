@@ -5,16 +5,16 @@
 #include "NtupleTools2_h.h"
 #include <map>
 #include <TString.h>
+//#include "Jet.h"
+#include "typedefs.h"
 #include "AnalysisObject.h"
-#include "Jet.h"
-#include <boost/shared_ptr.hpp>
 
 using namespace std;
 using namespace ROOT::Math::VectorUtil;
 
 
 //FORWARD declaration of Jet to avoid infinite recursion
-class Jet;
+//class Jet;class WPtr_Jet;class Ptr_Jet;
 //======================================================
 
 

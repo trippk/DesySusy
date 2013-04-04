@@ -1,22 +1,21 @@
-#ifndef Jet_h
-#define Jet_h
+#ifndef simpleJet_h
+#define simpleJet_h
 #include "Math/VectorUtil.h"
 #include "NtupleTools2_h.h"
 #include <map>
 #include <TString.h>
-#include "AnalysisObject.h"
-#include "genJet.h"
-#include "simpleJet.h"
-#include <boost/shared_ptr.hpp>
-#include "typedefs.h"
+#include "simpleAnalysisObject.h"
+#include "simplegenJet.h"
+
 
 
 using namespace std;
 using namespace ROOT::Math::VectorUtil;
 //FORWARD declaration of GenJet to avoid infinite recursion
-class GenJet;
+class simpleGenJet;
+class Jet;
 
-class Jet: public AnalysisObject {
+class simpleJet: public simpleAnalysisObject {
   
  protected:
   int      genFlavor;
@@ -24,8 +23,9 @@ class Jet: public AnalysisObject {
   double   scaleCorrFactor;
   string   type;
   
-  //weak pointer to prevent circular reference
-  WPtr_GenJet matchedGenJet;
+  simpleGenJet* matchedGenJet;
+  //int matchedGenJet;
+
 
   static map<string, map<string, double> > bJetWP;
   map<string, double>  bJetDisc;
@@ -33,32 +33,26 @@ class Jet: public AnalysisObject {
   double correctionUncertainty_UP;
   double correctionUncertainty_DOWN;
   double jetPt_ShiftedUP;
-
-  friend class simpleJet;
+  
+  friend class Jet;
  public:
   map<string, map<string, double> > GetbJetWP();
 
-  Jet();
-  ~Jet(){}
-  Jet(const int maptotree_In, Ptr_LorentzM momentum_In, const double scaleCorrFactor_In=1., const string type_In="");
-  Jet(const int maptotree_In, LorentzM* const momentum_In, const double scaleCorrFactor_In=1., const string type_In="");
-  Jet(const int maptotree_In, LorentzM const momentum_In, const double scaleCorrFactor_In=1., const string type_In="");
-  Jet(Ptr_Jet copy);
-  Jet(Jet& copy);
+  simpleJet();
+  simpleJet(const int maptotree_In, LorentzM const momentum_In, const double scaleCorrFactor_In=1., const string type_In="");
+  //simpleJet(simpleJet& copy);
+  ~simpleJet();
 
   double BJetDisc(const string key) const;
   int GenFlavor() const;
-  Ptr_GenJet GetPartner();
+  simpleGenJet* GetPartner();
   void Initializer();
-  bool   IsMatch() const;
+  bool IsMatch() const;
   bool IsBJet(const string key="CSV", const double disc_cut=0.679) const ;
-  bool IsBJet(const string key="CSV", const string WP="Medium") const;
-  //  bool IsBJet(char* key="CSV", char* WP);
-  double ScaleCorrFactor()const;
-  virtual void Set(const int maptotree_In, LorentzM* const momentum_In, const double scaleCorrFactor_In=1., const string type_In="");
-  virtual void Set(const int maptotree_In, Ptr_LorentzM momentum_In, const double scaleCorrFactor_In=1., const string type_In="");
-  virtual void Set(const int maptotree_In, LorentzM momentum_In, const double scaleCorrFactor_In=1., const string type_In="");
+  bool IsBJet(const string key, const string WP) const;
 
+  double ScaleCorrFactor()const;
+  virtual void Set(const int maptotree_In, LorentzM momentum_In, const double scaleCorrFactor_In=1., const string type_In="");
   void SetGenFlavor(const int genFlavor_In);
   void SetIsMatch(const bool isMatch_In);
   void SetScaleCorrFactor(const double scr_In);
@@ -68,11 +62,10 @@ class Jet: public AnalysisObject {
   void SetCorrectionUncertainty(const string name, double const value);
   double GetCorrectionUncertainty(const string name);
   double GetJetPt_Shifted(const string name);
-  void SetPartner(Ptr_GenJet GenJet_in);
+  void SetPartner(simpleGenJet* GenJet_in);
   string Type()const;
-  simpleJet makeSimpleJet();
-  
 
+  ClassDef(simpleJet,1)
 };
 
 

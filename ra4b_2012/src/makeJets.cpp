@@ -80,7 +80,6 @@ void makeAllJets(EasyChain* tree, vector<Ptr_Jet>& AllJets){
    dummysharedJet->SetGenFlavor(Jets_genFlavor.at(ijet)); 
    AllJets.push_back(dummysharedJet);
 
-
    //Clarification:
    //When the last Ptr_Jet is deleted, the Jet object is also deleted.
    //However, the pointer to the lorentzM is not a shared pointer
@@ -145,6 +144,7 @@ void makeGoodJets(EasyChain* tree, vector<Ptr_Jet>& AllJets, vector<Ptr_Jet>& go
 
     OK=false;
     int indx = AllJets.at(ijet)->GetIndexInTree();
+
     if(pcp)cout<<"pt,eta, phi and id -->"<<AllJets.at(ijet)->pt()<<" "<<AllJets.at(ijet)->eta()<<" "<<AllJets.at(ijet)->Phi()<<" "<<Jets_ID.at(indx)<<endl;
     jetFlow.keepIf("before cuts in jets", true);
     //
@@ -166,7 +166,7 @@ void makeGoodJets(EasyChain* tree, vector<Ptr_Jet>& AllJets, vector<Ptr_Jet>& go
     
     //cout<<"jets_csv at "<<ijet<<" is "<<Jets_CSV.at(ijet)<<endl;
     
-    AllJets.at(ijet)->SetBJetDisc("CSV", Jets_CSV.at(ijet));
+    AllJets.at(ijet)->SetBJetDisc("CSV", Jets_CSV.at(indx));
 
     //    cout<<"out of SetBJetDisc"<<endl;
     AllJets.at(ijet)->SetID("Loose",1);
@@ -174,7 +174,7 @@ void makeGoodJets(EasyChain* tree, vector<Ptr_Jet>& AllJets, vector<Ptr_Jet>& go
     //
     //
   }//Loop over Jets
-  
+
   //  return AllJets;
   //retun true;
 };
@@ -193,7 +193,7 @@ void makeCleanedJets(vector<Ptr_Jet>& Jets_In, vector<Ptr_Jet>& Jets_Out, vector
 
   static CutSet CrossCleaning("Cleaned Jets");
   CrossCleaning.autodump=true;
-  
+
   if(pcp){
     cout<<endl;
     cout<<"INSIDE makeCleanedJets "<<endl;
@@ -326,12 +326,6 @@ void matchGenJets(EasyChain* tree, vector<Ptr_GenJet>& genJets, vector<Ptr_Jet>&
 	genJets.at(mjet)->SetIsMatch(true);
 	Jets.at(ijet)->SetPartner(genJets.at(mjet));
 	genJets.at(mjet)->SetPartner(Jets.at(ijet));
-
-	double deltaR=ROOT::Math::VectorUtil::DeltaR(Jets.at(ijet)->P4(),genJets.at(mjet)->P4());
-	distmatched->Fill(deltaR);
-	if( fabs(Jets.at(ijet)->Pt() - genJets.at(mjet)->Pt())/ genJets.at(mjet)->Pt()>0.5 ){
-	  distmatched_cut->Fill(deltaR);
-	}
 	//
       }
     }

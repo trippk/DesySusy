@@ -6,6 +6,9 @@
 #include "NtupleTools2.h"
 #include <boost/shared_ptr.hpp>
 #include "typedefs.h"
+#include "subTreeFactory.h"
+
+
 using namespace std;
 using namespace ROOT::Math::VectorUtil;
 
@@ -26,27 +29,7 @@ void Systematics::Reset(){
   sysNumberOfbTags.clear();
 
 }
-  //================================================
-  //typedef boost::shared_ptr<Jet> Ptr_Jet;
-  
 
-  //typedef map<string, vector<Jet*> >::iterator map_it;
-  //prevent memory leaks of the Jet objects here:
-  /*  for (map_it iter=sysJet.begin(); iter != sysJet.end(); ++iter){
-    //cout<<"considering "<<iter->first<<endl;
-    int pos=iter->first.find("_");
-    if (pos==string::npos){
-      //cout<<"    reseting "<<iter->first<<endl;
-      for (int i=0 ; i< (int)(iter->second).size(); ++ i){
-	//cout<<"reseting at "<<i<<" a pointer with adress "<<iter->second.at(i)<<endl;
-	delete((iter->second).at(i));
-      }
-    }
-  */
-  //clear the vector
-  // (iter->second).clear();
-
-  
 
 map<string,bool>& Systematics::GetSysMap(){
   return SysMap;
@@ -68,10 +51,7 @@ void Systematics::AddUncertainty(string sysname, bool sysval){
 }
 
 void Systematics::AddUncertainty(string sysname, TFile* treefile, bool sysval ){
-
-
   this->AddUncertainty(sysname,sysval);
-
   //==CREATE A NEW TREE
   this->AddTree(sysname,treefile);
 }

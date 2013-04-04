@@ -8,7 +8,7 @@
 #include "Nminus1Tree.h"
 #include "anDiLep.h"
 #include "trigStudyTree.h"
-
+#include "defaultTree.h"
 #include <iostream>
 
 class subTreeFactory

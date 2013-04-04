@@ -1,16 +1,16 @@
-#ifndef Particle_h
-#define Particle_h
+#ifndef simpleParticle_h
+#define simpleParticle_h
 
 #include "Math/VectorUtil.h"
 #include "NtupleTools2_h.h"
 #include <map>
 #include <TString.h>
-#include "AnalysisObject.h"
+#include "simpleAnalysisObject.h"
 
 using namespace std;
 using namespace ROOT::Math::VectorUtil;
 
-class Particle : public AnalysisObject {
+class simpleParticle : public simpleAnalysisObject {
   
  protected:
   int       charge;
@@ -19,14 +19,14 @@ class Particle : public AnalysisObject {
   float     relIso;
 
  public:
-  Particle(){
+  simpleParticle(){
     charge=99;
     flavor="undefined";
     particleID=0;
     relIso=-1.;
   }
 
-  ~Particle(){}
+  ~simpleParticle(){}
 
   int Charge() const ;
   string Flavor() const;
@@ -42,11 +42,12 @@ class Particle : public AnalysisObject {
 
   //SET IS OVERLOADED
 /*   virtual void Set(int maptotree_In, LorentzM * momuntum_In); */
-  virtual void Set(int maptotree_In, LorentzM* momuntum_In, int particleID_In, int charge_In, string flavor_In, double relIso_In);
   virtual void Set(int maptotree_In, LorentzM momuntum_In, int particleID_In, int charge_In, string flavor_In, double relIso_In);
-  virtual void Set(int maptotree_In, LorentzM* momuntum_In, int charge_In, double relIso_In);
   virtual void Set(int maptotree_In, LorentzM momuntum_In, int charge_In, double relIso_In);
+  ClassDef(simpleParticle,1);
 };
 
-bool compare_Particle_Pt(Particle* p1, Particle* p2);
+bool compare_Particle_Pt(simpleParticle* p1, simpleParticle* p2);
 #endif
+
+//  LocalWords:  ifndef

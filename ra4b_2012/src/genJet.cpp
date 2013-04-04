@@ -1,7 +1,12 @@
 #include "Math/VectorUtil.h"
 #include "NtupleTools2_h.h"
 #include "genJet.h"
-#include <boost/shared_ptr.hpp>
+
+//#ifndef __CINT__
+//  #include <boost/shared_ptr.hpp>
+//  #include "typedefs.h"
+//#else
+
 
 using namespace std;
 using namespace ROOT::Math::VectorUtil;
@@ -38,3 +43,5 @@ void GenJet::SetPartner(Ptr_Jet matchedDetJet_in){
 
 //return a shared pointer from a weak pointer
 Ptr_Jet GenJet::GetPartner(){return matchedDetJet.lock();}
+
+//#endif

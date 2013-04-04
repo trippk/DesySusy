@@ -1,8 +1,11 @@
 #include "Math/VectorUtil.h"
 #include "NtupleTools2_h.h"
 #include "AnalysisObject.h"
-#include <boost/shared_ptr.hpp>
-#include "typedefs.h"
+//#ifndef __CINT__
+//  #include <boost/shared_ptr.hpp>
+//  #include "typedefs.h"
+//#else
+
 using namespace std;
 using namespace ROOT::Math::VectorUtil;
 
@@ -195,8 +198,10 @@ void AnalysisObject::Set(const int maptotree_In, LorentzM momentum_In){
 void AnalysisObject::SetP4(LorentzM momentum_In){p4=momentum_In;}
 
 
-void AnalsysObject::copyLorentzM(const AnalysisObject* target){
+void AnalysisObject::CopyLorentzM(const AnalysisObject* target){
 
+  hasP4=target->hasP4;
+  ownsP4=target->ownsP4;
   //copies the appropriate structure
   if(!hasP4){
     if(ownsP4){
@@ -212,14 +217,14 @@ void AnalsysObject::copyLorentzM(const AnalysisObject* target){
   }else{
     //create a new object from the target
     p4=target->p4;
-    pp4=&pp4;
+    pp4=&p4;
     shared_pp4.reset();
   }
 }
 
 
-}
 
 
 
+//#endif
 

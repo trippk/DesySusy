@@ -255,7 +255,7 @@ int main(int argc, char** argv){
   bin = config.getInt("lasttagbin",3); // set the lasttagbin i.e 3 to get tag weightings for 0,1,2,3+
   //TagEff tag(WhatSample,WhatSubSample);
   //tag.lastbin(bin);
-
+  
 
 
 

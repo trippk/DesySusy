@@ -79,7 +79,7 @@ void rescaleJets(EasyChain* tree, vector<Ptr_Jet>& Jets_in, Systematics& systema
     
     Ptr_Jet dummyJet_UP(new Jet(Jets_in.at(i)->GetIndexInTree(),dummyLorentz_UP));
     Ptr_Jet dummyJet_DOWN(new Jet(Jets_in.at(i)->GetIndexInTree(),dummyLorentz_DOWN));
-
+    
     //==========STORE IT IN systematics
     systematics.GetsysJet("jetup").push_back(dummyJet_UP);
     systematics.GetsysJet("jetdown").push_back(dummyJet_DOWN);
@@ -219,7 +219,7 @@ void rescaleMET(EasyChain* tree, vector<Jet*>& Jets_in, Systematics& systematics
 void JECUncertainty(Ptr_Jet Jet_in, Systematics& systematics, EasyChain* tree){
 
 
-  extern TH1D* JetUncDiff;
+  //extern TH1D* JetUncDiff;
   // Calculate uncertainty per source and as a total
   double jetpt=Jet_in->Pt();
   double jeteta=Jet_in->Eta();
@@ -251,7 +251,7 @@ void JECUncertainty(Ptr_Jet Jet_in, Systematics& systematics, EasyChain* tree){
   Jet_in->SetCorrectionUncertainty("up",sqrt(sum2_up));
   Jet_in->SetCorrectionUncertainty("down",sqrt(sum2_dw));
 
-  JetUncDiff->Fill((sqrt(sum2_up)-ak5JetPFJecUncPat.at(Jet_in->GetIndexInTree()))/sqrt(sum2_up));
+  //JetUncDiff->Fill((sqrt(sum2_up)-ak5JetPFJecUncPat.at(Jet_in->GetIndexInTree()))/sqrt(sum2_up));
 
   systematics.total->setJetPt(jetpt);
   systematics.total->setJetEta(jeteta);
@@ -398,11 +398,11 @@ void rescaleJetsJER(vector<Ptr_Jet>& Jets, Systematics& systematics){
 
     double ptsmear=newJet_UP->Pt();
 
-    extern vector<TH1D*> JetResPtBins;
-    extern vector<TH1D*> SMfactor_PtBins;
-    extern vector<TH1D*> JetResEtaBins;
-    extern vector<TH1D*> JetResPtBins_smear;
-    extern vector<TH1D*> JetResEtaBins_smear;
+    //extern vector<TH1D*> JetResPtBins;
+    //extern vector<TH1D*> SMfactor_PtBins;
+    //extern vector<TH1D*> JetResEtaBins;
+    //extern vector<TH1D*> JetResPtBins_smear;
+    //extern vector<TH1D*> JetResEtaBins_smear;
  
     int ptbin=-1;
     if(Jets.at(ijet)->Pt()<30){ptbin =0;}
@@ -414,7 +414,9 @@ void rescaleJetsJER(vector<Ptr_Jet>& Jets, Systematics& systematics){
     //if(!(ptbin ==0 || ptbin==1 || ptbin ==2 || ptbin ==3 || ptbin==4)){
     //cout<<"aqui ptbin = "<<ptbin<<" "<<Jets.at(ijet)->Pt()<<endl;
     //}
-    
+
+
+    /*///////////////////////////////////////////////////
     if(Jets.at(ijet)->IsMatch()){ 
       JetResPtBins.at(ptbin)->Fill((ptsmear-ptGen)/ptGen);
       SMfactor_PtBins.at(ptbin)->Fill((ptsmear-ptjet)/ptjet);
@@ -435,9 +437,11 @@ void rescaleJetsJER(vector<Ptr_Jet>& Jets, Systematics& systematics){
     if(Jets.at(ijet)->IsMatch()){ 
       JetResEtaBins.at(etabin)->Fill((ptsmear-ptjet)/ptGen);
     }else{
-      //JetResEtaBins_smear.at(etabin)->Fill((ptsmear-ptjet)/ptjet);
+      JetResEtaBins_smear.at(etabin)->Fill((ptsmear-ptjet)/ptjet);
     }
 
+
+    *////////////////////////////////////////////////////////
   }
 }
 
@@ -509,6 +513,10 @@ void ShiftJetEnergyScale(EasyChain* tree, Systematics& systematics, vector<Ptr_J
   rescaleMET(tree,systematics.GetsysJet("jetup"),systematics, "jetup");
   rescaleMET(tree,systematics.GetsysJet("jetdown"),systematics, "jetdown");
   //======FEED THE RESCALED JETS TO makeGoodJets
+  //cout<<"index in tree before the critical call"<<endl;
+  //for (int ijet=0;ijet<systematics.GetsysJet("jetup").size();++ijet){
+  //cout<<"the index is "<<systematics.GetsysJet("jetup").at(ijet)->GetIndexInTree()<<endl;
+  //}
   makeGoodJets(tree,systematics.GetsysJet("jetup"),systematics.GetsysJet("jetup_good"));
   makeGoodJets(tree,systematics.GetsysJet("jetdown"),systematics.GetsysJet("jetdown_good"));
   //
@@ -541,12 +549,10 @@ void ShiftClustersEnergyScale(EasyChain* tree, Systematics& systematics, vector<
   //
 }
 
-void JetResolutionSmearing(EasyChain* tree, Systematics& systematics, vector<Ptr_Jet>& jets, vector<Muon*>& Muons, vector<Electron*>& Electrons){
-  
-  if( systematics.GetSysMap()["jetResup"]){
-
-    string sysName=0;
-    for (isys=0;isys<3;++isys){
+void JetResolutionSmearing(EasyChain* tree, Systematics& systematics, vector<Ptr_Jet>& AllJets, vector<Muon*>& pMuons, vector<Electron*>& pElectrons){
+   if( systematics.GetSysMap()["jetResup"]){
+     string sysName="";
+     for (int isys=0;isys<3;++isys){
       if(isys==0){sysName="jetRescentral";}
       else if(isys==1){sysName="jetResup";}
       else if(isys==2){sysName="jetResdown";}
@@ -565,9 +571,61 @@ void JetResolutionSmearing(EasyChain* tree, Systematics& systematics, vector<Ptr
       systematics.CalculateNumberOfbTags(sysName,sysName+"_good_clean");
     }
   }
+}
+
+
+void JetUncertaintyInitialize(Systematics& systematics){
+
+  ConfigReader config;
+
+  //===================================================================
+  //SYSTEMATIC UNCERTAINTIES
+  //===================================================================
+  
+  //=============INITIALIZE THE JETUncertainty object
+  typedef boost::shared_ptr<JetCorrectorParameters> JetCorrectorParam_Ptr;
+  // Instantiate uncertainty sources
+  const int nsrc = 16;
+  const char* srcnames[nsrc] =
+    {"Absolute", "HighPtExtra", "SinglePion", "Flavor", "Time",
+     "RelativeJEREC1", "RelativeJEREC2", "RelativeJERHF",
+     "RelativeStatEC2", "RelativeStatHF", "RelativeFSR",
+     "PileUpDataMC", "PileUpOOT", "PileUpPt", "PileUpBias", "PileUpJetRate"};
+
+  string jetuncfile;
+  for (int isrc = 0; isrc < nsrc; isrc++) {
+    const char *name = srcnames[isrc];
+    bool isBatchJob=config.getBool("isBatchJob",false);
+    std::string test1="src/Summer12_V2_DATA_AK5PF_UncertaintySources.txt";
+    std::string test2="../../Summer12_V2_DATA_AK5PF_UncertaintySources.txt";
+    
+    if(!isBatchJob){
+      jetuncfile=test1;
+    }else{
+      jetuncfile=test2;
+    }
+
+    JetCorrectorParameters *p;
+    if (systematics.IsEnabled()){
+      p= new JetCorrectorParameters(jetuncfile, name);
+      systematics.vsrc.push_back(new JetCorrectionUncertainty(*p));
+    }
+  }
+
+  if(systematics.IsEnabled()){
+    systematics.total = new JetCorrectionUncertainty(*(new JetCorrectorParameters(jetuncfile, "Total")));
+  }
+
 
 
 }
+
+
+
+
+
+
+
 
 
 

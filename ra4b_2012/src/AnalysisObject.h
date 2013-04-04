@@ -8,10 +8,11 @@
 #include <boost/shared_ptr.hpp>
 #include "typedefs.h"
 
+//class LorentzM;
+
 using namespace std;
 using namespace ROOT::Math::VectorUtil;
 
-//typedef boost::shared_ptr<LorentzM> Ptr_LorentzM;
 
 class AnalysisObject {
   
@@ -19,6 +20,7 @@ protected:
 
   LorentzM  p4;
   LorentzM* pp4; 
+  //boost::shared_ptr<LorentzM> shared_pp4;
   Ptr_LorentzM shared_pp4;
   std::map<std::string, bool> id;
   int       maptotree;
@@ -38,6 +40,7 @@ public:
   bool IsID(const string & id) const;
   LorentzM P4() const;
   LorentzM* GetPointerP4() const;
+  bool OwnsP4();
 
   double Pt() const;
   double pt() const;
@@ -53,6 +56,7 @@ public:
   double py() const;
   double Pz() const;
   double pz() const;
+  //
   void SetID(const string & key, bool value);
   void Set(const int maptotree_In,  LorentzM * const momentum_In);
   void Set(const int maptotree_In, Ptr_LorentzM momentum_In);
@@ -60,6 +64,9 @@ public:
   void SetOwnedPointer(const int maptotree_In, LorentzM* const momentum_In);
   void SetExternalPointer(const int maptotree_In, LorentzM* const momentum_In);
   //void SetP4(const LorentzM momentum_In){p4= };
+
   void SetP4(LorentzM momentum_In);
+
 };
+
 #endif
