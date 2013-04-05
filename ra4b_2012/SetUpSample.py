@@ -8,7 +8,18 @@ def SetUpSampleAndScript(Sample,SubSample,FilesDir,ConfigFile,nFiles):
     command='runOnAll'
     Executable='myAnalysis'
     optclean='cleanUp'
-    topdir='./'
+
+    user=com.getoutput('whoami')
+    
+    #Change these lines if you want to write the output somewhere else.
+    # The 'user' will always be different and so we can't write in
+    # somebody else's space.
+    #
+    #     
+    if user=='eron':
+        topdir='/scratch/hh/dust/naf/cms/user/eron/RA4b/nTuple13_v1/'
+    else:
+        topdir='./'
     #
     #
     #
