@@ -344,7 +344,7 @@ double makeHT(vector<Ptr_Jet>& Jets){
 
   double HT=0;
   for (int ijet(0); ijet<Jets.size();++ijet){
-    HT+=Jets.at(ijet)->Pt():
+    HT+=Jets.at(ijet)->Pt();
   }
   return HT;
 }
@@ -591,7 +591,7 @@ void makeGoodJets(EasyChain* tree, vector<Jet*>& AllJets, vector<Jet*>& goodJets
       if (!OK)continue;
     }
     
-    AllJets.at(ijet)->SetBJetDisc("CSV", Jets_CSV.at(ijet));
+    AllJets.at(ijet)->SetBJetDisc("CSV", Jets_CSV.at(indx));
     AllJets.at(ijet)->SetID("Loose",1);
     goodJets.push_back(AllJets.at(ijet));
     //

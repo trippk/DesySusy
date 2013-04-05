@@ -22,8 +22,8 @@ class Muon: public Particle {
 
   ~Muon(){}
 
-  void Set(int maptotree_In, LorentzM& momentum_In, int particleID_In, int charge_In, string flavor_In, double relIso_In);
-  void Set(int maptotree_In, LorentzM& momentum_In, int charge_In, double relIso_In);
+  void Set(int maptotree_In, LorentzM* momentum_In, int particleID_In, int charge_In, string flavor_In, double relIso_In);
+  void Set(int maptotree_In, LorentzM* momentum_In, int charge_In, double relIso_In);
 
 
 };

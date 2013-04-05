@@ -32,7 +32,7 @@ void makeCleanedJets(vector<Ptr_Jet>& Jets_In, vector<Ptr_Jet>& Jets_Out, vector
 void makeCleanedJets(vector<Ptr_Jet>& Jets_In, vector<Ptr_Jet>& Jets_Out, vector<Muon*>& Muons, vector<Electron*>& Electrons);
 void makeAllGenJets(EasyChain* tree, vector<Ptr_GenJet>& genjets);
 void matchGenJets(EasyChain* tree,vector<Ptr_GenJet>& genjets, vector<Ptr_Jet>& Jets);
-void makeHT(vector<Ptr_Jet>& Jets);
+double makeHT(vector<Ptr_Jet>& Jets);
 //
 //
 #endif

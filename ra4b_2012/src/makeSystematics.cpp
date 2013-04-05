@@ -541,12 +541,12 @@ void ShiftClustersEnergyScale(EasyChain* tree, Systematics& systematics, vector<
   //
 }
 
-void JetResolutionSmearing(EasyChain* tree, Systematics& systematics, vector<Ptr_Jet>& jets, vector<Muon*>& Muons, vector<Electron*>& Electrons){
+void JetResolutionSmearing(EasyChain* tree, Systematics& systematics, vector<Ptr_Jet>& AllJets, vector<Muon*>& Muons, vector<Electron*>& Electrons){
   
   if( systematics.GetSysMap()["jetResup"]){
 
     string sysName=0;
-    for (isys=0;isys<3;++isys){
+    for (int isys=0;isys<3;++isys){
       if(isys==0){sysName="jetRescentral";}
       else if(isys==1){sysName="jetResup";}
       else if(isys==2){sysName="jetResdown";}
@@ -558,7 +558,7 @@ void JetResolutionSmearing(EasyChain* tree, Systematics& systematics, vector<Ptr
       //======FEED THE RESCALED JETS TO makeGoodJets
       makeGoodJets(tree,systematics.GetsysJet(sysName),systematics.GetsysJet(sysName+"_good"));
       //======CLEAN THEM
-      makeCleanedJets(systematics.GetsysJet(sysName+"_good"),systematics.GetsysJet(sysName+"_good_clean"),pMuons,pElectrons);
+      makeCleanedJets(systematics.GetsysJet(sysName+"_good"),systematics.GetsysJet(sysName+"_good_clean"),Muons,Electrons);
       //=====GET THE NEW HT
       rescaleHT(systematics.GetsysJet(sysName+"_good_clean"), systematics, sysName);
       //======NUMBER OF BTAGS
