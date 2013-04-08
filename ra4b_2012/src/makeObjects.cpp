@@ -219,7 +219,8 @@ int main(int argc, char** argv){
   bool OK=false;
 
   //===========================================
-  bool turntriggersoff=config.getBool("TurnTriggersOff",false);
+  bool turntriggersoff=config.getBool("turntriggersoff",false);
+  cout<<"dafuck"<<" "<<turntriggersoff<<endl;
   if(turntriggersoff){
     cout<<"-----------TURNTRIGGERSOFF IS true!!-----------"<<endl;
     if(isData){
@@ -335,12 +336,11 @@ int main(int argc, char** argv){
 
 
 
-
-
     //====================================================================
     // APPLYING TRIGGERS
     //====================================================================
     if(!turntriggersoff ){
+      cout<<"hi!"<<endl;
       OK = triggers_RA4b(tree, triggernames,EventWeight);
       if(pcp)cout<<"check point triggers called"<<endl;
       if( !globalFlow.keepIf("triggers", OK )  && quick ) continue;    
