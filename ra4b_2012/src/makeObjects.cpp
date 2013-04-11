@@ -148,8 +148,9 @@ int main(int argc, char** argv){
   //======================================================
   //pileUp Initialization
   //======================================================
-  pileUpInfo pileUp;
-  if (!isData){ pileUp.Initialize(mySampleInfo);}
+  pileUpInfo pileUp(mySampleInfo);
+
+  //if (!isData){ pileUp.Initialize(mySampleInfo);}
   double InitialEventWeight=1.0;
 
 
@@ -267,7 +268,7 @@ int main(int argc, char** argv){
   static bool doSystematics=config.getBool("doSystematics",true);
 
   Systematics systematics;
-  if (!quick && doSystematics){
+  if (!quick && doSystematics && !isData){
     systematics.AddUncertainty((string)"jetup");
     systematics.AddUncertainty((string)"jetdown");
     systematics.AddUncertainty((string)"clustersup");
@@ -333,6 +334,7 @@ int main(int argc, char** argv){
 
     //========== PILE UP RW
     if(!isData){
+      cout<<"getting it!"<<endl;
       pileUp.RescaleWeight(tree,EventWeight,"central");
       CutSet::global_event_weight  = EventWeight;
     }
@@ -536,4 +538,6 @@ int main(int argc, char** argv){
 
   }
 
+  treeFile->Write();
+  treeFile->Close();
 }
