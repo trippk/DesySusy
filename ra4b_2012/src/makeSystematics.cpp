@@ -76,10 +76,13 @@ void rescaleJets(EasyChain* tree, vector<Ptr_Jet>& Jets_in, Systematics& systema
     *dummyLorentz_DOWN *=(1-Jets_in.at(i)->GetCorrectionUncertainty("down"));
     
     //=========CONSTRUCT THE NEW JET OBJECT
-    
+    //it now will co-own the dummyLorentz
     Ptr_Jet dummyJet_UP(new Jet(Jets_in.at(i)->GetIndexInTree(),dummyLorentz_UP));
     Ptr_Jet dummyJet_DOWN(new Jet(Jets_in.at(i)->GetIndexInTree(),dummyLorentz_DOWN));
-    
+    dummyJet_UP->copyJetStuff(Jets_in.at(i).get());
+    dummyJet_DOWN->copyJetStuff(Jets_in.at(i).get());
+    //cout<<"check "<<dummyJet_UP->BJetDisc("CSV")<<endl;
+    //Ptr  dummyJet_UP(new Jet(Jets_in.at(i)); 
     //==========STORE IT IN systematics
     systematics.GetsysJet("jetup").push_back(dummyJet_UP);
     systematics.GetsysJet("jetdown").push_back(dummyJet_DOWN);

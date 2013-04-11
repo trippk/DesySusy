@@ -44,4 +44,19 @@ void GenJet::SetPartner(Ptr_Jet matchedDetJet_in){
 //return a shared pointer from a weak pointer
 Ptr_Jet GenJet::GetPartner(){return matchedDetJet.lock();}
 
+
+
+
+/*
+simpleGenJet GenJet::makeSimpleGenJet(){
+  //it makes a simpleJet out of this
+  
+  simpleGenJet dummySimpleJet(maptotree,p4);
+  dummySimpleJet.isMatch=isMatch;
+  dummySimpleJet.type=type;
+  dummySimpleJet.genFlavor=genFlavor;
+    
+  return dummySimpleJet;
+}
 //#endif
+*/

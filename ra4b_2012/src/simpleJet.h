@@ -6,15 +6,14 @@
 #include <TString.h>
 #include "simpleAnalysisObject.h"
 #include "simplegenJet.h"
-
-
-
 using namespace std;
 using namespace ROOT::Math::VectorUtil;
 //FORWARD declaration of GenJet to avoid infinite recursion
-class simpleGenJet;
-class Jet;
+//class simpleGenJet;
 
+
+
+class Jet;
 class simpleJet: public simpleAnalysisObject {
   
  protected:
@@ -24,6 +23,8 @@ class simpleJet: public simpleAnalysisObject {
   string   type;
   
   simpleGenJet* matchedGenJet;
+
+
   //int matchedGenJet;
 
 

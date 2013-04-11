@@ -45,13 +45,6 @@ defaultTree::defaultTree(TFile* treefile, TDirectory* indir){
 
 void defaultTree::Fill(EventInfo* info, EasyChain* tree, vector<Muon*>& muons_in, vector<Electron*>& electrons_in, vector<Jet*>& jets_in, LorentzM& met){
 
-
-  //if the jet collection is empty, then its because the default should be used
-  //  if(!jets_in.empty()){
-  //  }
-
-
-
   el->clear();
   mu->clear();
   Jets->clear();

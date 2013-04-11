@@ -8,7 +8,7 @@
 //#include "Jet.h"
 #include "typedefs.h"
 #include "AnalysisObject.h"
-
+#include "simplegenJet.h"
 using namespace std;
 using namespace ROOT::Math::VectorUtil;
 
@@ -61,7 +61,7 @@ class GenJet: public AnalysisObject {
   void SetPartner(Ptr_Jet Jet_in);
   //boost::shared_ptr<Jet> GetPartner();
   Ptr_Jet GetPartner();
-
+  //simpleGenJet makeSimpleGenJet();
 };
 
 #endif

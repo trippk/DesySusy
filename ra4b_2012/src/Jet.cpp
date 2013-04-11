@@ -47,7 +47,22 @@ Jet::Jet(const int maptotree_In, LorentzM const momentum_In, const double scaleC
 //COPY CONSTUCTOR
 Jet::Jet(Ptr_Jet copy){
   if (bJetWP.size() == 0)SetWP();
-  genFlavor=copy->genFlavor;
+  this->AnalysisObject::CopyLorentzM(copy.get());
+  this->copyJetStuff(copy.get());
+}
+
+
+Jet::Jet(Jet& copy){
+  //COPY CONSTUCTOR WITH THE OBJECT
+  if (bJetWP.size() == 0)SetWP();
+  this->AnalysisObject::CopyLorentzM(&copy);
+  this->copyJetStuff(copy);
+}
+
+
+void Jet::copyJetStuff(Jet* copy){
+  maptotree=copy->maptotree;
+  genFlavor=copy->genFlavor; 
   isMatch=copy->isMatch;
   bJetDisc=copy->bJetDisc;
   correctionUncertainty_UP=copy->correctionUncertainty_UP;
@@ -56,34 +71,11 @@ Jet::Jet(Ptr_Jet copy){
   id=copy->id;
   scaleCorrFactor=copy->scaleCorrFactor;
   type=copy->type;
-  maptotree=copy->maptotree;
-  this->AnalysisObject::CopyLorentzM(copy.get());
 }
 
-
-Jet::Jet(Jet& copy){
-  //COPY CONSTUCTOR WITH THE OBJECT
-  if (bJetWP.size() == 0)SetWP();
-  genFlavor=copy.genFlavor;
-  isMatch=copy.isMatch;
-  bJetDisc=copy.bJetDisc;
-  correctionUncertainty_UP=copy.correctionUncertainty_UP;
-  correctionUncertainty_DOWN=copy.correctionUncertainty_DOWN;
-  matchedGenJet=copy.matchedGenJet;
-  id=copy.id;
-  scaleCorrFactor=copy.scaleCorrFactor;
-  type=copy.type;
-  this->AnalysisObject::CopyLorentzM(&copy);
-  maptotree=copy.maptotree;
+void Jet::copyJetStuff(Jet& copy){
+  this->copyJetStuff(&copy);
 }
-
-
-
-
-
-
-
-
 
 
 
@@ -111,9 +103,12 @@ string Jet::Type()const           {return type;};
 bool   Jet::IsBJet(const string key, const double disc_cut) const {
   //cout<<"calling is bjet with the disc_cut = "<<disc_cut<<endl;
   //Find disc value in bJetDisc
+  //cout<<"first"<<endl;
   map<string, double>::const_iterator itKey = bJetDisc.find(key);
   if (itKey == bJetDisc.end()) {
     std::cout<<"Btagging discriminator not found!"<<std::endl;
+    cout<<"bJetDisc has size "<<bJetDisc.size()<<endl;
+    cout<<"I was looking for "<<key<<endl;
     return false;
   }
   else {
@@ -125,14 +120,16 @@ bool   Jet::IsBJet(const string key, const double disc_cut) const {
 
 
 bool Jet::IsBJet(const string key, const string WP) const{
-
   //Find the disc cut in the bJetWP table
   map<string, map<string, double> >::const_iterator itKey = bJetWP.find(key);
   if (itKey != bJetWP.end()) {
     map<string, double>::const_iterator itWP = itKey->second.find(WP);
+    //cout<<"itWP found = "<<itWP->second<<endl;
     //If here, found disc cut. Compare with disc value.
 
     if (itWP != itKey->second.end()) return IsBJet(key, itWP->second);
+  }else{
+    cout<<"btagging itkey not found in bJetWP!"<<endl;
   }
 
   //If here the key or WP were not stored in bJetWP

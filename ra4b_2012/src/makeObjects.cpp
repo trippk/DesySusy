@@ -241,7 +241,23 @@ int main(int argc, char** argv){
 
 
 
-
+  //==============SUBTREE
+  string replacestring=".root";
+  string treeFileName="";
+  int pos = outname_string.find(replacestring);
+  size_t thelength=replacestring.length();
+  if (pos != string::npos){
+    treeFileName= outname_string.replace(pos,thelength,"_tree.root");
+  }
+  TFile *treeFile=0;
+  subTree* SubTree=0;
+  bool doSubTree=config.getBool("doSubTree",true);
+  if(doSubTree){
+    treeFile=TFile::Open((TString)treeFileName,"RECREATE");
+    TString treeType = config.getTString("treeType","objectsTree"); 
+    SubTree= subTreeFactory::NewTree(treeType,treeFile,(string)"");
+  }
+  //==========================================
 
 
 
@@ -279,7 +295,7 @@ int main(int argc, char** argv){
   //=============================================================================
   //=============================================================================
 
-  //N=1000;
+  N=1000;
   cout<<"N? "<<N<<endl;
   for(int i=0;i<N;++i){
     quick=false;
@@ -340,7 +356,6 @@ int main(int argc, char** argv){
     // APPLYING TRIGGERS
     //====================================================================
     if(!turntriggersoff ){
-      cout<<"hi!"<<endl;
       OK = triggers_RA4b(tree, triggernames,EventWeight);
       if(pcp)cout<<"check point triggers called"<<endl;
       if( !globalFlow.keepIf("triggers", OK )  && quick ) continue;    
@@ -426,8 +441,10 @@ int main(int argc, char** argv){
     vector<Ptr_Jet> AllJets;
     vector<Ptr_Jet> GoodJets;
     vector<Ptr_Jet> CleanedJets;
+    vector<Jet*> AllpJets;
     makeAllJets(tree,AllJets);
     for(int ijet = 0; (int)ijet<AllJets.size(); ijet++){
+      AllpJets.push_back(AllJets.at(ijet).get());
     }
     makeGoodJets(tree,AllJets,GoodJets);
     makeCleanedJets( GoodJets, CleanedJets, pMuons, pElectrons);
@@ -513,8 +530,10 @@ int main(int argc, char** argv){
 
 
     //WRITE THE OBJECTS HERE
- 
-    //return 0;
+     if(!isData){
+      SubTree->Fill(&info,tree,pMuons,pElectrons,AllpJets,PFmet);
+    }
+
   }
 
 }

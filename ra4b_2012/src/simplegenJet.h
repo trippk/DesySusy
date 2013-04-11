@@ -1,16 +1,15 @@
-#ifndef genJet_h
-#define genJet_h
+#ifndef simplegenJet_h
+#define simplegenJet_h
 
 #include "Math/VectorUtil.h"
 #include "NtupleTools2_h.h"
 #include <map>
 #include <TString.h>
-//#include "Jet.h"
+//#include "simpleJet.h"
 #include "simpleAnalysisObject.h"
 
 using namespace std;
 using namespace ROOT::Math::VectorUtil;
-
 
 //FORWARD declaration of Jet to avoid infinite recursion
 //class Jet;class WPtr_Jet;class Ptr_Jet;
@@ -61,6 +60,7 @@ class simpleGenJet: public simpleAnalysisObject {
   //boost::shared_ptr<Jet> GetPartner();
   simpleJet* GetPartner();
 
+  friend class GenJet;
 };
 
 #endif

@@ -45,7 +45,9 @@ class Jet: public AnalysisObject {
   Jet(const int maptotree_In, LorentzM const momentum_In, const double scaleCorrFactor_In=1., const string type_In="");
   Jet(Ptr_Jet copy);
   Jet(Jet& copy);
-
+  void copyJetStuff(Jet&);
+  void copyJetStuff(Jet*);
+  
   double BJetDisc(const string key) const;
   int GenFlavor() const;
   Ptr_GenJet GetPartner();

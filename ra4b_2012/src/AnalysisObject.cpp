@@ -195,7 +195,10 @@ void AnalysisObject::Set(const int maptotree_In, LorentzM momentum_In){
   pp4=&p4;
   maptotree=maptotree_In;
 }
-void AnalysisObject::SetP4(LorentzM momentum_In){p4=momentum_In;}
+void AnalysisObject::SetP4(LorentzM momentum_In){
+  p4=momentum_In;
+  pp4=&p4;
+}
 
 
 void AnalysisObject::CopyLorentzM(const AnalysisObject* target){

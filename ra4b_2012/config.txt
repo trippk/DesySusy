@@ -9,4 +9,4 @@ SampleName = TTJets
 SubSampleName = SUMMER12
 Estimation = RA4b-mu
 Tail = histo
-treeType = default
+treeType = objectsTree

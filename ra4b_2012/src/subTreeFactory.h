@@ -9,6 +9,7 @@
 #include "anDiLep.h"
 #include "trigStudyTree.h"
 #include "defaultTree.h"
+#include "objectsTree.h"
 #include <iostream>
 
 class subTreeFactory
@@ -122,6 +123,19 @@ class subTreeFactory
 	return new trigStudyTree;
       }
     }
+
+    if(description == "objectsTree") {
+      std::cout<<"objectsTree will be filled."<<std::endl;
+      if (tfile!=0){
+	return new objectsTree(tfile, dir);
+      }else{
+	return new objectsTree;
+      }
+    }
+
+
+
+
     else{
       std::cout<<"No matching for subTreeType: defaultTree will be used"<<std::endl;
     }

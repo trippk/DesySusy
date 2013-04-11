@@ -64,6 +64,7 @@ void makeAllJets(EasyChain* tree, vector<Ptr_Jet>& AllJets){
  vector<LorentzM>&  Jets_p4 = tree->Get(&Jets_p4, "ak5JetPFCorrectedP4Pat");
  vector<float>&     Jets_CorrFactor = tree->Get(&Jets_CorrFactor, "ak5JetPFCorrFactorPat");
  vector<int>&       Jets_genFlavor = tree->Get(&Jets_genFlavor, "ak5JetPFgenJetFlavourPat");  
+ vector<float>&     Jets_CSV = tree->Get(&Jets_CSV, "ak5JetPFCombinedSecondaryVertexBJetTagsPat");
 
 
  for(int ijet = 0; ijet<Jets_p4.size(); ijet++){  
@@ -73,11 +74,15 @@ void makeAllJets(EasyChain* tree, vector<Ptr_Jet>& AllJets){
    //new normal shared_pointer-to-jet using a normal pointer-to-LorentzM (so that the jet does not
    //own the LorentzM)
 
+   //Set the discriminator:
+   //AllJets.at(ijet)->SetBJetDisc("CSV", Jets_CSV.at(indx));
+   
    //========create the shared_ptr
    Ptr_Jet dummysharedJet(new Jet(ijet,&(Jets_p4.at(ijet)), Jets_CorrFactor.at(ijet), "AK5")); 
-
    //======Set the flavour
    dummysharedJet->SetGenFlavor(Jets_genFlavor.at(ijet)); 
+   //======set discriminator
+   dummysharedJet->SetBJetDisc("CSV", Jets_CSV.at(ijet));
    AllJets.push_back(dummysharedJet);
 
    //Clarification:
@@ -110,7 +115,6 @@ void makeGoodJets(EasyChain* tree, vector<Ptr_Jet>& AllJets, vector<Ptr_Jet>& go
 
   //  vector<LorentzM>&  Jets_p4 = tree->Get(&Jets_p4, "ak5JetPFCorrectedP4Pat");
   vector<int>&       Jets_ID = tree->Get(&Jets_ID,"ak5JetPFPFJetIDloosePat");
-  vector<float>&     Jets_CSV = tree->Get(&Jets_CSV, "ak5JetPFCombinedSecondaryVertexBJetTagsPat");
   vector<float>&     Jets_CSVMVA = tree->Get(&Jets_CSVMVA, "ak5JetPFCombinedSecondaryVertexMVABJetTagsPat");
   unsigned int Event   = tree->Get(Event,"event");    
   
@@ -165,8 +169,8 @@ void makeGoodJets(EasyChain* tree, vector<Ptr_Jet>& AllJets, vector<Ptr_Jet>& go
     }
     
     //cout<<"jets_csv at "<<ijet<<" is "<<Jets_CSV.at(ijet)<<endl;
-    
-    AllJets.at(ijet)->SetBJetDisc("CSV", Jets_CSV.at(indx));
+
+
 
     //    cout<<"out of SetBJetDisc"<<endl;
     AllJets.at(ijet)->SetID("Loose",1);
