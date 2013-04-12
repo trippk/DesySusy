@@ -66,28 +66,6 @@ using namespace ROOT::Math::VectorUtil;
 //===================================================================
 
 bool pcp = false; //Set to true for debugging.
-TH1D* JetUncDiff= new TH1D("JetUncDiff","diff in jet uncertainty",50,-0.02,0.02);
-
-vector<TH1D*> JetResPtBins;
-vector<TH1D*> SMfactor_PtBins;
-vector<TH1D*> JetResEtaBins;
-vector<TH1D*> JetResPtBins_smear;
-vector<TH1D*> JetResEtaBins_smear;
-TH1D* distmatched;
-TH1D* distmatched_cut;
-
-//for (int k=0;k<5;++k){
-//  JetResPtBins.push_back(new TH1D("JetRes_PtBin"+(TString)Form("%d",k),"jet Res Pt bin "+(TString)Form("%d",k),40,-0.2,0.2));
-//  JetResEtaBins.push_back(new TH1D("JetRes_EtaBin"+(TString)Form("%d",k),"jet Res Eta bin "+(TString)Form("%d",k),40,-0.2,0.2));
-//  JetResPtBins_smear.push_back(new TH1D("JetRes_PtBin"+(TString)Form("%d",k)+"_smear","jet Res Pt bin "+(TString)Form("%d",k),40,-0.2,0.2));
-//  JetResEtaBins_smear.push_back(new TH1D("JetRes_EtaBin"+(TString)Form("%d",k)+"_smear","jet Res Eta bin "+(TString)Form("%d",k),40,-0.2,0.2));
-// }
-
-//Globals to remove
-//bool checkthisevent=false;
-//vector<string> triggernames;
-//vector<string> triggernames_short;
-//double EventWeight;
 
 
 
@@ -137,32 +115,8 @@ int main(int argc, char** argv){
   if (pos != string::npos){
     treeFileName= outname_string.replace(pos,thelength,"_tree.root");
   }
-  //
-
-  //==============SUBTREE
-  //
-  TFile *treeFile=0;
-  subTree* SubTree=0;
-  bool doSubTree=config.getBool("doSubTree",true);
-  if(doSubTree){
-    treeFile=TFile::Open((TString)treeFileName,"RECREATE");
-    TString treeType = config.getTString("treeType","default"); 
-    SubTree= subTreeFactory::NewTree(treeType,treeFile,(string)"");
-  }
-  //==========================================
-
-
-  //==============SUBTREE FOR THE TRIGGER STUDY
-  bool doTrigStudy=config.getBool("doTrigStudy",true);
-  trigStudyTree* TrigStudyTree=0;
-  if(TrigStudyTree){
-    if(!treeFile) treeFile=TFile::Open((TString)treeFileName,"RECREATE");
-    TrigStudyTree = (trigStudyTree*)subTreeFactory::NewTree("trigStudyTree",treeFile,(string)"");
-  }
-  //===========================================
-
   outfile->cd();  
-
+  //=================================================================
 
 
 
@@ -189,75 +143,12 @@ int main(int argc, char** argv){
   //===========================================================================
 
 
-
   //===========================================================================
   // SET THE CONDITIONS FOR THE SAMPLE AND ESTIMATION
   //===========================================================================
   SetOfCuts myCuts;
   SetConditions_RA4b(mySampleInfo);
   //===========================================================================
-
-
-  if(pcp)cout<<"going to set the triggers "<<endl;
-  //===========================================================================
-  // SET THE TRIGGERS
-  //===========================================================================
-  vector<const char*> triggernames;
-  SetTriggers_RA4b(mySampleInfo,triggernames);
-  //===========================================================================
-  if(pcp)cout<<"out of set the triggers "<<endl;
-  if(pcp)cout<<"check point 1"<<endl;
-
-
-
-
-
-
-
-  //======================================================
-  //WEIGHTS
-  //======================================================
-
-
-
-  //PU
-
-  bool oldpuw = false; //the obselete method and values
-  //if(WhatSample=="TTJets")oldpuw=true;
-
-  vector<double> PUmc;
-  vector<double> PUdata;
-  vector<double> PUdata_up;
-  vector<double> PUdata_down;
-  int nobinsmc=0;
-  int nobinsdata=0;
-  int nobinsdata_up=0;
-  int nobinsdata_down=0;
-  if(!isData && !oldpuw){
-    nobinsmc = config.getDouble("PU_"+WhatSample+"_"+WhatSubSample+"_mc",PUmc," ");
-    nobinsdata = config.getDouble("PU_data",PUdata," ");
-    nobinsdata = config.getDouble("PU_data_up",  PUdata_up  ," ");
-    nobinsdata = config.getDouble("PU_data_down",PUdata_down," ");
-  }
-  else if(!isData && oldpuw){
-    nobinsmc = config.getDouble("oldPU_"+WhatSample+"_"+WhatSubSample+"_mc",PUmc," ");
-   } 
-
-  if(nobinsmc!=nobinsdata && !oldpuw && !isData){
-    cout << "problem in pu inf in para_config - number of bins in MC PU dist is different than data!" << endl;
-    return 0;
-  }
-
-  double InitialEventWeight=1.0;             //Event weight do to Lumi and xsec.
-
-  //Tag
-  int bin=0;
-  bin = config.getInt("lasttagbin",3); // set the lasttagbin i.e 3 to get tag weightings for 0,1,2,3+
-  //TagEff tag(WhatSample,WhatSubSample);
-  //tag.lastbin(bin);
-  
-
-
 
 
   //keep track of the weights
@@ -328,92 +219,7 @@ int main(int argc, char** argv){
   CutSet globalFlow("global flow");
   CutSet::setTFile(outfile);
   CutSet* p2globalFlow= &globalFlow;
-  CutSet systematicsFlow("systematics flow");
   //===========================================
-
-    
-
-  //===========================================
-  bool turntriggersoff=config.getBool("TurnTriggersOff",false);
-  if(turntriggersoff){
-    cout<<"-----------TURNTRIGGERSOFF IS true!!-----------"<<endl;
-    if(isData){
-      cout<<endl;
-      cout<<endl;
-      cout<<"--------NO TRIGGERS, NO DATA------------------"<<endl;
-      cout<<endl;
-      cout<<endl;
-      exit(1);
-    }
-  }
-  //===========================================
-
-
-  distmatched=new TH1D("distmatched","distance",40,0.0,0.6);
-  distmatched_cut=new TH1D("distmatched_cut","distance",40,0.0,0.6);
-
-  string smearing = config.getString("JetRes_smearing","mixed");
-  cout<<"the smearing is "<<smearing<<" "<<endl;
-  //  cout<<smearing==(string)"mixed"<<endl;
-
-  TH1D* EW_AfterTrigger= new TH1D("EW_AfterTrigger","Event weight after the trigger",30,0.0,100.0);
-  TH1D* EW_AfterPU=new TH1D("EW_AfterPU","Event Weight after PU RW",100,0.0,10.0);
-  TH1D* checkMET= new TH1D("checkMET","check of the MET",30,0.0,300.0);
-  
-  vector<TH1D*> JetResPtBins_Matched;  
-  vector<TH1D*> JetResEtaBins_Matched;  
-  for (int k=0;k<5;++k){
-    JetResPtBins.push_back(new TH1D("JetRes_PtBin"+(TString)Form("%d",k),"jet Res Pt bin "+(TString)Form("%d",k),40,-1.,1.5));
-    SMfactor_PtBins.push_back(new TH1D("SMfactor_PtBin"+(TString)Form("%d",k),"jet Res Pt bin "+(TString)Form("%d",k),40,-0.2,0.2));
-    JetResEtaBins.push_back(new TH1D("JetRes_EtaBin"+(TString)Form("%d",k),"jet Res Eta bin "+(TString)Form("%d",k),40,-1.5,1.));
-    JetResPtBins_smear.push_back(new TH1D("JetRes_PtBin"+(TString)Form("%d",k)+"_smear","jet Res Pt bin "+(TString)Form("%d",k),40,-0.2,0.2));
-    JetResEtaBins_smear.push_back(new TH1D("JetRes_EtaBin"+(TString)Form("%d",k)+"_smear","jet Res Eta bin "+(TString)Form("%d",k),40,-0.2,0.2));
-    JetResPtBins_Matched.push_back(new TH1D("JetRes_PtBin"+(TString)Form("%d",k)+"_matched","jet Res Pt bin "+(TString)Form("%d",k)+" matched jets",40,-1.5,2.5));
-    JetResEtaBins_Matched.push_back(new TH1D("JetRes_EtaBin"+(TString)Form("%d",k)+"_matched","jet Res Eta bin "+(TString)Form("%d",k)+" matched jets",40,-1.5,2.5));
-  }
-  TH1D* METRes= new TH1D("METRes","resolution of MET",30,-1.0,2.0);
-  TH1D* METChange= new TH1D("METChange","change induced",30,-0.2,0.2);
-  TH1D* newMETRes= new TH1D("newMETRes","new resolution of MET",30,-1.0,2.);
-  TH1D* METRes_ACF= new TH1D("METRes_AfterCutF","resolution of MET after CutFlow",30,-1.0,2.0);
-  TH1D* METChange_ACF= new TH1D("METChange_AfterCutF","change induced after CutFlow",30,-0.2,0.2);
-  TH1D* newMETRes_ACF= new TH1D("newMETRes_AfterCutF","new resolution of MET after CutFlow",30,-1.0,2.);
-
-  
-  vector<TH1D*> METRes_METBins;
-  vector<TH1D*> METRes_NMatchedJets_Bins;
-  vector<TH1D*> METChange_NMatchedJets_Bins;
-  vector<TH1D*> METRes_NJets_Bins;
-  vector<TH1D*> METChange_METBins;
-  vector<TH1D*> METRes_NMatchedJets_NJets;
-  vector<TH1D*> METChange_NMatchedJets_NJets;
-
-  for (int k=0;k<5;++k){
-    METRes_METBins.push_back(new TH1D("METRes_METBin"+(TString)Form("%d",k),"MET Res MET bin "+(TString)Form("%d",k),30,-1.0,2.0));
-    METChange_METBins.push_back(new TH1D("METChange_METBin"+(TString)Form("%d",k),"MET Change MET bin "+(TString)Form("%d",k),30,-0.2,0.2));
-    METRes_NMatchedJets_Bins.push_back(new TH1D("METRes_NMatchedJets_Bin"+(TString)Form("%d",k),"MET Res NMatchedJets Bin "+(TString)Form("%d",k),30,-1.,1.5));
-    METChange_NMatchedJets_Bins.push_back(new TH1D("METChange_NMatchedJets_Bin"+(TString)Form("%d",k),"MET Change NMatchedJets Bin "+(TString)Form("%d",k),30,-1.,1.5));
-    METRes_NJets_Bins.push_back(new TH1D("METRes_NJets_Bin"+(TString)Form("%d",k),"MET Change NJets Bin "+(TString)Form("%d",k),30,-1.0,1.5));
-  }
-
-  for (int k=0;k<5;++k){
-    for (int j=0;j<5;++j){
-      METRes_NMatchedJets_NJets.push_back(new TH1D("METRes_NMatchedJets_NJet_Bin"+(TString)Form("%d",k)+(TString)Form("%d",j),"MET Res NMatchedJets Bin "+(TString)Form("%d",k),30,-1.,1.5));
-      METChange_NMatchedJets_NJets.push_back(new TH1D("METChange_NMatchedJets_NJet_Bin"+(TString)Form("%d",k)+(TString)Form("%d",j),"MET Change NMatchedJets Bin "+(TString)Form("%d",k),30,-1.,1.5));
-    }
-  }
-  
-  TH2D* METRes_vs_MET=new TH2D("METRes_vs_MET","METRes_vs_MET",40,0.0,400.0,20,-1.0,3.0);
-  
-  
-  if(pcp)cout<<"check point before the event loop"<<endl;
-
-  bool isquick=config.getBool("quick",true);
-  bool quick=false;
-  cout<<endl;
-  cout<<endl;
-  cout<<"isquick is"<<isquick<<endl;
-  cout<<endl;
-  cout<<endl;
 
 
 
