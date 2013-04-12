@@ -375,6 +375,16 @@ int main(int argc, char** argv){
 
 
 
+    //====================================================================    
+    // Event cleaning
+    //====================================================================
+    if(pcp)cout<<"check point calling Event cleaning"<<endl;     
+    OK = makeCleanEvent(tree,&globalFlow);
+    if(  !globalFlow.keepIf("EventCleaning", OK)    && quick ) continue;
+    //====================================================================
+
+
+    
 
 
 
@@ -505,8 +515,6 @@ int main(int argc, char** argv){
     if(!isData) info.PUInter    = goodVert.size();
     else        info.PUInter    = goodVert.size();
     //
-    //
-
 
 
 
@@ -524,8 +532,6 @@ int main(int argc, char** argv){
     for (int iel=0;iel<Electrons.size();++iel){
       mySimpleElectrons.push_back(Electrons.at(iel).makeSimpleElectron());
     }
-    
-    
 
 
 
