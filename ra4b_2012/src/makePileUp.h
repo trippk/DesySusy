@@ -31,6 +31,14 @@ public:
   vector<double> PUdata_down;
 
   pileUpInfo(SampleInformation& mySampleInfo){
+    this->Constructor();
+    this->Initialize(mySampleInfo);
+  }
+  pileUpInfo(){
+    this->Constructor();
+  }
+
+  void Constructor(){
     nobinsmc=0;
     nobinsdata=0;
     nobinsdata_up=0;
@@ -40,7 +48,6 @@ public:
     PUWeight_up=1;
     PUWeight_down=1;
     relevantNumPU=0;
-    this->Initialize(mySampleInfo);
   }
   
   int Initialize(SampleInformation& mySampleInfo){

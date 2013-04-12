@@ -29,11 +29,8 @@
 #include "triggers_RA4b_frequency.h"
 #include "vertices_RA4b.h"
 #include "metAndHT_RA4b.h"
-#include "evtqual_RA4b.h"
 #include "SetTriggers_RA4b.h"
 #include "SetConditions_RA4b.h"
-#include "cschalo_RA4b.h"
-#include "trackingFailure_RA4b.h"
 #include "THTools.h"
 #include "TStopwatch.h"
 #include "Electron.h"
@@ -62,7 +59,7 @@
 #include "simpleElectron.h"
 #include "simpleMuon.h"
 #include "simpleJet.h"
-
+#include "makeCleanEvent.h"
 using namespace std;
 using namespace ROOT::Math::VectorUtil;
 //===================================================================
@@ -148,9 +145,8 @@ int main(int argc, char** argv){
   //======================================================
   //pileUp Initialization
   //======================================================
-  pileUpInfo pileUp(mySampleInfo);
-
-  //if (!isData){ pileUp.Initialize(mySampleInfo);}
+  pileUpInfo pileUp;
+  if (!isData){ pileUp.Initialize(mySampleInfo);}
   double InitialEventWeight=1.0;
 
 
@@ -296,7 +292,7 @@ int main(int argc, char** argv){
   //=============================================================================
   //=============================================================================
 
-  N=1000;
+  //N=1000;
   cout<<"N? "<<N<<endl;
   for(int i=0;i<N;++i){
     quick=false;
@@ -499,10 +495,12 @@ int main(int argc, char** argv){
     info.Run=Run;
     info.EventWeight=EventWeight;
 
-    info.PUWeight=pileUp.GetWeight("central");
-    info.PUWeight_up=pileUp.GetWeight("up");
-    info.PUWeight_down=pileUp.GetWeight("down");
-    info.NBtags=NumberOfbTags;
+    if(!isData){
+      info.PUWeight=pileUp.GetWeight("central");
+      info.PUWeight_up=pileUp.GetWeight("up");
+      info.PUWeight_down=pileUp.GetWeight("down");
+      info.NBtags=NumberOfbTags;
+    }
     //
     if(!isData) info.PUInter    = goodVert.size();
     else        info.PUInter    = goodVert.size();
@@ -532,10 +530,11 @@ int main(int argc, char** argv){
 
 
     //WRITE THE OBJECTS HERE
-     if(!isData){
+    //if(!isData){
       SubTree->Fill(&info,tree,pMuons,pElectrons,AllpJets,PFmet);
-    }
-
+      //}
+     
+     //cout<<"writing!"<<endl;
   }
 
   treeFile->Write();

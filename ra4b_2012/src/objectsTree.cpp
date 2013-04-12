@@ -207,6 +207,8 @@ void objectsTree::Constructor(){
 
 
 void objectsTree::Write(){
+  cout<<"writing inthe directory "<<endl;
+  dir->GetPath();
   dir->cd();
   mytree->Write();
 };
