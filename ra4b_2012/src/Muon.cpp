@@ -53,5 +53,6 @@ void Muon::SetMuonStuff(int charge_In, double relIso_In){
 simpleMuon Muon::makeSimpleMuon(){
   simpleMuon dummySimpleMuon;
   dummySimpleMuon.Set(maptotree,p4,particleID,charge,flavor,relIso);
+  dummySimpleMuon.id=id;
   return dummySimpleMuon;
 }

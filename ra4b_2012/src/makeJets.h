@@ -10,6 +10,7 @@
 #include "genJet.h"
 #include <boost/shared_ptr.hpp>
 #include "typedefs.h"
+#include "simpleJet.h"
 
 
 //vector<Jet> makeAllJets(EasyChain* tree);
@@ -23,7 +24,8 @@ void matchJets( const vector<Jet*> & recoJets, const vector<LorentzM> & genJets,
 void makeGoodJets(EasyChain* tree, vector<Jet*>& AllJets, vector<Jet*>& goodJets, CutSet* flow_in=0 );
 void makeCleanedJets(vector<Jet*>& Jets_In, vector<Jet*>& Jets_Out, vector<Muon>& Muons, vector<Electron>& Electrons, CutSet* flow_in=0);
 void makeCleanedJets(vector<Jet*>& Jets_In, vector<Jet*>& Jets_Out, vector<Muon*>& Muons, vector<Electron*>& Electrons, CutSet* flow_in=0);
-
+void makeSimpleJetCollection(vector<std::string>&,vector<simpleJet>& ,vector<simpleJet*>&);
+void makeSimpleJetCollection(vector<std::string>&,vector<simpleJet*>&,vector<simpleJet*>&);
 //
 //FUNCTIONS THAT MAKE USE OF SHARED POINTERS
 void makeAllJets(EasyChain*tree, vector<Ptr_Jet>& AllJets);
@@ -33,6 +35,5 @@ void makeCleanedJets(vector<Ptr_Jet>& Jets_In, vector<Ptr_Jet>& Jets_Out, vector
 void makeAllGenJets(EasyChain* tree, vector<Ptr_GenJet>& genjets);
 void matchGenJets(EasyChain* tree,vector<Ptr_GenJet>& genjets, vector<Ptr_Jet>& Jets);
 double makeHT(vector<Ptr_Jet>& Jets);
-//
 //
 #endif

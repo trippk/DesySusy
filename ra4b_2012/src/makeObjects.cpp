@@ -292,7 +292,7 @@ int main(int argc, char** argv){
   //=============================================================================
   //=============================================================================
 
-  //N=1000;
+  N=1000;
   cout<<"N? "<<N<<endl;
   for(int i=0;i<N;++i){
     quick=false;
@@ -484,6 +484,7 @@ int main(int argc, char** argv){
     //============================================
     //Make MET
     LorentzM& PFmet = tree->Get(&PFmet, "metP4TypeIPF");
+    //cout<<"what is going on "<<PFmet.eta()<<endl;
     double MET=(double)PFmet.Et() ;
 
 
@@ -537,9 +538,9 @@ int main(int argc, char** argv){
 
     //WRITE THE OBJECTS HERE
     //if(!isData){
-      SubTree->Fill(&info,tree,pMuons,pElectrons,AllpJets,PFmet);
-      //}
-     
+    SubTree->Fill(&info,tree,pMuons,pElectrons,AllpJets,PFmet);
+    //}
+    
      //cout<<"writing!"<<endl;
   }
 

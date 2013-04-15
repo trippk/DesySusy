@@ -19,12 +19,12 @@ extern bool pcp;
 
 
 /*
-vector<Jet> makeAllJets(EasyChain* tree){
+  vector<Jet> makeAllJets(EasyChain* tree){
 
- if(pcp){
-    cout<<endl;
-    cout<<"INSIDE makeAllJets "<<endl;
-    cout<<endl;
+  if(pcp){
+  cout<<endl;
+  cout<<"INSIDE makeAllJets "<<endl;
+  cout<<endl;
   }
 
   vector<Jet> Jets; 
@@ -35,14 +35,14 @@ vector<Jet> makeAllJets(EasyChain* tree){
   vector<int>&       Jets_genFlavor = tree->Get(&Jets_genFlavor, "ak5JetPFgenJetFlavourPat");  
   for(int ijet = 0; ijet<Jets_p4.size(); ijet++){  
 
-    Jet dummyJet;
-    dummyJet.Set(ijet, &Jets_p4.at(ijet), Jets_CorrFactor.at(ijet), "AK5");    
-    dummyJet.SetGenFlavor(Jets_genFlavor.at(ijet));
-    Jets.push_back(dummyJet);
+  Jet dummyJet;
+  dummyJet.Set(ijet, &Jets_p4.at(ijet), Jets_CorrFactor.at(ijet), "AK5");    
+  dummyJet.SetGenFlavor(Jets_genFlavor.at(ijet));
+  Jets.push_back(dummyJet);
     
   }
   return Jets;
-}
+  }
 */
 
 
@@ -52,47 +52,47 @@ vector<Jet> makeAllJets(EasyChain* tree){
 
 void makeAllJets(EasyChain* tree, vector<Ptr_Jet>& AllJets){
 
- if(pcp){
+  if(pcp){
     cout<<endl;
     cout<<"INSIDE makeAllJets "<<endl;
     cout<<endl;
- }
+  }
 
- // vector<Jet> Jets; 
- // Jets.clear();
+  // vector<Jet> Jets; 
+  // Jets.clear();
  
- vector<LorentzM>&  Jets_p4 = tree->Get(&Jets_p4, "ak5JetPFCorrectedP4Pat");
- vector<float>&     Jets_CorrFactor = tree->Get(&Jets_CorrFactor, "ak5JetPFCorrFactorPat");
- vector<int>&       Jets_genFlavor = tree->Get(&Jets_genFlavor, "ak5JetPFgenJetFlavourPat");  
- vector<float>&     Jets_CSV = tree->Get(&Jets_CSV, "ak5JetPFCombinedSecondaryVertexBJetTagsPat");
+  vector<LorentzM>&  Jets_p4 = tree->Get(&Jets_p4, "ak5JetPFCorrectedP4Pat");
+  vector<float>&     Jets_CorrFactor = tree->Get(&Jets_CorrFactor, "ak5JetPFCorrFactorPat");
+  vector<int>&       Jets_genFlavor = tree->Get(&Jets_genFlavor, "ak5JetPFgenJetFlavourPat");  
+  vector<float>&     Jets_CSV = tree->Get(&Jets_CSV, "ak5JetPFCombinedSecondaryVertexBJetTagsPat");
 
 
- for(int ijet = 0; ijet<Jets_p4.size(); ijet++){  
-   //THE LORENTZ VECTOR IS OWNED BY THE TREE
-   //SO NO shared_ptr to LorentzM CAN BE USED HERE
+  for(int ijet = 0; ijet<Jets_p4.size(); ijet++){  
+    //THE LORENTZ VECTOR IS OWNED BY THE TREE
+    //SO NO shared_ptr to LorentzM CAN BE USED HERE
 
-   //new normal shared_pointer-to-jet using a normal pointer-to-LorentzM (so that the jet does not
-   //own the LorentzM)
+    //new normal shared_pointer-to-jet using a normal pointer-to-LorentzM (so that the jet does not
+    //own the LorentzM)
 
-   //Set the discriminator:
-   //AllJets.at(ijet)->SetBJetDisc("CSV", Jets_CSV.at(indx));
+    //Set the discriminator:
+    //AllJets.at(ijet)->SetBJetDisc("CSV", Jets_CSV.at(indx));
    
-   //========create the shared_ptr
-   Ptr_Jet dummysharedJet(new Jet(ijet,&(Jets_p4.at(ijet)), Jets_CorrFactor.at(ijet), "AK5")); 
-   //======Set the flavour
-   dummysharedJet->SetGenFlavor(Jets_genFlavor.at(ijet)); 
-   //======set discriminator
-   dummysharedJet->SetBJetDisc("CSV", Jets_CSV.at(ijet));
-   AllJets.push_back(dummysharedJet);
+    //========create the shared_ptr
+    Ptr_Jet dummysharedJet(new Jet(ijet,&(Jets_p4.at(ijet)), Jets_CorrFactor.at(ijet), "AK5")); 
+    //======Set the flavour
+    dummysharedJet->SetGenFlavor(Jets_genFlavor.at(ijet)); 
+    //======set discriminator
+    dummysharedJet->SetBJetDisc("CSV", Jets_CSV.at(ijet));
+    AllJets.push_back(dummysharedJet);
 
-   //Clarification:
-   //When the last Ptr_Jet is deleted, the Jet object is also deleted.
-   //However, the pointer to the lorentzM is not a shared pointer
-   //and the LorentzM remains alive, because the lorentzM has to be destroyed when 
-   //the TTree goes to the next event.
- }
+    //Clarification:
+    //When the last Ptr_Jet is deleted, the Jet object is also deleted.
+    //However, the pointer to the lorentzM is not a shared pointer
+    //and the LorentzM remains alive, because the lorentzM has to be destroyed when 
+    //the TTree goes to the next event.
+  }
 
- //return Jets;
+  //return Jets;
 }
 
 
@@ -173,7 +173,7 @@ void makeGoodJets(EasyChain* tree, vector<Ptr_Jet>& AllJets, vector<Ptr_Jet>& go
 
 
     //    cout<<"out of SetBJetDisc"<<endl;
-    AllJets.at(ijet)->SetID("Loose",1);
+    AllJets.at(ijet)->SetID("Loose",true);
     goodJets.push_back(AllJets.at(ijet));
     //
     //
@@ -256,6 +256,7 @@ void makeCleanedJets(vector<Ptr_Jet>& Jets_In, vector<Ptr_Jet>& Jets_Out, vector
 
 
     //WE want this jet, keep it.
+    Jets_In.at(ijet)->SetID("clean",true);
     Jets_Out.push_back(Jets_In.at(ijet));
 
     if(pcp)cout<<"pt and eta of jet "<<ijet<<" = "<<Jets_In.at(ijet)->P4().pt()<<" "<<Jets_In.at(ijet)->P4().eta()<<endl;
@@ -274,17 +275,50 @@ void makeCleanedJets(vector<Ptr_Jet>& Jets_In, vector<Ptr_Jet>& Jets_Out, vector
 
   vector<Muon*>newMuons;
   vector<Electron*>newElectrons;
-
+  
   for (int imu=0;imu<Muons.size();++imu){
     newMuons.push_back(&Muons.at(imu));
   }
   for (int iel=0;iel<Electrons.size();++iel){
     newElectrons.push_back(&Electrons.at(iel));
   }
-
+  
   makeCleanedJets(Jets_In,Jets_Out,newMuons,newElectrons);
-
+  
 }
+
+
+void makeSimpleJetCollection(vector<std::string>& attributes,vector<simpleJet*>& jets_in, vector<simpleJet*>& outCollection ){
+  //returns a vector of pointers based on the id of the jets
+  for (int ijet=0;ijet<jets_in.size();++ijet){
+    
+    bool attributesOK=true;
+    for (int iatt=0;iatt<attributes.size();++iatt){
+      if ( !jets_in.at(ijet)->IsID(attributes.at(iatt))){
+	attributesOK=false;
+	break;
+      }
+    }
+    if(attributesOK){
+      outCollection.push_back(jets_in.at(ijet));
+    }
+  }  
+}
+
+void makeSimpleJetCollection(vector<std::string>& attributes,vector<simpleJet>& jets_in, vector<simpleJet*>& outCollection ){
+
+  void makeSimpleJetCollection(vector<std::string>&,vector<simpleJet*>&,vector<simpleJet*>&);  
+  vector<simpleJet*> dummyvector;
+  for (int ijet=0;ijet<jets_in.size();++ijet){
+    dummyvector.push_back(&(jets_in.at(ijet)));
+  }
+  makeSimpleJetCollection(attributes,dummyvector,outCollection);
+}
+
+
+
+
+
 
 
 
@@ -293,11 +327,11 @@ void makeAllGenJets(EasyChain* tree, vector<Ptr_GenJet>& genjets){
   vector<int>& jetflavor        = tree->Get(&jetflavor,"ak5JetPFgenJetFlavourPat");
   vector<LorentzM>&  Jets_p4 = tree->Get(&Jets_p4, "ak5JetPFCorrectedP4Pat");
   /*    if (GenP4.size() != jetflavor.size()){
-      cout<<"warning, the sizes are different in makeAllGenJets"<<endl;
-      cout<<GenP4.size()<<" vs "<<jetflavor.size()<<endl;
-      cout<<"and"<<Jets_p4.size()<<endl;
-      cout<<endl;
-    }
+	cout<<"warning, the sizes are different in makeAllGenJets"<<endl;
+	cout<<GenP4.size()<<" vs "<<jetflavor.size()<<endl;
+	cout<<"and"<<Jets_p4.size()<<endl;
+	cout<<endl;
+	}
   */
   //  }
 
@@ -589,7 +623,7 @@ void makeGoodJets(EasyChain* tree, vector<Jet*>& AllJets, vector<Jet*>& goodJets
     }
     
     AllJets.at(ijet)->SetBJetDisc("CSV", Jets_CSV.at(ijet));
-    AllJets.at(ijet)->SetID("Loose",1);
+    AllJets.at(ijet)->SetID("Loose",true);
     goodJets.push_back(AllJets.at(ijet));
     //
     //
@@ -678,8 +712,9 @@ void makeCleanedJets(vector<Jet*>& Jets_In, vector<Jet*>& Jets_Out, vector<Muon>
 
 
     //WE want this jet, keep it.
+    Jets_In.at(ijet)->SetID("clean",true);
     Jets_Out.push_back(Jets_In.at(ijet));
-
+    
     if(pcp)cout<<"pt and eta of jet "<<ijet<<" = "<<Jets_In.at(ijet)->P4().pt()<<" "<<Jets_In.at(ijet)->P4().eta()<<endl;
 
   }
@@ -735,6 +770,7 @@ void makeCleanedJets(vector<Jet*>& Jets_In, vector<Jet*>& Jets_Out, vector<Muon*
 
 
     //WE want this jet, keep it.
+    Jets_In.at(ijet)->SetID("clean",true);
     Jets_Out.push_back(Jets_In.at(ijet));
 
     if(pcp)cout<<"pt and eta of jet "<<ijet<<" = "<<Jets_In.at(ijet)->P4().pt()<<" "<<Jets_In.at(ijet)->P4().eta()<<endl;

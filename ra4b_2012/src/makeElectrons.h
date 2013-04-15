@@ -13,3 +13,6 @@ bool makeVetoElectrons(EasyChain* tree, vector<Electron>& AllElectrons,  vector<
 
 void makeCleanedElectrons(vector<Electron*>& Electrons_In, vector<Electron*>& Electrons_Out, vector<Muon>& Muons, CutSet* flow_in = 0);
 #endif
+
+void makeSimpleElectronCollection(vector<std::string>&,vector<simpleElectron>& ,vector<simpleElectron*>&);
+void makeSimpleElectronCollection(vector<std::string>&,vector<simpleElectron*>&,vector<simpleElectron*>&);

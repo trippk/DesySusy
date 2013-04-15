@@ -52,5 +52,6 @@ void Electron::SetElectronStuff(int charge_In, double relIso_In){
 simpleElectron Electron::makeSimpleElectron(){
   simpleElectron dummySimpleElectron;
   dummySimpleElectron.Set(maptotree,p4,particleID,charge,flavor,relIso);
+  dummySimpleElectron.id=id;
   return dummySimpleElectron;
 }

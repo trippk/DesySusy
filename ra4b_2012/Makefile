@@ -8,7 +8,7 @@
 #
   VPATH = ./src
   SRCDIR   = ./src/
-  SOURCES  = main_RA4b.cpp Nminus1Tree.cpp defaultTree.cpp trigStudyTree.cpp makeJets.cpp makeMuons.cpp makeElectrons.cpp vertices_RA4b.cpp triggers_RA4b.cpp triggers_RA4b_frequency.cpp evtqual_RA4b.cpp metAndHT_RA4b.cpp SetTriggers_RA4b.cpp SetConditions_RA4b.cpp ConfigReader.cpp CutFlow.cpp cschalo_RA4b.cpp trackingFailure_RA4b.cpp AnalysisObject.cpp Particle.cpp Electron.cpp Muon.cpp Jet.cpp eventselection.cpp HistoMaker.cpp mt2w_bisect.cpp mt2w_interface.cpp systematics_RA4b.cpp makeSystematics.cpp anDiLep.cpp TagEff.cpp makeOsLepPairs.cpp JetMonitor.cpp genJet.cpp 
+  SOURCES  = main_RA4b.cpp objectsTree.cpp Nminus1Tree.cpp defaultTree.cpp trigStudyTree.cpp makeJets.cpp makeMuons.cpp makeElectrons.cpp vertices_RA4b.cpp triggers_RA4b.cpp triggers_RA4b_frequency.cpp evtqual_RA4b.cpp metAndHT_RA4b.cpp SetTriggers_RA4b.cpp SetConditions_RA4b.cpp ConfigReader.cpp CutFlow.cpp AnalysisObject.cpp Particle.cpp Electron.cpp Muon.cpp Jet.cpp eventselection.cpp HistoMaker.cpp mt2w_bisect.cpp mt2w_interface.cpp systematics_RA4b.cpp makeSystematics.cpp  genJet.cpp anDiLep.cpp 
 
 # and create this executable
 #
@@ -16,7 +16,7 @@
 
 # with additional libs and includes
 # e.g. MORELIBS = -L/path -lblub
-  MORELIBS =
+  MORELIBS = -L. -lRA4bDict
 # e.g. -I/path
   MOREINCS = -I$(TOOLSDIR)
 
@@ -39,7 +39,8 @@ OBJS_TEST      = $(notdir $(SOURCES_TEST))
 OBJS_TEST     := $(OBJS_TEST:.cpp=.o)	 
 
 #Define sources to be used with a shared library
-SOURCES_LIB  = AnalysisObject.cpp Particle.cpp Electron.cpp Muon.cpp Jet.cpp mt2w_bisect.cpp mt2w_interface.cpp anDiLep.cpp
+#SOURCES_LIB  = AnalysisObject.cpp Particle.cpp Electron.cpp Muon.cpp Jet.cpp mt2w_bisect.cpp mt2w_interface.cpp anDiLep.cpp
+SOURCES_LIB = simpleAnalysisObject.cpp simpleParticle.cpp simpleElectron.cpp simpleMuon.cpp simpleJet.cpp
 HEADERS_LIB = $(notdir $(SOURCES_LIB))
 HEADERS_LIB:= $(HEADERS_LIB:.cpp=.h)	
 OBJS_LIB   = $(notdir $(SOURCES_LIB))
@@ -86,8 +87,8 @@ endif
 
 all: MTTOOLS $(EXEC)
 
-$(EXEC): $(OBJS) NtupleTools2Dict.o 
-	$(LD) $(LDFLAGS) $(OBJS) NtupleTools2Dict.o $(OBJS_MTTOOLS) $(ROOTLIBS) $(MORELIBS)  -o $@
+$(EXEC): $(OBJS) NtupleTools2Dict.o libRA4bDict.so
+	$(LD) $(LDFLAGS) $(OBJS) NtupleTools2Dict.o  $(OBJS_MTTOOLS) $(ROOTLIBS)  -o $@ $(MORELIBS) 
 	@echo "$@ done"
 	@echo "$(OBJS) 	$(LD) $(LDFLAGS) $(OBJS) NtupleTools2Dict.o $(OBJS_MTTOOLS) $(ROOTLIBS) $(MORELIBS)  -o $@"
 
@@ -130,6 +131,10 @@ test.x: test.o $(OBJS_TEST) NtupleTools2Dict.o
 	$(LD) $(LDFLAGS) $^ $(ROOTLIBS) $(MORELIBS)  -o $@
 	@echo "$@ done"
 
+
+
+
+
 #Rules for creating the linked library
 %_sl.o : %.cpp
 	$(CXX) -fPIC $(CXXFLAGS) -o $@ -c $<
@@ -137,8 +142,12 @@ NtupleTools2Dict_sl.o: NtupleTools2Dict.cxx
 	 $(CXX) -fPIC $(CXXFLAGS) -D __NTHEADER___ -o $@ -c $<	
 libRA4bDict.cpp : $(HEADERS_LIB) libRA4bDict_Linkdef.h 
 	rootcint -f $@ -c -p $^
-libRA4b.so : MTTOOLS $(OBJS_LIB) libRA4bDict_sl.o NtupleTools2Dict_sl.o 
-	$(CXX) -shared $(LDFLAGS) $(ROOTLIBS) -o $@ $(OBJS_LIB) libRA4bDict_sl.o NtupleTools2Dict_sl.o $(OBJS_MTTOOLS_LIB)
+libRA4bDict.so : MTTOOLS $(OBJS_LIB) libRA4bDict_sl.o
+	$(CXX) -shared $(LDFLAGS) $(ROOTLIBS) -o $@ $(OBJS_LIB) libRA4bDict_sl.o  $(OBJS_MTTOOLS_LIB)
 	@echo "Made library!"
+
+
+
+
 
 

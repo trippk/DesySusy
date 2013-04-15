@@ -11,7 +11,7 @@
   SOURCES  = makeObjects.cpp Nminus1Tree.cpp objectsTree.cpp defaultTree.cpp trigStudyTree.cpp makeJets.cpp makeMuons.cpp makeElectrons.cpp vertices_RA4b.cpp triggers_RA4b.cpp triggers_RA4b_frequency.cpp evtqual_RA4b.cpp metAndHT_RA4b.cpp SetTriggers_RA4b.cpp SetConditions_RA4b.cpp ConfigReader.cpp CutFlow.cpp cschalo_RA4b.cpp trackingFailure_RA4b.cpp AnalysisObject.cpp Particle.cpp Electron.cpp Muon.cpp Jet.cpp eventselection.cpp HistoMaker.cpp mt2w_bisect.cpp mt2w_interface.cpp systematics_RA4b.cpp makeSystematics.cpp anDiLep.cpp TagEff.cpp makeOsLepPairs.cpp JetMonitor.cpp genJet.cpp makeCleanEvent.cpp
 
 #
-  EXEC=myAnalysis
+  EXEC=makeobjects
 
 # with additional libs and includes
 # e.g. MORELIBS = -L/path -lblub
@@ -132,6 +132,8 @@ test.x: test.o $(OBJS_TEST) NtupleTools2Dict.o
 	$(LD) $(LDFLAGS) $^ $(ROOTLIBS) $(MORELIBS)  -o $@
 	@echo "$@ done"
 
+
+
 #Rules for creating the linked library
 %_sl.o : %.cpp
 	$(CXX) -fPIC $(CXXFLAGS) -o $@ -c $<
@@ -142,5 +144,7 @@ libRA4bDict.cpp : $(HEADERS_LIB) libRA4bDict_Linkdef.h
 libRA4bDict.so : MTTOOLS $(OBJS_LIB) libRA4bDict_sl.o
 	$(CXX) -shared $(LDFLAGS) $(ROOTLIBS) -o $@ $(OBJS_LIB) libRA4bDict_sl.o  $(OBJS_MTTOOLS_LIB)
 	@echo "Made library!"
+
+
 
 

@@ -1,12 +1,8 @@
 # prelim RA4b_config
 
 isData      = true
-filename    = /pnfs/desy.de/cms/tier2/store/user/msahin/nTuple12_v2/mc/TTJets_MassiveBinDECAY_TuneZ2star_8TeV-madgraph-tauola/Summer12-PU_S6_START52_V9-v1/SusyCAF_Tree_300_1_uHJ.root
+filename    = dcap://dcache-cms-dcap.desy.de:22125//pnfs/desy.de/cms/tier2/store/user/fcostanz/NTuple13_v1/SingleMu/Run2012A-13Jul2012-v1/SingleMu_Run2012A_13Jul_cfg-10.root
 quick       = false
-resonance_cut = 8.0
-isolation_cut = 0.1
-SampleName = TTJets
-SubSampleName = SUMMER12
 Estimation = RA4b-mu
 Tail = histo
 treeType = objectsTree

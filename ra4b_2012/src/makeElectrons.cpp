@@ -5,6 +5,7 @@
 #include "THTools.h"
 #include "eventselection.h"
 #include "Electron.h"
+#include "simpleElectron.h"
 #include "makeMuons.h"
 
 
@@ -437,4 +438,47 @@ void makeCleanedElectrons(vector<Electron*>& Electrons_In, vector<Electron*>& El
 
   return;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+void makeSimpleElectronCollection(vector<std::string>& attributes,vector<simpleElectron*>& electrons_in, vector<simpleElectron*>& outCollection ){
+  //returns a vector of pointers based on the id of the electrons
+  for (int ijet=0;ijet<electrons_in.size();++ijet){
+    
+    bool attributesOK=true;
+    for (int iatt=0;iatt<attributes.size();++iatt){
+      if ( !electrons_in.at(ijet)->IsID(attributes.at(iatt))){
+	attributesOK=false;
+	break;
+      }
+    }
+    if(attributesOK){
+      outCollection.push_back(electrons_in.at(ijet));
+    }
+  }  
+}
+
+
+void makeSimpleElectronCollection(vector<std::string>& attributes,vector<simpleElectron>& electrons_in, vector<simpleElectron*>& outCollection ){
+
+  void makeSimpleElectronCollection(vector<std::string>&,vector<simpleElectron*>&,vector<simpleElectron*>&);  
+  vector<simpleElectron*> dummyvector;
+  for (int ijet=0;ijet<electrons_in.size();++ijet){
+    dummyvector.push_back(&(electrons_in.at(ijet)));
+  }
+  makeSimpleElectronCollection(attributes,dummyvector,outCollection);
+}
+
+
+
+
 

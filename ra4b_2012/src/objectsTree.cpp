@@ -3,6 +3,9 @@
 #include "string.h"
 #include "TFile.h"
 #include "objectsTree.h"
+#include "simpleElectron.h"
+#include "simpleMuon.h"
+#include "simpleJet.h"
 
 using namespace std;
 
@@ -38,7 +41,7 @@ objectsTree::objectsTree(TFile* treefile, TDirectory* indir){
 }
 
 
-void objectsTree::Fill(EventInfo* info, EasyChain* tree, vector<Muon*>& muons_in, vector<Electron*>& electrons_in, vector<Jet*>& jets_in, LorentzM& met){
+void objectsTree::Fill(EventInfo* info, EasyChain* tree, vector<Muon*>& muons_in, vector<Electron*>& electrons_in, vector<Jet*>& jets_in, LorentzM& PFmet){
     vector<simpleJet> mySimpleJets;
     for (int ijet=0;ijet<jets_in.size();++ijet){
       mySimpleJets.push_back(jets_in.at(ijet)->makeSimpleJet());
@@ -52,10 +55,10 @@ void objectsTree::Fill(EventInfo* info, EasyChain* tree, vector<Muon*>& muons_in
       mySimpleElectrons.push_back(electrons_in.at(iel)->makeSimpleElectron());
     }
 
-    this->Fill(info,tree,mySimpleMuons,mySimpleElectrons,mySimpleJets,met);
+    this->Fill(info,tree,mySimpleMuons,mySimpleElectrons,mySimpleJets,PFmet);
 }
 
-void objectsTree::Fill(EventInfo* info, EasyChain* tree, vector<simpleMuon*>& muons_in, vector<simpleElectron*>& electrons_in, vector<simpleJet*>& jets_in, LorentzM& met){
+void objectsTree::Fill(EventInfo* info, EasyChain* tree, vector<simpleMuon*>& muons_in, vector<simpleElectron*>& electrons_in, vector<simpleJet*>& jets_in, LorentzM& PFmet){
   
   cout<<"pass objects, not pointers!"<<endl;
   vector<simpleJet> sJets;
@@ -72,7 +75,7 @@ void objectsTree::Fill(EventInfo* info, EasyChain* tree, vector<simpleMuon*>& mu
     sElectrons.push_back(*(electrons_in.at(iel)));
   }
 
-  this->Fill(info,tree,sMuons,sElectrons,sJets,met);
+  this->Fill(info,tree,sMuons,sElectrons,sJets,PFmet);
 
 }
 
@@ -80,17 +83,26 @@ void objectsTree::Fill(EventInfo* info, EasyChain* tree, vector<simpleMuon*>& mu
 
 
 
-void objectsTree::Fill(EventInfo* info, EasyChain* tree, vector<simpleMuon>& muons_in, vector<simpleElectron>& electrons_in, vector<simpleJet>& jets_in, LorentzM& met){
+void objectsTree::Fill(EventInfo* info, EasyChain* tree, vector<simpleMuon>& muons_in, vector<simpleElectron>& electrons_in, vector<simpleJet>& jets_in, LorentzM& PFmet){
 
-  el->clear();
-  mu->clear();
-  Jets->clear();
-
-  MET=met.Pt();
+  if(el != 0){ el->clear();}
+  // else{ el=new vector<simpleElectron>;  }
+  if(mu != 0){mu->clear();}
+  //  else{ mu=new vector<simpleMuon>;  }
+  if(Jets!= 0){Jets->clear();}
+  //else{ Jets=new vector<simpleJet>;  }
+  
+  pPFmet=&PFmet;
+  double MET=PFmet.Pt();
   //MET=0;
 
   event = info->Event;
   run = info->Run;    
+  el=&electrons_in;
+  Jets=&jets_in;
+  mu=&muons_in;
+
+  mytree->Fill();
   //weight=info->EventWeight;
   //PUWeight=info->PUWeight;
   //PUWeight_up=info->PUWeight_up;
@@ -113,17 +125,19 @@ void objectsTree::Fill(EventInfo* info, EasyChain* tree, vector<simpleMuon>& muo
   
 //   Y = MET / sqrt(HT);
 
-
+  
   //cout<<"jets size"<<jets_in.size()<<endl;
-  for(int ijet=0;ijet<jets_in.size();++ijet){
-    Jets->push_back(jets_in.at(ijet)); 
-  }
-  for(int imu=0;imu<muons_in.size();++imu){
-    mu->push_back(muons_in.at(imu));
-  }
-  for(int iel=0;iel<electrons_in.size();++iel){ 
-    el->push_back(electrons_in.at(iel));  
-  }
+  //  for(int ijet=0;ijet<jets_in.size();++ijet){
+  //Jets->push_back(*jets_in.at(ijet)); 
+    //cout<<"filling "<<jets_in.at(ijet)->Pt()<<endl;
+    //cout<<"and getting "<<Jets->at(ijet)->
+  //}
+  //for(int imu=0;imu<muons_in.size();++imu){
+  //    mu->push_back(muons_in.at(imu));
+  //  }
+  //  for(int iel=0;iel<electrons_in.size();++iel){ 
+  //    el->push_back(electrons_in.at(iel));  
+  //}
 
   //MT2WEle=mt2w_calc.get_mt2w(electrons_in, jets_in, met);
   //MT2WMu=mt2w_calc.get_mt2w(muons_in, jets_in, met);
@@ -155,14 +169,15 @@ void objectsTree::Fill(EventInfo* info, EasyChain* tree, vector<simpleMuon>& muo
 //     break;
 //   }
 
-//  cout<<"filling!"<<endl;
-  mytree->Fill();
+  //cout<<"filling! an eta of "<<pPFmet->Eta()<<endl;
+  //cout<<"comparing with before "<<PFmet.Eta()<<endl;
+
 
 }
 
 
 
-// void objectsTree::Fill(EventInfo* info, EasyChain* tree, vector<Muon*>& muons_in, vector<Electron*>& electrons_in, vector<Ptr_Jet>& jets_in, LorentzM& met){
+// void objectsTree::Fill(EventInfo* info, EasyChain* tree, vector<Muon*>& muons_in, vector<Electron*>& electrons_in, vector<Ptr_Jet>& jets_in, LorentzM& PFmet){
 //   //  cout<<"filling"<<endl;
 
 //   //cout<<"calling Fill with shared_ptr"<<endl;
@@ -197,11 +212,17 @@ void objectsTree::Constructor(){
 //   PUWeight_down=0.0;
 //   NPV=0.0;
 //  NBtags=0.0;
-  Jets = new vector<simpleJet>;
+  //Jets = new vector<simpleJet>;
 //  Jetset(new vector<LorentzM>);
-  el = new vector<simpleElectron>;
-  mu = new vector<simpleMuon>;
-  //genJets=new vector<simpleGenJet>;
+  //el = new vector<simpleElectron>;
+  //mu = new vector<simpleMuon>;
+  //pPFmet = new LorentzM;
+  Jets=0;
+  el=0;
+  mu=0;
+  pPFmet=0;
+
+//genJets=new vector<simpleGenJet>;
   this->SetBranches();
 }
 
@@ -272,13 +293,15 @@ void objectsTree::SetBranches(){
   mytree->Branch("Event",&event,"event/I");
   mytree->Branch("Run",&run,"run/I");
   mytree->Branch("Jets","std::vector<simpleJet>",&Jets);
+  //mytree->Branch("Muons","std::vector<simpleMuon>",&mu);
+  //mytree->Branch("Electrons","std::vector<simpleElectron>",&el);
+  mytree->Branch("PFmet","ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<float> >",&pPFmet);
   //mytree->Branch("genJets","std::vector<simpleGenJet>",&genJets);
-  mytree->Branch("Muons","std::vector<simpleMuon>",&mu);
-  mytree->Branch("Electrons","std::vector<simpleElectron>",&el);
 
+  //myTree->Branch("goodVertices",&
   //  mytree->Branch("Electrons","std::vector<ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<float> > >",&el);
 
-  //mytree->Branch("MET",&MET,"MET/D");
+
   //  mytree->Branch("PUWeight",&PUWeight,"PUWeight/D");
   //  mytree->Branch("PUWeight_up",&PUWeight_up,"PUWeight_up/D");
   //  mytree->Branch("PUWeight_down",&PUWeight_down,"PUWeight_down/D");
@@ -288,31 +311,3 @@ void objectsTree::SetBranches(){
 }  
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*
-void objectsTree::Fill(EventInfo* info, EasyChain* tree, vector<Muon*>& muons_in, vector<Electron*>& electrons_in, vector<Jet*>& jets_in, vector<GenJet*>& genJets_in, LorentzM& met){
-  //
-  genJets->clear();
-
-  vector<simpleGenJet> mySimpleGenJets;
-  for (int ijet=0;ijet<genJets_in.size();++ijet){
-    genJets->push_back(genJets_in.at(ijet)->makeSimpleGenJet());
-  }
-  this->Fill(info,tree,muons_in,electrons_in,jets_in,met);
-
-}
-*/

@@ -304,6 +304,7 @@ simpleJet Jet::makeSimpleJet(){
   dummySimpleJet.correctionUncertainty_UP=correctionUncertainty_UP;
   dummySimpleJet.correctionUncertainty_DOWN=correctionUncertainty_DOWN;
   dummySimpleJet.jetPt_ShiftedUP=jetPt_ShiftedUP;
+  dummySimpleJet.id=id;
 
   return dummySimpleJet;
 }

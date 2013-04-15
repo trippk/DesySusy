@@ -21,9 +21,9 @@
 using namespace std;
 using namespace ROOT::Math::VectorUtil;
 
-class simpleJet;
-class simpleMuon;
-class simpleElectron;
+//class simpleJet;
+//class simpleMuon;
+//class simpleElectron;
 //class simpleGenJet;
 
 class objectsTree: public subTree {
@@ -60,7 +60,8 @@ protected:
   //
   int event;
   int run;
-  double MET;
+  LorentzM PFmet;
+  LorentzM* pPFmet;
   //
   vector<simpleElectron>* el;
   vector<simpleMuon>* mu;

@@ -6,7 +6,7 @@
 #include "eventselection.h"
 #include "Muon.h"
 #include "makeMuons.h"
-
+#include "simpleMuon.h" 
 using namespace std;
 
 extern bool pcp;
@@ -637,3 +637,41 @@ void rescaleMUR_simple(EasyChain* tree, vector<Muon*>&MuonsToRescale, LorentzM& 
 
   return;
 }
+
+
+
+
+
+
+
+
+
+void makeSimpleMuonCollection(vector<std::string>& attributes,vector<simpleMuon*>& muons_in, vector<simpleMuon*>& outCollection ){
+  //returns a vector of pointers based on the id of the muons
+  for (int ijet=0;ijet<muons_in.size();++ijet){
+    
+    bool attributesOK=true;
+    for (int iatt=0;iatt<attributes.size();++iatt){
+      if ( !muons_in.at(ijet)->IsID(attributes.at(iatt))){
+	attributesOK=false;
+	break;
+      }
+    }
+    if(attributesOK){
+      outCollection.push_back(muons_in.at(ijet));
+    }
+  }  
+}
+
+
+void makeSimpleMuonCollection(vector<std::string>& attributes,vector<simpleMuon>& muons_in, vector<simpleMuon*>& outCollection ){
+
+  void makeSimpleMuonCollection(vector<std::string>&,vector<simpleMuon*>&,vector<simpleMuon*>&);  
+  vector<simpleMuon*> dummyvector;
+  for (int ijet=0;ijet<muons_in.size();++ijet){
+    dummyvector.push_back(&(muons_in.at(ijet)));
+  }
+  makeSimpleMuonCollection(attributes,dummyvector,outCollection);
+}
+
+
