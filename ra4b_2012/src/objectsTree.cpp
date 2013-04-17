@@ -6,6 +6,8 @@
 #include "simpleElectron.h"
 #include "simpleMuon.h"
 #include "simpleJet.h"
+#include "NtupleTools2.h"
+
 
 using namespace std;
 
@@ -83,25 +85,30 @@ void objectsTree::Fill(EventInfo* info, EasyChain* tree, vector<simpleMuon*>& mu
 
 
 
-void objectsTree::Fill(EventInfo* info, EasyChain* tree, vector<simpleMuon>& muons_in, vector<simpleElectron>& electrons_in, vector<simpleJet>& jets_in, LorentzM& PFmet){
+void objectsTree::Fill(EventInfo* info, EasyChain* tree, vector<simpleMuon> muons_in, vector<simpleElectron> electrons_in, vector<simpleJet> jets_in, LorentzM PFmet){
 
-  if(el != 0){ el->clear();}
+
+  //if(el != 0){ el->clear();}
   // else{ el=new vector<simpleElectron>;  }
-  if(mu != 0){mu->clear();}
+  //if(mu != 0){mu->clear();}
   //  else{ mu=new vector<simpleMuon>;  }
-  if(Jets!= 0){Jets->clear();}
+  //if(Jets!= 0){Jets->clear();}
   //else{ Jets=new vector<simpleJet>;  }
   
+
+
+
   pPFmet=&PFmet;
   double MET=PFmet.Pt();
   //MET=0;
-
+  
   event = info->Event;
   run = info->Run;    
   el=&electrons_in;
   Jets=&jets_in;
   mu=&muons_in;
-
+  
+  
   mytree->Fill();
   //weight=info->EventWeight;
   //PUWeight=info->PUWeight;
@@ -176,7 +183,6 @@ void objectsTree::Fill(EventInfo* info, EasyChain* tree, vector<simpleMuon>& muo
 }
 
 
-
 // void objectsTree::Fill(EventInfo* info, EasyChain* tree, vector<Muon*>& muons_in, vector<Electron*>& electrons_in, vector<Ptr_Jet>& jets_in, LorentzM& PFmet){
 //   //  cout<<"filling"<<endl;
 
@@ -197,6 +203,11 @@ void objectsTree::Constructor(){
   //  cout<<"a new tree with in "<<mytree<<" was created "<<endl;
   event=0;
   run=0;
+  Jets=0;
+  el=0;
+  mu=0;
+  pPFmet=0;
+
   //MET=0.0;
 //   HT=0.0;
 //   MHT=0.0;
@@ -217,10 +228,6 @@ void objectsTree::Constructor(){
   //el = new vector<simpleElectron>;
   //mu = new vector<simpleMuon>;
   //pPFmet = new LorentzM;
-  Jets=0;
-  el=0;
-  mu=0;
-  pPFmet=0;
 
 //genJets=new vector<simpleGenJet>;
   this->SetBranches();
@@ -293,9 +300,15 @@ void objectsTree::SetBranches(){
   mytree->Branch("Event",&event,"event/I");
   mytree->Branch("Run",&run,"run/I");
   mytree->Branch("Jets","std::vector<simpleJet>",&Jets);
-  //mytree->Branch("Muons","std::vector<simpleMuon>",&mu);
-  //mytree->Branch("Electrons","std::vector<simpleElectron>",&el);
   mytree->Branch("PFmet","ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<float> >",&pPFmet);
+  mytree->Branch("Muons","std::vector<simpleMuon>",&mu);
+  mytree->Branch("Electrons","std::vector<simpleElectron>",&el);
+
+
+
+
+
+
   //mytree->Branch("genJets","std::vector<simpleGenJet>",&genJets);
 
   //myTree->Branch("goodVertices",&

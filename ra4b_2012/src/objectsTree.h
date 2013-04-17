@@ -41,7 +41,7 @@ class objectsTree: public subTree {
   }
   //
   void Constructor();
-  void Fill(EventInfo* info, EasyChain* tree, vector<simpleMuon>& muons, vector<simpleElectron>& electrons, vector<simpleJet>& jets, LorentzM& met);
+  void Fill(EventInfo* info, EasyChain* tree, vector<simpleMuon> muons, vector<simpleElectron> electrons, vector<simpleJet> jets, LorentzM met);
   //void Fill(EventInfo* info, EasyChain* tree, vector<Muon*>& muons, vector<Electron*>& electrons, vector<Jet*>& jets, vector<GenJet*>& genJets,LorentzM& met);
   void Fill(EventInfo* info, EasyChain* tree, vector<simpleMuon*>& muons, vector<simpleElectron*>& electrons, vector<simpleJet*>& jets, LorentzM& met);
   void Fill(EventInfo* info, EasyChain* tree, vector<Muon*>& muons, vector<Electron*>& electrons, vector<Jet*>& jets, LorentzM& met);
