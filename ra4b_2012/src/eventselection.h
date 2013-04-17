@@ -138,6 +138,7 @@ struct EventCuts{
   VarCondition<int>   NumberOfBtags;
   VarCondition<float> HT;
   VarCondition<float> MET;
+  VarCondition<float> MT2;
   VarCondition<float> TransMass;
 };
 //
