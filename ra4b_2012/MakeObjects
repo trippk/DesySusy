@@ -89,9 +89,9 @@ endif
 all: MTTOOLS $(EXEC)
 
 $(EXEC): $(OBJS) NtupleTools2Dict.o libRA4bDict.so
-	$(LD) $(LDFLAGS) $(OBJS) NtupleTools2Dict.o  $(OBJS_MTTOOLS) $(ROOTLIBS)  -o $@ $(MORELIBS) 
+	$(LD) $(LDFLAGS) $(OBJS) $(OBJS_MTTOOLS) $(ROOTLIBS) $(MORELIBS) -o $@
 	@echo "$@ done"
-	@echo "$(OBJS) 	$(LD) $(LDFLAGS) $(OBJS) NtupleTools2Dict.o $(OBJS_MTTOOLS) $(ROOTLIBS) $(MORELIBS)  -o $@"
+	@echo "$(OBJS) 	$(LD) $(LDFLAGS) $(OBJS) $(OBJS_MTTOOLS) $(ROOTLIBS) $(MORELIBS)  -o $@"
 
 NtupleTools2Dict.cxx: NtupleTools2_h.h  Linkdef.h
 		@echo "Generating dictionary $@..."
@@ -141,8 +141,8 @@ NtupleTools2Dict_sl.o: NtupleTools2Dict.cxx
 	 $(CXX) -fPIC $(CXXFLAGS) -D __NTHEADER___ -o $@ -c $<	
 libRA4bDict.cpp : $(HEADERS_LIB) libRA4bDict_Linkdef.h 
 	rootcint -f $@ -c -p $^
-libRA4bDict.so : MTTOOLS $(OBJS_LIB) libRA4bDict_sl.o
-	$(CXX) -shared $(LDFLAGS) $(ROOTLIBS) -o $@ $(OBJS_LIB) libRA4bDict_sl.o  $(OBJS_MTTOOLS_LIB)
+libRA4bDict.so : MTTOOLS $(OBJS_LIB) NtupleTools2Dict_sl.o libRA4bDict_sl.o
+	$(CXX) -shared $(LDFLAGS) $(ROOTLIBS) -o $@ $(OBJS_LIB) NtupleTools2Dict_sl.o libRA4bDict_sl.o  $(OBJS_MTTOOLS_LIB)
 	@echo "Made library!"
 
 

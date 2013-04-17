@@ -6,7 +6,7 @@ import commands as com
 def SetUpSampleAndScript(Sample,SubSample,FilesDir,ConfigFile,nFiles):
     """Sets up the directory and the runall_ scripts to run a sample"""
     command='runOnAll'
-    Executable='myAnalysis'
+    Executable='makeobjects'
     optclean='cleanUp'
 
     user=com.getoutput('whoami')
