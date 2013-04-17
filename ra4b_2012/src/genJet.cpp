@@ -1,7 +1,7 @@
 #include "Math/VectorUtil.h"
 #include "NtupleTools2_h.h"
 #include "genJet.h"
-
+#include "Jet.h"
 //#ifndef __CINT__
 //  #include <boost/shared_ptr.hpp>
 //  #include "typedefs.h"
@@ -47,7 +47,7 @@ Ptr_Jet GenJet::GetPartner(){return matchedDetJet.lock();}
 
 
 
-/*
+
 simpleGenJet GenJet::makeSimpleGenJet(){
   //it makes a simpleJet out of this
   
@@ -55,8 +55,13 @@ simpleGenJet GenJet::makeSimpleGenJet(){
   dummySimpleJet.isMatch=isMatch;
   dummySimpleJet.type=type;
   dummySimpleJet.genFlavor=genFlavor;
-    
+  if(this->IsMatch()){
+    dummySimpleJet.matchedDetJet=this->GetPartner()->GetIndexInTree();
+  }else{
+    dummySimpleJet.matchedDetJet=-1;
+  }
   return dummySimpleJet;
 }
-//#endif
-*/
+
+
+

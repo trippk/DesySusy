@@ -305,6 +305,14 @@ simpleJet Jet::makeSimpleJet(){
   dummySimpleJet.correctionUncertainty_DOWN=correctionUncertainty_DOWN;
   dummySimpleJet.jetPt_ShiftedUP=jetPt_ShiftedUP;
   dummySimpleJet.id=id;
+  
+  if (this->IsMatch()){
+    dummySimpleJet.matchedGenJet=this->GetPartner()->GetIndexInTree();
+  }else{
+    dummySimpleJet.matchedGenJet=-1;
+  }
+
+
 
   return dummySimpleJet;
 }

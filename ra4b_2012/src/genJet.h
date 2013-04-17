@@ -61,7 +61,7 @@ class GenJet: public AnalysisObject {
   void SetPartner(Ptr_Jet Jet_in);
   //boost::shared_ptr<Jet> GetPartner();
   Ptr_Jet GetPartner();
-  //simpleGenJet makeSimpleGenJet();
+  simpleGenJet makeSimpleGenJet();
 };
 
 #endif

@@ -22,7 +22,8 @@ class simpleJet: public simpleAnalysisObject {
   double   scaleCorrFactor;
   string   type;
   
-  simpleGenJet* matchedGenJet;
+  //simpleGenJet* matchedGenJet;
+  int matchedGenJet;
 
 
   //int matchedGenJet;
@@ -46,7 +47,7 @@ class simpleJet: public simpleAnalysisObject {
 
   double BJetDisc(const string key) const;
   int GenFlavor() const;
-  simpleGenJet* GetPartner();
+  int GetPartner();
   void Initializer();
   bool IsMatch() const;
   bool IsBJet(const string key="CSV", const double disc_cut=0.679) const ;
@@ -63,7 +64,7 @@ class simpleJet: public simpleAnalysisObject {
   void SetCorrectionUncertainty(const string name, double const value);
   double GetCorrectionUncertainty(const string name);
   double GetJetPt_Shifted(const string name);
-  void SetPartner(simpleGenJet* GenJet_in);
+  void SetPartner(int GenJet_in);
   string Type()const;
 
   ClassDef(simpleJet,1)

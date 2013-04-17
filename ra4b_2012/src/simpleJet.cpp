@@ -225,9 +225,9 @@ double simpleJet::GetJetPt_Shifted(const string name){
 }
 
 
-void simpleJet::SetPartner(simpleGenJet* matchedGenJet_in){
+void simpleJet::SetPartner(int matchedGenJet_in){
   //matchedGenJet.reset(matchedGenJet_in);
   matchedGenJet=matchedGenJet_in;
 }
 
-simpleGenJet* simpleJet::GetPartner(){return matchedGenJet;}
+int simpleJet::GetPartner(){return matchedGenJet;}

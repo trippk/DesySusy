@@ -22,7 +22,7 @@ class simpleGenJet: public simpleAnalysisObject {
   int      genFlavor;
   bool     isMatch;
   string   type;
-  simpleJet* matchedDetJet;
+  int matchedDetJet;
   
  public:
 
@@ -56,9 +56,8 @@ class simpleGenJet: public simpleAnalysisObject {
   void SetIsMatch(bool isMatch_In);
   void SetType(string type_In);
   virtual void Set(int maptotree_In, LorentzM momentum_In, string type_In="");
-  void SetPartner(simpleJet* Jet_in);
-  //boost::shared_ptr<Jet> GetPartner();
-  simpleJet* GetPartner();
+  void SetPartner(int Jet_in);
+  int GetPartner();
 
   friend class GenJet;
 };

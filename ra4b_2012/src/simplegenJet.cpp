@@ -29,10 +29,10 @@ void simpleGenJet::Set(int maptotree_In, LorentzM pmomentum_In,  string type_In)
   type=type_In;
 }
 
-void simpleGenJet::SetPartner(simpleJet* matchedDetJet_in){
+void simpleGenJet::SetPartner(int matchedDetJet_in){
   matchedDetJet=matchedDetJet_in;
 }
 //
 
-simpleJet* simpleGenJet::GetPartner(){return matchedDetJet;}
+int simpleGenJet::GetPartner(){return matchedDetJet;}
 

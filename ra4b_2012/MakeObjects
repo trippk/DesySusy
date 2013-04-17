@@ -40,7 +40,7 @@ OBJS_TEST     := $(OBJS_TEST:.cpp=.o)
 #Define sources to be used with a shared library
 #SOURCES_LIB  = AnalysisObject.cpp Particle.cpp Electron.cpp Muon.cpp Jet.cpp mt2w_bisect.cpp mt2w_interface.cpp anDiLep.cpp
 #SOURCES_LIB = simpleAnalysisObject.cpp simpleParticle.cpp simpleElectron.cpp simpleMuon.cpp simpleJet.cpp simplegenJet.cpp
-SOURCES_LIB = simpleAnalysisObject.cpp simpleParticle.cpp simpleElectron.cpp simpleMuon.cpp simpleJet.cpp
+SOURCES_LIB = simpleAnalysisObject.cpp simpleParticle.cpp simpleElectron.cpp simpleMuon.cpp simpleJet.cpp simplegenJet.cpp
 HEADERS_LIB = $(notdir $(SOURCES_LIB))
 HEADERS_LIB:= $(HEADERS_LIB:.cpp=.h)	
 OBJS_LIB   = $(notdir $(SOURCES_LIB))
