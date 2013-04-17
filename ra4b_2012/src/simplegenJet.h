@@ -60,6 +60,8 @@ class simpleGenJet: public simpleAnalysisObject {
   int GetPartner();
 
   friend class GenJet;
+  ClassDef(simpleGenJet,1)
+  
 };
 
 #endif

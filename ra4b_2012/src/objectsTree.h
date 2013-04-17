@@ -41,10 +41,10 @@ class objectsTree: public subTree {
   }
   //
   void Constructor();
-  void Fill(EventInfo* info, EasyChain* tree, vector<simpleMuon> muons, vector<simpleElectron> electrons, vector<simpleJet> jets, LorentzM met);
+  void Fill(EventInfo* info, EasyChain* tree, vector<simpleMuon> muons, vector<simpleElectron> electrons, vector<simpleJet> jets, vector<simpleGenJet> genjets, LorentzM met);
   //void Fill(EventInfo* info, EasyChain* tree, vector<Muon*>& muons, vector<Electron*>& electrons, vector<Jet*>& jets, vector<GenJet*>& genJets,LorentzM& met);
-  void Fill(EventInfo* info, EasyChain* tree, vector<simpleMuon*>& muons, vector<simpleElectron*>& electrons, vector<simpleJet*>& jets, LorentzM& met);
-  void Fill(EventInfo* info, EasyChain* tree, vector<Muon*>& muons, vector<Electron*>& electrons, vector<Jet*>& jets, LorentzM& met);
+  void Fill(EventInfo* info, EasyChain* tree, vector<simpleMuon*>& muons, vector<simpleElectron*>& electrons, vector<simpleJet*>& jets, vector<simpleGenJet*>& genjets, LorentzM& met);
+  void Fill(EventInfo* info, EasyChain* tree, vector<Muon*>& muons, vector<Electron*>& electrons, vector<Jet*>& jets, vector<GenJet*>& genjets, LorentzM& met);
   virtual void Write();
   void SetTDir(TString);
   void SetTDir(TDirectory*);
@@ -66,6 +66,7 @@ protected:
   vector<simpleElectron>* el;
   vector<simpleMuon>* mu;
   vector<simpleJet>* Jets;
+  vector<simpleGenJet>* GenJets;
   //  vector<simpleGenJet>* genJets;
 };
 

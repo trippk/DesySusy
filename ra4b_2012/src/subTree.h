@@ -15,7 +15,7 @@ using namespace ROOT::Math::VectorUtil;
 class subTree
  {
  public:
-   virtual void Fill(EventInfo* info, EasyChain* tree, vector<Muon*>& muons, vector<Electron*>& electrons, vector<Jet*>& jets, LorentzM& met) = 0;
+   virtual void Fill(EventInfo* info, EasyChain* tree, vector<Muon*>& muons, vector<Electron*>& electrons, vector<Jet*>& jets, vector<GenJet*>& genjets, LorentzM& met) = 0;
    virtual void Write() = 0;
  };
 

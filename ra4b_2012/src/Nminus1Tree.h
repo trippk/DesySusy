@@ -29,7 +29,7 @@ class Nminus1Tree: public subTree {
  public:
 
    Nminus1Tree();
-   virtual void Fill(EventInfo* info, EasyChain* tree, vector<Muon*>& muons_in, vector<Electron*>& electrons_in, vector<Jet*>& jets_in, LorentzM& met_in);
+   virtual void Fill(EventInfo* info, EasyChain* tree, vector<Muon*>& muons_in, vector<Electron*>& electrons_in, vector<Jet*>& jets_in, vector<GenJet*>& genjets_in, LorentzM& met_in);
    virtual void Write();
   protected:
    

@@ -52,20 +52,20 @@ void trigStudyTree::Constructor(){
 
 // void trigStudyTree::Fill(EventInfo* info, EasyChain* tree, vector<Muon*>& muons, vector<Electron*>& electrons, vector<Jet*>& jets, LorentzM& met) {
 
-void trigStudyTree::Fill(EventInfo* info, EasyChain* tree, vector<Muon*>& muons, vector<Electron*>& electrons, vector<Ptr_Jet>& jets, LorentzM& met) {
+void trigStudyTree::Fill(EventInfo* info, EasyChain* tree, vector<Muon*>& muons, vector<Electron*>& electrons, vector<Ptr_Jet>& jets, vector<GenJet*>& genjets, LorentzM& met) {
   vector<Jet*> newJets;
   for (int iel=0; iel<jets.size();++iel){
     newJets.push_back(jets.at(iel).get());
   }
   //
-  Fill(info,tree,muons,electrons,newJets,met);
+  Fill(info,tree,muons,electrons,newJets,genjets,met);
   //
 }
 
 
 
 
-void trigStudyTree::Fill(EventInfo* info, EasyChain* tree, vector<Muon*>& muons, vector<Electron*>& electrons, vector<Jet*>& jets, LorentzM& met) {
+void trigStudyTree::Fill(EventInfo* info, EasyChain* tree, vector<Muon*>& muons, vector<Electron*>& electrons, vector<Jet*>& jets, vector<GenJet*>& genjets, LorentzM& met) {
   //initialize the variables values; e.g. clear vectors
   initLeafs();
   DESYtriggerElMatchedTriggerFilter = info->ElMatchedTriggerFilter;

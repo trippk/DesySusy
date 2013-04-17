@@ -43,7 +43,7 @@ defaultTree::defaultTree(TFile* treefile, TDirectory* indir){
 }
 
 
-void defaultTree::Fill(EventInfo* info, EasyChain* tree, vector<Muon*>& muons_in, vector<Electron*>& electrons_in, vector<Jet*>& jets_in, LorentzM& met){
+void defaultTree::Fill(EventInfo* info, EasyChain* tree, vector<Muon*>& muons_in, vector<Electron*>& electrons_in, vector<Jet*>& jets_in, vector<GenJet*>& genjets_in, LorentzM& met){
 
   el->clear();
   mu->clear();
@@ -122,7 +122,7 @@ void defaultTree::Fill(EventInfo* info, EasyChain* tree, vector<Muon*>& muons_in
 
 }
 
-void defaultTree::Fill(EventInfo* info, EasyChain* tree, vector<Muon*>& muons_in, vector<Electron*>& electrons_in, vector<Ptr_Jet>& jets_in, LorentzM& met){
+void defaultTree::Fill(EventInfo* info, EasyChain* tree, vector<Muon*>& muons_in, vector<Electron*>& electrons_in, vector<Ptr_Jet>& jets_in, vector<Ptr_GenJet>& genjets_in, LorentzM& met){
   //  cout<<"filling"<<endl;
 
   //cout<<"calling Fill with shared_ptr"<<endl;
@@ -132,7 +132,11 @@ void defaultTree::Fill(EventInfo* info, EasyChain* tree, vector<Muon*>& muons_in
   for (int ijet=0; ijet<jets_in.size();++ijet){
     dummyJetCollection.push_back(jets_in.at(ijet).get());
   }  
-  this->Fill(info,tree,muons_in,electrons_in,dummyJetCollection, met);
+  vector<GenJet*> dummyGenJetCollection;
+  for (int ijet=0; ijet<genjets_in.size();++ijet){
+    dummyGenJetCollection.push_back(genjets_in.at(ijet).get());
+  }  
+  this->Fill(info,tree,muons_in,electrons_in,dummyJetCollection, dummyGenJetCollection, met);
 }
 
 

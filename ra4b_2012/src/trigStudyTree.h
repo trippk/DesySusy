@@ -30,8 +30,8 @@ public:
   trigStudyTree(TFile*, TString);
   
   void Constructor();
-  void Fill(EventInfo* info, EasyChain* tree, vector<Muon*>& muons, vector<Electron*>& electrons, vector<Jet*>& jets, LorentzM& met);
-  void Fill(EventInfo* info, EasyChain* tree, vector<Muon*>& muons, vector<Electron*>& electrons, vector<Ptr_Jet>& jets, LorentzM& met);
+  void Fill(EventInfo* info, EasyChain* tree, vector<Muon*>& muons, vector<Electron*>& electrons, vector<Jet*>& jets,  vector<GenJet*>& genjets, LorentzM& met);
+  void Fill(EventInfo* info, EasyChain* tree, vector<Muon*>& muons, vector<Electron*>& electrons, vector<Ptr_Jet>& jets, vector<GenJet*>& genjets, LorentzM& met);
   virtual void Write();
   void SetTDir(TString);
   void SetTFile(TFile*);

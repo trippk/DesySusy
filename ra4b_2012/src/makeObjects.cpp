@@ -463,6 +463,10 @@ int main(int argc, char** argv){
       makeAllGenJets(tree,allGenJets);
       matchGenJets(tree,allGenJets,AllJets);
     }
+    vector<GenJet*> AllpGenJets;
+    for(int ijet = 0; (int)ijet<allGenJets.size(); ijet++){
+      AllpGenJets.push_back(allGenJets.at(ijet).get());
+    }
     //============================================
 
     //Define TAG algorithm & working points==============================
@@ -525,6 +529,10 @@ int main(int argc, char** argv){
     for (int ijet=0;ijet<AllJets.size();++ijet){
       mySimpleJets.push_back(AllJets.at(ijet)->makeSimpleJet());
     }
+    vector<simpleGenJet> mySimpleGenJets;
+    for (int ijet=0;ijet<allGenJets.size();++ijet){
+      mySimpleGenJets.push_back(allGenJets.at(ijet)->makeSimpleGenJet());
+    }
     vector<simpleMuon> mySimpleMuons;
     for (int imu=0;imu<Muons.size();++imu){
       mySimpleMuons.push_back(Muons.at(imu).makeSimpleMuon());
@@ -538,7 +546,7 @@ int main(int argc, char** argv){
 
     //WRITE THE OBJECTS HERE
     //if(!isData){
-    SubTree->Fill(&info,tree,pMuons,pElectrons,AllpJets,PFmet);
+    SubTree->Fill(&info,tree,pMuons,pElectrons,AllpJets,AllpGenJets,PFmet);
     //}
     
      //cout<<"writing!"<<endl;

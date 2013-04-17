@@ -74,7 +74,7 @@ class anDiLep : public subTree {
    ~anDiLep();
 
     //Adds information to the tree
-   virtual void Fill(EventInfo* info, EasyChain* tree, std::vector<Muon*> & muons_in, std::vector<Electron*> & electrons_in, std::vector<Jet*> & jets_in, LorentzM& met_in) {
+   virtual void Fill(EventInfo* info, EasyChain* tree, std::vector<Muon*> & muons_in, std::vector<Electron*> & electrons_in, std::vector<Jet*> & jets_in, std::vector<GenJet*> & genjets_in, LorentzM& met_in) {
      Fill(info, tree, muons_in, electrons_in, jets_in, met_in, met_in);
    }
    //Adds information to the tree, including different met types

@@ -129,7 +129,7 @@ void Nminus1Tree::Write(){
   mytree->Write();
 };
 
-void Nminus1Tree::Fill( EventInfo* info, EasyChain* tree, vector<Muon*>& muons_in, vector<Electron*>& electrons_in, vector<Jet*>& jets_in, LorentzM& met_in) {
+void Nminus1Tree::Fill( EventInfo* info, EasyChain* tree, vector<Muon*>& muons_in, vector<Electron*>& electrons_in, vector<Jet*>& jets_in,  vector<GenJet*>& genjets_in, LorentzM& met_in) {
    
   nFill++;
 
