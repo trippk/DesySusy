@@ -8,7 +8,7 @@
 #include <iostream>
 #include <fstream>
 #include "TSystem.h"
-#include "TH1F.h"
+#include "TH1.h"
 #include "TH2D.h"
 #include "TProfile.h"
 #include "TFile.h"
@@ -360,6 +360,11 @@ int main(int argc, char** argv){
   TH1D* EW_AfterPU=new TH1D("EW_AfterPU","Event Weight after PU RW",100,0.0,10.0);
   TH1D* checkMET= new TH1D("checkMET","check of the MET",30,0.0,300.0);
   
+
+  TDirectory* metStudiesDir=outfile->mkdir("metStudies");                                                                                                                                                                                    
+  metStudiesDir->cd();     
+
+
   vector<TH1D*> JetResPtBins_Matched;  
   vector<TH1D*> JetResEtaBins_Matched;  
   for (int k=0;k<5;++k){
@@ -405,6 +410,8 @@ int main(int argc, char** argv){
   TH2D* METRes_vs_MET=new TH2D("METRes_vs_MET","METRes_vs_MET",40,0.0,400.0,20,-1.0,3.0);
   
   
+  outfile->cd(); 
+
   if(pcp)cout<<"check point before the event loop"<<endl;
 
   bool isquick=config.getBool("quick",true);
@@ -714,10 +721,12 @@ int main(int argc, char** argv){
     //============================================
 
     //RESOLUTION
-    LorentzM& TrueME = tree->Get(&TrueME,"genmetP4True");
-    double TrueMET=TrueME.Pt();
-    METRes->Fill((MET-TrueMET)/TrueMET,EventWeight);
-
+    LorentzM& TrueME=tree->Get(&PFmet, "metP4TypeIPF"); //just to initialize the ref
+    double TrueMET;
+    if(!isData){
+      TrueME=  tree->Get(&TrueME,"genmetP4True");
+      METRes->Fill((MET-TrueMET)/TrueMET,EventWeight);
+    }
     if (pcp){
       cout<<endl;
       cout<<"MET = "<<MET<<endl;
@@ -910,6 +919,7 @@ int main(int argc, char** argv){
       if(pcp)cout<<"check point triggers called"<<endl;
       //
       if(i==0 && isquick){ OK=OK&&OKold; OKold=OK;}
+      //cout<<"trigger is "<<OK<<endl;
       if( !globalFlow.keepIf("triggers", OK )  && quick ) continue;    
       EW_AfterTrigger->Fill(EventWeight);
       //
@@ -1368,14 +1378,34 @@ int main(int argc, char** argv){
 
 
     //===================================================================
-    //EXAMINE THE TRIGGERS THAT PASSED ALL THE SELECTION
+    //CHECK MT2
     //===================================================================
-    bool studytriggers=false;
-    if(studytriggers){
-      bool randombool=triggers_RA4b_frequency(tree,triggernames);
+    Particle* theLepton;
+    double MT2=0;
+    if(SetOfCuts::Leptons.NUM.GiveMeCut()==1 && SetOfCuts::Leptons.NUM.GiveMeRelation()=="equal"){
+      if(globalFlow.DidItPass("One_single_lepton")){
+	if (SignalElectrons.size()==1){
+	  theLepton=SignalElectrons.at(0);
+	}else if(SignalMuons.size()==1){
+	  theLepton=SignalMuons.at(0);
+	}
+	else{
+	  cout<<"there should be either one muon or one electron, but there aren't"<<endl;
+	}
+	double pt1=theLepton->Pt();
+	double pt2=PFmet.pt();
+	 MT2=sqrt( 2*pt1*pt2 * (1 - cos(DeltaPhi(theLepton->P4(), PFmet))));
+	 //cout<<"MT2 = "<<MT2<<endl;
+      }
     }
+    //
+    //
+    //
+    OK=SetOfCuts::Event.MT2.Examine(MT2);
+    if(pcp)cout<<"check point MT2"<<endl;
+    if(i==0 && isquick){ OK=OK&&OKold; OKold=OK;}
+    if(!globalFlow.keepIf("MT2", OK ) && quick ) continue;
     //===================================================================
-
 
 
 
@@ -1597,6 +1627,7 @@ int main(int argc, char** argv){
       globalFlowNames.push_back("NBtags");
       globalFlowNames.push_back("HT");
       globalFlowNames.push_back("MET");
+      globalFlowNames.push_back("MT2");
 
       for(int iname=0;iname<(int)globalFlowNames.size();++iname){
 	rawString+=globalFlowNames.at(iname)+" ";
@@ -1937,8 +1968,8 @@ int main(int argc, char** argv){
   //==================================================
 
   
-  //distmatched->Write();
-  //mytree->Write();
+
+  metStudiesDir->Write();
   JetUncDiff->Write();
   
   //write the control plots
