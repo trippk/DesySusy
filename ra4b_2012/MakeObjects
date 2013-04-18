@@ -10,12 +10,13 @@
   SRCDIR       = ./src
   OBJDIR       = ./obj
   BINDIR       = .
-  VPATH        = $(SRCDIR):$(OBJDIR):$(BINDIR)
-  SOURCES      = $(wildcard $(SRCDIR)/*.cpp)
-  SOURCES     := $(notdir $(SOURCES))
+  DEPDIR       = $(OBJDIR)
+  VPATH        = $(SRCDIR):$(OBJDIR):$(BINDIR):$(DEPDIR)
+  ALL          = $(wildcard $(SRCDIR)/*.cpp)
+  ALL         := $(notdir $(ALL))
   MAINS        = main_RA4b.cpp makeObjects.cpp main_example.cpp
   SOURCES_LIB  = simpleAnalysisObject.cpp simpleParticle.cpp simpleElectron.cpp simpleMuon.cpp simpleJet.cpp simplegenJet.cpp
-  SOURCES     := $(filter-out $(SOURCES_LIB) $(MAINS),$(SOURCES))
+  SOURCES     := $(filter-out $(SOURCES_LIB) $(MAINS),$(ALL))
 
 # with additional libs and includes
 # e.g. MORELIBS = -L/path -lblub
@@ -68,8 +69,6 @@ $(info Different build-types for ROOT and NtupleTools2Dict. Recompiling all.)
 $(shell rm *.o NtupleTools2Dict.cxx )
 endif
 
-
-
 #------------------------------------------------------------------------------
 
 all: objdir MTTOOLS makeObjects
@@ -80,12 +79,12 @@ makeObjects: $(OBJS) NtupleTools2Dict.o libRA4bDict.so makeObjects.o
 	@echo "$@ done"
 
 #Rules for creating a test program
-example: $(OBJS) NtupleTools2Dict.o libRA4bDict.so main_example.o
+example: $(OBJS) $(MAINS) NtupleTools2Dict.o libRA4bDict.so
 	$(LD) $(LDFLAGS) $(addprefix $(OBJDIR)/main_example.o $(OBJS)) $(OBJS_MTTOOLS) $(ROOTLIBS) $(MORELIBS) -o $@
 	@echo "$@ done"
 
 #Rules for creating the linked library
-%_sl.o : %.cpp
+%_sl.o : %.cpp		
 	$(CXX) -fPIC $(CXXFLAGS) -o $(OBJDIR)/$@ -c $<
 NtupleTools2Dict_sl.o: NtupleTools2Dict.cxx
 	 $(CXX) -fPIC $(CXXFLAGS) -D __NTHEADER___ -o $(OBJDIR)/$@ -c $<	
@@ -112,9 +111,18 @@ MTTOOLS:
 	cd src/mTtools/WIMPMASS; make
 
 clean:
-	@rm -f *Dict.* *Dict_* *.so core $(OBJS) $(OBJS_LIB) *.d $(OBJDIR)/*
+	@rm -f *Dict.* *Dict_* *.so core $(OBJDIR)/*.so $(OBJDIR)/*.o $(DEPDIR)/*.d
 
-.cpp.o:
+#This is the rule for creating the dependency files
+
+%.d: %.cpp
+	$(CXX) $(CXXFLAGS) -MM -MF $(DEPDIR)/$@ $<
+%.d: %.C
+	$(CXX) $(CXXFLAGS) -MM -MF $(DEPDIR)/$@ $<
+
+%.o: %.cpp %.d
 		$(CXX) $(CXXFLAGS) -c $< -o $(OBJDIR)/$@
-.C.o:
-		$(CXX) $(CXXFLAGS) -c $< -o $(OBJDIR)/$@
+%.o: %.C %.d
+		$(CXX) $(CXXFLAGS) -c $< -o  $(OBJDIR)/$@
+
+-include $(addprefix $(DEPDIR)/,$(ALL:%.cpp=%.d))
