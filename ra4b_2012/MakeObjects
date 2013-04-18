@@ -19,7 +19,7 @@
 
 # with additional libs and includes
 # e.g. MORELIBS = -L/path -lblub
-  MORELIBS = -L../ -lRA4bDict
+  MORELIBS = -L./ -lRA4bDict
 # e.g. -I/path
   MOREINCS = -I$(TOOLSDIR)
 
@@ -92,7 +92,7 @@ NtupleTools2Dict_sl.o: NtupleTools2Dict.cxx
 libRA4bDict.cpp : $(HEADERS_LIB) libRA4bDict_Linkdef.h 
 	rootcint -f $@ -c -p $^
 libRA4bDict.so : MTTOOLS $(OBJS_LIB) NtupleTools2Dict_sl.o libRA4bDict_sl.o
-	cd $(OBJDIR); $(CXX) -shared $(LDFLAGS) $(ROOTLIBS) -o $@ $(addprefix $(OBJDIR)/,$(OBJS_LIB) NtupleTools2Dict_sl.o libRA4bDict_sl.o)  $(OBJS_MTTOOLS_LIB)
+	$(CXX) -shared $(LDFLAGS) $(ROOTLIBS) -o $@ $(addprefix $(OBJDIR)/,$(OBJS_LIB) NtupleTools2Dict_sl.o libRA4bDict_sl.o)  $(OBJS_MTTOOLS_LIB)
 	@echo "Made library!"
 
 objdir:
