@@ -3,7 +3,6 @@
 #pragma link off all classes;
 #pragma link off all functions;
 #pragma link C++ nestedclasses;
-//#pragma link C++ defined_in "anDiLep.h";
 #pragma link C++ defined_in "simpleAnalysisObject.h";
 #pragma link C++ defined_in "simpleParticle.h";
 #pragma link C++ defined_in "simpleMuon.h";

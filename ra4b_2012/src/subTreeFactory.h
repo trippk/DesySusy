@@ -6,7 +6,6 @@
 #include "subTree.h"
 #include "defaultTree.h"
 #include "Nminus1Tree.h"
-#include "anDiLep.h"
 #include "trigStudyTree.h"
 #include "defaultTree.h"
 #include "objectsTree.h"
@@ -108,10 +107,6 @@ class subTreeFactory
     else if(description == "Nminus1") {
       std::cout<<"Nminus1 subTree will be filled."<<std::endl;
       return new Nminus1Tree;
-    }
-    else if(description == "anDiLep") {
-      std::cout<<"anDiLep subTree will be filled."<<std::endl;
-      return new anDiLep;
     }
     if(description == "trigStudyTree") {
       std::cout<<"TrigStudyTree subTree will be filled."<<std::endl;
