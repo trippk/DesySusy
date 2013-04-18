@@ -6,41 +6,27 @@
 #
 # we compile all *.C and *.cpp defined in SOURCES
 #
-  VPATH = ./src
-  SRCDIR   = ./src/
-  SOURCES  = makeObjects.cpp Nminus1Tree.cpp objectsTree.cpp defaultTree.cpp trigStudyTree.cpp makeJets.cpp makeMuons.cpp makeElectrons.cpp vertices_RA4b.cpp triggers_RA4b.cpp triggers_RA4b_frequency.cpp evtqual_RA4b.cpp metAndHT_RA4b.cpp SetTriggers_RA4b.cpp SetConditions_RA4b.cpp ConfigReader.cpp CutFlow.cpp cschalo_RA4b.cpp trackingFailure_RA4b.cpp AnalysisObject.cpp Particle.cpp Electron.cpp Muon.cpp Jet.cpp eventselection.cpp HistoMaker.cpp mt2w_bisect.cpp mt2w_interface.cpp systematics_RA4b.cpp makeSystematics.cpp anDiLep.cpp TagEff.cpp makeOsLepPairs.cpp JetMonitor.cpp genJet.cpp makeCleanEvent.cpp
 
-#
-  EXEC=makeobjects
+  SRCDIR       = ./src
+  OBJDIR       = ./obj
+  BINDIR       = .
+  VPATH        = $(SRCDIR):$(OBJDIR):$(BINDIR)
+  SOURCES      = $(wildcard $(SRCDIR)/*.cpp)
+  SOURCES     := $(notdir $(SOURCES))
+  MAINS        = main_RA4b.cpp makeObjects.cpp main_example.cpp
+  SOURCES_LIB  = simpleAnalysisObject.cpp simpleParticle.cpp simpleElectron.cpp simpleMuon.cpp simpleJet.cpp simplegenJet.cpp
+  SOURCES     := $(filter-out $(SOURCES_LIB) $(MAINS),$(SOURCES))
 
 # with additional libs and includes
 # e.g. MORELIBS = -L/path -lblub
-  MORELIBS = -L. -lRA4bDict
+  MORELIBS = -L../ -lRA4bDict
 # e.g. -I/path
   MOREINCS = -I$(TOOLSDIR)
 
 OBJS      = $(notdir $(SOURCES))
-#OBJS     = $(SOURCES)
 OBJS     := $(OBJS:.C=.o)
 OBJS     := $(OBJS:.cpp=.o)
-#$(info Using the following files: $(SOURCES) )
-#$(info Using the following files: $(OBJS) )
 
-#Define source for main_2
-SOURCES2  = main_2.cpp Event.cpp Nminus1Tree.cpp defaultTree.cpp makeJets.cpp makeMuons.cpp makeElectrons.cpp vertices_RA4b.cpp triggers_RA4b.cpp triggers_RA4b_frequency.cpp evtqual_RA4b.cpp metAndHT_RA4b.cpp SetTriggers_RA4b.cpp SetConditions_RA4b.cpp ConfigReader.cpp CutFlow.cpp cschalo_RA4b.cpp trackingFailure_RA4b.cpp AnalysisObject.cpp Particle.cpp Electron.cpp Muon.cpp Jet.cpp eventselection.cpp HistoMaker.cpp mt2w_bisect.cpp mt2w_interface.cpp anDiLep.cpp TagEff.cpp makeOsLepPairs.cpp trigStudyTree.cpp JetMonitor.cpp genJet.cpp
-OBJS2    = $(notdir $(SOURCES2))
-OBJS2   := $(OBJS2:.C=.o)
-OBJS2   := $(OBJS2:.cpp=.o)
-
-#Define sources for test. Leaves out some files for simplicity.
-SOURCES_TEST  = Nminus1Tree.cpp defaultTree.cpp trigStudyTree.cpp makeJets.cpp makeMuons.cpp makeElectrons.cpp vertices_RA4b.cpp triggers_RA4b.cpp triggers_RA4b_frequency.cpp evtqual_RA4b.cpp metAndHT_RA4b.cpp SetTriggers_RA4b.cpp SetConditions_RA4b.cpp ConfigReader.cpp CutFlow.cpp cschalo_RA4b.cpp trackingFailure_RA4b.cpp AnalysisObject.cpp Particle.cpp Electron.cpp Muon.cpp Jet.cpp eventselection.cpp HistoMaker.cpp mt2w_bisect.cpp mt2w_interface.cpp anDiLep.cpp TagEff.cpp makeOsLepPairs.cpp
-OBJS_TEST      = $(notdir $(SOURCES_TEST))
-OBJS_TEST     := $(OBJS_TEST:.cpp=.o)	 
-
-#Define sources to be used with a shared library
-#SOURCES_LIB  = AnalysisObject.cpp Particle.cpp Electron.cpp Muon.cpp Jet.cpp mt2w_bisect.cpp mt2w_interface.cpp anDiLep.cpp
-#SOURCES_LIB = simpleAnalysisObject.cpp simpleParticle.cpp simpleElectron.cpp simpleMuon.cpp simpleJet.cpp simplegenJet.cpp
-SOURCES_LIB = simpleAnalysisObject.cpp simpleParticle.cpp simpleElectron.cpp simpleMuon.cpp simpleJet.cpp simplegenJet.cpp
 HEADERS_LIB = $(notdir $(SOURCES_LIB))
 HEADERS_LIB:= $(HEADERS_LIB:.cpp=.h)	
 OBJS_LIB   = $(notdir $(SOURCES_LIB))
@@ -86,12 +72,31 @@ endif
 
 #------------------------------------------------------------------------------
 
-all: MTTOOLS $(EXEC)
+all: objdir MTTOOLS makeObjects
 
-$(EXEC): $(OBJS) NtupleTools2Dict.o libRA4bDict.so
-	$(LD) $(LDFLAGS) $(OBJS) $(OBJS_MTTOOLS) $(ROOTLIBS) $(MORELIBS) -o $@
+makeObjects: $(OBJS) NtupleTools2Dict.o libRA4bDict.so makeObjects.o
+	@echo $(SOURCES)
+	$(LD) $(LDFLAGS) $(addprefix $(OBJDIR)/, makeObjects.o $(OBJS)) $(ROOTLIBS) $(MORELIBS) -o $@
 	@echo "$@ done"
-	@echo "$(OBJS) 	$(LD) $(LDFLAGS) $(OBJS) $(OBJS_MTTOOLS) $(ROOTLIBS) $(MORELIBS)  -o $@"
+
+#Rules for creating a test program
+example: $(OBJS) NtupleTools2Dict.o libRA4bDict.so main_example.o
+	$(LD) $(LDFLAGS) $(addprefix $(OBJDIR)/main_example.o $(OBJS)) $(OBJS_MTTOOLS) $(ROOTLIBS) $(MORELIBS) -o $@
+	@echo "$@ done"
+
+#Rules for creating the linked library
+%_sl.o : %.cpp
+	$(CXX) -fPIC $(CXXFLAGS) -o $(OBJDIR)/$@ -c $<
+NtupleTools2Dict_sl.o: NtupleTools2Dict.cxx
+	 $(CXX) -fPIC $(CXXFLAGS) -D __NTHEADER___ -o $(OBJDIR)/$@ -c $<	
+libRA4bDict.cpp : $(HEADERS_LIB) libRA4bDict_Linkdef.h 
+	rootcint -f $@ -c -p $^
+libRA4bDict.so : MTTOOLS $(OBJS_LIB) NtupleTools2Dict_sl.o libRA4bDict_sl.o
+	cd $(OBJDIR); $(CXX) -shared $(LDFLAGS) $(ROOTLIBS) -o $@ $(addprefix $(OBJDIR)/,$(OBJS_LIB) NtupleTools2Dict_sl.o libRA4bDict_sl.o)  $(OBJS_MTTOOLS_LIB)
+	@echo "Made library!"
+
+objdir:
+	mkdir -p $(OBJDIR)
 
 NtupleTools2Dict.cxx: NtupleTools2_h.h  Linkdef.h
 		@echo "Generating dictionary $@..."
@@ -107,44 +112,9 @@ MTTOOLS:
 	cd src/mTtools/WIMPMASS; make
 
 clean:
-	@rm -f myAnalysis *Dict.* *Dict_* *.so core $(OBJS) $(OBJS_LIB) *.d 
+	@rm -f *Dict.* *Dict_* *.so core $(OBJS) $(OBJS_LIB) *.d $(OBJDIR)/*
 
 .cpp.o:
-		$(CXX) $(CXXFLAGS) -c $<
-		$(info .cpp.p rule got called!)
+		$(CXX) $(CXXFLAGS) -c $< -o $(OBJDIR)/$@
 .C.o:
-		$(CXX) $(CXXFLAGS) -c $<
-ConfigReader.o : ConfigReader.cpp
-		$(CXX) $(CXXFLAGS) -c $<
-CutFlow.o : CutFlow.cpp
-		$(CXX) $(CXXFLAGS) -c $<
-
-#Rules for creating main_2
-main2: $(OBJS2) NtupleTools2Dict.o 
-	$(LD) $(LDFLAGS) $(OBJS2) NtupleTools2Dict.o $(OBJS_MTTOOLS) $(ROOTLIBS) $(MORELIBS)  -o $(EXEC)
-	@echo "$@ done"
-	@echo "$(OBJS) 	$(LD) $(LDFLAGS) $(OBJS2) NtupleTools2Dict.o $(OBJS_MTTOOLS) $(ROOTLIBS) $(MORELIBS)  -o $(EXEC)"
-
-
-#Rules for creating a test program
-test.x: test.o $(OBJS_TEST) NtupleTools2Dict.o
-	@echo "Creating test..."
-	$(LD) $(LDFLAGS) $^ $(ROOTLIBS) $(MORELIBS)  -o $@
-	@echo "$@ done"
-
-
-
-#Rules for creating the linked library
-%_sl.o : %.cpp
-	$(CXX) -fPIC $(CXXFLAGS) -o $@ -c $<
-NtupleTools2Dict_sl.o: NtupleTools2Dict.cxx
-	 $(CXX) -fPIC $(CXXFLAGS) -D __NTHEADER___ -o $@ -c $<	
-libRA4bDict.cpp : $(HEADERS_LIB) libRA4bDict_Linkdef.h 
-	rootcint -f $@ -c -p $^
-libRA4bDict.so : MTTOOLS $(OBJS_LIB) NtupleTools2Dict_sl.o libRA4bDict_sl.o
-	$(CXX) -shared $(LDFLAGS) $(ROOTLIBS) -o $@ $(OBJS_LIB) NtupleTools2Dict_sl.o libRA4bDict_sl.o  $(OBJS_MTTOOLS_LIB)
-	@echo "Made library!"
-
-
-
-
+		$(CXX) $(CXXFLAGS) -c $< -o $(OBJDIR)/$@
