@@ -8,7 +8,7 @@
 #
   VPATH = ./src
   SRCDIR   = ./src/
-  SOURCES  = makeObjects.cpp Nminus1Tree.cpp objectsTree.cpp defaultTree.cpp trigStudyTree.cpp makeJets.cpp makeMuons.cpp makeElectrons.cpp vertices_RA4b.cpp triggers_RA4b.cpp triggers_RA4b_frequency.cpp evtqual_RA4b.cpp metAndHT_RA4b.cpp SetTriggers_RA4b.cpp SetConditions_RA4b.cpp ConfigReader.cpp CutFlow.cpp cschalo_RA4b.cpp trackingFailure_RA4b.cpp AnalysisObject.cpp Particle.cpp Electron.cpp Muon.cpp Jet.cpp eventselection.cpp HistoMaker.cpp mt2w_bisect.cpp mt2w_interface.cpp systematics_RA4b.cpp makeSystematics.cpp anDiLep.cpp TagEff.cpp makeOsLepPairs.cpp JetMonitor.cpp genJet.cpp makeCleanEvent.cpp
+  SOURCES  = Nminus1Tree.cpp objectsTree.cpp defaultTree.cpp trigStudyTree.cpp makeJets.cpp makeMuons.cpp makeElectrons.cpp vertices_RA4b.cpp triggers_RA4b.cpp triggers_RA4b_frequency.cpp evtqual_RA4b.cpp metAndHT_RA4b.cpp SetTriggers_RA4b.cpp SetConditions_RA4b.cpp ConfigReader.cpp CutFlow.cpp cschalo_RA4b.cpp trackingFailure_RA4b.cpp AnalysisObject.cpp Particle.cpp Electron.cpp Muon.cpp Jet.cpp eventselection.cpp HistoMaker.cpp mt2w_bisect.cpp mt2w_interface.cpp systematics_RA4b.cpp makeSystematics.cpp anDiLep.cpp TagEff.cpp makeOsLepPairs.cpp JetMonitor.cpp genJet.cpp makeCleanEvent.cpp
 
 #
   EXEC=makeobjects
@@ -86,12 +86,12 @@ endif
 
 #------------------------------------------------------------------------------
 
-all: MTTOOLS $(EXEC)
+all: clean MTTOOLS $(EXEC)
 
-$(EXEC): $(OBJS) NtupleTools2Dict.o libRA4bDict.so
-	$(LD) $(LDFLAGS) $(OBJS) $(OBJS_MTTOOLS) $(ROOTLIBS) $(MORELIBS) -o $@
-	@echo "$@ done"
-	@echo "$(OBJS) 	$(LD) $(LDFLAGS) $(OBJS) $(OBJS_MTTOOLS) $(ROOTLIBS) $(MORELIBS)  -o $@"
+$(EXEC): makeObjects.o $(OBJS) NtupleTools2Dict.o libRA4bDict.so
+	$(LD) $(LDFLAGS) makeObjects.o $(OBJS) $(OBJS_MTTOOLS) $(ROOTLIBS) $(MORELIBS) -o $@
+#	@echo "$@ done"
+#	@echo "$(OBJS) 	$(LD) $(LDFLAGS) $(OBJS) $(OBJS_MTTOOLS) $(ROOTLIBS) $(MORELIBS)  -o $@"
 
 NtupleTools2Dict.cxx: NtupleTools2_h.h  Linkdef.h
 		@echo "Generating dictionary $@..."
@@ -125,13 +125,17 @@ main2: $(OBJS2) NtupleTools2Dict.o
 	@echo "$@ done"
 	@echo "$(OBJS) 	$(LD) $(LDFLAGS) $(OBJS2) NtupleTools2Dict.o $(OBJS_MTTOOLS) $(ROOTLIBS) $(MORELIBS)  -o $(EXEC)"
 
-
 #Rules for creating a test program
 test.x: test.o $(OBJS_TEST) NtupleTools2Dict.o
 	@echo "Creating test..."
 	$(LD) $(LDFLAGS) $^ $(ROOTLIBS) $(MORELIBS)  -o $@
 	@echo "$@ done"
 
+#Rules to compile an example
+example.x: main_example.o $(OBJS) NtupleTools2Dict.o libRA4bDict.so
+	$(LD) $(LDFLAGS) $(OBJS) $(OBJS_MTTOOLS) $(ROOTLIBS) $(MORELIBS) -o $@
+	@echo "$@ done"
+	@echo "$(OBJS) $(LD) $(LDFLAGS) $(OBJS) $(OBJS_MTTOOLS) $(ROOTLIBS) $(MORELIBS)  -o $@"
 
 
 #Rules for creating the linked library
