@@ -4,28 +4,23 @@ DS=$2
 GT=$3
 CFGNAME=$4
 if [ $5 ]
-then
-JSON=$5
+    then
+    JSON=$5
 fi
+DESYSTORAGE="dcache-se-cms.desy.de"
+XRDSERVER="root://cms-xrd-global.cern.ch/"
 
 echo $CFGNAME
-
-das="https://cmsweb.cern.ch/das/"
-py="makepy?dataset="$DS"&instance=cms_dbs_prod_global"
-file=`echo $py | sed 's/\//%2F/g'`
-echo $down
-
-wget --no-check-certificate "https://cmsweb.cern.ch/das/"$py
 
 rm -f $CFGNAME
 touch $CFGNAME
 
 echo "import FWCore.ParameterSet.Config as cms" >> $CFGNAME
 echo "from SusyCAF_Tree_"$DSTYPE"_cfg import *" >> $CFGNAME
-if [ $4 ]
-then
-echo "import PhysicsTools.PythonAnalysis.LumiList as LumiList" >> $CFGNAME
-echo 'process.source.lumisToProcess = LumiList.LumiList(filename = "'$JSON'").getVLuminosityBlockRange()' >> $CFGNAME
+if [ $5 ]
+    then
+    echo "import FWCore.PythonUtilities.LumiList as LumiList" >> $CFGNAME
+    echo 'process.source.lumisToProcess = LumiList.LumiList(filename = "'$JSON'").getVLuminosityBlockRange()' >> $CFGNAME
 fi
 
 echo "from FWCore.ParameterSet.VarParsing import VarParsing as VP" >> $CFGNAME
@@ -35,20 +30,38 @@ echo "options.parseArguments()" >> $CFGNAME
 
 echo 'process.GlobalTag.globaltag = "'$GT'"' >> $CFGNAME
 echo "process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )" >> $CFGNAME
-
+echo "readFiles = cms.untracked.vstring()" >> $CFGNAME
+echo "secFiles = cms.untracked.vstring()" >> $CFGNAME
+echo "process.source = cms.Source ('PoolSource',fileNames = readFiles, secondaryFileNames = secFiles,skipEvents = cms.untracked.uint32(0) )" >> $CFGNAME
 value=0
-while read line
-do
-line=`echo $line |  sed 's/ = secFiles/ = secFiles,skipEvents = cms.untracked.uint32(0) /g'`
-#line=`echo $line |  sed 's/\/store/root:\/\/xrootd.t2.ucsd.edu\/\/store/g'`
-value=`expr $value + 1`;
-if [[ $value -lt 4 ]]
-then
-continue
-fi
-echo $line | sed 's/source/process.source/g' >> $CFGNAME
-done < $file
 
+rm -f filelist.txt
+dbs search --query="find file where dataset=$DS" | grep .root > filelist.txt
+
+flag=`dbs search --query="find site where dataset=$DS" | grep $DESYSTORAGE`
+if [ $flag ]
+    then
+    XRDSERVER=""
+fi
+
+while read line
+  do
+  value=`expr $value + 1`;
+  if [[ $value -eq 1 ]]
+      then
+      echo "readFiles.extend( [" >> $CFGNAME
+  fi
+  if [[ $value -eq 253 ]]
+      then
+      echo \"${XRDSERVER}${line}\""] );" >> $CFGNAME
+      value=0
+  else
+      echo \"${XRDSERVER}${line}\""," >> $CFGNAME
+  fi
+done < filelist.txt
+
+echo "] );" >> $CFGNAME
+echo "secFiles.extend( [] )" >> $CFGNAME
 echo "if options.skipEvents >= 0:" >> $CFGNAME
 echo "    process.source.skipEvents=options.skipEvents" >> $CFGNAME
 echo "else:" >> $CFGNAME
@@ -57,5 +70,3 @@ echo "process.options.wantSummary=True" >> $CFGNAME
 echo "process.MessageLogger.cerr.FwkSummary.reportEvery=1" >> $CFGNAME
 echo "">> $CFGNAME
 echo "process.load('TopAnalysis.TopUtils.SignalCatcher_cfi')" >> $CFGNAME
-
-rm $file
