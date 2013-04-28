@@ -37,7 +37,7 @@ cvs up -r 1.13 EGamma/EGammaAnalysisTools/interface/PFIsolationEstimator.h
 cvs up -r 1.20 EGamma/EGammaAnalysisTools/src/PFIsolationEstimator.cc
 
 #PileUp Jet ID
-cvs co -r V00-03-01 -d CMGTools/External UserCode/CMG/CMGTools/External
+#cvs co -r V00-03-01 -d CMGTools/External UserCode/CMG/CMGTools/External
 
 #MET MVA
 cvs co -r METPU_5_3_X_v8 JetMETCorrections/METPUSubtraction
