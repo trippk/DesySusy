@@ -5,6 +5,7 @@
 
 <use name="DataFormats/Common"/>
 <use name="DataFormats/GsfTrackReco"/>
+<use name="DataFormats/JetReco"/>
 <use name="DataFormats/Math"/>
 <use name="DataFormats/ParticleFlowCandidate"/>
 <use name="DataFormats/ParticleFlowReco"/>
@@ -21,6 +22,8 @@
 <use name="FWCore/Utilities"/>
 
 <use name="RecoParticleFlow/PFProducer"/>
+
+<use name="RecoJets/JetProducers"/>
 
 <use name="SimDataFormats/GeneratorProducts"/>
 <use name="SimDataFormats/PileupSummaryInfo"/>

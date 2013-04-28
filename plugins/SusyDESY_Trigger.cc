@@ -4,8 +4,6 @@
 #include "CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h"
 #include "JetMETCorrections/Objects/interface/JetCorrectionsRecord.h"
 
-#include "CMGTools/External/interface/PileupJetIdentifier.h"
-
 #include "DataFormats/RecoCandidate/interface/IsoDeposit.h"
 
 #include "EGamma/EGammaAnalysisTools/interface/EGammaCutBasedEleId.h"
