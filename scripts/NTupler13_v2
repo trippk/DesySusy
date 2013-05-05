@@ -38,7 +38,7 @@ cvs up -r 1.13 EGamma/EGammaAnalysisTools/interface/PFIsolationEstimator.h
 cvs up -r 1.20 EGamma/EGammaAnalysisTools/src/PFIsolationEstimator.cc
 
 #PileUp Jet ID
-cvs co -r V00-03-01 -d CMGTools/External UserCode/CMG/CMGTools/External
+#cvs co -r V00-03-01 -d CMGTools/External UserCode/CMG/CMGTools/External
 
 #MET MVA and PileUp Jet ID
 cvs co -r METPU_5_3_X_v8 JetMETCorrections/METPUSubtraction
@@ -49,7 +49,7 @@ rm -rf pharrisTmp
 cvs co -r b5_3_X_cvMEtCorr_2013Feb22 DataFormats/METReco
 cvs co -r b5_3_X_cvMEtCorr_2013Feb22 DataFormats/JetReco
 touch RecoJets/JetProducers/data/dummy.txt
-#cvs co -r V05-00-16      DataFormats/JetReco
+
 cvs co -r V03-04-07      RecoMET/METAlgorithms
 cvs co -r V03-03-12      RecoMET/METProducers
 cvs co -r 1.6            PhysicsTools/PatAlgos/plugins/PATMHTProducer.h
@@ -69,7 +69,7 @@ cvs co -r CMSSW_5_3_3_patch2 ElectroWeakAnalysis/Utilities
 cvs co -d TopAnalysis/TopUtils UserCode/Bromo/TopAnalysis/TopUtils
 
 cvs co -dSUSYBSMAnalysis/SusyCAF -r V17-13 UserCode/SusyCAF
-cvs co -dSUSYBSMAnalysis/DesySusy -r V00-16 UserCode/DesySusy
+cvs co -dSUSYBSMAnalysis/DesySusy -r V00-17 UserCode/DesySusy
 
 cp SUSYBSMAnalysis/DesySusy/nTuplePatch/susydesy_cfg.py SUSYBSMAnalysis/SusyCAF/test
 cp SUSYBSMAnalysis/DesySusy/nTuplePatch/SusyDESY_nTuple_cfi.py SUSYBSMAnalysis/SusyCAF/python
