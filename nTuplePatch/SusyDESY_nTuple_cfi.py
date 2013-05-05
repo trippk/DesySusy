@@ -164,6 +164,18 @@ class SusyCAF(object) :
                                                    self.process.logErrorTooManySeedsMainIterationsFilterFlag
                                                    )
 
+        #METMVA:
+        self.process.load('JetMETCorrections.Configuration.JetCorrectionProducers_cff')
+        self.process.load('JetMETCorrections.METPUSubtraction.mvaPFMET_leptons_cff')
+
+        if self.options.isData:
+            self.process.calibratedAK5PFJetsForPFMEtMVA.correctors = cms.vstring("ak5PFL1FastL2L3Residual")
+        else:
+            self.process.calibratedAK5PFJetsForPFMEtMVA.correctors = cms.vstring("ak5PFL1FastL2L3")
+            
+        from SUSYBSMAnalysis.SusyCAF.SusyCAF_MET_cfi import met
+        self.process.susydesymetMVA  = met('PF' , 'pfMEtMVA', 'MVA', 'DESYmet', calo=False)
+        
         return ( self.patJet() + self.PileUpJetID() +
                  self.patLepton('Electron') + self.patLepton('Muon') +
                  self.evalSequence('susycaf%s',  ['photon']+(['tau','HPStau','pftau'] if self.options.taus else [])) +
@@ -174,6 +186,7 @@ class SusyCAF(object) :
                  self.process.trkPOGFilters +
                  self.evalSequence('susydesy%s', ['patelectrons','pfelectrons','patmuons','pfmuons','tau','trigger', 'track', 'tobtecfakesProducer']+
                                    ([] if self.options.isData else ['pu']))+
+                 self.process.pfMEtMVAsequence + self.process.susydesymetMVA +
                  self.process.susydesyjets +
                  self.evalSequence('filterResult%s', ['OneLepton']) +
                  self.evalSequence('filter%s'      , ['OneLepton'])
@@ -228,10 +241,10 @@ class SusyCAF(object) :
         return self.process.susydesytrackIsolationMaker
 
     def PileUpJetID(self) :
-        from CMGTools.External.puJetIDAlgo_cff import full_53x, full_5x, cutbased
-        from CMGTools.External.pujetidproducer_cfi import pileupJetIdProducer
+        from RecoJets.JetProducers.PileupJetIDParams_cfi import full_53x, full_5x, cutbased
+        from RecoJets.JetProducers.PileupJetID_cfi import pileupJetIdProducer
 
-        full_53x.tmvaWeights = cms.string("CMGTools/External/data/TMVAClassificationCategory_JetID_53X_Dec2012.weights.xml")
+        full_53x.tmvaWeights = cms.string("RecoJets/JetProducers/data/TMVAClassificationCategory_JetID_53X_Dec2012.weights.xml")
         full_53x.label = cms.string("full53x")
         full_5x.label = cms.string("full5x")
 
@@ -243,6 +256,7 @@ class SusyCAF(object) :
             runMvas = cms.bool(False),
             jets = cms.InputTag( JetCollection),
             vertexes = cms.InputTag("offlinePrimaryVertices"),
+	    residualsTxt     = cms.FileInPath("RecoJets/JetProducers/data/dummy.txt"),
             algos = cms.VPSet(cutbased)
             )
         
@@ -252,6 +266,7 @@ class SusyCAF(object) :
             runMvas = cms.bool(True),
             jets = cms.InputTag( JetCollection),
             vertexes = cms.InputTag("offlinePrimaryVertices"),
+            residualsTxt     = cms.FileInPath("RecoJets/JetProducers/data/dummy.txt"),
             algos = cms.VPSet(full_53x, full_5x)
             )
         return (self.process.puJetId * self.process.puJetMva )
