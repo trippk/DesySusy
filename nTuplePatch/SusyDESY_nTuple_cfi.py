@@ -241,10 +241,10 @@ class SusyCAF(object) :
         return self.process.susydesytrackIsolationMaker
 
     def PileUpJetID(self) :
-        from RecoJets.JetProducers.PileupJetIDParams_cfi import full_53x, full_5x, cutbased
-        from RecoJets.JetProducers.PileupJetID_cfi import pileupJetIdProducer
+        from CMGTools.External.puJetIDAlgo_cff import full_53x, full_5x, cutbased
+        from CMGTools.External.pujetidproducer_cfi import pileupJetIdProducer
 
-        full_53x.tmvaWeights = cms.string("RecoJets/JetProducers/data/TMVAClassificationCategory_JetID_53X_Dec2012.weights.xml")
+        full_53x.tmvaWeights = cms.string("CMGTools/External/data/TMVAClassificationCategory_JetID_53X_Dec2012.weights.xml")
         full_53x.label = cms.string("full53x")
         full_5x.label = cms.string("full5x")
 
@@ -256,7 +256,6 @@ class SusyCAF(object) :
             runMvas = cms.bool(False),
             jets = cms.InputTag( JetCollection),
             vertexes = cms.InputTag("offlinePrimaryVertices"),
-	    residualsTxt     = cms.FileInPath("RecoJets/JetProducers/data/dummy.txt"),
             algos = cms.VPSet(cutbased)
             )
         
@@ -266,7 +265,6 @@ class SusyCAF(object) :
             runMvas = cms.bool(True),
             jets = cms.InputTag( JetCollection),
             vertexes = cms.InputTag("offlinePrimaryVertices"),
-            residualsTxt     = cms.FileInPath("RecoJets/JetProducers/data/dummy.txt"),
             algos = cms.VPSet(full_53x, full_5x)
             )
         return (self.process.puJetId * self.process.puJetMva )
