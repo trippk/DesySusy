@@ -67,7 +67,7 @@ cvs co -r CMSSW_5_3_3_patch2 ElectroWeakAnalysis/Utilities
 cvs co -d TopAnalysis/TopUtils UserCode/Bromo/TopAnalysis/TopUtils
 
 cvs co -dSUSYBSMAnalysis/SusyCAF -r V17-13 UserCode/SusyCAF
-cvs co -dSUSYBSMAnalysis/DesySusy -r V00-19 UserCode/DesySusy
+cvs co -dSUSYBSMAnalysis/DesySusy -r V00-18 UserCode/DesySusy
 
 cp SUSYBSMAnalysis/DesySusy/nTuplePatch/susydesy_cfg.py SUSYBSMAnalysis/SusyCAF/test
 cp SUSYBSMAnalysis/DesySusy/nTuplePatch/SusyDESY_nTuple_cfi.py SUSYBSMAnalysis/SusyCAF/python
@@ -79,5 +79,5 @@ cp -p SUSYBSMAnalysis/SusyCAF/plugins/mods/PdfWeightProducer.cc ElectroWeakAnaly
 scram setup lhapdffull
 touch $CMSSW_BASE/src/ElectroWeakAnalysis/Utilities/BuildFile.xml #to ensure recompilation of the whole package
 
-scram b -j8
+scram b -j16
 
