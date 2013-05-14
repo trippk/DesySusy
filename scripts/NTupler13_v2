@@ -5,6 +5,8 @@
 #cd $CMSSW/src 
 #cmsenv 
 
+
+
 # SusyPat
 cvs co -r V00-03-16      CommonTools/ParticleFlow                         
 cvs co -r V00-03-23      CommonTools/RecoAlgos                            
@@ -47,10 +49,6 @@ cvs co -r b5_3_X_cvMEtCorr_2013Feb22 DataFormats/METReco
 cvs co -r b5_3_X_cvMEtCorr_2013Feb22 DataFormats/JetReco
 cvs co -r b5_3_X_cvMEtCorr_2013Feb25 RecoJets/JetProducers
 
-cp SUSYBSMAnalysis/DesySusy/nTuplePatch/PileUpJetID/PileupJetIdAlgo.cc RecoJets/JetProducers/src/
-cp SUSYBSMAnalysis/DesySusy/nTuplePatch/PileUpJetID/BuildFile.xml  RecoJets/JetProducers/
-cp SUSYBSMAnalysis/DesySusy/nTuplePatch/mvaPFMET_leptons_cfi.py JetMETCorrections/METPUSubtraction/python 
-
 cvs co -r V03-04-07      RecoMET/METAlgorithms
 cvs co -r V03-03-12      RecoMET/METProducers
 cvs co -r 1.6            PhysicsTools/PatAlgos/plugins/PATMHTProducer.h
@@ -70,10 +68,16 @@ cvs co -r CMSSW_5_3_3_patch2 ElectroWeakAnalysis/Utilities
 cvs co -d TopAnalysis/TopUtils UserCode/Bromo/TopAnalysis/TopUtils
 
 cvs co -dSUSYBSMAnalysis/SusyCAF -r V17-13 UserCode/SusyCAF
-cvs co -dSUSYBSMAnalysis/DesySusy -r V00-20 UserCode/DesySusy
+cvs co -dSUSYBSMAnalysis/DesySusy -r V00-21 UserCode/DesySusy
 
+# apply patches to SusyCAF
 cp SUSYBSMAnalysis/DesySusy/nTuplePatch/susydesy_cfg.py SUSYBSMAnalysis/SusyCAF/test
 cp SUSYBSMAnalysis/DesySusy/nTuplePatch/SusyDESY_nTuple_cfi.py SUSYBSMAnalysis/SusyCAF/python
+
+# apply patches to PileUp Jet Id and MVA MEt
+cp SUSYBSMAnalysis/DesySusy/nTuplePatch/PileUpJetID/PileupJetIdAlgo.cc RecoJets/JetProducers/src/
+cp SUSYBSMAnalysis/DesySusy/nTuplePatch/PileUpJetID/BuildFile.xml  RecoJets/JetProducers/
+cp SUSYBSMAnalysis/DesySusy/nTuplePatch/MVAMET/mvaPFMET_leptons_cfi.py JetMETCorrections/METPUSubtraction/python 
 
 # adding nominal pdf
 unalias cp
