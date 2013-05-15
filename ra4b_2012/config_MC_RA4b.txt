@@ -2,14 +2,15 @@
 
 isData      = false
 filename    = /scratch/hh/current/cms/user/eron/nTuples/testdir/
-quick       = false
-doSystematics = true
-DoControlPlots=false
+quick       = true
+doSystematics = false
+DoControlPlots=true
 resonance_cut = 8.0
 isolation_cut = 0.1
-SampleName = TTJetsMG
-SubSampleName = Semi-DR53
-Estimation = RA4b-mu
+SampleName = WJetsToLNu
+SubSampleName = 4Jets
+Estimation = CRFMuons
 Tail = NoTail
 TightElectrons_PTMIN = 30.0
-TightMuons_PTMIN = 20.0
+TightMuons_PTMIN = 25.0
+TurnTriggersOff=true

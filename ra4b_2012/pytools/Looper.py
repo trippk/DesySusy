@@ -87,18 +87,25 @@ class Looper:
 
 
     def FindHistograms(self,dirName,histo,pattern):
-        """looks for the histogram histo inside of dir"""
+        '''looks for the histogram histo inside of dirName
+        it returns self.histoPack if the histograms were found
+        otherwise it returns the string NotFound'''
 
-        print 'dirName = ',dirName
-        print 'lasttfile is ',self.LastTFile
+        #print 'dirName = ',dirName
+        #print 'lasttfile is ',self.LastTFile
         if dirName=='':
             dir=self.LastTFile
         else:
             dir=self.LastTFile.Get(dirName)
         #
-        if dir==0:
+        if str(dir).find('nil')!=-1:
             raise NameError('the directory '+dirName+' was not found')
         #
+        #print 'and the dirName is ',dirName        
+        #print 'the dir is ',dir.GetPath()
+
+
+
         nextkey =ROOT.TIter(dir.GetListOfKeys())
         key=nextkey()        
         while str(key).find('nil') == -1:
@@ -111,7 +118,7 @@ class Looper:
                     #
                     histoPath=self.GetRelativePath(dir.GetPath())
                     histoPath=histoPath+'/'+obj.GetName()
-                    print 'the histopath is ',histoPath
+                    #print 'the histopath is ',histoPath
                     histoPack=self.GetHistoFromFiles(histoPath)
                     #
                     #print 'histograms found, returning ',self.histoPack
@@ -133,14 +140,13 @@ class Looper:
             #the last key has been found
             #jump to the mother directory and
             #resume the loop
-            print 'done with the first dir'
+            print 'done with the dir ',dir.GetPath()
             if not dir.GetPath() in self.motherDir:
                 return 'End'
             
             print 'moving to the mother directory ',self.motherDir[dir.GetPath()].GetPath()
             self.currentDir=self.motherDir[dir.GetPath()]
             #self.StartLoop(self.currentDir)
-
             return self.NextHisto(pattern)
         #
         #
@@ -162,7 +168,7 @@ class Looper:
             #all the histos are now contained in
             #self.histoPack
 
-            print 'returning ',self.histoPack
+            #print 'returning ',self.histoPack
             return self.histoPack
         elif obj.IsA().InheritsFrom("TDirectory"):
             #
@@ -171,19 +177,27 @@ class Looper:
             self.StartLoop(obj)
             return self.NextHisto(pattern)
     #
-    #
+
     def StartLoop(self,dir):
         """loops recursively over the directory dir"""
-
-        if dir=='':
-            #print 'self.LastTfile is ',self.LastTFile
-            dir=self.LastTFile
-        #
         #
         #
         self.currentDir=dir
         self.nextkey[dir.GetPath()] =ROOT.TIter(dir.GetListOfKeys())
         
-        
+    
+    #
+    def StartLoopFromString(self,indir):
+        """loops recursively over the directory dir"""
+
+        if indir=='':
+            #print 'self.LastTfile is ',self.LastTFile
+            dir=self.LastTFile
+        else:
+            dir=self.LastTFile.Get(indir)
+
+        self.StartLoop(dir)
+
+
 
            

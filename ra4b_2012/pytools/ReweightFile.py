@@ -76,7 +76,7 @@ def ReweightFile(filepath,LumiData,paraFile="para_config.txt"):
 
     #=====the output should be the same as
     #=====the filename + '_RW2X', where X is the lumi
-    OutFileName=FileName
+    OutFileName=filepath
     print ""
     print "---------------------------------------------"
     print "INSIDE ReweightFile"
@@ -85,13 +85,13 @@ def ReweightFile(filepath,LumiData,paraFile="para_config.txt"):
     #
     #
     OutFileName=OutFileName.replace('.root','_RWTo'+str(int(LumiData))+'.root')
-    OutFileName=AbsPath.replace(FileName,OutFileName)
+    #OutFileName=AbsPath.replace(FileName,OutFileName)
     #
     #
     print ''
     print "   Going to reweight the file",filepath, "to the lumi",LumiData
     print ""
-    print "       the outFileName will be ",OutFileName
+    print "          the outFileName will be ",OutFileName
     
     #INPUT FILE#
     infile=TFile(filepath,"READ")
@@ -137,6 +137,7 @@ def ReweightFile(filepath,LumiData,paraFile="para_config.txt"):
         FE=parameters_dict[filtereff_key]
     except KeyError:
         print filtereff_key, "does not exist in the dictionary"
+        
         return
     #
     xsec_key='xs_'+Sample+'_'+SubSample
@@ -158,16 +159,16 @@ def ReweightFile(filepath,LumiData,paraFile="para_config.txt"):
     #COMPUTE THE WEIGHTS
     #if LumiData==-1:
         #LumiData=5097.
-    print "    Reweighting information"
-    print '    XS =',XS
-    print '    FE =',FE
-    print '    TNOE =',TNOE
+    print "----Reweighting information----"
+    print '        XS =',XS
+    print '        FE =',FE
+    print '        TNOE =',TNOE
     Weight=float(LumiData)*XS*FE/TNOE;
-    print "    LumiData =",LumiData
-    print "    cross section is",XS
-    print "    FE is ", FE
-    print "    number of entries ",TNOE
-    print "    the weight is ",Weight
+    print "        LumiData =",LumiData
+    print "        cross section is",XS
+    print "        FE is ", FE
+    print "        number of entries ",TNOE
+    print "        the weight is ",Weight
     #raw_input("ready to continue?")
 
     #

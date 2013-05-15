@@ -149,8 +149,12 @@ class Sample:
             #
         #
         print ''
-        print 'It has been determined that merging is needed: ', NewerFile
-        print ''
+        print 'CHECKING FOR MERGING'
+        print '' 
+        if NewerFile:
+            print '    Mergig IS needed'
+        else:
+            print '    Merging is NOT needed'
         print ''
         return  not NewerFile
     #
@@ -166,7 +170,7 @@ class Sample:
         #
         #
 
-        verbose=True
+        verbose=False
         if len(FilesToMerge)<2:
             if verbose:
                 print 'the list of files to merge has only one element'
@@ -206,7 +210,7 @@ class Sample:
         #
         #======CHECK IF ALREADY MERGED
         AreMerged=self.CheckIfMerged(FilesToMerge,self.MergedFilePath)
-        print 'it has been determined that AreMerged is '+str(AreMerged)
+        #print 'it has been determined that AreMerged is '+str(AreMerged)
         #
         #
         #
@@ -323,15 +327,21 @@ class Sample:
                 #
                 isRW=int(rwtime)>int(filetime)
                 if verbose:
-                    print 'rwtime is ',rwtime
-                    print 'filetime is ',filetime
-                    print (rwtime)>int(filetime)
+                    print '     rwtime is ',rwtime
+                    print '     filetime is ',filetime
+                    print '    ',(rwtime)>int(filetime)
             else:
                 print 'the histo date_of_reweighting_to_'+str(int(lumi))+' was not found'
                 
                 isRW=False
         #
         #print 'returning ',isRW,FileGuess
+        if isRW:
+            yesorno='HAVE'
+        else:
+            yesorno='have NOT'
+            
+        print '     it has been determined that the files '+yesorno+' have been reweighted'
         return isRW,FileGuess
     #
     #
@@ -355,6 +365,9 @@ class Sample:
             ForceRW=options[1]
         #
         #======CHECK IF IT HAD BEEN REWEIGHTED BEFORE
+        print ''
+        print ''
+        print ''
         print '***********************************************'
         print 'Checking for REWEIGHTING:'
         print "FILE: ",File
@@ -362,14 +375,14 @@ class Sample:
         print ""
         isRW,FileGuess=self.CheckIfFileIsReweighted(File,Lumi)
 
-        print "RESULT: it has been determined that isRW is ",isRW
-        if not isRW:
-            print ''
-            print 'this means that the file IS going to be reweighted'
-            print ''                    
-        print 'The file guess was',FileGuess
-        print "***********************************************"
-        print ""
+        #print "RESULT: it has been determined that isRW is ",isRW
+        #if not isRW:
+        #    print ''
+        #    print 'this means that the file IS going to be reweighted'
+        #    print ''                    
+         #print 'The file guess was',FileGuess
+        #print "***********************************************"
+        #print ""
         doReweight=False
             
         if (not isRW and doRW):

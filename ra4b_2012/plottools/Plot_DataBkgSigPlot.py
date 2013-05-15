@@ -86,10 +86,11 @@ class DataBkgSigPlot:
     #==============================================
     def AddBackgrounds(self):
         if len(self.bkgDict)==0:
-            print '*****************************************************************'
-            print 'WARNING: there are no background samples being used, are you sure this is correct?'
-            print '*****************************************************************'            
+            #print '*****************************************************************'
+            #rint 'WARNING: there are no background samples being used, are you sure this is correct?'
+            #print '*****************************************************************'            
             #
+            pass
         else: 
             for hname,bkgList in sorted(self.bkgDict.iteritems()):
 

@@ -56,8 +56,8 @@ def PlotPair(h1,h2,Properties):
     #
     #=======LEGEND
     myLegend=rootobj.BuildLegend({})
-    h1Tag=Properties.get('h1Tag','matched')
-    h2Tag=Properties.get('h2Tag','un-matched')
+    h1Tag=Properties.get('h1Tag','h1')
+    h2Tag=Properties.get('h2Tag','h2')
     #
     #
     #
@@ -71,7 +71,9 @@ def PlotPair(h1,h2,Properties):
     #////////////////////////////////////////////
     pad2.cd()
     #set the title of the ratio plot as the name of the variable
-    ratioplot_up=rootobj.BuildRatioPlot(h2,h1,{'xtitle_ratioplot':Properties['variableName']})
+    variableName=Properties.get('variableName','')
+    print 'puta ',variableName
+    ratioplot_up=rootobj.BuildRatioPlot(h2,h1,{'xtitle_ratioplot':variableName})
     ratioplot_up.SetLineColor(h2.GetLineColor())
     ratioplot_up.Draw()
     gPad.Update()
@@ -88,4 +90,4 @@ def PlotPair(h1,h2,Properties):
     mytpave.Draw()
 
     #myC.SaveAs('test.pdf')
-    myC.SaveAs(Properties.get('psFileName','defaultPsName.ps'))    
+    myC.SaveAs(Properties.get('psFileName','defaultPdfName.pdf'))    

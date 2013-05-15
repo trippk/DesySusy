@@ -48,7 +48,7 @@ def BuildTLatex(Properties):
 
     tlatex_x=Properties.get("tlatex_x",0.6)
     tlatex_y=Properties.get("tlatex_y",0.6)
-    tlatex_text=Properties.get("tlatex_text","hello!")
+    tlatex_text=Properties.get("tlatex_text","")
     tlatex_textsize=Properties.get("tlatex_textsize",0.04)
     #
     t1 = TLatex(tlatex_x,tlatex_y,tlatex_text)
@@ -67,7 +67,7 @@ def BuildTPaveText(Properties):
     tpave_x2=Properties.get("tpave_x2",0.5)
     tpave_y2=Properties.get("tpave_y2",0.5)
     tpave_bsize=Properties.get("tpave_bsize",0)
-    tpave_text=Properties.get("tpave_text","hello!")
+    tpave_text=Properties.get("tpave_text","")
     tpave_textsize=Properties.get("tpave_textsize",0.04)
     #
     t1 = TPaveText(tpave_x1,tpave_y1,tpave_x2,tpave_y2,'NDC')

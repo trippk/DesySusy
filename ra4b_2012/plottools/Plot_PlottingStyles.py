@@ -30,7 +30,7 @@ def Style_SignalHistogram(signame):
 
 
 
-def Style_ControlPlots(lumi= 5.01):
+def Style_ControlPlots(lumi= -1):
     """Style for the control plots"""
     
     D={}
@@ -55,13 +55,14 @@ def Style_ControlPlots(lumi= 5.01):
     D['Xaxis_Title_stack']=''
     #
     lumiString = '%.0f' % lumi
-    D['tpave_text']='CMS Preliminary, #int Ldt = ' + lumiString + ' pb^{-1}, #sqrt{s} = 8 TeV'
+    if lumi != -1:
+        D['tpave_text']='CMS Preliminary, #int Ldt = ' + lumiString + ' pb^{-1}, #sqrt{s} = 8 TeV'
     #coordinates
     D["tpave_x1"]=0.25
     D["tpave_y1"]=0.83
     D["tpave_x2"]=0.55
     D["tpave_y2"]=0.88
-    
+    D['Luminosity']=lumi
 
     return D
 
