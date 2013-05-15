@@ -236,8 +236,8 @@ int main(int argc, char** argv){
   if(!isData && !oldpuw){
     nobinsmc = config.getDouble("PU_"+WhatSample+"_"+WhatSubSample+"_mc",PUmc," ");
     nobinsdata = config.getDouble("PU_data",PUdata," ");
-    nobinsdata = config.getDouble("PU_data_up",  PUdata_up  ," ");
-    nobinsdata = config.getDouble("PU_data_down",PUdata_down," ");
+    //nobinsdata = config.getDouble("PU_data_up",  PUdata_up  ," ");
+    //nobinsdata = config.getDouble("PU_data_down",PUdata_down," ");
   }
   else if(!isData && oldpuw){
     nobinsmc = config.getDouble("oldPU_"+WhatSample+"_"+WhatSubSample+"_mc",PUmc," ");
@@ -461,9 +461,9 @@ int main(int argc, char** argv){
     
     bool isBatchJob=config.getBool("isBatchJob",false);
     std::string test1="src/Summer12_V2_DATA_AK5PF_UncertaintySources.txt";
-    std::string test2="../../Summer12_V2_DATA_AK5PF_UncertaintySources.txt";
-    
-    if(!isBatchJob){
+    //std::string test2="../../Summer12_V2_DATA_AK5PF_UncertaintySources.txt";
+    std::string test2="/afs/naf.desy.de/user/e/eron/scratch/UserCode/RA4bHead/UserCode/DesySusy/ra4b_2012/src/Summer12_V2_DATA_AK5PF_UncertaintySources.txt";
+      if(!isBatchJob){
       jetuncfile=test1;
     }else{
       jetuncfile=test2;
@@ -587,8 +587,10 @@ int main(int argc, char** argv){
       }
       else {
 	PUWeight= PUdata.at( relevantNumPU )/PUmc.at( relevantNumPU );
-	PUWeight_up= PUdata_up.at( relevantNumPU )/PUmc.at( relevantNumPU );
-	PUWeight_down= PUdata_down.at( relevantNumPU )/PUmc.at( relevantNumPU );
+	//#PUWeight_up= PUdata_up.at( relevantNumPU )/PUmc.at( relevantNumPU );
+	//PUWeight_down= PUdata_down.at( relevantNumPU )/PUmc.at( relevantNumPU );
+	PUWeight_up=0.0;
+	PUWeight_down=0.0;
       }
       
       EventWeight *= PUWeight;
@@ -885,7 +887,6 @@ int main(int argc, char** argv){
 	  METChange_NMatchedJets_NJets.at(njetsbin*5+nmatchedjetsbin)->Fill((newMET-MET)/MET,EventWeight);
 	}
 	METRes_vs_MET->Fill(MET,(MET-TrueMET)/TrueMET,EventWeight);
-
       }
     }
 
@@ -1223,13 +1224,13 @@ int main(int argc, char** argv){
     //=================================
     //
     //
+    //cout<<"sizes"<<endl;
+    //cout<<SignalMuons.size()<<" "<<SignalElectrons.size()<<" "<<WideMuons.size()<<" "<<WideElectrons.size()<<endl;
+    //cout<<endl;
     OK=SetOfCuts::SignalMuons.NUM.Examine(SignalMuons.size());
     if(i==0 && isquick){OK=OK&&OKold; OKold=OK;}
     if(!globalFlow.keepIf("Signal_Muons",OK) && quick) continue;
     if(DoControlPlots && OK)ControlPlots.MakePlots("Signal_Muons", SignalMuons, TightElectrons, CleanedJets, PFmet); 
-    //treeCuts["Signal_Muons"]=OK;
-
-    //cout<<"the size of ALLJets is "<<AllJets.size()<<endl;   
     //
     //
     //
@@ -1238,13 +1239,8 @@ int main(int argc, char** argv){
     if(i==0 && isquick){OK=OK&&OKold; OKold=OK;}
     if(!globalFlow.keepIf("Signal_Electrons",OK) && quick) continue;
     if(DoControlPlots && OK)ControlPlots.MakePlots("Signal_Electrons", SignalMuons, SignalElectrons, CleanedJets, PFmet); 
-    //treeCuts["Signal_Electrons"]=OK;
     //
     //
-    //
-    //    if( OK){
-    //      events2<<Event<<endl;
-    //    }
     //
     //
     //
@@ -1269,7 +1265,6 @@ int main(int argc, char** argv){
 
 
 
-    //cout<<"the size of ALLJets is 1 "<<AllJets.size()<<endl;   
 
 
 
@@ -1405,6 +1400,7 @@ int main(int argc, char** argv){
     if(pcp)cout<<"check point MT2"<<endl;
     if(i==0 && isquick){ OK=OK&&OKold; OKold=OK;}
     if(!globalFlow.keepIf("MT2", OK ) && quick ) continue;
+    if(DoControlPlots && OK)ControlPlots.MakePlots("MT2", SignalMuons, SignalElectrons, CleanedJets, PFmet); 
     //===================================================================
 
 

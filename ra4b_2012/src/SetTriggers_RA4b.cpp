@@ -23,7 +23,7 @@ void SetTriggers_RA4b(SampleInformation mySampleInformation, vector<const char*>
   string triggermenu="nomenu";
 
 
-  if(mySampleInformation.GetEstimation()=="CR1"){
+  if(mySampleInformation.GetEstimation()=="CR1" || mySampleInformation.GetEstimation()=="CR1Muons" ||  mySampleInformation.GetEstimation()=="CRFMuons"){
     triggermenu="singlemuon";
   }
   //
