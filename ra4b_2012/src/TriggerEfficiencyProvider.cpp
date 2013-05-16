@@ -1,4 +1,8 @@
-#include "TriggerEccifiencyProvider.h"
+#include "TriggerEfficiencyProvider.h"
+#include <cmath> 
+#include <math.h> 
+
+using namespace std;
 
 //-------------------------------------------
 // efficiency for single lepton trigger
