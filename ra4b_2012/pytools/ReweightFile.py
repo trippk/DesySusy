@@ -128,6 +128,7 @@ def ReweightFile(filepath,LumiData,paraFile="para_config.txt"):
             except IndexError:
                 print "this is not going to work"
                 print "thisline is", thisline
+                print 'and the index is ',thisline[0]
                 raise
         else:
             pass

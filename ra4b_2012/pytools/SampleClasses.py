@@ -432,8 +432,12 @@ class Sample:
         ForceMerge=options.get('ForceMerge',False)
         dataLumiList=options.get('dataLumi',[0])
         mergedSuffix=options.get('mergedSuffix','')
+
+        if not type(dataLumiList)==list:
+            dataLumiList=[dataLumiList]
         #Lumi=dataLumi
 
+        
         #this is done for every value of the lumi
         for dataLumi in dataLumiList:
             #

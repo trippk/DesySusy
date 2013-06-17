@@ -24,7 +24,10 @@ class Looper:
         self.histoPack={}
         self.motherDir={}
         self.currentDir=0
+        self.ignoreDirectoryList=[]
 
+
+        
     def GetRelativePath(self,HistoPath):
         #remove everything from the ":" onwards
         position=HistoPath.find(':')
@@ -46,7 +49,7 @@ class Looper:
             #last tfile
 
             self.LastTFile=self.TFiles[key]
-            print 'set lasttfile to ',self.LastTFile            
+            #print 'set lasttfile to ',self.LastTFile            
         return
 
     def ApplyPattern(self,histo,pattern):
@@ -125,8 +128,13 @@ class Looper:
                     return self.histoPack
             key=nextkey()
 
-        print 'the histogram ',histo.GetName(),' was not found in ',dir.GetPath()
+        print 'in FindHistograms: '
+        print '    the histogram ',histo.GetName(),' was not found in ',dir.GetPath()
         return 'NotFound'
+
+
+
+    #def returnToMotherDir
             
     def NextHisto(self,pattern):
         """moves to the next key in the iterator
@@ -173,6 +181,13 @@ class Looper:
         elif obj.IsA().InheritsFrom("TDirectory"):
             #
             #print 'seeting mother dir ',obj.GetPath(), 'to ', self.currentDir
+            if obj.GetName() in self.ignoreDirectoryList:
+                #return to the mother dir
+                print 'ignoring the directorydu ',obj.GetPath()
+                print 'at this point dir is ',dir.GetPath()
+                self.currentDir=dir
+                return self.NextHisto(pattern)
+            #
             self.motherDir[obj.GetPath()]=self.currentDir
             self.StartLoop(obj)
             return self.NextHisto(pattern)
@@ -182,6 +197,7 @@ class Looper:
         """loops recursively over the directory dir"""
         #
         #
+        #dir.ls()
         self.currentDir=dir
         self.nextkey[dir.GetPath()] =ROOT.TIter(dir.GetListOfKeys())
         
@@ -189,13 +205,14 @@ class Looper:
     #
     def StartLoopFromString(self,indir):
         """loops recursively over the directory dir"""
-
+        
         if indir=='':
             #print 'self.LastTfile is ',self.LastTFile
             dir=self.LastTFile
+            print 'the dir is thus ',dir.GetPath()
         else:
             dir=self.LastTFile.Get(indir)
-
+            
         self.StartLoop(dir)
 
 

@@ -68,6 +68,7 @@ def BreakDownInputPath(filepath):
         
         InDir=TopFolder
         pwd=commands.getoutput('pwd')
+        #raw_input('pwd = '+str(pwd))
         AbsPath=pwd+'/'+filepath
 
         #########
@@ -138,7 +139,6 @@ def BreakDownInputPath(filepath):
 
 
 if __name__ == "__main__":
-
 
 
     print "hey"
