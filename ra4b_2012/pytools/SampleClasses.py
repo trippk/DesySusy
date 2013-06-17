@@ -40,6 +40,7 @@ class Sample:
         self.dDates={}
         self.ReweightedFiles={}
         self.MergedFiles={}
+        self.rwOptions={}
         #
 
     def AddRootFile(self,ExternRootFile):
@@ -397,7 +398,8 @@ class Sample:
             #
             #
             #
-            RWFile=ReweightFile(File,Lumi,self.paraFile)
+            
+            RWFile=ReweightFile(File,Lumi,self.rwOptions)
             #
 
             if RWFile != FileGuess:

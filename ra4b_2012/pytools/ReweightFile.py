@@ -69,8 +69,17 @@ def LoopAndScale(dir,Weight):
 
 
 
-def ReweightFile(filepath,LumiData,paraFile="para_config.txt"):
+#def ReweightFile(filepath,LumiData,paraFile="para_config.txt"):
+def ReweightFile(filepath,LumiData,rwOptions):
 
+
+    paraFile=rwOptions.get('parametersFile','para_config.txt')
+    entriesFromFile=rwOptions.get('entriesFromFile',True)
+    entriesFromHistogram=rwOptions.get('entriesFromHistogram',False)
+    if  entriesFromHistogram:
+        entriesFromFile=False
+        
+    
     #raw_input('going to make the call with '+str(filepath))
     FileName,InDir,Sample,SubSample,Estimation,Tail,AbsPath = BreakDownInputPath(filepath)
 
@@ -148,13 +157,24 @@ def ReweightFile(filepath,LumiData,paraFile="para_config.txt"):
         print xsec_key, "does not exist in the dictionary"
         return
     #
-    tnoe_key='TNoE_'+Sample+'_'+SubSample
-    try:
-        TNOE=parameters_dict[tnoe_key]
-    except KeyError:
-        print tnoe_key, "does not exist in the dictionary"
-        return
-    #
+
+    if entriesFromFile:
+        tnoe_key='TNoE_'+Sample+'_'+SubSample
+        try:
+            TNOE=parameters_dict[tnoe_key]
+        except KeyError:
+            print tnoe_key, "does not exist in the dictionary"
+            return
+
+    elif entriesFromHistogram:
+        entriesHistoPath=rwOptions['entriesHistoPath']
+        entriesHisto=infile.Get(entriesHistoPath)
+        if str(entriesHisto).find('nil') != -1:
+            print 'the entries histo ',entriesHisto.GetName(),' was not found in ',infile.GetPath()
+        #
+        if entriesHisto.GetNBinsX() > 1:
+            print 'the histo has more than one bin!! ',entriesHisto.GetNbinsX()
+        TNOE=entriesHisto.GetBinContent(1)
 
 
     #COMPUTE THE WEIGHTS
