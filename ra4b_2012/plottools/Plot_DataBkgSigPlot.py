@@ -217,9 +217,10 @@ class DataBkgSigPlot:
         #
         #
         #=============TPAVETEXT================
-        tlat=BuildTPaveText(self.plotProperties)
-        tlat.Draw()
+        #tlat=BuildTPaveText(self.plotProperties)
+        #tlat.Draw()
         #
+        #raw_input('noooow')
         canv.Update()
         #
         #

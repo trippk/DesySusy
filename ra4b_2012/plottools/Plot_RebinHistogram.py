@@ -49,13 +49,21 @@ def MergeLastBins(histo,Properties):
         return 0
     else:
         return newLowEdges
-        
+
+
+def RebinAll(histo,Properties):
+    '''rebin all bins'''
+    newName=Properties.get('rebin_newName',histo.GetName()+'_rebin')        
+    rebinngroup=Properties.get('rebin_ngroup',1)
+    histo.Rebin(rebinngroup,histo.GetName()+'_'+newname)
+    
 def Rebin(histo,Properties):
 
 
     #PARAMETERS OF REBIN
     #ngroup=Properties.get('rebin_ngroup')
-    newname=Properties['rebin_newName']
+    newName=Properties.get('rebin_newName',histo.GetName()+'_rebin')    
+
     rebinMode=Properties['rebin_rebinMode']
     if rebinMode=='mergeLastBins':
         lowEdges=MergeLastBins(histo,Properties)
@@ -69,9 +77,14 @@ def Rebin(histo,Properties):
     #print 'low edges size ',len(lowEdges)
     #print lowEdges
     #
-    h=histo.Rebin(ngroup,histo.GetName()+'_'+newname,lowEdges)
-    
+    h=histo.Rebin(ngroup,histo.GetName()+'_'+newName,lowEdges)
+
 
     return h
+
+
+
+
+
 
 
