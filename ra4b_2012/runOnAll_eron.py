@@ -15,7 +15,7 @@ batch_script = \
 ## make sure the right shell will be used
 #$ -S /bin/zsh
 ## the cpu time for this job
-#$ -l h_cpu=00:40:00
+#$ -l h_cpu=00:50:00
 ## the maximum memory usage of this job
 #$ -l h_vmem=1500M
 ## stderr and stdout are merged together to stdout
@@ -34,23 +34,17 @@ cd $OUTDIR
 ##initialize glite, dctools
 ini glite
 ini dctools
-##pwd
-#cp ../../src/Summer12_V2_DATA_AK5PF_UncertaintySources.txt /tmp/
-##ls -lrt /tmp
+
 echo job start at `date`
 
-#echo total jobs at the NAF `qstat | wc -l`
-#echo total running jobs at the NAF `qstat | grep -i " r " | wc -l`
-#echo total own jobs at the NAF `qstat -u eron | wc -l`
-#echo total own running jobs at the NAF `qstat -u eron | grep -i " r " | wc -l`
-#echo this machine is `echo $HOST`
 
 time $EXECUTABLE filename="$1" outname=$2 Estimation=$3 Tail=$4 isBatchJob=true
-##cp $2 $OUTDIR
-##echo cp $2 $OUTDIR
+
 echo
 echo done at time date `date`
 """
+
+
 
 
 merge_script = \

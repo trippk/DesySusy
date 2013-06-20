@@ -25,18 +25,10 @@ def SetUpSampleAndScript(Sample,SubSample,FilesDir,ConfigFile,nFiles):
     #
     TargetDir=Sample+'/'+SubSample
     TargetName=Sample+'_'+SubSample+'.root'
-    #is the directory there already?
-    #print "TargetDir is",TargetDir
-    #print "going to do the ls "
-#    print "with the sample ",TargetDir
-#out=com.getoutput('ls -lrt '+TargetDir)
-#print out
- #   print
-  #  print
-   # print
+    #
     out=com.getoutput('ls -lrt '+topdir+TargetDir)
     if out.find('No such')>=0:
-        print 'lets make the directory'
+        print '   Directory does not yet exist,   so let\'s create it'
         out=com.getoutput('ls '+topdir+Sample)
         if out.find('No such')>=0:
             mkd=com.getoutput('mkdir '+topdir+Sample)
@@ -44,7 +36,6 @@ def SetUpSampleAndScript(Sample,SubSample,FilesDir,ConfigFile,nFiles):
         mkd=com.getoutput('mkdir '+topdir+TargetDir)
     #
     out=com.getoutput('ln -fs ' + topdir + Sample + ' ./' )
-    print 'out is ',out
     #name of the script
     scriptname='runall_'+Sample+'_'+SubSample
 

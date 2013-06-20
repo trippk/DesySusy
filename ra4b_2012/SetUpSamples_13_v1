@@ -1,0 +1,278 @@
+#!/usr/bin/python
+import sys, os
+import commands as com
+from SetUpSample import SetUpSampleAndScript
+
+
+#
+#
+def SampleFromSubSamples(SubSampleList):
+    """dont know yet """
+    
+def cleanUpDir(outdir):
+    #out=com.getoutput("rm -f merge_script.o*")
+    file=open("cleanUpDir","w")
+    out=com.getoutput('chmod u+x cleanUpDir')
+    print outdir
+    line='rm -f merge_script.o*'
+    file.write(line+'\n')
+    file.close()
+    out=com.getoutput("mv cleanUpDir "+outdir+"/")
+
+def makeScriptFromInfoPack(Sample,Config,InfoPack,makeAllScript):
+    Scripts=[]
+    for pack in InfoPack:
+        SubSample=pack[0]
+        FilesDir=pack[1]
+        nFiles=pack[2]
+        script=SetUpSampleAndScript(Sample,SubSample,FilesDir,Config,nFiles)        
+        cleanUpDir('./'+Sample+'/'+SubSample)
+        Scripts.append(script)
+    #
+    
+    if makeAllScript:
+        allfile=open('runall_'+Sample+'_ALL','w')
+        for scr in Scripts:
+            line='./'+scr+' $1 $2'
+            allfile.write(line+'\n')
+            #
+        #
+        allfile.close()
+        out=com.getoutput('chmod u+x runall_'+Sample+'_ALL')
+    #
+        
+
+def SingleMu():
+
+    Sample='SingleMu'
+    Config='config_DATA_RA4b.txt'
+    InfoPack=[]
+    #
+    SubSample='Run2012A-13JulReReco'
+    FilesDir='/scratch/hh/dust/naf/cms/user/eron/SingleMu/Run2012A-13Jul2012-v1'
+    nFiles=3
+    InfoPack.append((SubSample,FilesDir,nFiles))
+    #
+    SubSample='Run2012A-06AugReReco'
+    FilesDir='/scratch/hh/dust/naf/cms/user/eron/SingleMu/Run2012A-06AugReReco'
+    nFiles=3
+    InfoPack.append((SubSample,FilesDir,nFiles))
+    #
+    SubSample='Run2012B-13JulReReco'
+    FilesDir='/scratch/hh/dust/naf/cms/user/eron/SingleMu/Run2012B-13JulReReco-v1'
+    nFiles=3
+    InfoPack.append((SubSample,FilesDir,nFiles))    
+    #
+    SubSample='Run2012C-24Aug2012-v1'
+    FilesDir='/scratch/hh/dust/naf/cms/user/eron/SingleMu/Run2012C-24Aug2012-v1/'
+    nFiles=3
+    InfoPack.append((SubSample,FilesDir,nFiles))    
+    #
+    SubSample='Run2012C-PromptReco-v2'
+    FilesDir='/scratch/hh/dust/naf/cms/user/eron/SingleMu/Run2012C-PromptReco-v2/'
+    nFiles=7
+    InfoPack.append((SubSample,FilesDir,nFiles))    
+    #    
+    SubSample='Run2012D-PromptReco-v1'
+    FilesDir='/pnfs/desy.de/cms/tier2/store/user/fcostanz/NTuple13_v1/SingleMu/Run2012D-PromptReco-v1/'
+    nFiles=3
+    InfoPack.append((SubSample,FilesDir,nFiles))
+
+    makeScriptFromInfoPack(Sample,Config,InfoPack,True)
+
+
+def SingleEl():
+
+
+    Sample='SingleEl'
+    Config='config_DATA_RA4b.txt'
+    InfoPack=[]
+    #
+    SubSample='Run2012A-13JulReReco'
+    FilesDir='/afs/naf.desy.de/user/l/lobanov/dust/SUSY/nTupler13/data/SingleElectron/Run2012A-13Jul2012-v1'
+    nFiles=2
+    InfoPack.append((SubSample,FilesDir,nFiles))
+    #
+    SubSample='Run2012A-06AugReReco'
+    FilesDir='/afs/naf.desy.de/user/l/lobanov/dust/SUSY/nTupler13/data/SingleElectron/Run2012A-recover-06Aug2012-v1'
+    nFiles=2
+    InfoPack.append((SubSample,FilesDir,nFiles))
+    #
+    SubSample='Run2012B-13JulReReco'
+    FilesDir='/afs/naf.desy.de/user/l/lobanov/dust/SUSY/nTupler13/data/SingleElectron/Run2012B-13Jul2012-v1'
+    nFiles=2
+    InfoPack.append((SubSample,FilesDir,nFiles))    
+    #
+    SubSample='Run2012C-24Aug2012-v1'
+    FilesDir='/afs/naf.desy.de/user/l/lobanov/dust/SUSY/nTupler13/data/SingleElectron/Run2012C-24Aug2012-v1'
+    nFiles=2
+    InfoPack.append((SubSample,FilesDir,nFiles))    
+    #
+    SubSample='Run2012C-PromptReco-v2'
+    FilesDir='/afs/naf.desy.de/user/l/lobanov/dust/SUSY/nTupler13/data/SingleElectron/Run2012C-PromptReco-v2'
+    nFiles=4
+    InfoPack.append((SubSample,FilesDir,nFiles))    
+    #    
+    #SubSample='Run2012D-PromptReco-v1'
+    #FilesDir='/pnfs/desy.de/cms/tier2/store/user/alobanov/SUSY/nTupler13/data/SingleElectron/Run2012D-PromptReco-v1'
+    #nFiles=3
+    InfoPack.append((SubSample,FilesDir,nFiles))
+
+    makeScriptFromInfoPack(Sample,Config,InfoPack,True)
+
+
+
+
+def TTJetsPOWHEG():
+
+    Sample='TTJetsPWHG'
+    Config='config_MC_RA4b.txt'
+    InfoPack=[]
+    #
+    SubSample='v1'    
+    nFiles=2
+    FilesDir='/afs/naf.desy.de/user/c/costanza/workdir/NTuple13_V1/new/CMSSW_5_3_3_patch2/src/SUSYBSMAnalysis/SusyCAF/test/naf_TTJetsPowhegv1_cfg/'
+    InfoPack.append((SubSample,FilesDir,nFiles))    
+    #
+    SubSample='v2'
+    nFiles=2
+    FilesDir='/afs/naf.desy.de/user/c/costanza/workdir/NTuple13_V1/new/CMSSW_5_3_3_patch2/src/SUSYBSMAnalysis/SusyCAF/test/naf_TTJetsPowhegv2_cfg/'
+    #
+    InfoPack.append((SubSample,FilesDir,nFiles))
+    makeScriptFromInfoPack(Sample,Config,InfoPack,True)
+                    
+def TTJetsMG():
+
+    Sample='TTJetsMG'
+    Config='config_MC_RA4b.txt'
+    InfoPack=[]
+    #
+    SubSample='FullyHad'
+    FilesDir='/scratch/hh/dust/naf/cms/user/sahin/nTuple13_v1/mc/TTJets_HadronicMGDecays_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A_ext-v1/'
+    nFiles=3
+    InfoPack.append((SubSample,FilesDir,nFiles))
+    #
+    SubSample='SemiLept'
+    #FilesDir='/pnfs/desy.de/cms/tier2/store/user/fcostanz/NTuple13_v1/TTJets_SemiLepttMGDecays_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A_ext-v1'
+    FilesDir='/scratch/hh/dust/naf/cms/user/eron/TTJetsMG/Semi-Lept/'
+    nFiles=3
+    InfoPack.append((SubSample,FilesDir,nFiles))        
+    #
+    SubSample='DiLept'
+    FilesDir='/scratch/hh/dust/naf/cms/user/sahin/nTuple13_v1/mc/TTJets_FullLeptMGDecays_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v2/'
+    nFiles=3
+    InfoPack.append((SubSample,FilesDir,nFiles))        
+    #
+    makeScriptFromInfoPack(Sample,Config,InfoPack,True)    
+
+
+
+
+def WJetsToLNu():
+    Sample='WJetsToLNu'
+    Config='config_MC_RA4b.txt'
+    InfoPack=[]
+
+    #
+    SubSample='1Jet'
+    FilesDir='/pnfs/desy.de/cms/tier2/store/user/fcostanz/NTuple13_v1/W1JetsToLNu_TuneZ2Star_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/'
+    nFiles=3
+    InfoPack.append((SubSample,FilesDir,nFiles))
+    #
+    SubSample='2Jets'
+    FilesDir='/pnfs/desy.de/cms/tier2/store/user/fcostanz/NTuple13_v1/W2JetsToLNu_TuneZ2Star_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/'
+    nFiles=3
+    InfoPack.append((SubSample,FilesDir,nFiles))
+    #
+    SubSample='3Jets'
+    FilesDir='/scratch/hh/dust/naf/cms/user/sahin/nTuple13_v1/mc/W3JetsToLNu_TuneZ2Star_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/'
+    nFiles=3
+    InfoPack.append((SubSample,FilesDir,nFiles))
+    #
+    SubSample='4Jets'
+    FilesDir='/scratch/hh/dust/naf/cms/user/sahin/nTuple13_v1/mc/W4JetsToLNu_TuneZ2Star_8TeV-madgraph/Summer12_DR53X-PU_S10_START53_V7A-v1/'
+    nFiles=3
+    InfoPack.append((SubSample,FilesDir,nFiles))
+
+    makeScriptFromInfoPack(Sample,Config,InfoPack,True)
+
+    SubSample='Inclusive'
+    FilesDir='/pnfs/desy.de/cms/tier2/store/user/fcostanz/NTuple13_v1/WJetsToLNu_TuneZ2Star_8TeV-madgraph-tarball/Summer12_DR53X-PU_S10_START53_V7A-v1/'
+    nFiles=1
+    InfoPack=[]
+    InfoPack.append((SubSample,FilesDir,nFiles))
+    makeScriptFromInfoPack(Sample,Config,InfoPack,False)
+    #=======================================
+
+
+
+
+
+
+def SingleTop():
+    Sample='SingleTop'
+    Config='config_MC_RA4b.txt'
+    nFiles=3    
+    InfoPack=[]
+    #
+    #
+    SubSample='TBarToDilepton-tW-ch'
+    FilesDir='/scratch/hh/dust/naf/cms/user/sahin/nTuple13_v1/mc/TBarToDilepton_tW-channel-DR_8TeV-powheg-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/'
+    InfoPack.append((SubSample,FilesDir,nFiles))
+    #
+    SubSample='TBarToLeptons-s-ch'
+    FilesDir='/scratch/hh/dust/naf/cms/user/sahin/nTuple13_v1/mc/TBarToLeptons_s-channel_8TeV-powheg-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/'
+    InfoPack.append((SubSample,FilesDir,nFiles))
+    #
+    SubSample='TBarToLeptons-t-ch'
+    FilesDir='/scratch/hh/dust/naf/cms/user/sahin/nTuple13_v1/mc/TBarToLeptons_t-channel_8TeV-powheg-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/'
+    InfoPack.append((SubSample,FilesDir,nFiles))
+    #
+    SubSample='TBarToThadWlep-tW-ch'
+    FilesDir='/scratch/hh/dust/naf/cms/user/sahin/nTuple13_v1/mc/TBarToThadWlep_tW-channel-DR_8TeV-powheg-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/'
+    InfoPack.append((SubSample,FilesDir,nFiles))
+    #
+    SubSample='TBarToTlepWhad-tW-ch'
+    FilesDir='/scratch/hh/dust/naf/cms/user/sahin/nTuple13_v1/mc/TBarToTlepWhad_tW-channel-DR_8TeV-powheg-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/'
+    InfoPack.append((SubSample,FilesDir,nFiles))
+    #
+    SubSample='TToDilepton-tW-ch'
+    FilesDir='/scratch/hh/dust/naf/cms/user/sahin/nTuple13_v1/mc/TToDilepton_tW-channel-DR_8TeV-powheg-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/'
+    InfoPack.append((SubSample,FilesDir,nFiles))
+    #
+    SubSample='TToLeptons-s-ch'
+    FilesDir='/scratch/hh/dust/naf/cms/user/sahin/nTuple13_v1/mc/TToLeptons_s-channel_8TeV-powheg-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/'
+    InfoPack.append((SubSample,FilesDir,nFiles))
+    #
+    SubSample='TToLeptons-t-ch'
+    FilesDir='/scratch/hh/dust/naf/cms/user/sahin/nTuple13_v1/mc/TToLeptons_t-channel_8TeV-powheg-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/'
+    InfoPack.append((SubSample,FilesDir,nFiles))
+    #
+    SubSample='TToThadWlep-tW-ch'
+    FilesDir='/scratch/hh/dust/naf/cms/user/sahin/nTuple13_v1/mc/TToThadWlep_tW-channel-DR_8TeV-powheg-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/'
+    InfoPack.append((SubSample,FilesDir,nFiles))
+    #
+    SubSample='TToTlepWhad-tW-ch'
+    FilesDir='/scratch/hh/dust/naf/cms/user/sahin/nTuple13_v1/mc/TToTlepWhad_tW-channel-DR_8TeV-powheg-tauola/Summer12_DR53X-PU_S10_START53_V7A-v1/'
+    InfoPack.append((SubSample,FilesDir,nFiles))
+    #
+    #
+    makeScriptFromInfoPack(Sample,Config,InfoPack,True)        
+    #=======================================    
+
+
+
+
+    
+
+
+    
+if __name__=='__main__':
+
+    #SingleMu()
+    #TTJetsMG()
+    #SingleEl()    
+    #WJetsToLNu()
+    #SingleTop()
+    TTJetsPOWHEG()    
+    SingleEl()
