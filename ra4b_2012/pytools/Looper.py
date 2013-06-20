@@ -3,7 +3,7 @@ import commands as com
 
 
 import ROOT
-from copy import *
+import copy
 
 
 
@@ -24,9 +24,12 @@ class Looper:
         self.histoPack={}
         self.motherDir={}
         self.currentDir=0
-        self.ignoreDirectoryList=[]
-
-
+        self.blackListDirectory=[]
+        self.whiteListDirectory=[]
+        self.blackListHisto=[]
+        self.whiteListHisto=[]                
+        self.currentPlotInWhiteList=0
+        
         
     def GetRelativePath(self,HistoPath):
         #remove everything from the ":" onwards
@@ -135,11 +138,16 @@ class Looper:
 
 
     #def returnToMotherDir
-            
+    #
+    #
+    #
     def NextHisto(self,pattern):
-        """moves to the next key in the iterator
+        """where the magic takes place
+        It moves to the next key in the iterator
         if pattern is given, it gets only
         the object that match the pattern"""
+
+        
         dir=self.currentDir
         key=self.nextkey[dir.GetPath()]()
         #
@@ -181,17 +189,61 @@ class Looper:
         elif obj.IsA().InheritsFrom("TDirectory"):
             #
             #print 'seeting mother dir ',obj.GetPath(), 'to ', self.currentDir
-            if obj.GetName() in self.ignoreDirectoryList:
-                #return to the mother dir
-                print 'ignoring the directorydu ',obj.GetPath()
-                print 'at this point dir is ',dir.GetPath()
-                self.currentDir=dir
-                return self.NextHisto(pattern)
+
+
+            ##IGNORE DIRECTORIES IN THE BLACK LIST
+            if len(self.blackListDirectory)!= 0:
+                if obj.GetName() in self.blackListDirectory:
+                   #return to the mother dir
+                   print 'ignoring the directory ',obj.GetPath()
+                   print 'at this point dir is ',dir.GetPath()
+                   self.currentDir=dir
+                   return self.NextHisto(pattern)
+               #
+            #   
+            ##IGNORE DIRECTORIES NOT IN THE WHITE LIST:
+            if len(self.whiteListDirectory) != 0:   
+                if  not obj.GetName() in self.whiteListDirectory:
+                   #return to the mother dir
+                   print 'ignoring the directory ',obj.GetPath()
+                   print 'at this point dir is ',dir.GetPath()
+                   self.currentDir=dir
+                   return self.NextHisto(pattern)
+               #
             #
+            
             self.motherDir[obj.GetPath()]=self.currentDir
             self.StartLoop(obj)
             return self.NextHisto(pattern)
     #
+
+    def NextPlotInList(pattern):
+        '''gets the next plot from the plotwhitelist and returns it'''
+
+        if self.currentPlotInWhiteList+1 == len(self.whiteListHisto) :
+            return 'End'
+
+        OK=self.ApplyPattern(obj,pattern)
+        if not OK:
+            #go to the next one
+            return self.NextHisto(pattern)
+        #
+        #
+        HistoPath=dir.GetPath()
+        HistoPath=self.GetRelativePath(HistoPath)
+        #
+        HistoPath=HistoPath+'/'+obj.GetName()
+        self.GetHistoFromFiles(HistoPath)
+        #all the histos are now contained in
+        #self.histoPack
+        
+        #print 'returning ',self.histoPack
+        return self.histoPack
+    
+
+    def Next():
+
+        print 'Next is not yet defined '
 
     def StartLoop(self,dir):
         """loops recursively over the directory dir"""
@@ -215,6 +267,14 @@ class Looper:
             
         self.StartLoop(dir)
 
+        #the iterative function
+        self.Next = self.NextHisto
 
+
+    def LoopOverPlotList(self,startDir,plotList):
+        """loops over the loop list"""
+        self.currentDir=startDir
+        self.whiteListHisto=copy.deepcopy(plotList)
+        self.Next = self.NextPlotInList
 
            
