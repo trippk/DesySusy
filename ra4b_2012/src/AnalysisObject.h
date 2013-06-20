@@ -22,6 +22,7 @@ protected:
   Ptr_LorentzM owned_pp4_original;
   std::map<std::string, bool> id;
   int       maptotree;
+  //map< string, bool> IDMap() const; 
 
   //does the instance own the LorentzM?
   bool ownsP4;
@@ -59,7 +60,10 @@ public:
 
   //Set with a lorentz vector that is NOT owned
   void Set(const int maptotree_In,  LorentzM * const momentum_In);
+  //void Set(const int maptotree_In,  LorentzM * momentum_In);
   void Set(const int maptotree_In, Ptr_LorentzM momentum_In);
+
+  //
   //Set with a lorentz vector that IS owned
   void SetOwnedPointer(const int maptotree_In, LorentzM* const momentum_In);
   void SetExternalPointer(const int maptotree_In, LorentzM* const momentum_In);

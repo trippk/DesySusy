@@ -16,4 +16,9 @@ float Consistency( LorentzM vRef, EasyChain* tree, const char* name);
 void rescaleMUR(EasyChain* tree, vector<Muon*>&TightMuons, LorentzM& metCorr, float murErr);
 float getMurSF(float err);
 void rescaleMUR_simple(EasyChain* tree, vector<Muon*>&TightMuons, LorentzM& metCorr, float murErr);
+
+bool makeGoodMuons(EasyChain* tree, vector<Muon>& allMuons,vector<Muon*>& goodMuons, CutSet* flow_in = 0 );
+bool makeSelectedMuons(EasyChain* tree, vector<Muon>& allMuons,vector<Muon*>& selectedMuons, CutSet* flow_in = 0 );
+
+
 #endif

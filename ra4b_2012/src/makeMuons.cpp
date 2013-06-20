@@ -6,6 +6,8 @@
 #include "eventselection.h"
 #include "Muon.h"
 #include "makeMuons.h"
+#include "Tools.h"
+
 
 using namespace std;
 
@@ -26,6 +28,9 @@ extern bool pcp;
 
 vector<Muon> makeAllMuons(EasyChain* tree){
   
+
+  ConfigReader config;
+
   if(pcp){
     cout<<endl;
     cout<<"inside makeAllMuons "<<endl;
@@ -35,6 +40,15 @@ vector<Muon> makeAllMuons(EasyChain* tree){
   vector<LorentzM>& Muons = tree->Get(&Muons, "muonP4Pat");
   vector<int>&      charge   = tree->Get( &charge,"muonChargePat");
   vector<float>&    PFIso        = tree->Get(&PFIso,"DESYmuonPfIsolationR03DeltaBCorrectedPat");
+  vector<float>&    dz        = tree->Get( &dz,        "muonInnerTrackDzPat");
+  vector<int>&      isPF      = tree->Get( &isPF,      "muonIsPFMuonPat");
+  vector<int>&      isGlobal  = tree->Get( &isGlobal,  "muonIsGlobalMuonPat" );
+  vector<int>&      isTracker = tree->Get( &isTracker, "muonIsTrackerMuonPat" );
+
+
+  static float PTMIN  = config.getFloat( "AllMuons_PTMIN",  10. );
+  static float ETAMAX = config.getFloat( "AllMuons_ETAMAX",  2.4);
+
   //
   Muon dummyMuon;
   for (int imu=0;imu<(int)Muons.size();++imu){
@@ -43,15 +57,227 @@ vector<Muon> makeAllMuons(EasyChain* tree){
       cout<<"muon("<<imu<<") pt = "<<Muons.at(imu).Pt() <<endl;
       cout<<"muon("<<imu<<") eta = "<<Muons.at(imu).Eta() <<endl;
     }
-    if (Muons.at(imu).Pt() < 10.0)continue;
-    if (fabs(Muons.at(imu).Eta()) >= 2.5)continue;    
+    if (Muons.at(imu).Pt() < PTMIN)continue;
+    if (fabs(Muons.at(imu).Eta()) >= ETAMAX)continue;    
+    dummyMuon.Set(imu,&Muons.at(imu),charge.at(imu),(double)PFIso.at(imu),(double)dz.at(imu));
 
-    dummyMuon.Set(imu,&Muons.at(imu),charge.at(imu),PFIso.at(imu));
+    dummyMuon.SetID( "PF", isPF.at(imu));
+    dummyMuon.SetID( "Global", isGlobal.at(imu));
+    dummyMuon.SetID( "Tracker", isTracker.at(imu));
+
+
     AllMuons.push_back(dummyMuon);
   }
   
   return AllMuons;
 }
+
+
+
+
+
+
+//======================================================
+// make Good Muons
+//======================================================
+
+bool makeGoodMuons(EasyChain* tree, vector<Muon>& allMuons,vector<Muon*>& goodMuons, CutSet* flow_in){
+
+  if(pcp)cout<<"inside makeGoodMuons"<<endl;
+  
+  //====================================================================
+  // DEFINE CUT FLOW
+  //====================================================================
+  static CutSet GoodMuonFlow("Good_Muon_Selection");
+  GoodMuonFlow.autodump=true;
+
+  CutSet* flow = &GoodMuonFlow;
+  if (flow_in) {
+    GoodMuonFlow.autodump = false;
+    flow = flow_in;
+  }
+  //=end=initialize=cut=flow============================================
+
+  //====================================================================
+  // VARIABLE INITIALIZATION
+  //====================================================================
+  bool OK=false;
+
+  vector<float>&        normalisedchi2   = tree->Get( &normalisedchi2,   "muonGlobalTracknormalizedChi2Pat");
+  vector<int>&          GTrack_nValTHits = tree->Get( &GTrack_nValTHits, "muonGlobalTracknumberOfValidHitsPat");
+  vector<unsigned int>& NMatchedStations = tree->Get( &NMatchedStations, "muonNumberOfMatchedStationsPat");
+  vector<float>&        ITrack_Dxy       = tree->Get( &ITrack_Dxy,       "muonInnerTrackDxyPat");
+  vector<float>&        ITrack_Dz        = tree->Get( &ITrack_Dz,        "muonInnerTrackDzPat");
+  vector<unsigned int>& NValidPixelHits  = tree->Get( &NValidPixelHits,  "muonNumberOfValidPixelHitsPat");
+  vector<unsigned int>& NTrackerLayers   = tree->Get( &NTrackerLayers,   "muonNumberOfTrackerLayersWithMeasurementPat");
+  //=end=variables=initialization=======================================
+
+  //====================================================================
+  // READ OR DEFINE THE CUTS FOR THE GOOD MUONS
+  //====================================================================
+  ConfigReader config;
+
+  static float PTMIN                      = config.getFloat( "GoodMuons_PTMIN",                     10. );
+  static float ETAMAX                     = config.getFloat( "GoodMuons_ETAMAX",                     2.4);
+  static float Chi2MAX                    = config.getFloat( "GoodMuons_Chi2MAX",                   10.0);
+  static int   NValidGlobalTrackerHitsMIN = config.getInt(   "GoodMuons_NValidGlobalTrackerHitsMIN", 0);
+  static int   NMatchedStationsMIN        = config.getInt(   "GoodMuons_NMatchedStationsMIN",        1);
+  static float dxyVertexMAX               = config.getFloat( "GoodMuons_dxyVertexMAX",               0.02);
+  static float dzVertexMAX                = config.getFloat( "GoodMuons_dzVertexMAX",                0.5);
+  static int   NValidPixelHitsMIN         = config.getInt(   "GoodMuons_NValidPixelHitsMIN",         0);
+  static int   NTrackerLayersMIN          = config.getInt(   "GoodMuons_NTrackerLayersMIN",          5);
+  static float PFRelIsoMAX                = config.getFloat( "GoodMuons_PFRelIso_MAX",               0.15);
+  //=end=define=cuts====================================================
+
+  //=============================================
+  // LOOP OVER THE MUONS                       
+  //=============================================
+
+  if(pcp)cout<<"about to enter the good muon loop"<<endl;
+
+  for(int imu=0;imu<allMuons.size();++imu){
+
+    if(pcp)cout<<"inside the muon loop at iteration "<<imu<<endl;
+
+    allMuons.at(imu).SetID( "Good", false);
+    int indx=allMuons.at(imu).GetIndexInTree();
+    
+    OK=allMuons.at(imu).pt() >= PTMIN;
+    if(!flow->keepIf("pt>mu_pt_min_low GOOD",OK)) continue;
+    //
+    OK=fabs(allMuons.at(imu).Eta())<=ETAMAX;
+    if(!flow->keepIf("abs(eta)<etamax GOOD",OK))continue;
+    //
+    OK=allMuons.at(imu).IsID("Global");
+    if(!flow->keepIf("is global",OK)) continue;    
+    //
+    OK=allMuons.at(imu).IsID("PF");
+    if(!flow->keepIf("is PF",OK)) continue;
+    //
+    OK=normalisedchi2.at(indx) < Chi2MAX;
+    if(!flow->keepIf("normalised chi2 for GOOD muons",OK)) continue;
+    //
+    OK=GTrack_nValTHits.at(indx) > NValidGlobalTrackerHitsMIN;
+    if(!flow->keepIf("global tracker hits for GOOD muons",OK)) continue;
+    //
+    OK=NMatchedStations.at(indx)>NMatchedStationsMIN;
+    if(!flow->keepIf("N Matched Statios for GOOD muons",OK)) continue;
+    //
+    OK=fabs(ITrack_Dxy.at(indx)) < dxyVertexMAX;
+    if(!flow->keepIf("dxy to vertex position",OK)) continue;
+    //
+    OK=fabs(ITrack_Dz.at(indx)) < dzVertexMAX;
+    if(!flow->keepIf("dz to vertex position",OK)) continue;
+    //
+    OK=NValidPixelHits.at(indx) > NValidPixelHitsMIN;
+    if(!flow->keepIf("PixelHits min",OK)) continue;
+    //
+    OK=NTrackerLayers.at(indx)>NTrackerLayersMIN;
+    if(!flow->keepIf("NTrackerLayers min",OK)) continue;
+    //
+    OK=allMuons.at(imu).RelIso() < PFRelIsoMAX;
+    if(!flow->keepIf("Relative PF Isolation DeltaB corrected max",OK)) continue;
+
+    allMuons.at(imu).SetID( "Good", true);
+    goodMuons.push_back(&allMuons.at(imu));
+
+  }
+  if(pcp)cout<<"out of the muon loop"<<endl;
+  //=end=loop=over=muons================================================
+
+  return true;
+
+};
+
+
+
+
+
+
+//======================================================
+// make Selected Muons
+//======================================================
+
+bool makeSelectedMuons(EasyChain* tree, vector<Muon>& allMuons,vector<Muon*>& selectedMuons, CutSet* flow_in){
+
+  if(pcp)cout<<"inside makeSelectedMuons"<<endl;
+
+  //====================================================================
+  // DEFINE CUT FLOW
+  //====================================================================
+  static CutSet SelectedMuonFlow("Selected_Muon_Selection");
+  SelectedMuonFlow.autodump=true;
+
+  CutSet* flow = &SelectedMuonFlow;
+  if (flow_in) {
+    SelectedMuonFlow.autodump = false;
+    flow = flow_in;
+  }
+  //=end=initialize=cut=flow============================================
+
+  //====================================================================
+  // VARIABLE INITIALIZATION
+  //====================================================================
+
+  bool OK = false;
+  //=end=variables=initialization=======================================
+
+  //====================================================================
+  // READ OR DEFINE THE CUTS FOR THE SELECTED MUONS
+  //====================================================================
+  ConfigReader config;
+
+  static float PTMIN          = config.getFloat( "SelectedMuons_PTMIN",          30. );
+  static float ETAMAX         = config.getFloat( "SelectedMuons_ETAMAX",          2.1);
+  static float PFAbsIsoMAX    = config.getFloat( "SelectedMuons_PFAbsIso_MAX",    5);
+  static float PFRECO_MAXDIFF = config.getFloat( "SelectedMuons_PFRECO_MAXDIFF", 10.0);
+  //=end=define=cuts====================================================
+
+  //=============================================
+  // LOOP OVER THE MUONS                       //
+  //=============================================
+
+  if(pcp)cout<<"about to enter the selected muon loop"<<endl;
+
+  for(int imu=0;imu<allMuons.size();++imu){
+
+    if(pcp)cout<<"inside the muon loop at iteration "<<imu<<endl;
+
+    allMuons.at(imu).SetID( "Selected", false);
+    int indx=allMuons.at(imu).GetIndexInTree();
+    
+    OK=allMuons.at(imu).IsID("Good");
+    if (!flow->keepIf("is Good",OK) )continue;
+    //
+    OK=allMuons.at(imu).Pt() >= PTMIN;
+    if(!flow->keepIf("pt>mu_pt_min_low SELECTED",OK)) continue;
+    //
+    OK=fabs(allMuons.at(imu).Eta())<=ETAMAX;
+    if(!flow->keepIf("abs(eta)<etamax SELECTED",OK))continue;
+    //
+    OK=allMuons.at(imu).Iso() < PFAbsIsoMAX;
+    if(!flow->keepIf("Absolute PF Isolation DeltaB corrected max",OK)) continue;
+    //
+    OK= desy_tools::Consistency( allMuons.at(imu).P4(), allMuons.at(imu).Charge(), tree,"muonP4PF", "muonChargePF") < PFRECO_MAXDIFF;
+    if(!flow->keepIf("RecoPt-PFPt",OK)) continue;
+
+    allMuons.at(imu).SetID( "Selected", true);
+    selectedMuons.push_back( &allMuons.at(imu));
+  }
+  if(pcp)cout<<"out of the muon loop"<<endl;
+  //=end=loop=over=muons================================================
+
+  return true;
+
+};
+
+
+
+
+
+
+
+
 
 vector<Muon> makeTrkOrGlobalMuons(EasyChain* tree){
   

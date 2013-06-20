@@ -17,6 +17,8 @@ class Particle : public AnalysisObject {
   string    flavor;
   int       particleID;
   float     relIso;
+  double dz;
+
 
  public:
   Particle(){
@@ -24,6 +26,7 @@ class Particle : public AnalysisObject {
     flavor="undefined";
     particleID=0;
     relIso=-1.;
+    dz=0;
   }
 
   ~Particle(){}
@@ -33,17 +36,25 @@ class Particle : public AnalysisObject {
   int ParticleID() const;
   float RelIso() const;
   bool IsIso(double ISO_CUT=0.10) const;
+  double Iso() const;
+  double Dz() const;
+
 
   void SetCharge(int charge_In);
   void SetFlavor(string flavor_In);
   void SetParticleID(int particleID_In);
   void SetRelIso(double reliso_in);
-
+  void SetDz(const double& dz_in);
 
   //SET IS OVERLOADED
 /*   virtual void Set(int maptotree_In, LorentzM * momuntum_In); */
-  virtual void Set(int maptotree_In, LorentzM * momuntum_In, int particleID_In, int charge_In, string flavor_In, double relIso_In);
+
   virtual void Set(int maptotree_In, LorentzM* momuntum_In, int charge_In, double relIso_In);
+  virtual void Set(int maptotree_In, LorentzM* momuntum_In, int charge_In, double relIso_In, double dz_In);
+  virtual void Set(int maptotree_In, LorentzM* momuntum_In, int charge_In, double relIso_In, string flavor_In);
+  virtual void Set(int maptotree_In, LorentzM* momuntum_In, int charge_In, double relIso_In, string flavor_In, int particleID_In);
+
+
 };
 
 bool compare_Particle_Pt(Particle* p1, Particle* p2);

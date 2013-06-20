@@ -23,9 +23,14 @@ void SetTriggers_RA4b(SampleInformation mySampleInformation, vector<const char*>
   string triggermenu="nomenu";
 
 
-  if(mySampleInformation.GetEstimation()=="CR1" || mySampleInformation.GetEstimation()=="CR1Muons" ||  mySampleInformation.GetEstimation()=="CRFMuons"){
+  if(mySampleInformation.GetEstimation()=="CR1" || mySampleInformation.GetEstimation()=="CR1Muons" ||  mySampleInformation.GetEstimation()=="CRFMuons" ||
+     mySampleInformation.GetEstimation()=="CR1Muons-baseline"){
     triggermenu="singlemuon";
   }
+  else if(mySampleInformation.GetEstimation()=="CR1Electrons" || mySampleInformation.GetEstimation()=="CRFElectrons" ){
+    triggermenu="singleelectron";
+  }
+  //
   //
   //
   if (triggermenu=="singlemuon"){
@@ -37,5 +42,4 @@ void SetTriggers_RA4b(SampleInformation mySampleInformation, vector<const char*>
   else{
     cout<<"NO TRIGGERS SET"<<endl;
   }
-  
 }

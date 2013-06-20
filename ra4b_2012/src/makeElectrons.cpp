@@ -6,7 +6,7 @@
 #include "eventselection.h"
 #include "Electron.h"
 #include "makeMuons.h"
-
+#include "Tools.h"
 
 using namespace std;
 
@@ -19,18 +19,29 @@ extern bool pcp;
 //======================================================
 vector<Electron> makeAllElectrons(EasyChain* tree){
 
+
+  ConfigReader config;
   vector<Electron> AllElectrons;
   vector<LorentzM>& Electrons = tree->Get(&Electrons, "electronP4Pat");
   vector<int>&      charge   = tree->Get( &charge,"electronChargePat");
-  vector<float>&      El_Dr03EcalRecHitSumEt    = tree->Get( &El_Dr03EcalRecHitSumEt,  "electronDr03EcalRecHitSumEtPat");
-  vector<float>&      El_Dr03HcalTowerSumEt     = tree->Get( &El_Dr03HcalTowerSumEt,   "electronDr03HcalTowerSumEtPat"); 
-  vector<float>&      El_Dr03TkSumPt            = tree->Get( &El_Dr03TkSumPt,          "electronDr03TkSumPtPat" );
+  //vector<float>&      El_Dr03EcalRecHitSumEt    = tree->Get( &El_Dr03EcalRecHitSumEt,  "electronDr03EcalRecHitSumEtPat");
+  //vector<float>&      El_Dr03HcalTowerSumEt     = tree->Get( &El_Dr03HcalTowerSumEt,   "electronDr03HcalTowerSumEtPat"); 
+  //vector<float>&      El_Dr03TkSumPt            = tree->Get( &El_Dr03TkSumPt,          "electronDr03TkSumPtPat" );
+  vector<float>&    dz         = tree->Get( &dz,         "electronGsfTrackDzPat");
+  vector<float>&    relIso     = tree->Get( &relIso,     "DESYelectronCorrectedRelIsolationPat");
   vector<float>&    El_SuperClusterPositionETA   = tree->Get( &El_SuperClusterPositionETA, "electronESuperClusterEtaPat");
   //lets calculate the isolation now.
+
+
+  static float PTMIN  = config.getFloat( "AllElectrons_PTMIN",  10. );
+  static float ETAMAX = config.getFloat( "AllELECTRONS_ETAMAX",  2.5);
+
+
 
   Electron dummyElectron;
 
   for (int iel=0;iel<(int)Electrons.size();++iel){
+
 
     if(pcp){
       cout<<"Electron "<<iel<<"; . Pt = "<<Electrons.at(iel).Pt()<<endl;
@@ -38,14 +49,13 @@ vector<Electron> makeAllElectrons(EasyChain* tree){
       cout<<"Electron "<<iel<<"; . Eta supercluster= "<<El_SuperClusterPositionETA.at(iel)<<endl;
       cout<<"Electron "<<iel<<"; . Phi = "<<Electrons.at(iel).Phi()<<endl;
     }
-    //    if (Electrons.at(iel).Pt() < 10.0)continue;
-    // if( fabs(Electrons.at(iel).Eta()) >2.5)continue;
 
-    double EcalIso=El_Dr03EcalRecHitSumEt.at(iel);
-    if(fabs(Electrons.at(iel).eta())<1.479)EcalIso=max(0.,(EcalIso-1.));
-    double ElRelIso= (El_Dr03TkSumPt.at(iel)+EcalIso+El_Dr03HcalTowerSumEt.at(iel))/(double)Electrons.at(iel).Pt();
+    if (Electrons.at(iel).Pt() < PTMIN) continue;
+    if (fabs(Electrons.at(iel).Eta()) >= ETAMAX) continue;    
 
-    dummyElectron.Set(iel,&Electrons.at(iel),charge.at(iel),ElRelIso);
+    double ElRelIso= (double)relIso.at(iel);
+    
+    dummyElectron.Set(iel,&Electrons.at(iel),charge.at(iel),ElRelIso, dz.at(iel));
     AllElectrons.push_back(dummyElectron);
   }
   return AllElectrons;
@@ -437,4 +447,283 @@ void makeCleanedElectrons(vector<Electron*>& Electrons_In, vector<Electron*>& El
 
   return;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+bool makeCleanElectrons( vector<Electron>& allElectrons, vector<Electron*>& cleanElectrons, vector<Muon*>& muons, CutSet* flow_in){
+  
+  if(pcp)cout<<"inside makeCleanElectrons"<<endl;
+  cleanElectrons.clear();
+  
+  //====================================================================
+  // DEFINE CUT FLOW
+  //====================================================================
+  static CutSet CleanElectronFlow("Clean_Electron_Selection");
+  CleanElectronFlow.autodump=true;
+
+  CutSet* flow = &CleanElectronFlow;
+  if (flow_in) {
+    CleanElectronFlow.autodump = false;
+    flow = flow_in;
+  }
+  //=end=initialize=cut=flow============================================
+
+  //====================================================================
+  // VARIABLE INITIALIZATION
+  //====================================================================
+  bool OK = false;
+  //=end=variables=initialization=======================================
+
+  //====================================================================
+  //READ OR DEFINE THE CUTS FOR THE CLEAN ELECTRONS
+  //====================================================================
+  ConfigReader config;
+
+  static float  DR  =  config.getFloat("Electrons_CLEANDELTAR",  0.1 );
+  //=end=define=cuts====================================================
+
+  //=============================================
+  // LOOP OVER THE ELECTRONS                   
+  //=============================================
+
+
+  if(pcp)cout<<"about to enter the clean electron loop"<<endl;
+
+  for(int iel=0;iel<(int)allElectrons.size();++iel){
+    
+    if(pcp)cout<<"inside the electron loop at iteration "<<iel<<endl;
+
+    allElectrons.at(iel).SetID( "Clean", false);
+    
+    OK=desy_tools::CleaningByDR( allElectrons.at(iel).P4(), muons, DR);
+    if( flow->keepIf("Cross Clean with Muons",OK)) continue;
+    
+    allElectrons.at(iel).SetID( "Clean", true);
+    cleanElectrons.push_back(&allElectrons.at(iel));
+  }
+  //=end=loop=over=electrons============================================
+
+  return true;
+}
+
+//======================================================
+// make Good Electrons
+//======================================================
+
+bool makeGoodElectrons(EasyChain* tree, vector<Electron>& allElectrons, vector<Electron*>& goodElectrons, CutSet * flow_in){
+
+  if(pcp)cout<<"inside makeGoodElectrons"<<endl;
+  goodElectrons.clear();
+
+  //====================================================================
+  // DEFINE CUT FLOW
+  //====================================================================
+  static CutSet GoodElectronFlow("Good_Electron_Selection");
+  GoodElectronFlow.autodump=true;
+
+  CutSet* flow = &GoodElectronFlow;
+  if (flow_in) {
+    GoodElectronFlow.autodump = false;
+    flow = flow_in;
+  }
+  //=end=initialize=cut=flow============================================
+
+  //====================================================================
+  //READ OR DEFINE THE CUTS FOR THE GOOD ELECTRONS
+  //====================================================================
+  ConfigReader config;
+
+  static float  PTMIN      = config.getFloat(  "GoodElectrons_PTMIN",     10. );
+  static float  ETAMAX     = config.getFloat(  "GoodElectrons_ETAMAX",     2.5 );
+  static string ID         = config.getString( "GoodElectron_ID",         "Medium");
+  static float trackdxyMAX = config.getFloat(  "GoodElectron_trackdxyMAX", 0.02);
+  static float trackdzMAX  = config.getFloat(  "GoodElectron_trackdzMAX",  0.1);
+  //=end=define=cuts====================================================
+
+  //====================================================================
+  // VARIABLE INITIALIZATION
+  //====================================================================
+  if(pcp)cout<<"check point about to get the electrons"<<endl;
+
+  bool OK=false;
+  vector<float>&    superClusterPositionETA   = tree->Get( &superClusterPositionETA, "electronESuperClusterEtaPat");
+
+  bool TTver=false;
+  const char* idname="undefined";
+  if(ID=="Tight"){
+    idname="electronIdTightPat";
+  }else if(ID=="Medium"){
+    idname="electronIdMediumPat";
+  }else if(ID=="TriggerTight"){
+    idname="DESYelectronIdTriggerTightPat";
+    TTver=true;
+  }else if(ID=="Loose"){
+    idname="electronIdLoosePat";
+  }
+
+  else{
+    cout<<"ID NOT SET. ERROR"<<endl;
+  }
+  vector<int>&   id                  = tree->Get( &id,                  idname);
+  vector<int>&   conversionRejection = tree->Get( &conversionRejection, "electronConversionRejectionPat");
+  vector<float>& gsfTrackDxy         = tree->Get( &gsfTrackDxy,         "electronGsfTrackDxyPat");
+  vector<float>& gsfTrackDz          = tree->Get( &gsfTrackDz,          "electronGsfTrackDzPat");
+  vector<bool>&  isEBPat             = tree->Get( &isEBPat,             "DESYelectronIsEBPat");
+  vector<bool>&  isEEPat             = tree->Get( &isEEPat,             "DESYelectronIsEEPat");
+  //=end=variables=initialization=======================================
+
+  //=============================================
+  // LOOP OVER THE ELECTRONS                   //
+  //=============================================
+
+  if(pcp)cout<<"about to enter the good electron loop"<<endl;
+
+  for(int iel=0;iel<(int)allElectrons.size();++iel){
+    
+    if(pcp)cout<<"inside the electron loop at iteration "<<iel<<endl;
+
+    allElectrons.at(iel).SetID( "Good", false);
+    int indx=allElectrons.at(iel).GetIndexInTree();
+
+    OK=allElectrons.at(iel).IsID("Clean");
+    if (!flow->keepIf("is Clean",OK) )continue;
+    //
+    OK=allElectrons.at(iel).pt() >= PTMIN;
+    if(!flow->keepIf("pt>el_pt_min_low GOOD",OK)) continue;
+    //
+    OK=fabs(allElectrons.at(iel).Eta())<=ETAMAX;
+    if(!flow->keepIf("abs(eta)<etamax GOOD",OK))continue;
+    //
+    OK=fabs(superClusterPositionETA.at(indx))<1.4442 || fabs(superClusterPositionETA.at(indx))>1.566;
+    if(!flow->keepIf("notinetagap GOOD",OK))continue;  
+    //
+    OK=id.at(indx);
+    if(!flow->keepIf("Electron_ID GOOD",OK)) continue;
+    //
+    OK=!conversionRejection.at(indx);
+    if(!flow->keepIf("Electron_ConversionRejection GOOD",OK)) continue;
+    //
+    OK=fabs(gsfTrackDxy.at(indx)) < trackdxyMAX ;
+    if( !flow->keepIf("dxy to vertex position", OK)) continue;
+    //
+    OK=fabs(gsfTrackDz.at(indx)) < trackdzMAX;
+    if( !flow->keepIf("dz to vertex position"  , OK)) continue;
+    //
+    OK=allElectrons.at(iel).RelIso() < 0.15;
+    if( fabs(allElectrons.at(iel).eta())<1.4442 && allElectrons.at(iel).pt() < 20)
+      OK=allElectrons.at(iel).RelIso() < 0.1;	
+    if(!flow->keepIf("Relative PF Isolation corrected max",OK)) continue;
+    //
+
+    allElectrons.at(iel).SetID( "Good", true);
+    goodElectrons.push_back(&allElectrons.at(iel));
+
+  }
+  if(pcp)cout<<"out of the electron loop"<<endl;
+  //=end=loop=over=electrons============================================
+
+  return true;
+
+};
+
+//======================================================
+// make Selected Electrons
+//======================================================
+
+bool makeSelectedElectrons(EasyChain* tree, vector<Electron>& allElectrons,vector<Electron*>& selectedElectrons, CutSet* flow_in){
+
+  if(pcp)cout<<"inside makeSelectedElectrons"<<endl;
+
+  //====================================================================
+  // DEFINE CUT FLOW
+  //====================================================================
+  static CutSet SelectedElectronFlow("Selected_Electron_Selection");
+  SelectedElectronFlow.autodump=true;
+
+  CutSet* flow = &SelectedElectronFlow;
+  if (flow_in) {
+    SelectedElectronFlow.autodump = false;
+    flow = flow_in;
+  }
+  //=end=initialize=cut=flow============================================
+
+  //====================================================================
+  // VARIABLE INITIALIZATION
+  //====================================================================
+
+  bool OK=false;
+  vector<float>& ESuperClusterOverP = tree->Get( &ESuperClusterOverP, "electronESuperClusterOverPPat"      );
+  //=end=variables=initialization=======================================
+
+  //====================================================================
+  // READ OR DEFINE THE CUTS FOR THE SELECTED ELECTRONS
+  //====================================================================
+  ConfigReader config;
+
+  static float PTMIN          = config.getFloat( "SelectedElectrons_PTMIN",          30. );
+  static float ETAMAX         = config.getFloat( "SelectedElectrons_ETAMAX",          2.1);
+  static float PFAbsIsoMAX    = config.getFloat( "SelectedElectrons_PFAbsIso_MAX",    5);
+  static float EOverPinMAX    = config.getFloat( "SelectedElectrons_EOverPin_MAX",    4);
+  static float PFRECO_MAXDIFF = config.getFloat( "SelectedElectrons_PFRECO_MAXDIFF", 10.0);
+  //=end=define=cuts====================================================
+
+  //=============================================
+  // LOOP OVER THE ELECTRONS                   //
+  //=============================================
+
+  if(pcp)cout<<"about to enter the selected electron loop"<<endl;
+
+  for(int iel=0;iel<allElectrons.size();++iel){
+
+    if(pcp)cout<<"inside the electron loop at iteration "<<iel<<endl;
+
+    allElectrons.at(iel).SetID( "Selected", false);
+    int indx=allElectrons.at(iel).GetIndexInTree();
+    
+    OK=allElectrons.at(iel).IsID("Good");
+    if (!flow->keepIf("is Good",OK) )continue;
+    //
+    OK=allElectrons.at(iel).IsID("Clean");
+    if (!flow->keepIf("is Clean",OK) )continue;
+    //
+    OK=allElectrons.at(iel).pt() >= PTMIN;
+    if(!flow->keepIf("pt>el_pt_min_low SELECTED",OK)) continue;
+    //
+    OK=fabs(allElectrons.at(iel).Eta())<=ETAMAX;
+    if(!flow->keepIf("abs(eta)<etamax SELECTED",OK))continue;
+    //
+    OK=allElectrons.at(iel).Iso() < PFAbsIsoMAX;
+    if(!flow->keepIf("Absolute PF Isolation corrected max",OK)) continue;
+    //
+    OK=ESuperClusterOverP.at(indx) < EOverPinMAX;
+    if(!flow->keepIf("ESuperClusterOverP",OK)) continue;
+    //
+    OK= desy_tools::Consistency( allElectrons.at(iel).P4(), allElectrons.at(iel).Charge(), tree,"electronP4PF", "electronChargePF") < PFRECO_MAXDIFF;
+    if(!flow->keepIf("RecoPt-PFPt",OK)) continue;
+
+    allElectrons.at(iel).SetID( "Selected", true);
+    selectedElectrons.push_back(&allElectrons.at(iel));
+  }
+  if(pcp)cout<<"out of the electron loop"<<endl;
+  //=end=loop=over=electrons============================================
+
+  return true;
+};
+
+
+
+
+
+
+
+
 

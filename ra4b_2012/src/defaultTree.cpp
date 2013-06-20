@@ -56,6 +56,10 @@ void defaultTree::Fill(EventInfo* info, EasyChain* tree, vector<Muon*>& muons_in
   mu->clear();
   Jets->clear();
 
+  if(Jets==0){
+    cout<<"null pointer in Fill default tree!"<<endl;
+  }
+
   MET=met.Pt();
   //MET=0;
 
@@ -97,6 +101,7 @@ void defaultTree::Fill(EventInfo* info, EasyChain* tree, vector<Muon*>& muons_in
 
   MT2WEle=mt2w_calc.get_mt2w(electrons_in, jets_in, met);
   MT2WMu=mt2w_calc.get_mt2w(muons_in, jets_in, met);
+
 
   //cout<<"in the default tree, mt2WMu is "<<MT2WMu<<endl;
   //cout<<"the value of met is "<<met.Pt()<<endl;
@@ -315,172 +320,3 @@ void defaultTree::SetTDir(TString newdir){
   }
 }
 
-
-
-
-
-
-
-
-
-
-
-/*
-
-  if (electrons.size() != 0){
-    el[0]=electrons.at(0)->Pt();
-    el[1]=electrons.at(0)->Eta();
-    el[2]=electrons.at(0)->Phi();
-    el[3]=electrons.at(0)->P4().M();
-  }
-  else {this->SetToZero(&el);}
-
-  if (muons.size() != 0){
-    mu[0]=muons.at(0)->Pt();
-    mu[1]=muons.at(0)->Eta();
-    mu[2]=muons.at(0)->Phi();
-    mu[3]=muons.at(0)->P4().M();
-  }
-  else {this->SetToZero(&mu);}
-
-  if(jets.size() !=0){
-    jet1[0]=jets.at(0)->Pt();
-    jet1[1]=jets.at(0)->Eta();
-    jet1[2]=jets.at(0)->Phi();
-    jet1[3]=jets.at(0)->P4().M();
-    jet1[4]=jets.at(0)->BJetDisc("CSV");
-  }
-  if (jets.size() >1){
-    jet2[0]=jets.at(1)->Pt();
-    jet2[1]=jets.at(1)->Eta();
-    jet2[2]=jets.at(1)->Phi();
-    jet2[3]=jets.at(1)->P4().M();
-    jet2[4]=jets.at(1)->BJetDisc("CSV");
-  }
-  if(jets.size()>2){
-    jet3[0]=jets.at(2)->Pt();
-    jet3[1]=jets.at(2)->Eta();
-    jet3[2]=jets.at(2)->Phi();
-    jet3[3]=jets.at(2)->P4().M();
-    jet3[4]=jets.at(2)->BJetDisc("CSV");
-  }
-  if (jets.size()>3){
-    jet4[0]=jets.at(3)->Pt();
-    jet4[1]=jets.at(3)->Eta();
-    jet4[2]=jets.at(3)->Phi();
-    jet4[3]=jets.at(3)->P4().M();
-    jet4[4]=jets.at(3)->BJetDisc("CSV");
-  }
-  else {this->SetToZero(&jet4);}
-
-  if (jets.size()>4){
-    jet5[0]=jets.at(4)->Pt();
-    jet5[1]=jets.at(4)->Eta();
-    jet5[2]=jets.at(4)->Phi();
-    jet5[3]=jets.at(4)->P4().M();
-    jet5[4]=jets.at(4)->BJetDisc("CSV");
-  }
-  else {this->SetToZero(&jet5);}
-
-  if( jets.size()>5){
-    jet6[0]=jets.at(5)->Pt();
-    jet6[1]=jets.at(5)->Eta();
-    jet6[2]=jets.at(5)->Phi();
-    jet6[3]=jets.at(5)->P4().M();
-    jet7[4]=jets.at(5)->BJetDisc("CSV");
-  }
-  else {this->SetToZero(&jet6);}
-
-  if( jets.size()>6){
-    jet7[0]=jets.at(6)->Pt();
-    jet7[1]=jets.at(6)->Eta();
-    jet7[2]=jets.at(6)->Phi();
-    jet7[3]=jets.at(6)->P4().M();
-    jet7[4]=jets.at(6)->BJetDisc("CSV");
-  }
-  else {this->SetToZero(&jet7);}
-*/
-
-
-
-
-//=================================================================
-//this is moved to the header file because it is a template class
-//=================================================================
-
-/*template<typename __Jet__>
-void defaultTree::Fill( EventInfo* info, EasyChain* tree, vector<Muon*>& muons_in, vector<Electron*>& electrons_in, vector<__Jet__>& jets_in, LorentzM& met) {
-  
-  //  cout<<"filling"<<endl;
-  
-  el->clear();
-  mu->clear();
-  Jets->clear();
-
-  MET=met.Pt();
-  //MET=0;
-
-  event = info->Event;
-  run = info->Run;    
-  weight=info->EventWeight;
-  PUWeight=info->PUWeight;
-
-  HT=0;
-  double HTx=0;
-  double HTy=0;
-
-  for(int ijet=0;ijet<(int)jets_in.size();++ijet){
-    HT+=jets_in.at(ijet)->Pt();
-    HTx+=jets_in.at(ijet)->P4().Px();
-    HTy+=jets_in.at(ijet)->P4().Py();
-  }
-
-  MHT=sqrt(HTx*HTx + HTy*HTy);
-  
-  Y = MET / sqrt(HT);
-
-
-  //cout<<"jets size"<<jets_in.size()<<endl;
-  for(int ijet=0;ijet<jets_in.size();++ijet){
-    Jets->push_back(jets_in.at(ijet)->P4()); 
-  }
-  for(int imu=0;imu<muons_in.size();++imu){
-    mu->push_back(muons_in.at(imu)->P4());
-  }
-  for(int iel=0;iel<electrons_in.size();++iel){ 
-    el->push_back(electrons_in.at(iel)->P4());  
- }
-
-  MT2WEle=mt2w_calc.get_mt2w(electrons_in, jets_in, met);
-  MT2WMu=mt2w_calc.get_mt2w(muons_in, jets_in, met);
-
-  //cout<<"in the default tree, mt2WMu is "<<MT2WMu<<endl;
-  //mt2wmu_intree->Fill(MT2WMu);
-  //
-
-  //TRANSVERSE MASS
-  MTEle=0;
-  double pt1=0.;
-  double pt2=0.;
-  for (unsigned int iel=0; iel<electrons_in.size();++iel){
-    pt1=electrons_in.at(iel)->Pt();
-    pt2=met.pt();
-    MTEle=sqrt( 2*pt1*pt2 * (1 - cos(DeltaPhi(electrons_in.at(iel)->P4(), met))));
-    break;
-  }
-  //
-  //
-  //
-  MTMu=0;
-  for (unsigned int imu=0; imu<muons_in.size();++imu){
-    pt1=muons_in.at(imu)->Pt();
-    pt2=met.pt();
-    MTMu=sqrt( 2*pt1*pt2 * (1 - cos(DeltaPhi(muons_in.at(imu)->P4(), met))));
-    break;
-  }
-
-  mytree->Fill();
-
-};
-
-*/

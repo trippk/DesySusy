@@ -58,6 +58,10 @@
 #include <boost/shared_ptr.hpp>
 #include "typedefs.h"
 #include "trigStudyTree.h"
+#include "francescoParticle.h"
+#include "makeTracks.h"
+#include "Tau.h"
+#include "makeTaus.h"
 
 using namespace std;
 using namespace ROOT::Math::VectorUtil;
@@ -329,6 +333,9 @@ int main(int argc, char** argv){
   CutSet::setTFile(outfile);
   CutSet* p2globalFlow= &globalFlow;
   CutSet systematicsFlow("systematics flow");
+  CutSet selectedMuonFlow("selected_Muons");
+  CutSet* pselectedMuonFlow = &selectedMuonFlow;
+
   //===========================================
 
     
@@ -407,9 +414,13 @@ int main(int argc, char** argv){
     }
   }
   
+
+
   TH2D* METRes_vs_MET=new TH2D("METRes_vs_MET","METRes_vs_MET",40,0.0,400.0,20,-1.0,3.0);
   
-  
+  TH1D* MTMu= new TH1D("MTMu","MTMu",50,0.,500);      
+
+
   outfile->cd(); 
 
   if(pcp)cout<<"check point before the event loop"<<endl;
@@ -431,6 +442,7 @@ int main(int argc, char** argv){
   //SYSTEMATIC UNCERTAINTIES
   //===================================================================
   static bool doSystematics=config.getBool("doSystematics",true);
+  doSystematics = doSystematics && !isData;
   bool OKsyst=false;
   Systematics systematics;
   if (!isquick && doSystematics){
@@ -530,6 +542,8 @@ int main(int argc, char** argv){
     if(pcp)cout<<"check point lets get the Event "<< i<<endl;    
     unsigned int Event   = tree->Get(Event,"event");    
     unsigned int Run   = tree->Get(Run,"run");    
+    unsigned int lumiSection= tree->Get(lumiSection,"lumiSection");
+
     if(pcp)cout<<"check point got the Event "<< i<< " "<<Event<<endl;    
 
     
@@ -628,6 +642,7 @@ int main(int argc, char** argv){
 
 
 
+    vector<fParticle> tracks; 
 
     //============================================
     // Make Muons
@@ -636,7 +651,17 @@ int main(int argc, char** argv){
     vector<Muon*> LooseMuons;
     vector<Muon*> TightMuons;
     vector<Muon*> VetoMuons;
+
+
+    vector<Muon*> goodMuons;
+    vector<Muon*> selectedMuons; 
+
     Muons=makeAllMuons(tree);
+    //makeGoodMuons( tree, Muons, goodMuons,pselectedMuonFlow);
+    makeGoodMuons( tree, Muons, goodMuons);
+
+    makeSelectedMuons( tree, Muons, selectedMuons,pselectedMuonFlow);
+    makeSelectedMuons( tree, Muons, selectedMuons);
     makeTightMuons(tree,Muons,TightMuons);
     makeLooseMuons(tree,Muons,LooseMuons);
     makeVetoMuons(tree,Muons,VetoMuons);
@@ -664,6 +689,11 @@ int main(int argc, char** argv){
     //============================================
 
 
+    vector<Tau>  taus;
+    vector<Tau*> cleanTaus;
+    taus = makeAllTaus( tree);
+    //makeCleanTaus( taus, cleanTaus, goodMuons, goodElectrons);
+    makeCleanTaus( taus, cleanTaus, goodMuons, TightElectrons);
 
     //============================================    
     // Make Jets
@@ -673,7 +703,7 @@ int main(int argc, char** argv){
     vector<Ptr_Jet> CleanedJets;
     makeAllJets(tree,AllJets);
     makeGoodJets(tree,AllJets,GoodJets);
-    makeCleanedJets( GoodJets, CleanedJets, pMuons, pElectrons);
+    makeCleanedJets( GoodJets, CleanedJets, goodMuons, pElectrons);
 
     //=======MATCHING OF JETS
     vector<Ptr_GenJet> allGenJets;
@@ -693,13 +723,7 @@ int main(int argc, char** argv){
 	NumberOfbTags++;
       }
     }
-
-
-
-
-
-
-
+    //cout<<"putos btags "<<NumberOfbTags<<endl;
 
     //============================================
     //Make HT AND MHT
@@ -720,13 +744,14 @@ int main(int argc, char** argv){
     //Make MET
     LorentzM& PFmet = tree->Get(&PFmet, "metP4TypeIPF");
     double MET=(double)PFmet.Et() ;
+
     //============================================
 
     //RESOLUTION
-    LorentzM& TrueME=tree->Get(&PFmet, "metP4TypeIPF"); //just to initialize the ref
+    //LorentzM& TrueME=tree->Get(&PFmet, "metP4TypeIPF"); //just to initialize the ref
     double TrueMET;
     if(!isData){
-      TrueME=  tree->Get(&TrueME,"genmetP4True");
+      LorentzM& TrueME= tree->Get(&TrueME,"genmetP4True");  
       METRes->Fill((MET-TrueMET)/TrueMET,EventWeight);
     }
     if (pcp){
@@ -735,7 +760,6 @@ int main(int argc, char** argv){
       cout<<"HT = "<<HT<<endl;
       cout<<endl;
     }
-
 
 
 
@@ -810,7 +834,6 @@ int main(int argc, char** argv){
 	METRes_METBins.at(METbin)->Fill((newMET-TrueMET)/TrueMET,EventWeight);//
 	METRes_METBins.at(METbin2)->Fill((newMET-TrueMET)/TrueMET,EventWeight);
 	METChange_METBins.at(METbin)->Fill((newMET-MET)/MET,EventWeight);
-
 
 
 	//Resolution of the matched jets:
@@ -907,9 +930,9 @@ int main(int argc, char** argv){
 
 
 
-    if(DoControlPlots)ControlPlots.MakePlots("Before_CutFlow", TightMuons, TightElectrons, CleanedJets, PFmet); 
+    if(DoControlPlots)ControlPlots.MakePlots("Before_CutFlow", selectedMuons, TightElectrons, CleanedJets, PFmet); 
 
-    
+
     //====================================================================
     // TRIGGERS
     //====================================================================
@@ -924,7 +947,7 @@ int main(int argc, char** argv){
       if( !globalFlow.keepIf("triggers", OK )  && quick ) continue;    
       EW_AfterTrigger->Fill(EventWeight);
       //
-      if(DoControlPlots && OK)ControlPlots.MakePlots("Triggers", TightMuons, TightElectrons, CleanedJets, PFmet); 
+      if(DoControlPlots && OK)ControlPlots.MakePlots("Triggers", selectedMuons, TightElectrons, CleanedJets, PFmet); 
       //treeCuts["Triggers"]=OK;
     }
     //====================================================================
@@ -932,11 +955,13 @@ int main(int argc, char** argv){
 
 
     //====================================================================
-    bool  hcalLaserEventFilterFlag   = tree->Get( hcalLaserEventFilterFlag,    "hcalLaserEventFilterFlag"  );
-    OK= hcalLaserEventFilterFlag;
-    if(i==0 && isquick){OK=OK&&OKold; OKold=OK;}
-    if( !globalFlow.keepIf( "hcalLaserFilter"        , OK     ) && quick ) continue;
-    if(DoControlPlots && OK)ControlPlots.MakePlots("hcalLaserFilter", TightMuons, TightElectrons, CleanedJets, PFmet); 
+    //bool  hcalLaserEventFilterFlag   = tree->Get( hcalLaserEventFilterFlag,    "hcalLaserEventFilterFlag"  );
+    bool hcalLaserEventFilterFlag = true;
+    if (isData){ hcalLaserEventFilterFlag   = tree->Get( hcalLaserEventFilterFlag,    "hcalLaser2012EventFilterFlag"  );
+      OK= hcalLaserEventFilterFlag;
+      if(i==0 && isquick){OK=OK&&OKold; OKold=OK;}
+      if( !globalFlow.keepIf( "hcalLaserFilter"        , OK     ) && quick ) continue;
+    }
     //====================================================================
 
 
@@ -945,8 +970,13 @@ int main(int argc, char** argv){
     OK=eeBadSCPassed;
     if(i==0 && isquick){OK=OK&&OKold; OKold=OK;}
     if( !globalFlow.keepIf("eeBadSCFilter"     , OK) && quick ) continue;
-    if(DoControlPlots && OK)ControlPlots.MakePlots("eeBadSCFilter", TightMuons, TightElectrons, CleanedJets, PFmet); 
     //====================================================================
+
+
+    bool  ecalLaserCorrFilterFlag = tree->Get( ecalLaserCorrFilterFlag, "ecalLaserCorrFilterFlag");
+    OK=ecalLaserCorrFilterFlag;
+    if(i==0 && isquick){OK=OK&&OKold; OKold=OK;}
+    if( !globalFlow.keepIf("ecalLaserCorrFilterFlag"   , OK) && quick ) continue;
 
 
 
@@ -966,7 +996,7 @@ int main(int argc, char** argv){
     if(i==0 && isquick){ OK=OK&&OKold; OKold=OK;}
     if(  !globalFlow.keepIf("Scraping_Veto", OK ) && quick ) continue;
     if(pcp)cout<<"pure tracks passed"<<endl;
-    if(DoControlPlots && OK)ControlPlots.MakePlots("Scraping_Veto", TightMuons, TightElectrons, CleanedJets, PFmet); 
+    //if(DoControlPlots && OK)ControlPlots.MakePlots("Scraping_Veto", selectedMuons, TightElectrons, CleanedJets, PFmet); 
     //====================================================================    
 
 
@@ -983,8 +1013,11 @@ int main(int argc, char** argv){
     if(i==0 && isquick){ OK=OK&&OKold; OKold=OK;}
     if(  !globalFlow.keepIf("PV", OK)    && quick ) continue;
     if(pcp)cout<<"check point  vertex called"<<endl;
-    if(DoControlPlots && OK)ControlPlots.MakePlots("PV", TightMuons, TightElectrons, CleanedJets, PFmet); 
+    //if(DoControlPlots && OK)ControlPlots.MakePlots("PV", selectedMuons, TightElectrons, CleanedJets, PFmet); 
     //====================================================================
+
+
+
 
 
 
@@ -998,7 +1031,7 @@ int main(int argc, char** argv){
     if(pcp)cout<<"check point calling event quality"<<endl;
     if( !globalFlow.keepIf("HBHE", OK)          && quick ) continue;
     if(pcp)cout<<"noise passed"<<endl;
-    if(DoControlPlots && OK)ControlPlots.MakePlots("HBHE", TightMuons, TightElectrons, CleanedJets, PFmet); 
+    //if(DoControlPlots && OK)ControlPlots.MakePlots("HBHE", selectedMuons, TightElectrons, CleanedJets, PFmet); 
     //====================================================================
 
 
@@ -1008,12 +1041,13 @@ int main(int argc, char** argv){
     //====================================================================    
     // check CSCHALO
     //====================================================================    
-    //it only checks hbheNoiseFilterResult
     OK = cschalo_RA4b(tree);
     if(i==0 && isquick){OK=OK&&OKold; OKold=OK;}
     if( !globalFlow.keepIf("CSC_HALO", OK)          && quick ) continue;
-    if(DoControlPlots && OK)ControlPlots.MakePlots("CSC_HALO", TightMuons, TightElectrons, CleanedJets, PFmet); 
+    //if(DoControlPlots && OK)ControlPlots.MakePlots("CSC_HALO", selectedMuons, TightElectrons, CleanedJets, PFmet); 
     //====================================================================
+
+
 
 
 
@@ -1021,11 +1055,10 @@ int main(int argc, char** argv){
     //====================================================================    
     // check trackingFailure
     //====================================================================    
-    //it only checks hbheNoiseFilterResult
     OK = trackingFailure_RA4b(tree);
     if(i==0 && isquick){OK=OK&&OKold; OKold=OK;}
     if( !globalFlow.keepIf("trackingFailure", OK)          && quick ) continue;
-    if(DoControlPlots && OK)ControlPlots.MakePlots("trackingFailure", TightMuons, TightElectrons, CleanedJets, PFmet); 
+    //if(DoControlPlots && OK)ControlPlots.MakePlots("trackingFailure", selectedMuons, TightElectrons, CleanedJets, PFmet); 
     //====================================================================
 
 
@@ -1040,7 +1073,7 @@ int main(int argc, char** argv){
     OK=ECAL_TP;
     if(i==0 && isquick){OK=OK&&OKold; OKold=OK;}
     if( !globalFlow.keepIf("ECAL_TP", OK)          && quick ) continue;
-    if(DoControlPlots && OK)ControlPlots.MakePlots("ECAL_TP", TightMuons, TightElectrons, CleanedJets, PFmet); 
+    //if(DoControlPlots && OK)ControlPlots.MakePlots("ECAL_TP", selectedMuons, TightElectrons, CleanedJets, PFmet); 
     //====================================================================
     //
     //    treeCuts["Cleaning"]=globalFlow.applyCuts("ECAL_TP trackingFailure CSC_HALO HBHE PV Scraping_Veto");
@@ -1055,11 +1088,93 @@ int main(int argc, char** argv){
     //====================================================================
 
 
+    //===================================================================
+    //MANY STRIPS
+    //==================================================================
+    bool manystripclus53XFilterFlag=false;
+    bool toomanystripclus53XFilterFlag=false;
+    bool logErrorTooManyClustersFilterFlag=false;
+
+    if(isData){
+      manystripclus53XFilterFlag=tree->Get(manystripclus53XFilterFlag,"manystripclus53XFilterFlag");
+      toomanystripclus53XFilterFlag=tree->Get(toomanystripclus53XFilterFlag,"toomanystripclus53XFilterFlag");
+      logErrorTooManyClustersFilterFlag=tree->Get(logErrorTooManyClustersFilterFlag,"logErrorTooManyClustersFilterFlag");
+    }
+    //cout<<"manystripclus53XFilterFlag "<<manystripclus53XFilterFlag<<endl;
+    //cout<<"toomanystripclus53XFilterFlag "<<toomanystripclus53XFilterFlag<<endl;
+    //cout<<"logErrorTooManyClustersFilterFlag "<<logErrorTooManyClustersFilterFlag<<endl;
+
+
+    OK=!manystripclus53XFilterFlag && !toomanystripclus53XFilterFlag && !logErrorTooManyClustersFilterFlag;
+    //OK=true;
+    if(i==0 && isquick){OK=OK&&OKold; OKold=OK;}
+    if(!globalFlow.keepIf("manyStrips",OK) && quick)continue;
+
+
+    //===================================================================
+    //MANY RHO
+    //==================================================================
+    float rho=0;
+    if(isData){ rho=tree->Get(rho, "rho");}
+    float rhoMAX=config.getFloat( "Rho_Max", 40.);
+    OK=rho<rhoMAX;
+    if(i==0 && isquick){OK=OK&&OKold; OKold=OK;}
+    if(!globalFlow.keepIf("rho",OK) && quick)continue;    
+
+
+
+    //===================================================================
+    //DELTA PHI
+    //==================================================================
+    double deltaphi=0;
+    if (isData){
+      LorentzM& corMetGlobalMuonsP4Calo = tree->Get(&corMetGlobalMuonsP4Calo, "corMetGlobalMuonsP4Calo");
+      deltaphi = DeltaPhi(corMetGlobalMuonsP4Calo,PFmet);
+    }
+
+
+    float deltaphi_MAX = config.getFloat("deltaphi_MAX",1.5);
+    OK=deltaphi<deltaphi_MAX;
+    if(i==0 && isquick){OK=OK&&OKold; OKold=OK;}
+    if(!globalFlow.keepIf("dphi_calo-MET",OK) && quick)continue;    
+    //==================================================================
+
+
+    /*
+    if (CleanedJets.size()>12){
+      vector<LorentzM>&  Jets_p4 = tree->Get(&Jets_p4, "ak5JetPFCorrectedP4Pat");
+      cout<<"here the multiplicity is "<<CleanedJets.size()<<endl;
+      cout<<"the original collection size is "<<Jets_p4.size()<<endl;
+      cout<<"looking at all jets  now"<<endl;
+      cout<<"Event is "<<Event<<endl;
+      cout<<"lumiSection is "<<lumiSection<<endl;
+      cout<<"Run is "<<Run<<endl;
+      for (int kjet=0; kjet<AllJets.size();++kjet){
+	cout<<" jet "<<kjet<<" has a pt of "<<AllJets.at(kjet)->Pt()<<endl;
+      }
+    }
+    */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
     //LEPTON SELECTION//
-    string SigMu = config.getString("SignalMuon_Selection","Tight");
+    string SigMu = config.getString("SignalMuon_Selection","Selected");
     string WidMu = config.getString("WideMuon_Selection","Veto");
     string SigEl = config.getString("SignalElectron_Selection","Tight");
     string WidEl = config.getString("WideElectron_Selection","Veto");
@@ -1097,10 +1212,31 @@ int main(int argc, char** argv){
       cout<<SignalElectrons.size()<<" "<<SignalMuons.size()<<endl;
     }
 
+
     OK=SetOfCuts::Leptons.NUM.Examine((int)SignalElectrons.size()+(int)SignalMuons.size());
     if(i==0 && isquick){OK=OK&&OKold; OKold=OK;}
     //cout<<"the size of ALLJets is -1 "<<AllJets.size()<<endl;       
     if(!globalFlow.keepIf("One_single_lepton",OK) && quick) continue;    
+
+
+
+
+    Particle* theLepton;
+    if(SetOfCuts::Leptons.NUM.GiveMeCut()==1 && SetOfCuts::Leptons.NUM.GiveMeRelation()=="equal"){
+      if(globalFlow.DidItPass("One_single_lepton")){
+	if (SignalElectrons.size()==1){
+	  theLepton=SignalElectrons.at(0);
+	}else if(SignalMuons.size()==1){
+	  theLepton=SignalMuons.at(0);
+	}
+      }
+    }
+
+
+
+    
+
+
 
 
     //number of tags & tag w.
@@ -1263,6 +1399,31 @@ int main(int argc, char** argv){
 
 
 
+    //========================================
+    //=======TRACKS
+    //========================================
+    tracks = makeAllTracks( tree);
+    OK=IsoTrackVetoV4( theLepton, tracks);
+    if(i==0 && isquick){OK=OK&&OKold; OKold=OK;}
+    if(!globalFlow.keepIf("IsoTracks",OK) && quick) continue;    
+    if(DoControlPlots && OK)ControlPlots.MakePlots("IsoTracks", SignalMuons, WideElectrons, CleanedJets, PFmet); 
+    //========================================
+
+
+
+    //========================================
+    //=======TAUS
+    //========================================
+    vector<Tau*> vetoTaus; 
+    makeVetoTaus( tree, taus, vetoTaus, theLepton);
+    OK = (vetoTaus.size() == 0);
+    if(i==0 && isquick){OK=OK&&OKold; OKold=OK;}
+    if(!globalFlow.keepIf("TauVeto",OK) && quick) continue;    
+    if(DoControlPlots && OK)ControlPlots.MakePlots("TauVeto", SignalMuons, WideElectrons, CleanedJets, PFmet); 
+
+
+
+
 
 
 
@@ -1366,7 +1527,23 @@ int main(int argc, char** argv){
 	}
       }
     }
+
+    /*
+    if (CleanedJets.size()>12){
+      vector<LorentzM>&  Jets_p4 = tree->Get(&Jets_p4, "ak5JetPFCorrectedP4Pat");
+      cout<<"here the multiplicity is "<<CleanedJets.size()<<endl;
+      cout<<"the original collection size is "<<Jets_p4.size()<<endl;
+      cout<<"looking at all jets  now"<<endl;
+      cout<<"Event is "<<Event<<endl;
+      cout<<"lumiSection is "<<lumiSection<<endl;
+      cout<<"Run is "<<Run<<endl;
+      for (int kjet=0; kjet<AllJets.size();++kjet){
+	cout<<" jet "<<kjet<<" has a pt of "<<AllJets.at(kjet)->Pt()<<endl;
+      }
+    }
+    */
     //====================================================================
+
 
 
 
@@ -1375,22 +1552,16 @@ int main(int argc, char** argv){
     //===================================================================
     //CHECK MT2
     //===================================================================
-    Particle* theLepton;
+    //Particle* theLepton;
     double MT2=0;
     if(SetOfCuts::Leptons.NUM.GiveMeCut()==1 && SetOfCuts::Leptons.NUM.GiveMeRelation()=="equal"){
       if(globalFlow.DidItPass("One_single_lepton")){
-	if (SignalElectrons.size()==1){
-	  theLepton=SignalElectrons.at(0);
-	}else if(SignalMuons.size()==1){
-	  theLepton=SignalMuons.at(0);
-	}
-	else{
-	  cout<<"there should be either one muon or one electron, but there aren't"<<endl;
-	}
+
 	double pt1=theLepton->Pt();
 	double pt2=PFmet.pt();
-	 MT2=sqrt( 2*pt1*pt2 * (1 - cos(DeltaPhi(theLepton->P4(), PFmet))));
-	 //cout<<"MT2 = "<<MT2<<endl;
+	//MT2=sqrt( 2*pt1*pt2 * (1 - cos(DeltaPhi(theLepton->P4(), PFmet))));
+	MT2=sqrt( 2*pt1*pt2 * (1 - cos(DeltaPhi(theLepton->P4(), PFmet))));
+
       }
     }
     //
@@ -1401,6 +1572,22 @@ int main(int argc, char** argv){
     if(i==0 && isquick){ OK=OK&&OKold; OKold=OK;}
     if(!globalFlow.keepIf("MT2", OK ) && quick ) continue;
     if(DoControlPlots && OK)ControlPlots.MakePlots("MT2", SignalMuons, SignalElectrons, CleanedJets, PFmet); 
+
+    /*
+    cout<<endl;
+
+    cout<<"the event is here "<<Event<<endl;
+    cout<<"and MTMu is "<<MT2<<endl;
+    cout<<"filling with a weight of "<<EventWeight<<endl;
+    //
+    cout<<"the ingredients are "<<endl;
+    cout<<"muon pt "<<theLepton->Pt()<<endl;
+    cout<<"the met "<<PFmet.pt()<<endl;
+    cout<<"the angle "<<cos(DeltaPhi(theLepton->P4(), PFmet))<<endl;
+    cout<<endl;
+    */
+    MTMu->Fill(MT2,EventWeight);
+
     //===================================================================
 
 
@@ -1429,12 +1616,12 @@ int main(int argc, char** argv){
             if(TightElectrons.size() > 0) cout<<"TightElectrons.size() = " << TightElectrons.size() << endl;
       bool foundDiLepton=false;
       //cut: check if there is an OS muon pair with 60 < Minv < 120
-      if(TightMuons.size()<2) foundDiLepton=false;
+      if(selectedMuons.size()<2) foundDiLepton=false;
       else{
-	for(Int_t i=0,N=TightMuons.size();i<N-1; ++i){
+	for(Int_t i=0,N=selectedMuons.size();i<N-1; ++i){
 	  for(Int_t j=i+1; j<N; ++j){
-	    if(TightMuons.at(i)->Charge() == TightMuons.at(j)->Charge()) continue;
-	    double diLepMass = (TightMuons.at(i)->P4()+TightMuons.at(j)->P4()).M();
+	    if(selectedMuons.at(i)->Charge() == selectedMuons.at(j)->Charge()) continue;
+	    double diLepMass = (selectedMuons.at(i)->P4()+selectedMuons.at(j)->P4()).M();
 	    if(diLepMass > 60. && diLepMass < 120.) foundDiLepton=true;
 	  }
 	  if(foundDiLepton) break;
@@ -1450,8 +1637,8 @@ int main(int argc, char** argv){
       //--------------- keep only the trigger Info for the Tight Leptons 
       //(therefore, the trigger info of other leptons is not saved into the output tree)
       vector<string> keepMatchingInfoForTightMuon;
-      for(Int_t i=0,N=TightMuons.size(); i<N; ++i){
-	Int_t indx = TightMuons.at(i)->GetIndexInTree();
+      for(Int_t i=0,N=selectedMuons.size(); i<N; ++i){
+	Int_t indx = selectedMuons.at(i)->GetIndexInTree();
 	if(indx>= MuMatchedTriggerFilter.size()){
 	  cout<<"WARNING: Asked for Trigger matching info that does not exist!"<<endl;
 	  cout<<"MuMatchedTriggerFilter.size() = " << MuMatchedTriggerFilter.size() << endl;
@@ -1462,18 +1649,18 @@ int main(int argc, char** argv){
       MuMatchedTriggerFilter = keepMatchingInfoForTightMuon;
       
       //small consistency check
-      if(keepMatchingInfoForTightMuon.size() != TightMuons.size()){
+      if(keepMatchingInfoForTightMuon.size() != selectedMuons.size()){
 	cout<<"WARNING: Size of muon vector does not correspond to size of matching info vector!"<<endl;
-	cout<<"TightMuons.size()                   = " << TightMuons.size() << endl;
+	cout<<"selectedMuons.size()                   = " << selectedMuons.size() << endl;
 	cout<<"keepMatchingInfoForTightMuon.size() = " << keepMatchingInfoForTightMuon.size() << endl;
       }
       if(TightElectrons.size()){
 	cout<<"WARNING: Size of muon vector is not zero as it ought to be: "<< TightElectrons.size() << endl;
       }
       //cout<<"======================================"<<endl;
-      //cout<<"Size: matchFilter | TightMuons | keepFilters = " 
+      //cout<<"Size: matchFilter | selectedMuons | keepFilters = " 
       //<< MuMatchedTriggerFilter.size() << " | "
-      //<< TightMuons.size() << " | "
+      //<< selectedMuons.size() << " | "
       //<< keepMatchingInfoForTightMuon.size()
       //<<endl;
 
@@ -1494,7 +1681,7 @@ int main(int argc, char** argv){
       
       if(!globalFlow.keepIf("OS muon pair found", OK ) && quick ) continue;
 //       cout<<"my info blabal"<<myInfo.ElMatchedTriggerFilter.size()<<endl;
-      TrigStudyTree->Fill(&myInfo, tree, TightMuons, TightElectrons, CleanedJets, PFmet);
+      TrigStudyTree->Fill(&myInfo, tree, selectedMuons, TightElectrons, CleanedJets, PFmet);
 
       //cout<<"---------------------------------------------------------" <<endl;
       //       cout<<"ElMatchedTriggerFilter.size() = " << ElMatchedTriggerFilter.size() << endl;
@@ -1553,8 +1740,8 @@ int main(int argc, char** argv){
 	cout<<"TightElectrons.size()                   = " << TightElectrons.size() << endl;
 	cout<<"keepMatchingInfoForTightElectron.size() = " << keepMatchingInfoForTightElectron.size() << endl;
       }
-      if(TightMuons.size()){
-	cout<<"WARNING: Size of muon vector is not zero as it ought to be: "<< TightMuons.size() << endl;
+      if(selectedMuons.size()){
+	cout<<"WARNING: Size of muon vector is not zero as it ought to be: "<< selectedMuons.size() << endl;
       }
       //fill the leafs which will be saved in TrigStudyTree
       EventInfo myInfo;
@@ -1572,7 +1759,7 @@ int main(int argc, char** argv){
       myInfo.TriggerMap             = TriggerMap;
       
       if(!globalFlow.keepIf("OS electron pair found", OK ) && quick ) continue;
-      TrigStudyTree->Fill(&myInfo, tree, TightMuons, TightElectrons, CleanedJets, PFmet);
+      TrigStudyTree->Fill(&myInfo, tree, selectedMuons, TightElectrons, CleanedJets, PFmet);
       
       //cout<<"---------------------------------------------------------" <<endl;
       //       cout<<"ElMatchedTriggerFilter.size() = " << ElMatchedTriggerFilter.size() << endl;
@@ -1608,17 +1795,23 @@ int main(int argc, char** argv){
     if(!isquick){
       globalFlowNames.push_back("hcalLaserFilter");
       globalFlowNames.push_back("eeBadSCFilter");
+      globalFlowNames.push_back("ecalLaserCorrFilterFlag");
       globalFlowNames.push_back("Scraping_Veto");
       globalFlowNames.push_back("PV");
       globalFlowNames.push_back("HBHE");
       globalFlowNames.push_back("CSC_HALO");
       globalFlowNames.push_back("trackingFailure");
       globalFlowNames.push_back("ECAL_TP");
+      globalFlowNames.push_back("manyStrips");
+      globalFlowNames.push_back("rho");
+      globalFlowNames.push_back("dphi_calo-MET");
+      globalFlowNames.push_back("One_single_lepton");      
       globalFlowNames.push_back("Signal_Muons");
       globalFlowNames.push_back("Signal_Electrons");
       globalFlowNames.push_back("Wide_Muons");
       globalFlowNames.push_back("Wide_Electrons");
-      globalFlowNames.push_back("One_single_lepton");      
+      globalFlowNames.push_back("IsoTracks");
+      globalFlowNames.push_back("TauVeto");
       globalFlowNames.push_back("Jet_Cuts");
       globalFlowNames.push_back("NBtags");
       globalFlowNames.push_back("HT");
@@ -1636,20 +1829,37 @@ int main(int argc, char** argv){
       }
 
 
-
+      
+      
       //METResolution AFTER THE CUTFLOW
       if(OKall){
-	LorentzM& TrueME = tree->Get(&TrueME,"genmetP4True");
-	double TrueMET=TrueME.Pt();
-	METRes_ACF->Fill((MET-TrueMET)/TrueMET,EventWeight);
-
+	if (!isData){
+	  LorentzM& TrueME = tree->Get(&TrueME,"genmetP4True");
+	  double TrueMET=TrueME.Pt();
+	  METRes_ACF->Fill((MET-TrueMET)/TrueMET,EventWeight);
+	}
       }
+      
 
 
-
-
+      if(OKall){
+	if (CleanedJets.size()>9){
+	  vector<LorentzM>&  Jets_p4 = tree->Get(&Jets_p4, "ak5JetPFCorrectedP4Pat");
+	  cout<<"here the multiplicity is "<<CleanedJets.size()<<endl;
+	  cout<<"the original collection size is "<<Jets_p4.size()<<endl;
+	  cout<<"looking at all jets  now"<<endl;
+	  cout<<"Event is "<<Event<<endl;
+	  cout<<"lumiSection is "<<lumiSection<<endl;
+	  cout<<"Run is "<<Run<<endl;
+	  for (int kjet=0; kjet<AllJets.size();++kjet){
+	    cout<<" jet "<<kjet<<" has a pt of "<<AllJets.at(kjet)->Pt()<<endl;
+	  }
+	}
+      }
+      
+      
     }
-
+    
     
     
     if(systematics.IsEnabled()){
@@ -1849,8 +2059,6 @@ int main(int argc, char** argv){
 
     //=====================FILL THE subTree====================
     //
-    //
-    //
     vector<Jet*> pCleanedJets;
     for (int ij=0;ij<CleanedJets.size();++ij){
       pCleanedJets.push_back(CleanedJets.at(ij).get());
@@ -1861,7 +2069,12 @@ int main(int argc, char** argv){
 	for (int ij=0;ij<CleanedJets.size();++ij){
 	  pCleanedJets.push_back(CleanedJets.at(ij).get());
 	}
-	//cout<<"filling subTree"<<endl;
+	
+	//if(pCleanedJets.size()<4){
+	//cout<<"CATASTROPHIC ERROR"<<endl;
+	//}
+	//cout<<"filling subTree"<<endl;/
+	//cout<<"putos btags "<<NumberOfbTags<<endl;
 	SubTree->Fill( &info, tree, SignalMuons, SignalElectrons, pCleanedJets, PFmet);
       }
     }
@@ -1890,12 +2103,6 @@ int main(int argc, char** argv){
       }
     }
     //=============================================================================
-
-    //cout<<"the size of ALLJets is 6 "<<AllJets.size()<<endl;   
-
-
-
-
 
 
 
@@ -1976,6 +2183,7 @@ int main(int argc, char** argv){
   //  globalFlow.printAll();
   cout<<"dumping the main cutflow"<<endl;
   globalFlow.dumpToHist(); 
+  selectedMuonFlow.dumpToHist(); 
   cout<<"cutflow dumped"<<endl;
   
   //systematics.~Systematics();

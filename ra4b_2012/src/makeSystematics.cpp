@@ -466,19 +466,19 @@ double getJerSF(double eta, double err_factor) {
   double sf = 1.;
 
   if ( fabs(eta) < 0.5 ) {
-    sf = 1.052 + err_factor * 0.065;
+    sf = 1.097 + err_factor * 0.007;
   }
   else if (fabs(eta) < 1.1) {
-    sf = 1.057 + err_factor * 0.059;
+    sf = 1.1 + err_factor * 0.008;
   }
   else if (fabs(eta) < 1.7) {
-    sf = 1.096 + err_factor * 0.070;
+    sf = 1.164 + err_factor * 0.013;
   }
   else if (fabs(eta) < 2.3 ){
-    sf = 1.134 + err_factor * 0.102;
+    sf = 1.270 + err_factor * 0.028;
   }
   else {
-    sf = 1.288 + err_factor * 0.222;
+    sf = 1.190 + err_factor * 0.063;
   }
   
   if (sf < 0.) {

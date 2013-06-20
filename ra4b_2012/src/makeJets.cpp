@@ -113,6 +113,9 @@ void makeGoodJets(EasyChain* tree, vector<Ptr_Jet>& AllJets, vector<Ptr_Jet>& go
   vector<int>&       Jets_ID = tree->Get(&Jets_ID,"ak5JetPFPFJetIDloosePat");
   vector<float>&     Jets_CSV = tree->Get(&Jets_CSV, "ak5JetPFCombinedSecondaryVertexBJetTagsPat");
   vector<float>&     Jets_CSVMVA = tree->Get(&Jets_CSVMVA, "ak5JetPFCombinedSecondaryVertexMVABJetTagsPat");
+  vector<int>&       jets_PUTight    = tree->Get( &jets_PUTight,    "DESYak5JetPFPileUpIdfull5xTightPat"); 
+
+
   unsigned int Event   = tree->Get(Event,"event");    
   
   extern bool pcp;
@@ -156,6 +159,9 @@ void makeGoodJets(EasyChain* tree, vector<Ptr_Jet>& AllJets, vector<Ptr_Jet>& go
     if( !jetFlow.keepIf("jets_ETAMAX",OK) && quick ) continue;
     //
     OK=Jets_ID.at(indx)!=0;
+    if( !jetFlow.keepIf("ak5JetPFPFJetIDloosePat", OK ) && quick ) continue;
+
+    OK=jets_PUTight.at(indx)!=0;
     if( !jetFlow.keepIf("ak5JetPFPFJetIDloosePat", OK ) && quick ) continue;
 
     //

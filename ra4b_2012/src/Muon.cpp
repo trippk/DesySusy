@@ -7,23 +7,9 @@ using namespace std;
 using namespace ROOT::Math::VectorUtil;
 
 
-
-// void Muon::Set(int maptotree_In,LorentzM* momentum_In){
-
-//   pp4=momentum_In;
-//   p4=*pp4;
-//   maptotree=maptotree_In;
-
-// }
-
-void Muon::Set(int maptotree_In, LorentzM * momentum_In, int particleID_In, int charge_In, string flavor_In, double relIso_In){
-  this->Set(maptotree_In, momentum_In, charge_In, relIso_In);
-}
-
-
 void Muon::Set(int maptotree_In, LorentzM * momentum_In, int charge_In, double relIso_In){
 
-  
+  //this->Particle::SetDz(dz_in);
   this->AnalysisObject::Set(maptotree_In,momentum_In);
 
   //SET THE CHARGE
@@ -39,7 +25,6 @@ void Muon::Set(int maptotree_In, LorentzM * momentum_In, int charge_In, double r
     cout<<"THE MUON CHARGE IS NOT CORRECT.ERROR "<<endl;
   }
 
-
   //SET THE FLAVOUR
   this->SetFlavor("mu");
 
@@ -47,4 +32,21 @@ void Muon::Set(int maptotree_In, LorentzM * momentum_In, int charge_In, double r
   this->SetRelIso(relIso_In);
 
 }
+
+
+void Muon::Set(int maptotree_In, LorentzM * momentum_In, int charge_In, double relIso_In, double dz_In){
+  this->SetDz(dz_In);
+  this->Set(maptotree_In, momentum_In, charge_In, relIso_In);
+}
+
+void Muon::Set(int maptotree_In, LorentzM* momentum_In, int charge_In, double relIso_In, string flavor_In){
+  cout<<"you should not be calling this function. 1"<<endl;
+}
+
+void Muon::Set(int maptotree_In, LorentzM* momentum_In, int charge_In, double relIso_In, string flavor_In, int particleID_In){
+  cout<<"you should not be calling this function. 2"<<endl;
+}
+
+
+
 
