@@ -60,11 +60,20 @@ void makeAllJets(EasyChain* tree, vector<Ptr_Jet>& AllJets){
 
  // vector<Jet> Jets; 
  // Jets.clear();
- 
  vector<LorentzM>&  Jets_p4 = tree->Get(&Jets_p4, "ak5JetPFCorrectedP4Pat");
  vector<float>&     Jets_CorrFactor = tree->Get(&Jets_CorrFactor, "ak5JetPFCorrFactorPat");
  vector<int>&       Jets_genFlavor = tree->Get(&Jets_genFlavor, "ak5JetPFgenJetFlavourPat");  
+ vector<int>&       jets_PUTight    = tree->Get( &jets_PUTight,  "DESYak5JetPFPileUpIdfull5xTightPat"); 
+ unsigned int Event   = tree->Get(Event,"event");     
 
+
+
+
+ if (Jets_p4.size() != jets_PUTight.size()){
+   cout<<"jets size = "<<Jets_p4.size()<<endl;
+   cout<<"PU_Ttight size = "<<jets_PUTight.size()<<endl;
+   cout<<"happening in event "<<Event<<endl;
+ }
 
  for(int ijet = 0; ijet<Jets_p4.size(); ijet++){  
    //THE LORENTZ VECTOR IS OWNED BY THE TREE
@@ -113,8 +122,7 @@ void makeGoodJets(EasyChain* tree, vector<Ptr_Jet>& AllJets, vector<Ptr_Jet>& go
   vector<int>&       Jets_ID = tree->Get(&Jets_ID,"ak5JetPFPFJetIDloosePat");
   vector<float>&     Jets_CSV = tree->Get(&Jets_CSV, "ak5JetPFCombinedSecondaryVertexBJetTagsPat");
   vector<float>&     Jets_CSVMVA = tree->Get(&Jets_CSVMVA, "ak5JetPFCombinedSecondaryVertexMVABJetTagsPat");
-  vector<int>&       jets_PUTight    = tree->Get( &jets_PUTight,    "DESYak5JetPFPileUpIdfull5xTightPat"); 
-
+  vector<int>&       jets_PUTight    = tree->Get( &jets_PUTight, "DESYak5JetPFPileUpIdfull5xTightPat"); 
 
   unsigned int Event   = tree->Get(Event,"event");    
   
@@ -151,7 +159,7 @@ void makeGoodJets(EasyChain* tree, vector<Ptr_Jet>& AllJets, vector<Ptr_Jet>& go
     if(pcp)cout<<"pt,eta, phi and id -->"<<AllJets.at(ijet)->pt()<<" "<<AllJets.at(ijet)->eta()<<" "<<AllJets.at(ijet)->Phi()<<" "<<Jets_ID.at(indx)<<endl;
     jetFlow.keepIf("before cuts in jets", true);
     //
-    OK=AllJets.at(ijet)->pt() > PTMIN;
+    OK=AllJets.at(ijet)->Pt() > PTMIN;
     if( !jetFlow.keepIf("Jets_PTMIN", OK) && quick) continue;
 
     // 
@@ -161,8 +169,13 @@ void makeGoodJets(EasyChain* tree, vector<Ptr_Jet>& AllJets, vector<Ptr_Jet>& go
     OK=Jets_ID.at(indx)!=0;
     if( !jetFlow.keepIf("ak5JetPFPFJetIDloosePat", OK ) && quick ) continue;
 
+    if (indx>= jets_PUTight.size()){
+      jets_PUTight.clear();
+      vector<LorentzM>&  Jets_p4 = tree->Get(&Jets_p4, "ak5JetPFCorrectedP4Pat");
+      for (int i=0; i<Jets_p4.size();++i)jets_PUTight.push_back(1);
+    }
     OK=jets_PUTight.at(indx)!=0;
-    if( !jetFlow.keepIf("ak5JetPFPFJetIDloosePat", OK ) && quick ) continue;
+    if( !jetFlow.keepIf("PU Tight", OK ) && quick ) continue;
 
     //
     if(!quick){

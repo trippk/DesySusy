@@ -695,6 +695,48 @@ int main(int argc, char** argv){
     //makeCleanTaus( taus, cleanTaus, goodMuons, goodElectrons);
     makeCleanTaus( taus, cleanTaus, goodMuons, TightElectrons);
 
+
+
+
+
+    //LEPTON SELECTION//
+    string SigMu = config.getString("SignalMuon_Selection","Selected");
+    string WidMu = config.getString("WideMuon_Selection","Veto");
+    string SigEl = config.getString("SignalElectron_Selection","Tight");
+    string WidEl = config.getString("WideElectron_Selection","Veto");
+
+
+
+
+
+    //SIGNAL AND WIDE LEPTONS//
+    vector<Muon*> SignalMuons;
+    vector<Muon*> WideMuons;
+    for (int imu=0; (int)imu<Muons.size();++imu){
+      if (Muons.at(imu).IsID(SigMu) ){  
+	SignalMuons.push_back(&Muons.at(imu));
+      }
+      else if (!Muons.at(imu).IsID(SigMu) && Muons.at(imu).IsID(WidMu) ){
+	WideMuons.push_back(&Muons.at(imu) ) ;
+      }
+    }
+    vector<Electron*> SignalElectrons;
+    vector<Electron*> WideElectrons;
+    for (int imu=0; (int)imu<Electrons.size();++imu){
+      if (Electrons.at(imu).IsID(SigEl) ){  
+	SignalElectrons.push_back(&Electrons.at(imu));
+      }
+      else if (!Electrons.at(imu).IsID(SigEl) && Electrons.at(imu).IsID(WidEl) ){
+	WideElectrons.push_back(&Electrons.at(imu) ) ;
+      }
+    }
+
+
+
+
+
+
+
     //============================================    
     // Make Jets
     //cout<<"vector of jets declared"<<endl;
@@ -703,7 +745,9 @@ int main(int argc, char** argv){
     vector<Ptr_Jet> CleanedJets;
     makeAllJets(tree,AllJets);
     makeGoodJets(tree,AllJets,GoodJets);
-    makeCleanedJets( GoodJets, CleanedJets, goodMuons, pElectrons);
+
+    makeCleanedJets( GoodJets, CleanedJets, pMuons, pElectrons);
+    //makeCleanedJets( GoodJets, CleanedJets, goodMuons, pElectrons);
 
     //=======MATCHING OF JETS
     vector<Ptr_GenJet> allGenJets;
@@ -930,7 +974,7 @@ int main(int argc, char** argv){
 
 
 
-    if(DoControlPlots)ControlPlots.MakePlots("Before_CutFlow", selectedMuons, TightElectrons, CleanedJets, PFmet); 
+    if(DoControlPlots)ControlPlots.MakePlots("Before_CutFlow", SignalMuons, TightElectrons, CleanedJets, PFmet); 
 
 
     //====================================================================
@@ -947,7 +991,7 @@ int main(int argc, char** argv){
       if( !globalFlow.keepIf("triggers", OK )  && quick ) continue;    
       EW_AfterTrigger->Fill(EventWeight);
       //
-      if(DoControlPlots && OK)ControlPlots.MakePlots("Triggers", selectedMuons, TightElectrons, CleanedJets, PFmet); 
+      if(DoControlPlots && OK)ControlPlots.MakePlots("Triggers", SignalMuons, TightElectrons, CleanedJets, PFmet); 
       //treeCuts["Triggers"]=OK;
     }
     //====================================================================
@@ -996,7 +1040,7 @@ int main(int argc, char** argv){
     if(i==0 && isquick){ OK=OK&&OKold; OKold=OK;}
     if(  !globalFlow.keepIf("Scraping_Veto", OK ) && quick ) continue;
     if(pcp)cout<<"pure tracks passed"<<endl;
-    //if(DoControlPlots && OK)ControlPlots.MakePlots("Scraping_Veto", selectedMuons, TightElectrons, CleanedJets, PFmet); 
+    //if(DoControlPlots && OK)ControlPlots.MakePlots("Scraping_Veto", SignalMuons, TightElectrons, CleanedJets, PFmet); 
     //====================================================================    
 
 
@@ -1013,7 +1057,7 @@ int main(int argc, char** argv){
     if(i==0 && isquick){ OK=OK&&OKold; OKold=OK;}
     if(  !globalFlow.keepIf("PV", OK)    && quick ) continue;
     if(pcp)cout<<"check point  vertex called"<<endl;
-    //if(DoControlPlots && OK)ControlPlots.MakePlots("PV", selectedMuons, TightElectrons, CleanedJets, PFmet); 
+    //if(DoControlPlots && OK)ControlPlots.MakePlots("PV", SignalMuons, TightElectrons, CleanedJets, PFmet); 
     //====================================================================
 
 
@@ -1031,7 +1075,7 @@ int main(int argc, char** argv){
     if(pcp)cout<<"check point calling event quality"<<endl;
     if( !globalFlow.keepIf("HBHE", OK)          && quick ) continue;
     if(pcp)cout<<"noise passed"<<endl;
-    //if(DoControlPlots && OK)ControlPlots.MakePlots("HBHE", selectedMuons, TightElectrons, CleanedJets, PFmet); 
+    //if(DoControlPlots && OK)ControlPlots.MakePlots("HBHE", SignalMuons, TightElectrons, CleanedJets, PFmet); 
     //====================================================================
 
 
@@ -1044,7 +1088,7 @@ int main(int argc, char** argv){
     OK = cschalo_RA4b(tree);
     if(i==0 && isquick){OK=OK&&OKold; OKold=OK;}
     if( !globalFlow.keepIf("CSC_HALO", OK)          && quick ) continue;
-    //if(DoControlPlots && OK)ControlPlots.MakePlots("CSC_HALO", selectedMuons, TightElectrons, CleanedJets, PFmet); 
+    //if(DoControlPlots && OK)ControlPlots.MakePlots("CSC_HALO", SignalMuons, TightElectrons, CleanedJets, PFmet); 
     //====================================================================
 
 
@@ -1058,7 +1102,7 @@ int main(int argc, char** argv){
     OK = trackingFailure_RA4b(tree);
     if(i==0 && isquick){OK=OK&&OKold; OKold=OK;}
     if( !globalFlow.keepIf("trackingFailure", OK)          && quick ) continue;
-    //if(DoControlPlots && OK)ControlPlots.MakePlots("trackingFailure", selectedMuons, TightElectrons, CleanedJets, PFmet); 
+    //if(DoControlPlots && OK)ControlPlots.MakePlots("trackingFailure", SignalMuons, TightElectrons, CleanedJets, PFmet); 
     //====================================================================
 
 
@@ -1073,7 +1117,7 @@ int main(int argc, char** argv){
     OK=ECAL_TP;
     if(i==0 && isquick){OK=OK&&OKold; OKold=OK;}
     if( !globalFlow.keepIf("ECAL_TP", OK)          && quick ) continue;
-    //if(DoControlPlots && OK)ControlPlots.MakePlots("ECAL_TP", selectedMuons, TightElectrons, CleanedJets, PFmet); 
+    //if(DoControlPlots && OK)ControlPlots.MakePlots("ECAL_TP", SignalMuons, TightElectrons, CleanedJets, PFmet); 
     //====================================================================
     //
     //    treeCuts["Cleaning"]=globalFlow.applyCuts("ECAL_TP trackingFailure CSC_HALO HBHE PV Scraping_Veto");
@@ -1170,37 +1214,6 @@ int main(int argc, char** argv){
 
 
 
-
-
-
-    //LEPTON SELECTION//
-    string SigMu = config.getString("SignalMuon_Selection","Selected");
-    string WidMu = config.getString("WideMuon_Selection","Veto");
-    string SigEl = config.getString("SignalElectron_Selection","Tight");
-    string WidEl = config.getString("WideElectron_Selection","Veto");
-
-
-
-    vector<Muon*> SignalMuons;
-    vector<Muon*> WideMuons;
-    for (int imu=0; (int)imu<Muons.size();++imu){
-      if (Muons.at(imu).IsID(SigMu) ){  
-	SignalMuons.push_back(&Muons.at(imu));
-      }
-      else if (!Muons.at(imu).IsID(SigMu) && Muons.at(imu).IsID(WidMu) ){
-	WideMuons.push_back(&Muons.at(imu) ) ;
-      }
-    }
-    vector<Electron*> SignalElectrons;
-    vector<Electron*> WideElectrons;
-    for (int imu=0; (int)imu<Electrons.size();++imu){
-      if (Electrons.at(imu).IsID(SigEl) ){  
-	SignalElectrons.push_back(&Electrons.at(imu));
-      }
-      else if (!Electrons.at(imu).IsID(SigEl) && Electrons.at(imu).IsID(WidEl) ){
-	WideElectrons.push_back(&Electrons.at(imu) ) ;
-      }
-    }
 
    
 
@@ -1403,7 +1416,11 @@ int main(int argc, char** argv){
     //=======TRACKS
     //========================================
     tracks = makeAllTracks( tree);
-    OK=IsoTrackVetoV4( theLepton, tracks);
+    if(globalFlow.DidItPass("One_single_lepton")){
+      OK=IsoTrackVetoV4( theLepton, tracks);
+    }else{
+      OK=false;
+    }
     if(i==0 && isquick){OK=OK&&OKold; OKold=OK;}
     if(!globalFlow.keepIf("IsoTracks",OK) && quick) continue;    
     if(DoControlPlots && OK)ControlPlots.MakePlots("IsoTracks", SignalMuons, WideElectrons, CleanedJets, PFmet); 
@@ -1415,8 +1432,12 @@ int main(int argc, char** argv){
     //=======TAUS
     //========================================
     vector<Tau*> vetoTaus; 
-    makeVetoTaus( tree, taus, vetoTaus, theLepton);
-    OK = (vetoTaus.size() == 0);
+    if(globalFlow.DidItPass("One_single_lepton")){
+      makeVetoTaus( tree, taus, vetoTaus, theLepton);
+      OK = (vetoTaus.size() == 0);
+    }else{
+      OK=false;
+    }
     if(i==0 && isquick){OK=OK&&OKold; OKold=OK;}
     if(!globalFlow.keepIf("TauVeto",OK) && quick) continue;    
     if(DoControlPlots && OK)ControlPlots.MakePlots("TauVeto", SignalMuons, WideElectrons, CleanedJets, PFmet); 
@@ -1616,12 +1637,12 @@ int main(int argc, char** argv){
             if(TightElectrons.size() > 0) cout<<"TightElectrons.size() = " << TightElectrons.size() << endl;
       bool foundDiLepton=false;
       //cut: check if there is an OS muon pair with 60 < Minv < 120
-      if(selectedMuons.size()<2) foundDiLepton=false;
+      if(SignalMuons.size()<2) foundDiLepton=false;
       else{
-	for(Int_t i=0,N=selectedMuons.size();i<N-1; ++i){
+	for(Int_t i=0,N=SignalMuons.size();i<N-1; ++i){
 	  for(Int_t j=i+1; j<N; ++j){
-	    if(selectedMuons.at(i)->Charge() == selectedMuons.at(j)->Charge()) continue;
-	    double diLepMass = (selectedMuons.at(i)->P4()+selectedMuons.at(j)->P4()).M();
+	    if(SignalMuons.at(i)->Charge() == SignalMuons.at(j)->Charge()) continue;
+	    double diLepMass = (SignalMuons.at(i)->P4()+SignalMuons.at(j)->P4()).M();
 	    if(diLepMass > 60. && diLepMass < 120.) foundDiLepton=true;
 	  }
 	  if(foundDiLepton) break;
@@ -1637,8 +1658,8 @@ int main(int argc, char** argv){
       //--------------- keep only the trigger Info for the Tight Leptons 
       //(therefore, the trigger info of other leptons is not saved into the output tree)
       vector<string> keepMatchingInfoForTightMuon;
-      for(Int_t i=0,N=selectedMuons.size(); i<N; ++i){
-	Int_t indx = selectedMuons.at(i)->GetIndexInTree();
+      for(Int_t i=0,N=SignalMuons.size(); i<N; ++i){
+	Int_t indx = SignalMuons.at(i)->GetIndexInTree();
 	if(indx>= MuMatchedTriggerFilter.size()){
 	  cout<<"WARNING: Asked for Trigger matching info that does not exist!"<<endl;
 	  cout<<"MuMatchedTriggerFilter.size() = " << MuMatchedTriggerFilter.size() << endl;
@@ -1649,18 +1670,18 @@ int main(int argc, char** argv){
       MuMatchedTriggerFilter = keepMatchingInfoForTightMuon;
       
       //small consistency check
-      if(keepMatchingInfoForTightMuon.size() != selectedMuons.size()){
+      if(keepMatchingInfoForTightMuon.size() != SignalMuons.size()){
 	cout<<"WARNING: Size of muon vector does not correspond to size of matching info vector!"<<endl;
-	cout<<"selectedMuons.size()                   = " << selectedMuons.size() << endl;
+	cout<<"SignalMuons.size()                   = " << SignalMuons.size() << endl;
 	cout<<"keepMatchingInfoForTightMuon.size() = " << keepMatchingInfoForTightMuon.size() << endl;
       }
       if(TightElectrons.size()){
 	cout<<"WARNING: Size of muon vector is not zero as it ought to be: "<< TightElectrons.size() << endl;
       }
       //cout<<"======================================"<<endl;
-      //cout<<"Size: matchFilter | selectedMuons | keepFilters = " 
+      //cout<<"Size: matchFilter | SignalMuons | keepFilters = " 
       //<< MuMatchedTriggerFilter.size() << " | "
-      //<< selectedMuons.size() << " | "
+      //<< SignalMuons.size() << " | "
       //<< keepMatchingInfoForTightMuon.size()
       //<<endl;
 
@@ -1681,7 +1702,7 @@ int main(int argc, char** argv){
       
       if(!globalFlow.keepIf("OS muon pair found", OK ) && quick ) continue;
 //       cout<<"my info blabal"<<myInfo.ElMatchedTriggerFilter.size()<<endl;
-      TrigStudyTree->Fill(&myInfo, tree, selectedMuons, TightElectrons, CleanedJets, PFmet);
+      TrigStudyTree->Fill(&myInfo, tree, SignalMuons, TightElectrons, CleanedJets, PFmet);
 
       //cout<<"---------------------------------------------------------" <<endl;
       //       cout<<"ElMatchedTriggerFilter.size() = " << ElMatchedTriggerFilter.size() << endl;
@@ -1740,8 +1761,8 @@ int main(int argc, char** argv){
 	cout<<"TightElectrons.size()                   = " << TightElectrons.size() << endl;
 	cout<<"keepMatchingInfoForTightElectron.size() = " << keepMatchingInfoForTightElectron.size() << endl;
       }
-      if(selectedMuons.size()){
-	cout<<"WARNING: Size of muon vector is not zero as it ought to be: "<< selectedMuons.size() << endl;
+      if(SignalMuons.size()){
+	cout<<"WARNING: Size of muon vector is not zero as it ought to be: "<< SignalMuons.size() << endl;
       }
       //fill the leafs which will be saved in TrigStudyTree
       EventInfo myInfo;
@@ -1759,7 +1780,7 @@ int main(int argc, char** argv){
       myInfo.TriggerMap             = TriggerMap;
       
       if(!globalFlow.keepIf("OS electron pair found", OK ) && quick ) continue;
-      TrigStudyTree->Fill(&myInfo, tree, selectedMuons, TightElectrons, CleanedJets, PFmet);
+      TrigStudyTree->Fill(&myInfo, tree, SignalMuons, TightElectrons, CleanedJets, PFmet);
       
       //cout<<"---------------------------------------------------------" <<endl;
       //       cout<<"ElMatchedTriggerFilter.size() = " << ElMatchedTriggerFilter.size() << endl;
