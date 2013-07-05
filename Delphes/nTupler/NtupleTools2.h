@@ -32,6 +32,7 @@
 #include <cstdlib>
 #include <algorithm>
 #include "TTree.h"
+#include "TFile.h"
 #include "TChain.h"
 #include "TChainElement.h"
 #include "TSystem.h"
@@ -286,7 +287,9 @@ TString file_base(const TString& nam)
 // inline is redundant since this is a header files
 class EasyChain: public TChain {
 public:
-	EasyChain(const char* tname) : TChain(tname), localEntry(0), localMax(0), off(0), dcache(false) {};
+	EasyChain(const char* tname) : TChain(tname), localEntry(0), localMax(0), off(0), dcache(false) {
+		fileWeight=0;
+	};
 
 	// here all kinds of variables can be load from the chain
 	// e.g.: vector<LorentzV>* electrons = tree->Get(&electrons,"electronP4Pat");
@@ -427,6 +430,27 @@ public:
 		}
 		return localEntry>=0;
 	}
+ 	// get entry and check for new tree + weight
+	// sequential gives best performance
+	inline double GetEntryW(Long64_t  entry, Int_t getall = 0){
+		getall=getall;//just to get rid of unused warning
+		localEntry=entry-off;
+		if(localEntry>=localMax||localEntry<0){
+			localEntry=LoadTree(entry);
+			if(fTree) localMax=fTree->GetEntries();
+			else cout<<"hmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm"<<endl;
+			off=fTreeOffset[fTreeNumber];
+			FillBranchAddresses(fTree);
+			TString filename = GetFile()->GetName();
+			TString nam( filename(0,filename.Index("//")+1) );
+			if( weights.find(nam)==weights.end() ) {
+				cout<<"NtupleTools2:GetEntry don't find a weight for "<<filename<<endl;
+				exit(0);
+			}
+			fileWeight=weights[nam];
+		}
+		return fileWeight;
+	}
 	// helper function for AddSmart below
 	int AddSmartSingle(const TString& name,int max,bool nodup){
 		string dcache_gate="dcap://dcache-cms-dcap.desy.de:22125/";
@@ -435,14 +459,14 @@ public:
 		if (name.Index("/pnfs/")==0 || name.Index("/store/")==0){
 			if(name.Index("/store/")==0) dcache_gate+="/pnfs/desy.de/cms/tier2/";
 			if(name.EndsWith("/")){
-				n=GetResult(files,"dcls "+name+" | grep \"\\.root\" ",nodup);
+				n=GetResult(files,"dcls "+name+" | grep \"\\.root$\" ",nodup);
 				n=n>max?max:n;
 				for(int i=0;i<n;++i) Add((dcache_gate+name+"/"+files[i]));
 			} else  Add(dcache_gate+name);
 			dcache=true;
 		} else {
 			if(name.EndsWith("/")){
-				n=GetResult(files,"ls "+name+" | grep \"\\.root\"",nodup);
+				n=GetResult(files,"ls "+name+" | grep \"\\.root$\"",nodup);
 				n=n>max?max:n;
 				for(int i=0;i<n;++i) Add((name+"/"+files[i]));
 			} else Add(name);
@@ -468,6 +492,10 @@ public:
 		        max-=k;
 		}
 		return k;
+	}
+	int AddSmartW(const TString& longname,double w,int max=10000,bool nodup=false){
+		weights[longname]=w;
+		return AddSmart(longname,max,nodup);
 	}
 	// return an (almost) unique file name depending on all files added to this chain
 	// if only 1 file use basename
@@ -495,6 +523,7 @@ public:
 	void GetAll(){
 		cout<<"EasyChain::GetAll not implemented"<<endl;
 	}
+	double fileWeight;
 private:
 	int localEntry;
 	int localMax;
@@ -504,6 +533,7 @@ private:
 	// acts as booster for tree with many branches
 	map<const string,TBranch*> byName;
 	map<string, pair<int,void*> > localByName; // a pointer to the branch and the localEntry number for which it had been read
+	map<TString,double>  weights;// weights depending on filename or dirname in AddSmartW
 #ifdef  __NTHEADER___
 	ClassDef(EasyChain, 1);
 #endif
