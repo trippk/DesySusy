@@ -68,7 +68,7 @@ cvs co -r CMSSW_5_3_3_patch2 ElectroWeakAnalysis/Utilities
 cvs co -d TopAnalysis/TopUtils UserCode/Bromo/TopAnalysis/TopUtils
 
 cvs co -dSUSYBSMAnalysis/SusyCAF -r V17-13 UserCode/SusyCAF
-cvs co -dSUSYBSMAnalysis/DesySusy -r V00-21 UserCode/DesySusy
+cvs co -dSUSYBSMAnalysis/DesySusy -r V00-22 UserCode/DesySusy
 
 # apply patches to SusyCAF
 cp SUSYBSMAnalysis/DesySusy/nTuplePatch/susydesy_cfg.py SUSYBSMAnalysis/SusyCAF/test

@@ -168,6 +168,8 @@ class SusyCAF(object) :
         self.process.load('JetMETCorrections.Configuration.JetCorrectionProducers_cff')
         self.process.load('JetMETCorrections.METPUSubtraction.mvaPFMET_leptons_cff')
 
+        self.process.pfMEtMVA.verbosity=0
+
         if self.options.isData:
             self.process.calibratedAK5PFJetsForPFMEtMVA.correctors = cms.vstring("ak5PFL1FastL2L3Residual")
         else:
