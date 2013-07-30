@@ -15,20 +15,26 @@ using namespace ROOT::Math::VectorUtil;
 
 void TagEff::filltagmatch(double Pt, double Eta)
 {
-  if(matchtype=="b-matched")
+  if( "b-matched" == matchtype)
     {
       btag->Fill(fabs(Eta),Pt); 
       bpttag->Fill(Pt);
+      betatag->Fill(fabs(Eta));
+
     }
-  else if (matchtype == "c-matched")
+  else if ( "c-matched" == matchtype)
     {
       ctag->Fill(fabs(Eta),Pt); 
       cpttag->Fill(Pt);
+      cetatag->Fill(fabs(Eta));
+
     }
   else 
     {
       ltag->Fill(fabs(Eta),Pt); 
       lpttag->Fill(Pt);
+      letatag->Fill(fabs(Eta));
+
     }
 }
 
@@ -38,17 +44,23 @@ void TagEff::fillmatch(double Pt, double Eta)
     {
       bmatched->Fill( fabs(Eta) , Pt );
       bptmatched->Fill(Pt);
+      betamatched->Fill(fabs(Eta));
+      bptspec->Fill(Pt);
     }
   
   else if (matchtype == "c-matched") 
     {
       cmatched->Fill(fabs(Eta),Pt);
       cptmatched->Fill(Pt);
+      cetamatched->Fill(fabs(Eta));
+      cptspec->Fill(Pt);
     }
   else 
     {
       lmatched->Fill(fabs(Eta),Pt);
       lptmatched->Fill(Pt);
+      letamatched->Fill(fabs(Eta));
+      lptspec->Fill(Pt);
     }
 }
 
@@ -67,14 +79,20 @@ void TagEff::finalize(){
        bptmatched->Write();
        cptmatched->Write();
        lptmatched->Write();
+       betatag->Write();
+       cetatag->Write();
+       letatag->Write();
+       betamatched->Write();
+       cetamatched->Write();
+       letamatched->Write();
+       bptspec->Write();
+       cptspec->Write();
+       lptspec->Write();
      }
    else
      {
        vectoTH1(weight, tagW);
        tagW->Write();
-       //       beff->Write();
-       //       ceff->Write();
-       //       leff->Write();
        h0tag->Write();
        h1tag->Write();
        h2tag->Write();
@@ -82,7 +100,7 @@ void TagEff::finalize(){
      }
 }
 
-int TagEff::JetLoop(vector<Jet*>& pureJets)
+int TagEff::JetLoop(vector<Jet*>& pureJets) //Takes the Jet collection (in any step of cut flow) obtain eff. maps or weights
 {
   
   //Filling the efficiencies, if they are already read (case status==1) apply Scaling factors
@@ -93,11 +111,11 @@ int TagEff::JetLoop(vector<Jet*>& pureJets)
       for(int njet = 0; njet < pureJets.size(); njet++)
 	{
 	  tagflavor(pureJets.at(njet)->GenFlavor());
-	  fillmatch(pureJets.at(njet)->pt(),pureJets.at(njet)->eta()); //*****DONT FORGET TO CHANGE the input ord. of these funcs******************!!!!
-	  if(pureJets.at(njet)->IsBJet("CSV","Medium")) //
+	  fillmatch(pureJets.at(njet)->pt(),pureJets.at(njet)->eta()); //Fill jets that are matched to quarks in gen level
+	  if(pureJets.at(njet)->IsBJet("CSV","Medium")) //Combined Secondary Vertex - Medium WP
 	    {
 	      nbjet++;
-	      filltagmatch(pureJets.at(njet)->pt(), pureJets.at(njet)->eta());
+	      filltagmatch(pureJets.at(njet)->pt(), pureJets.at(njet)->eta()); //Fill tagged and matched jets
 	    }
 	}
     }
@@ -116,11 +134,11 @@ void TagEff::ApplySF(vector<Jet*>& pureJets, int *nbj)
       if(pureJets.at(njet)->IsBJet("CSV","Medium")) (*nbj)++;
       tagflavor(pureJets.at(njet)->GenFlavor());
       Pt=pureJets.at(njet)->pt();
-      binx=(int)(fabs(pureJets.at(njet)->eta())*1.25)+1;//get the eta bin corresponds to this event
+      binx=(int)(fabs(pureJets.at(njet)->eta())*1.25)+1;//get the eta bin corresponding to this event NOTE: If you change POG recommended eta bins you need to change this as well, but don't do that unless you exactly know what you are doing.
       biny=getptbin(Pt);//get the pt bin
 
-      //sf = SF(Pt, fabs(pureJets.at(njet)->eta()), matchtype);
-      sf=1.;
+      sf = SF(Pt, fabs(pureJets.at(njet)->eta()), matchtype);
+      //sf=1.;
       if("b-matched"==matchtype)  {
 	correctedEff.push_back((beff->GetBinContent(binx,biny))*sf); 
 	bpttag->Fill(Pt,(beff->GetBinContent(binx,biny)));
@@ -140,7 +158,7 @@ void TagEff::ApplySF(vector<Jet*>& pureJets, int *nbj)
    comb(correctedEff);//apply combinatorics
 }
 
-void TagEff::comb(vector<double > & eff){
+void TagEff::comb(vector<double > & eff){ //Take the eff. vector that is filled in ApplySF, apply combinatorics and fill weight. hists.
   vector<double>  ones;               // like 1,1,1,1,1
   vector<double>  result;             //result of subtraction for example result = (1,1,1,1)-(e1,e2,e3,e4)
   vector<double>  weightIns;
@@ -148,13 +166,12 @@ void TagEff::comb(vector<double > & eff){
   int WTF=0;
   for(int numbjets=0 ; numbjets < lasttagbin  &&  eff.size()>0 ; numbjets ++)
     {
-      if(0 == numbjets)
+      if(0 == numbjets) //Mult(i=0->num tags){1-Ei}
 	{ 
 	  result.clear();
 	  ones.assign(eff.size(),1.); //
 	  transform(ones.begin(),ones.end(),eff.begin(),back_inserter(result),std::minus<double>()); 
 	  weightIns.at(numbjets)=weightIns.at(numbjets)+multIns(result);
-	  if(weightIns.at(numbjets) <0.01) {cout << "error **************************" << endl;  WTF=1;}
 	  continue;
 	}       
       
@@ -162,7 +179,7 @@ void TagEff::comb(vector<double > & eff){
 	//here create vector of 1s
 	ones.assign(eff.size(),1.);
 	ones.at(bn)=0; 
-	if(1 == numbjets) 
+	if(1 == numbjets) //Sum(j=0->n){Mult(i=0->n && j not= i){1-E_i}E_j}
 	  { 
 	    result.clear();
 	    transform(ones.begin(),ones.end(),eff.begin(),back_inserter(result),std::minus<double>()); 
@@ -170,7 +187,7 @@ void TagEff::comb(vector<double > & eff){
 	    continue;
 	  }
 	
-	if(2 == numbjets) 
+	if(2 == numbjets) //Sum(k=0->n){Sum(j=0->n && k not =j){Mult(i=0->n && j&k not= i){1-E_i}E_j*E_k}}
 	  for(int b = bn+1; b < eff.size(); b++ && (ones.at(b-1)=1))
 	    {
 	      result.clear();
@@ -184,7 +201,7 @@ void TagEff::comb(vector<double > & eff){
   weightIns.at(lasttagbin)=1.;
   for(int indx=0; indx<lasttagbin; indx++)
     weightIns.at(lasttagbin)-=weightIns.at(indx);
-  if(weightIns.at(lasttagbin) > 0.9) {cout << "CHECK THIS \n weightIns: ";  printvec(weightIns); cout << "lasttag bin is " << lasttagbin << "   and weight in the last tag bin is " << weightIns.at(lasttagbin) ; cout << "    eff: "; printvec(eff);}
+  if(1 == weightIns.at(lasttagbin)) {cout << "CHECK THIS \n weightIns: ";  printvec(weightIns); cout << "lasttag bin is " << lasttagbin << "   and weight in the last tag bin is " << weightIns.at(lasttagbin) ; cout << "    eff: "; printvec(eff); raise(SIGABRT);}
   h0tag->Fill(weightIns.at(0));
   h1tag->Fill(weightIns.at(1));
   h2tag->Fill(weightIns.at(2));

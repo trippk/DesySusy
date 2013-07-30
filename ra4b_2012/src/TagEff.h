@@ -33,9 +33,18 @@ private:
   TH1D *bpttag;
   TH1D *cpttag;
   TH1D *lpttag;
+  TH1D *betatag;
+  TH1D *cetatag;
+  TH1D *letatag;
   TH1D *bptmatched;
   TH1D *cptmatched;
   TH1D *lptmatched;
+  TH1D *betamatched;
+  TH1D *cetamatched;
+  TH1D *letamatched;
+  TH1D *bptspec;
+  TH1D *cptspec;
+  TH1D *lptspec;
   TH1D *tagW;
   void vectoTH1(vector<double> &, TH1D *); 
   void comb(vector<double> &);
@@ -47,6 +56,7 @@ private:
   void ApplySF(vector<Jet*>&, int *);
   int getptbin(double);
   string matchtype;
+  string btname;
   void printvec (vector<double> & );
   void tagflavor (int);
   double multIns(vector<double> &);
@@ -62,7 +72,7 @@ public:
     //double tagptbin[]={40.,45., 50.,55., 60.,65., 70.,75., 80.,90.,100.,110., 120.,140., 160.,180., 210., 260., 320., 400., 500., 670., 2000.}; //bin->22
     double tagetabin[]={0.,0.8,1.6,2.4};
     btag=0;  
-    string btname =(string)"btag_"+sample+(string)"_"+subsample;
+    btname =(string)"btag_"+sample+(string)"_"+subsample;
     string ctname = (string)"ctag_"+sample+(string)"_"+subsample;
     string ltname = (string)"ltag_"+sample+(string)"_"+subsample;
  
@@ -74,7 +84,6 @@ public:
 
 	cout<< " please change the output file name (the file that contains histograms) to \"tageffs.root\", a general file will be provided soon" << endl;
 	status =0;
-	cout << " burda mi yoksa status " << status << endl; 
 	btag = new TH2D((TString) btname, "tagged & b matched", 3, tagetabin , 14, tagptbin);
 	ctag = new TH2D((TString) ctname, "tagged & c matched", 3, tagetabin , 14, tagptbin);
 	ltag = new TH2D((TString) ltname, "tagged & light matched", 3, tagetabin , 14, tagptbin);
@@ -87,7 +96,15 @@ public:
 	bptmatched = new TH1D((TString) bmname+(TString)"pt", "", 14, tagptbin);
 	cptmatched = new TH1D((TString) cmname+(TString)"pt", "", 14, tagptbin);
 	lptmatched = new TH1D((TString) lmname+(TString)"pt", "", 14, tagptbin);
-
+	betatag = new TH1D((TString) btname+(TString)"eta", "", 3, tagetabin);
+	cetatag = new TH1D((TString) ctname+(TString)"eta", "", 3, tagetabin);
+	letatag = new TH1D((TString) ltname+(TString)"eta", "", 3, tagetabin);
+	betamatched = new TH1D((TString) bmname+(TString)"eta", "", 3, tagetabin);
+	cetamatched = new TH1D((TString) cmname+(TString)"eta", "", 3, tagetabin);
+	letamatched = new TH1D((TString) lmname+(TString)"eta", "", 3, tagetabin);
+	bptspec = new TH1D((TString) bmname+(TString)"ptspec","",500,40.,2040.);
+	cptspec = new TH1D((TString) cmname+(TString)"ptspec","",500,40.,2040.);
+	lptspec = new TH1D((TString) lmname+(TString)"ptspec","",500,40.,2040.);
       }
     else
       {
@@ -120,7 +137,7 @@ public:
   ~TagEff(){}
   vector<double>& getWeight();  
   void lastbin (int last=3) {lasttagbin=last; weight.assign(lasttagbin+1,0.);
-    if(status){    tagW = new TH1D ("weights","weights",last+1,-0.5,last+0.5);}
+    if(status){    tagW = new TH1D ((TString)btname+(TString)"weights","weights",last+1,-0.5,last+0.5);}
   }
   void finalize ();
   int JetLoop(vector<Jet*>& pureJets);
