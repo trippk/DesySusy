@@ -1,0 +1,19 @@
+export LD_LIBRARY_PATH=`pwd`:$LD_LIBRARY_PATH
+
+#./simpleRunOnAll.py  srm://srm.unl.edu:8443/srm/v2/server?SFN=/mnt/hadoop/user/Snowmass/HTBinned/Delphes-3.0.9.1/NoPileUp/tt-4p-0-600-v1510_14TEV/ ./Output/NoPU/ttbar/0-600  ../nTupler dummyConfig.txt cleanUp outName=ttbar_0-600_NoPU_nTuple.root 
+#./simpleRunOnAll.py  srm://srm.unl.edu:8443/srm/v2/server?SFN=/mnt/hadoop/user/Snowmass/HTBinned/Delphes-3.0.9.1/NoPileUp/tt-4p-600-1100-v1510_14TEV/ ./Output/NoPU/ttbar/600-1100  ../nTupler dummyConfig.txt cleanUp outName=ttbar_600-1100_NoPU_nTuple.root 
+#./simpleRunOnAll.py  srm://srm.unl.edu:8443/srm/v2/server?SFN=/mnt/hadoop/user/Snowmass/HTBinned/Delphes-3.0.9.1/NoPileUp/tt-4p-1100-1700-v1510_14TEV/ ./Output/NoPU/ttbar/1100-1700  ../nTupler dummyConfig.txt cleanUp outName=ttbar_1100-1700_NoPU_nTuple.root 
+#./simpleRunOnAll.py  srm://srm.unl.edu:8443/srm/v2/server?SFN=/mnt/hadoop/user/Snowmass/HTBinned/Delphes-3.0.9.1/NoPileUp/tt-4p-1700-2500-v1510_14TEV/ ./Output/NoPU/ttbar/1700-2500  ../nTupler dummyConfig.txt cleanUp outName=ttbar_1700-2500_NoPU_nTuple.root 
+#./simpleRunOnAll.py  srm://srm.unl.edu:8443/srm/v2/server?SFN=/mnt/hadoop/user/Snowmass/HTBinned/Delphes-3.0.9.1/NoPileUp/tt-4p-2500-100000-v1510_14TEV/ ./Output/NoPU/ttbar/2500-100000 ../nTupler dummyConfig.txt cleanUp outName=ttbar_2500-100000_NoPU_nTuple.root 
+
+#./simpleRunOnAll.py  srm://srm.unl.edu:8443/srm/v2/server?SFN=/mnt/hadoop/user/Snowmass/HTBinned/Delphes-3.0.9.1/50PileUp/tt-4p-0-600-v1510_14TEV/ ./Output/50PU/ttbar/0-600  ../nTupler dummyConfig.txt cleanUp outName=ttbar_0-600_50PU_nTuple.root 
+#./simpleRunOnAll.py  srm://srm.unl.edu:8443/srm/v2/server?SFN=/mnt/hadoop/user/Snowmass/HTBinned/Delphes-3.0.9.1/50PileUp/tt-4p-600-1100-v1510_14TEV/ ./Output/50PU/ttbar/600-1100  ../nTupler dummyConfig.txt cleanUp outName=ttbar_600-1100_50PU_nTuple.root 
+#./simpleRunOnAll.py  srm://srm.unl.edu:8443/srm/v2/server?SFN=/mnt/hadoop/user/Snowmass/HTBinned/Delphes-3.0.9.1/50PileUp/tt-4p-1100-1700-v1510_14TEV/ ./Output/50PU/ttbar/1100-1700  ../nTupler dummyConfig.txt cleanUp outName=ttbar_1100-1700_50PU_nTuple.root 
+#./simpleRunOnAll.py  srm://srm.unl.edu:8443/srm/v2/server?SFN=/mnt/hadoop/user/Snowmass/HTBinned/Delphes-3.0.9.1/50PileUp/tt-4p-1700-2500-v1510_14TEV/ ./Output/50PU/ttbar/1700-2500  ../nTupler dummyConfig.txt cleanUp outName=ttbar_1700-2500_50PU_nTuple.root 
+#./simpleRunOnAll.py  srm://srm.unl.edu:8443/srm/v2/server?SFN=/mnt/hadoop/user/Snowmass/HTBinned/Delphes-3.0.9.1/50PileUp/tt-4p-2500-100000-v1510_14TEV/ ./Output/50PU/ttbar/2500-100000 ../nTupler dummyConfig.txt cleanUp outName=ttbar_2500-100000_50PU_nTuple.root 
+
+#./simpleRunOnAll.py  srm://srm.unl.edu:8443/srm/v2/server?SFN=/mnt/hadoop/user/Snowmass/HTBinned/Delphes-3.0.9.1/50PileUp/tt-4p-0-600-v1510_14TEV/ ./Output/140PU/ttbar/0-600  ../nTupler dummyConfig.txt cleanUp outName=ttbar_0-600_140PU_nTuple.root 
+#./simpleRunOnAll.py  srm://srm.unl.edu:8443/srm/v2/server?SFN=/mnt/hadoop/user/Snowmass/HTBinned/Delphes-3.0.9.1/50PileUp/tt-4p-600-1100-v1510_14TEV/ ./Output/140PU/ttbar/600-1100  ../nTupler dummyConfig.txt cleanUp outName=ttbar_600-1100_140PU_nTuple.root 
+#./simpleRunOnAll.py  srm://srm.unl.edu:8443/srm/v2/server?SFN=/mnt/hadoop/user/Snowmass/HTBinned/Delphes-3.0.9.1/50PileUp/tt-4p-1100-1700-v1510_14TEV/ ./Output/140PU/ttbar/1100-1700  ../nTupler dummyConfig.txt cleanUp outName=ttbar_1100-1700_140PU_nTuple.root 
+#./simpleRunOnAll.py  srm://srm.unl.edu:8443/srm/v2/server?SFN=/mnt/hadoop/user/Snowmass/HTBinned/Delphes-3.0.9.1/50PileUp/tt-4p-1700-2500-v1510_14TEV/ ./Output/140PU/ttbar/1700-2500  ../nTupler dummyConfig.txt cleanUp outName=ttbar_1700-2500_140PU_nTuple.root 
+./simpleRunOnAll.py  srm://srm.unl.edu:8443/srm/v2/server?SFN=/mnt/hadoop/user/Snowmass/HTBinned/Delphes-3.0.9.1/50PileUp/tt-4p-2500-100000-v1510_14TEV/ ./Output/140PU/ttbar/2500-100000 ../nTupler dummyConfig.txt cleanUp outName=ttbar_2500-100000_140PU_nTuple.root 

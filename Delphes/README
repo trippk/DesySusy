@@ -11,6 +11,7 @@ ini ROOT534
 make clean
 make
 #then compile the nTupler
+mkLinks
 cd ../nTupler
 make
 #test the nTupler

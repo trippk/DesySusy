@@ -1,0 +1,6 @@
+ln -s ../Delphes-3.0.10/external/ExRootAnalysis .
+ln -s ../Delphes-3.0.10/classes .
+ln -s ../Data .
+cd Batch
+ln -s ../nTupler .
+cd -
