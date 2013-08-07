@@ -1,0 +1,19 @@
+# to get here
+kinit $USER@CERN.CH
+ini cmssw
+
+#please install Delphes from tar file here
+#http://cmssw.cvs.cern.ch/cgi-bin/cmssw.cgi/UserCode/spadhi/ECFA/Delphes/
+gunzip Delphes-3.0.10_ECFA_v1.tar.gz
+tar xf Delphes-3.0.10_ECFA_v1.tar
+cd Delphes-3.0.10
+ini ROOT534
+make clean
+make
+#then compile the nTupler
+cd ../nTupler
+make
+#test the nTupler
+cd Batch
+runTTBAR
+# it will start a lot of jobs. output appears in ./Output

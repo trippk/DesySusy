@@ -1,5 +1,4 @@
-# needs
-ln -s your_Delphes-3.0.10/classes .
-ln -s your_Delphes-3.0.10/external/ExRootAnalysis .
-ln -s your_Delphes-3.0.10/libDelphes.so .  
-Linkdef.h  Makefile  nTuplerCode.cpp  nTuplerCode.h  nTupler.cpp
+#please run   
+mkLinks 
+#first. Then
+make
