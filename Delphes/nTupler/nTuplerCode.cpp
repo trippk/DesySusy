@@ -52,9 +52,10 @@ double GetMt2w(const TLorentzVector& Lep,
 	if(Nbjet==1){
 		int ib=-1;
 		for(int i=0;i<selJetB.size();i++) if(selJetB[i]>0) ib=i;
-		double mt2wmin=1000;
+		double mt2wmin=0;
 		int N=selJet.size();
-		if(N>6)N=6;
+		if(N>10)N=10;
+//		if(N>6)N=6;
 		for(int i=0;i<N;i++){
 			if(i==ib) continue;
 			mt2w_event.set_momenta(Lep,selJet[ib],selJet[i],mx,my);
@@ -284,7 +285,9 @@ void nTupler(const char *inputFile, string outname)
     treeReader->ReadEntry(entry);
     
     Event = (LHEFEvent *) branchEvent->At(0);
-    EventWeight = Event->Weight;
+    if(Event->Weight > 0)
+      EventWeight = Event->Weight;
+    else       EventWeight = 1;
 
     // Reset variables
     lv_RecoMET.SetPtEtaPhiE(0.,0.,0.,0.);
@@ -310,12 +313,14 @@ void nTupler(const char *inputFile, string outname)
 
 	selEl.push_back(lv_el);
 	selElCharge.push_back(electron->Charge);
+	selElIso.push_back(electron->IsolationVar);
 
+	/*
 	GenParticle* part = (GenParticle*)electron->Particle.GetObject();
 	//	if(part!=0) cout<<part->PID<<" "<<part->Status<<" "<<part->PT<<endl;
 	if(part!=0)
 	  selElIso.push_back(getIso(part,branchGP));
-
+	*/
       }
 
     rawNel=Nel;
@@ -342,11 +347,13 @@ void nTupler(const char *inputFile, string outname)
 	
 	selMu.push_back(lv_mu);
 	selMuCharge.push_back(muon->Charge);
+	selMuIso.push_back(muon->IsolationVar);
 
+	/*
 	GenParticle* part = (GenParticle*)muon->Particle.GetObject();
 	if(part!=0)
 	  selMuIso.push_back(getIso(part,branchGP));
-
+	*/
       }
 
     rawNmu=Nmu;
@@ -375,11 +382,13 @@ void nTupler(const char *inputFile, string outname)
 
 	selJet.push_back(lv_jet);
 	selJetB.push_back(jet->BTag);
+
 	if(jet->BTag>0) Nbjet++;
 
 	HT += jet->PT;
 
       }
+
     rawNjet=Njet;
     Njet = selJet.size();
 
