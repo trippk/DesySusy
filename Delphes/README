@@ -1,20 +1,25 @@
-# to get here
+# to get here -------------------------------------------------------
 kinit $USER@CERN.CH
 ini cmssw
 
-#please install Delphes from tar file here
+#please install Delphes from tar file here --------------------------
 #http://cmssw.cvs.cern.ch/cgi-bin/cmssw.cgi/UserCode/spadhi/ECFA/Delphes/
 gunzip Delphes-3.0.10_ECFA_v1.tar.gz
 tar xf Delphes-3.0.10_ECFA_v1.tar
 cd Delphes-3.0.10
 ini ROOT534
 make clean
-make
-#then compile the nTupler
-mkLinks
+make -j8
+
+#then compile the nTupler -------------------------------------------
 cd ../nTupler
+./mkLinks
 make
 #test the nTupler
 cd Batch
 runTTBAR
 # it will start a lot of jobs. output appears in ./Output
+
+#here you can analyze the nTuples
+cd ../tupleAnalyzer
+./mkLinks2
