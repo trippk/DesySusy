@@ -442,6 +442,7 @@ public:
 			off=fTreeOffset[fTreeNumber];
 			FillBranchAddresses(fTree);
 			TString filename = GetFile()->GetName();
+			filename.ReplaceAll("//","/");
 			TString nam( filename(0,filename.Index("//")+1) );
 			if( weights.find(nam)==weights.end() ) {
 				cout<<"NtupleTools2:GetEntry don't find a weight for "<<filename<<" "<<nam<<endl;
@@ -494,7 +495,9 @@ public:
 		return k;
 	}
 	int AddSmartW(const TString& longname,double w,int max=10000,bool nodup=false){
-		weights[longname]=w;
+		TString nam=longname;
+		nam.ReplaceAll("//","/");
+		weights[nam]=w;
 		return AddSmart(longname,max,nodup);
 	}
 	// return an (almost) unique file name depending on all files added to this chain
