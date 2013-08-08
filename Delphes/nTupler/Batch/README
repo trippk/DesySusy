@@ -1,5 +1,5 @@
 #you may need a proxy!!:
 ini glite
-voms-proxy-init -valid 164:00
+voms-proxy-init --voms cms:/cms/dcms -valid 164:00
 #and root:
 ini ROOT534
