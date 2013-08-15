@@ -163,7 +163,7 @@ def readCommandLine(commandLine):
 	# check for ending /
 	if indir[-1]!='/': indir+='/'
 	# check if indir on dcache - if not: check if dir exits
-	if indir.find('/store')!=0 and indir.find('/pnfs')!=0 and indir.find('srm:')!=0:
+	if indir.find('/store')!=0 and indir.find('/pnfs')!=0 and indir.find('srm:')!=0 and indir.find('root:')!=0:
 		if not os.path.isdir(indir) :
 			print 'Cannot access '+indir
 			sys.exit(0)
@@ -192,7 +192,7 @@ def readCommandLine(commandLine):
 
 	
 	#full names
-	print 'outdir before absolute path',outdir
+	#print 'outdir before absolute path',outdir
 	if not os.path.exists(outdir): os.makedirs(outdir)
 	outdir = os.path.abspath(outdir)
 	print 'currently in the directory ',commands.getoutput('pwd')
@@ -360,15 +360,29 @@ def checkIndir():
 		#indir='/pnfs/desy.de/cms/tier2/'+indir
 		lscommand='srmls'
 
+	# check if xroot - slow dirlist!
+	if indir.find('root://eos')==0:
+		indir = indir[5:]
+		if indir.find('//') == 0: indir = indir[1:]
+		lscommand='xrd'
+
 	#full name
 	if lscommand=='ls': indir = os.path.abspath(indir)
 	# check for ending /
 	if indir[-1]!='/': indir+='/'
 	
 	# list directory
-	allfiles=subprocess.Popen([lscommand,indir], stdout=subprocess.PIPE).communicate()[0]
+	#print lscommand,indir
+	allfiles=''
+	if lscommand=='xrd':
+		allfiles=subprocess.Popen([lscommand,'eoscms.cern.ch','dirlist',indir], stdout=subprocess.PIPE).communicate()[0]
+	else:
+		allfiles=subprocess.Popen([lscommand,indir], stdout=subprocess.PIPE).communicate()[0]
 	if allfiles.find('No valid Proxy found')==0:
 		print 'No valid Proxy found'
+		exit(0)
+	if allfiles.find('command not found')==0:
+		print lscommand, 'not available'
 		exit(0)
 	if allfiles.find('The following regular expressions')==0:
 		print 'Cannot: '+lscommand+' '+indir
@@ -380,7 +394,7 @@ def checkIndir():
 	#add xRoot gate
 	xrootline=''
 	if lscommand=='srmls': xrootline='root://red-gridftp11.unl.edu/'
-
+	if lscommand=='xrd':   xrootline='root://eoscms.cern.ch/'
 
 	
 	# filter out *.root
@@ -389,8 +403,10 @@ def checkIndir():
 	#filter filenames from srmls
 		if indir.find('srm:')==0:
 			line = line[line.find('/mnt'):]
-		
-		if line.rfind('.root')>0 :ret.append(xrootline+line)
+		if line.find('/eos')>0:
+			l = line.split(' ')[-1]
+			if l.rfind('.root')>0 : ret.append(xrootline+l)
+		elif line.rfind('.root')>0 : ret.append(xrootline+line)
 	
 	if len(ret)==0:
 		print 'No files found in '+indir
@@ -556,9 +572,9 @@ if __name__ == "__main__":
 
 	# check number of root files in indir
 	rootfiles = checkIndir()
-
-#	print rootfiles
-#	sys.exit(0)
+	
+	#print rootfiles
+	#sys.exit(0)
 
 	# set the completion status to not done
 	#SetCompletionStatus(0)
