@@ -1,0 +1,31 @@
+#!/bin/bash
+
+ana=$1
+
+echo "checking library - compiling if neccesssary (no error check)"
+root -q -b reader${ana}.C+ > /dev/null 2>&1
+
+samples=\
+"NoPU_DiBoson   50PU_DiBoson   140PU_DiBoson
+ NoPU_BosonJets 50PU_BosonJets 140PU_BosonJets
+ NoPU_TopJets   50PU_TopJets   140PU_TopJets
+ NoPU_TTbar     50PU_TTbar     140PU_TTbar
+ NoPU_TDR4      50PU_TDR4      140PU_TDR4
+ NoPU_TDR5      50PU_TDR5      140PU_TDR5
+ NoPU_TDR6      50PU_TDR6      140PU_TDR6
+ NoPU_TDR8      50PU_TDR8      140PU_TDR8
+ 8TeV_TDR4
+"
+#samples="NoPU_TTbar"
+#samples=`echo $samples | tr -d '\n'` 
+
+dir=$PWD
+
+mkdir -p $ana
+for i in $samples
+do
+#	cat reader_script | sed "s/XXXX/$ana/g" | sed "s/YYYY/${i}/g | sed  s/ZZZZ/${dir}/g" >| reader_${ana}_$i
+	cat reader_script | awk -v i=$i -v d=$dir -v a=$ana '{gsub(/XXXX/, a ); gsub(/YYYY/, i ); gsub(/ZZZZ/, d )}; 1'  >| reader_${ana}_$i	
+	qsub -l site=hh reader_${ana}_$i
+	rm reader_${ana}_$i
+done
