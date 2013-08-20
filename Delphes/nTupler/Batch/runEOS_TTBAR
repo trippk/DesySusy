@@ -2,13 +2,42 @@ export LD_LIBRARY_PATH=`pwd`:$LD_LIBRARY_PATH
 
 base=//eos/cms/store/group/phys_higgs/upgrade/
 
-./simpleRunOnAll.py root:${base}/PhaseII/Configuration3/140PileUp/tt-4p-0-600-v1510_14TEV/  ./Output/ECFA/PhaseI_C3/140PU/ttbar/0-600 ../nTupler dummyConfig.txt cleanUp outName=ttbar_0-600_PhaseII_C3_140PU.root
 
-./simpleRunOnAll.py root:${base}/PhaseII/Configuration3/140PileUp/tt-4p-600-1100-v1510_14TEV/ ./Output/ECFA/PhaseI_C3/140PU/ttbar/600-1100 ../nTupler dummyConfig.txt cleanUp outName=ttbar_600-1100_PhaseII_C3_140PU.root
+#PhaseI - Configuration 0 - 140PU
 
-./simpleRunOnAll.py root:${base}/PhaseII/Configuration3/140PileUp/tt-4p-1100-1700-v1510_14TEV/ ./Output/ECFA//PhaseI_C3/140PU/ttbar/1100-1700 ../nTupler dummyConfig.txt cleanUp outName=ttbar_1100-1700_PhaseII_C3_140PU.root
+./simpleRunOnAll.py root:${base}/PhaseI/Configuration0/140PileUp/tt-4p-0-600-v1510_14TEV/  ./Output/ECFA/PhaseI_C0/140PU/ttbar/0-600 ../nTupler dummyConfig.txt cleanUp outName=ttbar_0-600_PhaseI_C0_140PU.root
 
-./simpleRunOnAll.py root:${base}/PhaseII/Configuration3/140PileUp/tt-4p-1700-2500-v1510_14TEV/ ./Output/ECFA//PhaseI_C3/140PU/ttbar/1700-2500 ../nTupler dummyConfig.txt cleanUp outName=ttbar_1700-2500_PhaseII_C3_140PU.root
+./simpleRunOnAll.py root:${base}/PhaseI/Configuration0/140PileUp/tt-4p-600-1100-v1510_14TEV/ ./Output/ECFA/PhaseI_C0/140PU/ttbar/600-1100 ../nTupler dummyConfig.txt cleanUp outName=ttbar_600-1100_PhaseI_C0_140PU.root
 
-./simpleRunOnAll.py root:${base}/PhaseII/Configuration3/140PileUp/tt-4p-2500-100000-v1510_14TEV/ ./Output/ECFA//PhaseI_C3/140PU/ttbar/2500-100000 ../nTupler dummyConfig.txt cleanUp outName=ttbar_2500-100000_PhaseII_C3_140PU.root
+./simpleRunOnAll.py root:${base}/PhaseI/Configuration0/140PileUp/tt-4p-1100-1700-v1510_14TEV/ ./Output/ECFA/PhaseI_C0/140PU/ttbar/1100-1700 ../nTupler dummyConfig.txt cleanUp outName=ttbar_1100-1700_PhaseI_C0_140PU.root
+
+./simpleRunOnAll.py root:${base}/PhaseI/Configuration0/140PileUp/tt-4p-1700-2500-v1510_14TEV/ ./Output/ECFA/PhaseI_C0/140PU/ttbar/1700-2500 ../nTupler dummyConfig.txt cleanUp outName=ttbar_1700-2500_PhaseI_C0_140PU.root
+
+./simpleRunOnAll.py root:${base}/PhaseI/Configuration0/140PileUp/tt-4p-2500-100000-v1510_14TEV/ ./Output/ECFA/PhaseI_C0/140PU/ttbar/2500-100000 ../nTupler dummyConfig.txt cleanUp outName=ttbar_2500-100000_PhaseI_C0_140PU.root
+
+
+#PhaseII - Configuration 3 - 140PU
+
+./simpleRunOnAll.py root:${base}/PhaseII/Configuration3/140PileUp/tt-4p-0-600-v1510_14TEV/  ./Output/ECFA/PhaseII_C3/140PU/ttbar/0-600 ../nTupler dummyConfig.txt cleanUp outName=ttbar_0-600_PhaseII_C3_140PU.root
+
+./simpleRunOnAll.py root:${base}/PhaseII/Configuration3/140PileUp/tt-4p-600-1100-v1510_14TEV/ ./Output/ECFA/PhaseII_C3/140PU/ttbar/600-1100 ../nTupler dummyConfig.txt cleanUp outName=ttbar_600-1100_PhaseII_C3_140PU.root
+
+./simpleRunOnAll.py root:${base}/PhaseII/Configuration3/140PileUp/tt-4p-1100-1700-v1510_14TEV/ ./Output/ECFA/PhaseI_C3/140PU/ttbar/1100-1700 ../nTupler dummyConfig.txt cleanUp outName=ttbar_1100-1700_PhaseII_C3_140PU.root
+
+./simpleRunOnAll.py root:${base}/PhaseII/Configuration3/140PileUp/tt-4p-1700-2500-v1510_14TEV/ ./Output/ECFA/PhaseI_C3/140PU/ttbar/1700-2500 ../nTupler dummyConfig.txt cleanUp outName=ttbar_1700-2500_PhaseII_C3_140PU.root
+
+./simpleRunOnAll.py root:${base}/PhaseII/Configuration3/140PileUp/tt-4p-2500-100000-v1510_14TEV/ ./Output/ECFA/PhaseI_C3/140PU/ttbar/2500-100000 ../nTupler dummyConfig.txt cleanUp outName=ttbar_2500-100000_PhaseII_C3_140PU.root
+
+
+#PhaseII - Configuration 4 - 140PU
+
+./simpleRunOnAll.py root:${base}/PhaseII/Configuration4/140PileUp/tt-4p-0-600-v1510_14TEV/  ./Output/ECFA/PhaseII_C4/140PU/ttbar/0-600 ../nTupler dummyConfig.txt cleanUp outName=ttbar_0-600_PhaseII_C4_140PU.root
+
+./simpleRunOnAll.py root:${base}/PhaseII/Configuration4/140PileUp/tt-4p-600-1100-v1510_14TEV/ ./Output/ECFA/PhaseII_C4/140PU/ttbar/600-1100 ../nTupler dummyConfig.txt cleanUp outName=ttbar_600-1100_PhaseII_C4_140PU.root
+
+./simpleRunOnAll.py root:${base}/PhaseII/Configuration4/140PileUp/tt-4p-1100-1700-v1510_14TEV/ ./Output/ECFA/PhaseII_C4/140PU/ttbar/1100-1700 ../nTupler dummyConfig.txt cleanUp outName=ttbar_1100-1700_PhaseII_C4_140PU.root
+
+./simpleRunOnAll.py root:${base}/PhaseII/Configuration4/140PileUp/tt-4p-1700-2500-v1510_14TEV/ ./Output/ECFA/PhaseII_C4/140PU/ttbar/1700-2500 ../nTupler dummyConfig.txt cleanUp outName=ttbar_1700-2500_PhaseII_C4_140PU.root
+
+./simpleRunOnAll.py root:${base}/PhaseII/Configuration4/140PileUp/tt-4p-2500-100000-v1510_14TEV/ ./Output/ECFA/PhaseII_C4/140PU/ttbar/2500-100000 ../nTupler dummyConfig.txt cleanUp outName=ttbar_2500-100000_PhaseII_C4_140PU.root
 
