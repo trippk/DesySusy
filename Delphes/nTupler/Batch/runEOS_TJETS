@@ -1,0 +1,43 @@
+export LD_LIBRARY_PATH=`pwd`:$LD_LIBRARY_PATH
+
+base=//eos/cms/store/group/phys_higgs/upgrade/
+
+
+#PhaseI - Configuration 0 - 140PU
+
+./simpleRunOnAll.py root:${base}/PhaseI/Configuration0/140PileUp/tj-4p-0-500-v1510_14TEV/  ./Output/ECFA/PhaseI_C0/140PU/tjets/0-500 ../nTupler dummyConfig.txt cleanUp outName=tjets_0-500_PhaseI_C0_140PU.root
+
+./simpleRunOnAll.py root:${base}/PhaseI/Configuration0/140PileUp/tj-4p-500-1000-v1510_14TEV/ ./Output/ECFA/PhaseI_C0/140PU/tjets/500-1000 ../nTupler dummyConfig.txt cleanUp outName=tjets_500-1000_PhaseI_C0_140PU.root
+
+./simpleRunOnAll.py root:${base}/PhaseI/Configuration0/140PileUp/tj-4p-1000-1600-v1510_14TEV/ ./Output/ECFA/PhaseI_C0/140PU/tjets/1000-1600 ../nTupler dummyConfig.txt cleanUp outName=tjets_1000-1600_PhaseI_C0_140PU.root
+
+./simpleRunOnAll.py root:${base}/PhaseI/Configuration0/140PileUp/tj-4p-1600-2400-v1510_14TEV/ ./Output/ECFA/PhaseI_C0/140PU/tjets/1600-2400 ../nTupler dummyConfig.txt cleanUp outName=tjets_1600-2400_PhaseI_C0_140PU.root
+
+./simpleRunOnAll.py root:${base}/PhaseI/Configuration0/140PileUp/tj-4p-2400-100000-v1510_14TEV/ ./Output/ECFA/PhaseI_C0/140PU/tjets/2400-100000 ../nTupler dummyConfig.txt cleanUp outName=tjets_2400-100000_PhaseI_C0_140PU.root
+
+
+#PhaseII - Configuration 3 - 140PU
+
+./simpleRunOnAll.py root:${base}/PhaseII/Configuration3/140PileUp/tj-4p-0-500-v1510_14TEV/  ./Output/ECFA/PhaseII_C3/140PU/tjets/0-500 ../nTupler dummyConfig.txt cleanUp outName=tjets_0-500_PhaseII_C3_140PU.root
+
+./simpleRunOnAll.py root:${base}/PhaseII/Configuration3/140PileUp/tj-4p-500-1000-v1510_14TEV/ ./Output/ECFA/PhaseII_C3/140PU/tjets/500-1000 ../nTupler dummyConfig.txt cleanUp outName=tjets_500-1000_PhaseII_C3_140PU.root
+
+./simpleRunOnAll.py root:${base}/PhaseII/Configuration3/140PileUp/tj-4p-1000-1600-v1510_14TEV/ ./Output/ECFA/PhaseII_C3/140PU/tjets/1000-1600 ../nTupler dummyConfig.txt cleanUp outName=tjets_1000-1600_PhaseII_C3_140PU.root
+
+./simpleRunOnAll.py root:${base}/PhaseII/Configuration3/140PileUp/tj-4p-1600-2400-v1510_14TEV/ ./Output/ECFA/PhaseII_C3/140PU/tjets/1600-2400 ../nTupler dummyConfig.txt cleanUp outName=tjets_1600-2400_PhaseII_C3_140PU.root
+
+./simpleRunOnAll.py root:${base}/PhaseII/Configuration3/140PileUp/tj-4p-2400-100000-v1510_14TEV/ ./Output/ECFA/PhaseII_C3/140PU/tjets/2400-100000 ../nTupler dummyConfig.txt cleanUp outName=tjets_2400-100000_PhaseII_C3_140PU.root
+
+
+#PhaseII - Configuration 4 - 140PU
+
+./simpleRunOnAll.py root:${base}/PhaseII/Configuration4/140PileUp/tj-4p-0-500-v1510_14TEV/  ./Output/ECFA/PhaseII_C4/140PU/tjets/0-500 ../nTupler dummyConfig.txt cleanUp outName=tjets_0-500_PhaseII_C4_140PU.root
+
+./simpleRunOnAll.py root:${base}/PhaseII/Configuration4/140PileUp/tj-4p-500-1000-v1510_14TEV/ ./Output/ECFA/PhaseII_C4/140PU/tjets/500-1000 ../nTupler dummyConfig.txt cleanUp outName=tjets_500-1000_PhaseII_C4_140PU.root
+
+./simpleRunOnAll.py root:${base}/PhaseII/Configuration4/140PileUp/tj-4p-1000-1600-v1510_14TEV/ ./Output/ECFA/PhaseII_C4/140PU/tjets/1000-1600 ../nTupler dummyConfig.txt cleanUp outName=tjets_1000-1600_PhaseII_C4_140PU.root
+
+./simpleRunOnAll.py root:${base}/PhaseII/Configuration4/140PileUp/tj-4p-1600-2400-v1510_14TEV/ ./Output/ECFA/PhaseII_C4/140PU/tjets/1600-2400 ../nTupler dummyConfig.txt cleanUp outName=tjets_1600-2400_PhaseII_C4_140PU.root
+
+./simpleRunOnAll.py root:${base}/PhaseII/Configuration4/140PileUp/tj-4p-2400-100000-v1510_14TEV/ ./Output/ECFA/PhaseII_C4/140PU/tjets/2400-100000 ../nTupler dummyConfig.txt cleanUp outName=tjets_2400-100000_PhaseII_C4_140PU.root
+

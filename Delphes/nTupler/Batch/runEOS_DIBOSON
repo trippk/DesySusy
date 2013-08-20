@@ -1,0 +1,43 @@
+export LD_LIBRARY_PATH=`pwd`:$LD_LIBRARY_PATH
+
+base=//eos/cms/store/group/phys_higgs/upgrade/
+
+
+#PhaseI - Configuration 0 - 140PU
+
+./simpleRunOnAll.py root:${base}/PhaseI/Configuration0/140PileUp/BB-4p-0-300-v1510_14TEV/  ./Output/ECFA/PhaseI_C0/140PU/diboson/0-300 ../nTupler dummyConfig.txt cleanUp outName=diboson_0-300_PhaseI_C0_140PU.root
+
+./simpleRunOnAll.py root:${base}/PhaseI/Configuration0/140PileUp/BB-4p-300-700-v1510_14TEV/ ./Output/ECFA/PhaseI_C0/140PU/diboson/300-700 ../nTupler dummyConfig.txt cleanUp outName=diboson_300-700_PhaseI_C0_140PU.root
+
+./simpleRunOnAll.py root:${base}/PhaseI/Configuration0/140PileUp/BB-4p-700-1300-v1510_14TEV/ ./Output/ECFA/PhaseI_C0/140PU/diboson/700-1300 ../nTupler dummyConfig.txt cleanUp outName=diboson_700-1300_PhaseI_C0_140PU.root
+
+./simpleRunOnAll.py root:${base}/PhaseI/Configuration0/140PileUp/BB-4p-1300-2100-v1510_14TEV/ ./Output/ECFA/PhaseI_C0/140PU/diboson/1300-2100 ../nTupler dummyConfig.txt cleanUp outName=diboson_1300-2100_PhaseI_C0_140PU.root
+
+./simpleRunOnAll.py root:${base}/PhaseI/Configuration0/140PileUp/BB-4p-2100-100000-v1510_14TEV/ ./Output/ECFA/PhaseI_C0/140PU/diboson/2100-100000 ../nTupler dummyConfig.txt cleanUp outName=diboson_2100-100000_PhaseI_C0_140PU.root
+
+
+#PhaseII - Configuration 3 - 140PU
+
+./simpleRunOnAll.py root:${base}/PhaseII/Configuration3/140PileUp/BB-4p-0-300-v1510_14TEV/  ./Output/ECFA/PhaseII_C3/140PU/diboson/0-300 ../nTupler dummyConfig.txt cleanUp outName=diboson_0-300_PhaseII_C3_140PU.root
+
+./simpleRunOnAll.py root:${base}/PhaseII/Configuration3/140PileUp/BB-4p-300-700-v1510_14TEV/ ./Output/ECFA/PhaseII_C3/140PU/diboson/300-700 ../nTupler dummyConfig.txt cleanUp outName=diboson_300-700_PhaseII_C3_140PU.root
+
+./simpleRunOnAll.py root:${base}/PhaseII/Configuration3/140PileUp/BB-4p-700-1300-v1510_14TEV/ ./Output/ECFA/PhaseII_C3/140PU/diboson/700-1300 ../nTupler dummyConfig.txt cleanUp outName=diboson_700-1300_PhaseII_C3_140PU.root
+
+./simpleRunOnAll.py root:${base}/PhaseII/Configuration3/140PileUp/BB-4p-1300-2100-v1510_14TEV/ ./Output/ECFA/PhaseII_C3/140PU/diboson/1300-2100 ../nTupler dummyConfig.txt cleanUp outName=diboson_1300-2100_PhaseII_C3_140PU.root
+
+./simpleRunOnAll.py root:${base}/PhaseII/Configuration3/140PileUp/BB-4p-2100-100000-v1510_14TEV/ ./Output/ECFA/PhaseII_C3/140PU/diboson/2100-100000 ../nTupler dummyConfig.txt cleanUp outName=diboson_2100-100000_PhaseII_C3_140PU.root
+
+
+#PhaseII - Configuration 4 - 140PU
+
+./simpleRunOnAll.py root:${base}/PhaseII/Configuration4/140PileUp/BB-4p-0-300-v1510_14TEV/  ./Output/ECFA/PhaseII_C4/140PU/diboson/0-300 ../nTupler dummyConfig.txt cleanUp outName=diboson_0-300_PhaseII_C4_140PU.root
+
+./simpleRunOnAll.py root:${base}/PhaseII/Configuration4/140PileUp/BB-4p-300-700-v1510_14TEV/ ./Output/ECFA/PhaseII_C4/140PU/diboson/300-700 ../nTupler dummyConfig.txt cleanUp outName=diboson_300-700_PhaseII_C4_140PU.root
+
+./simpleRunOnAll.py root:${base}/PhaseII/Configuration4/140PileUp/BB-4p-700-1300-v1510_14TEV/ ./Output/ECFA/PhaseII_C4/140PU/diboson/700-1300 ../nTupler dummyConfig.txt cleanUp outName=diboson_700-1300_PhaseII_C4_140PU.root
+
+./simpleRunOnAll.py root:${base}/PhaseII/Configuration4/140PileUp/BB-4p-1300-2100-v1510_14TEV/ ./Output/ECFA/PhaseII_C4/140PU/diboson/1300-2100 ../nTupler dummyConfig.txt cleanUp outName=diboson_1300-2100_PhaseII_C4_140PU.root
+
+./simpleRunOnAll.py root:${base}/PhaseII/Configuration4/140PileUp/BB-4p-2100-100000-v1510_14TEV/ ./Output/ECFA/PhaseII_C4/140PU/diboson/2100-100000 ../nTupler dummyConfig.txt cleanUp outName=diboson_2100-100000_PhaseII_C4_140PU.root
+
