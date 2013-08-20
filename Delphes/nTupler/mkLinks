@@ -3,4 +3,5 @@ ln -s ../Delphes-3.0.10/classes .
 ln -s ../Delphes-3.0.10/libDelphes.so  .
 cd Batch
 ln -s ../nTupler .
+ln -s ../libDelphes.so  .
 cd -
