@@ -56,7 +56,7 @@ merge_script = \
 ## make sure the right shell will be used
 #$ -S /bin/zsh
 ## the cpu time for this job
-#$ -l h_cpu=00:20:00
+#$ -l h_cpu=00:30:00
 ## the maximum memory usage of this job
 #$ -l h_vmem=1500M
 ## stderr and stdout are merged together to stdout
