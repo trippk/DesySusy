@@ -641,7 +641,7 @@ if __name__ == "__main__":
 		files=''
 
 		if indir.find('srm:')==0: indir=''
-		
+		if indir.find('eos')!=0: indir=''  
 		for f in rootfile.split(' '):
 			files+=indir+f+' '
 		print '.',
