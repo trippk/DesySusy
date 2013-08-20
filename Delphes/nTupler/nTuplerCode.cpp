@@ -141,7 +141,7 @@ using namespace std;
 void nTupler(const char *inputFile, string outname)
 {
 
-  TFile::SetOpenTimeout(600000);
+  TFile::SetOpenTimeout(300000);  // 5 min
   TStopwatch t;
   t.Start();
   TFile* file = TFile::Open(inputFile);

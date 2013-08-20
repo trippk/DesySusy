@@ -15,6 +15,7 @@ batch_script = \
 ## make sure the right shell will be used
 #$ -S /bin/zsh
 ## the cpu time for this job
+##$ -l h_cpu=02:00:00
 #$ -l h_cpu=00:50:00
 ## the maximum memory usage of this job
 #$ -l h_vmem=1500M
