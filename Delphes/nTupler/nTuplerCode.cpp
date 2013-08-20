@@ -7,6 +7,7 @@
 #include "TClonesArray.h"
 
 #include "TLorentzVector.h"
+#include "TStopwatch.h"
 
 #include "classes/DelphesClasses.h"
 
@@ -18,9 +19,6 @@
 
 #include "nTuplerCode.h"
 #include "mt2w_bisect.h"
-/*
-root -l examples/Example1.C\(\"delphes_output.root\"\)
-*/
 
 using namespace std;
 
@@ -105,17 +103,22 @@ double dPhi(double phi1, double phi2)
 
 
 //------------------------------------------------------------------------------
-double loosElPtMin = 10.; // GeV]
+//double loosElPtMin = 10.; // GeV]
+double loosElPtMin = 5.; // GeV]
 double goodElPtMin = 20.; // GeV]
-double goodElEtaMax = 2.4; // GeV]
+//double goodElEtaMax = 2.4; // GeV]
+double goodElEtaMax = 4.0; // GeV]
 
-double loosMuPtMin = 10.; // GeV]
+//double loosMuPtMin = 10.; // GeV]
+double loosMuPtMin = 5.; // GeV]
 double goodMuPtMin = 20.; // GeV]
-double goodMuEtaMax = 2.4; // GeV]
+//double goodMuEtaMax = 2.4; // GeV]
+double goodMuEtaMax = 4.0; // GeV]
 
 double loosJetPtMin = 20.; // GeV]
 double goodJetPtMin = 30.; // GeV]
-double goodJetEtaMax = 2.5; // GeV]
+//double goodJetEtaMax = 2.5; // GeV]
+double goodJetEtaMax = 4.0; // GeV]
 double goodJetIso = 0.4;
 
 /*
@@ -137,16 +140,37 @@ double MCTmin =  0;
 using namespace std;
 void nTupler(const char *inputFile, string outname)
 {
-  gSystem->Load("/afs/naf.desy.de/user/l/lobanov/delphes/Delphes-3.0.10/libDelphes.so");
-  gROOT->ProcessLine( "gErrorIgnoreLevel = 0;" );
 
-  // Create chain of root trees
-  TChain chain("Delphes");
-  chain.Add(inputFile);
-  chain.BranchRef();  
+  TFile::SetOpenTimeout(600000);
+  TStopwatch t;
+  t.Start();
+  TFile* file = TFile::Open(inputFile);
+  cout<<t.RealTime()<<" real open time for "<<inputFile<<endl;
+  int cnt=1;
+  while(!file->IsOpen()&&cnt<10) {
+  	cnt++;
+  	cout<<"nTuplerCode: could not open "<<inputFile<<" - try "<<cnt<<endl;
+  	file = TFile::Open(inputFile);
+  }
+  TTree* intree=0;
+  if(file->IsOpen()){
+	  intree = (TTree*) file->Get("Delphes");
+  } else {
+  	cout<<"Could not open "<<inputFile<<endl;
+  	exit(0);
+  }
+  t.Start();
+  intree->GetEntries();
+  cout<<t.RealTime()<<" real GetEntries() time for "<<inputFile<<endl;
+
+//  TChain chain("Delphes");
+
+//  chain.Add(inputFile);
+//  chain.BranchRef();  
 
   // Create object of class ExRootTreeReader
-  ExRootTreeReader *treeReader = new ExRootTreeReader(&chain);
+//  ExRootTreeReader *treeReader = new ExRootTreeReader(&chain);
+  ExRootTreeReader *treeReader = new ExRootTreeReader(intree);
   Long64_t numberOfEntries = treeReader->GetEntries();
   
   // Get pointers to branches used in this analysis
@@ -173,6 +197,7 @@ void nTupler(const char *inputFile, string outname)
   int Njet = 0;
   int rawNjet = 0;
   int Nbjet = 0;
+  int Ntaujet = 0;
 
   double HT = 0;
   double MET = 0;
@@ -199,6 +224,7 @@ void nTupler(const char *inputFile, string outname)
   std::vector<double> selMuIso;
   std::vector<TLorentzVector> selJet;
   std::vector<int> selJetB;
+  std::vector<int> selJetTau;
   std::vector<double> selJetMETdPhi;
 
   //  std::vector<double> JetPt;
@@ -230,7 +256,9 @@ void nTupler(const char *inputFile, string outname)
   tree->Branch("Njet",&Njet,"Njet/I");
   tree->Branch("rawNjet",&rawNjet,"rawNjet/I");
   tree->Branch("JetB",&selJetB);
+  tree->Branch("JetTau",&selJetTau);
   tree->Branch("Nbjet",&Nbjet,"Nbjet/I");
+  tree->Branch("Ntaujet",&Ntaujet,"Ntaujet/I");
   tree->Branch("JetMETdPhi",&selJetMETdPhi);
 
 
@@ -266,6 +294,7 @@ void nTupler(const char *inputFile, string outname)
 
     selJet.clear();
     selJetB.clear();
+    selJetTau.clear();
     selJetMETdPhi.clear();
 
     selEl.clear();
@@ -382,6 +411,7 @@ void nTupler(const char *inputFile, string outname)
 
 	selJet.push_back(lv_jet);
 	selJetB.push_back(jet->BTag);
+	selJetTau.push_back(jet->TauTag);
 
 	if(jet->BTag>0) Nbjet++;
 
