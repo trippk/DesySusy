@@ -6,49 +6,31 @@ base=//eos/cms/store/group/phys_higgs/upgrade/
 #PhaseI - Configuration 0 - 140PU
 
 ./simpleRunOnAll.py root:${base}/PhaseI/Configuration0/140PileUp/Bj-4p-0-300-v1510_14TEV/  ./Output/ECFA/PhaseI_C0/140PU/bjets/0-300 ../nTupler dummyConfig.txt cleanUp outName=bjets_0-300_PhaseI_C0_140PU.root
-
 ./simpleRunOnAll.py root:${base}/PhaseI/Configuration0/140PileUp/Bj-4p-300-600-v1510_14TEV/ ./Output/ECFA/PhaseI_C0/140PU/bjets/300-600 ../nTupler dummyConfig.txt cleanUp outName=bjets_300-600_PhaseI_C0_140PU.root
-
 ./simpleRunOnAll.py root:${base}/PhaseI/Configuration0/140PileUp/Bj-4p-600-1100-v1510_14TEV/ ./Output/ECFA/PhaseI_C0/140PU/bjets/600-1100 ../nTupler dummyConfig.txt cleanUp outName=bjets_600-1100_PhaseI_C0_140PU.root
-
 ./simpleRunOnAll.py root:${base}/PhaseI/Configuration0/140PileUp/Bj-4p-1100-1800-v1510_14TEV/ ./Output/ECFA/PhaseI_C0/140PU/bjets/1100-1800 ../nTupler dummyConfig.txt cleanUp outName=bjets_1100-1800_PhaseI_C0_140PU.root
-
 ./simpleRunOnAll.py root:${base}/PhaseI/Configuration0/140PileUp/Bj-4p-1800-2700-v1510_14TEV/ ./Output/ECFA/PhaseI_C0/140PU/bjets/1800-2700 ../nTupler dummyConfig.txt cleanUp outName=bjets_1800-2700_PhaseI_C0_140PU.root
-
 ./simpleRunOnAll.py root:${base}/PhaseI/Configuration0/140PileUp/Bj-4p-2700-3700-v1510_14TEV/ ./Output/ECFA/PhaseI_C0/140PU/bjets/2700-3700 ../nTupler dummyConfig.txt cleanUp outName=bjets_2700-3700_PhaseI_C0_140PU.root
-
 ./simpleRunOnAll.py root:${base}/PhaseI/Configuration0/140PileUp/Bj-4p-3700-100000-v1510_14TEV/ ./Output/ECFA/PhaseI_C0/140PU/bjets/3700-100000 ../nTupler dummyConfig.txt cleanUp outName=bjets_3700-100000_PhaseI_C0_140PU.root
 
 
 #PhaseII - Configuration 3 - 140PU
 
 ./simpleRunOnAll.py root:${base}/PhaseII/Configuration3/140PileUp/Bj-4p-0-300-v1510_14TEV/  ./Output/ECFA/PhaseII_C3/140PU/bjets/0-300 ../nTupler dummyConfig.txt cleanUp outName=bjets_0-300_PhaseII_C3_140PU.root
-
 ./simpleRunOnAll.py root:${base}/PhaseII/Configuration3/140PileUp/Bj-4p-300-600-v1510_14TEV/ ./Output/ECFA/PhaseII_C3/140PU/bjets/300-600 ../nTupler dummyConfig.txt cleanUp outName=bjets_300-600_PhaseII_C3_140PU.root
-
 ./simpleRunOnAll.py root:${base}/PhaseII/Configuration3/140PileUp/Bj-4p-600-1100-v1510_14TEV/ ./Output/ECFA/PhaseII_C3/140PU/bjets/600-1100 ../nTupler dummyConfig.txt cleanUp outName=bjets_600-1100_PhaseII_C3_140PU.root
-
 ./simpleRunOnAll.py root:${base}/PhaseII/Configuration3/140PileUp/Bj-4p-1100-1800-v1510_14TEV/ ./Output/ECFA/PhaseII_C3/140PU/bjets/1100-1800 ../nTupler dummyConfig.txt cleanUp outName=bjets_1100-1800_PhaseII_C3_140PU.root
-
 ./simpleRunOnAll.py root:${base}/PhaseII/Configuration3/140PileUp/Bj-4p-1800-2700-v1510_14TEV/ ./Output/ECFA/PhaseII_C3/140PU/bjets/1800-2700 ../nTupler dummyConfig.txt cleanUp outName=bjets_1800-2700_PhaseII_C3_140PU.root
-
 ./simpleRunOnAll.py root:${base}/PhaseII/Configuration3/140PileUp/Bj-4p-2700-3700-v1510_14TEV/ ./Output/ECFA/PhaseII_C3/140PU/bjets/2700-3700 ../nTupler dummyConfig.txt cleanUp outName=bjets_2700-3700_PhaseII_C3_140PU.root
-
 ./simpleRunOnAll.py root:${base}/PhaseII/Configuration3/140PileUp/Bj-4p-3700-100000-v1510_14TEV/ ./Output/ECFA/PhaseII_C3/140PU/bjets/3700-100000 ../nTupler dummyConfig.txt cleanUp outName=bjets_3700-100000_PhaseII_C3_140PU.root
 
 
 #PhaseII - Configuration 4 - 140PU
 
 ./simpleRunOnAll.py root:${base}/PhaseII/Configuration4/140PileUp/Bj-4p-0-300-v1510_14TEV/  ./Output/ECFA/PhaseII_C4/140PU/bjets/0-300 ../nTupler dummyConfig.txt cleanUp outName=bjets_0-300_PhaseII_C4_140PU.root
-
 ./simpleRunOnAll.py root:${base}/PhaseII/Configuration4/140PileUp/Bj-4p-300-600-v1510_14TEV/ ./Output/ECFA/PhaseII_C4/140PU/bjets/300-600 ../nTupler dummyConfig.txt cleanUp outName=bjets_300-600_PhaseII_C4_140PU.root
-
 ./simpleRunOnAll.py root:${base}/PhaseII/Configuration4/140PileUp/Bj-4p-600-1100-v1510_14TEV/ ./Output/ECFA/PhaseII_C4/140PU/bjets/600-1100 ../nTupler dummyConfig.txt cleanUp outName=bjets_600-1100_PhaseII_C4_140PU.root
-
 ./simpleRunOnAll.py root:${base}/PhaseII/Configuration4/140PileUp/Bj-4p-1100-1800-v1510_14TEV/ ./Output/ECFA/PhaseII_C4/140PU/bjets/1100-1800 ../nTupler dummyConfig.txt cleanUp outName=bjets_1100-1800_PhaseII_C4_140PU.root
-
 ./simpleRunOnAll.py root:${base}/PhaseII/Configuration4/140PileUp/Bj-4p-1800-2700-v1510_14TEV/ ./Output/ECFA/PhaseII_C4/140PU/bjets/1800-2700 ../nTupler dummyConfig.txt cleanUp outName=bjets_1800-2700_PhaseII_C4_140PU.root
-
 ./simpleRunOnAll.py root:${base}/PhaseII/Configuration4/140PileUp/Bj-4p-2700-3700-v1510_14TEV/ ./Output/ECFA/PhaseII_C4/140PU/bjets/2700-3700 ../nTupler dummyConfig.txt cleanUp outName=bjets_2700-3700_PhaseII_C4_140PU.root
-
 ./simpleRunOnAll.py root:${base}/PhaseII/Configuration4/140PileUp/Bj-4p-3700-100000-v1510_14TEV/ ./Output/ECFA/PhaseII_C4/140PU/bjets/3700-100000 ../nTupler dummyConfig.txt cleanUp outName=bjets_3700-100000_PhaseII_C4_140PU.root

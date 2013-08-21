@@ -1,0 +1,17 @@
+export LD_LIBRARY_PATH=`pwd`:$LD_LIBRARY_PATH
+
+base=/scratch/hh/dust/naf/cms/user/cakir/LastData/ECFA/pMSSM1/Delphes_pMSSM1/
+#PhaseI_140  PhaseI_50  PhaseII_140  PhaseII_140_conf3  PhaseII_140_conf4  PhaseI_NoPU
+
+./simpleRunOnAll.py  $base/PhaseI_140/  ./Output/ECFA/PhaseI_C0/140PU/pmssm1 ../nTupler dummyConfig.txt cleanUp outName=pmssm1_PhaseI_C0_140PU.root
+./simpleRunOnAll.py  $base/PhaseI_50/   ./Output/ECFA/PhaseI_C0/50PU/pmssm1  ../nTupler dummyConfig.txt cleanUp outName=pmssm1_PhaseI_C0_50PU.root
+./simpleRunOnAll.py  $base/PhaseI_NoPU/ ./Output/ECFA/PhaseI_C0/NoPU/pmssm1  ../nTupler dummyConfig.txt cleanUp outName=pmssm1_PhaseI_C0_NoPU.root
+./simpleRunOnAll.py  $base/PhaseII_140_conf3/ ./Output/ECFA/PhaseII_C3/140PU/pmssm1 ../nTupler dummyConfig.txt cleanUp outName=pmssm1_PhaseII_C3_140PU.root
+./simpleRunOnAll.py  $base/PhaseII_140_conf4/ ./Output/ECFA/PhaseII_C4/140PU/pmssm1 ../nTupler dummyConfig.txt cleanUp outName=pmssm1_PhaseII_C4_140PU.root
+
+base=/scratch/hh/dust/naf/cms/user/cakir/LastData/ECFA/pMSSM2/Delphes_pMSSM2/
+./simpleRunOnAll.py  $base/PhaseI_140/  ./Output/ECFA/PhaseI_C0/140PU/pmssm2 ../nTupler dummyConfig.txt cleanUp outName=pmssm2_PhaseI_C0_140PU.root
+./simpleRunOnAll.py  $base/PhaseI_50/   ./Output/ECFA/PhaseI_C0/50PU/pmssm2  ../nTupler dummyConfig.txt cleanUp outName=pmssm2_PhaseI_C0_50PU.root
+./simpleRunOnAll.py  $base/PhaseI_NoPU/ ./Output/ECFA/PhaseI_C0/NoPU/pmssm2  ../nTupler dummyConfig.txt cleanUp outName=pmssm2_PhaseI_C0_NoPU.root
+./simpleRunOnAll.py  $base/PhaseII_140_conf3/ ./Output/ECFA/PhaseII_C3/140PU/pmssm2 ../nTupler dummyConfig.txt cleanUp outName=pmssm2_PhaseII_C3_140PU.root
+./simpleRunOnAll.py  $base/PhaseII_140_conf4/ ./Output/ECFA/PhaseII_C4/140PU/pmssm2 ../nTupler dummyConfig.txt cleanUp outName=pmssm2_PhaseII_C4_140PU.root
