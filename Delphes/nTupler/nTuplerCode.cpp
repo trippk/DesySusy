@@ -141,7 +141,7 @@ using namespace std;
 void nTupler(const char *inputFile, string outname)
 {
 
-  TFile::SetOpenTimeout(300000);  // 5 min
+  TFile::SetOpenTimeout(300000); // 5 min
   TStopwatch t;
   t.Start();
   TFile* file = TFile::Open(inputFile);
@@ -396,6 +396,7 @@ void nTupler(const char *inputFile, string outname)
     Jet *jet;
     std::vector<Jet *> goodJettmp;
     Nbjet=0;
+    Ntaujet=0;
     Njet = branchJet->GetEntries();
     for(int ijet = 0; ijet < Njet; ijet++)
       {    	
@@ -414,6 +415,7 @@ void nTupler(const char *inputFile, string outname)
 	selJetTau.push_back(jet->TauTag);
 
 	if(jet->BTag>0) Nbjet++;
+	if(jet->TauTag>0) Ntaujet++;
 
 	HT += jet->PT;
 
