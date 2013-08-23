@@ -93,12 +93,16 @@ double getIso(GenParticle *Track, TClonesArray * Particles)
 
 double dPhi(double phi1, double phi2)
 {
-  double dp = abs(phi1 - phi2);
 
-  while(dp >  TMath::Pi()) dp -=  TMath::Pi();
-  //  while(dp <  ) dp += 2 *  TMath::Pi();
+//  return acos(cos(phi1-phi2));
 
-  return dp;
+  double dp = phi1 - phi2;
+
+  while(dp >  TMath::Pi()) dp -=  2*TMath::Pi();
+  while(dp < -TMath::Pi()) dp +=  2*TMath::Pi();
+
+  return fabs(dp);
+
 }
 
 
@@ -117,6 +121,7 @@ double goodMuEtaMax = 4.0; // GeV]
 
 double loosJetPtMin = 20.; // GeV]
 double goodJetPtMin = 30.; // GeV]
+double goodJetPtMin2 = 40.; // GeV]
 //double goodJetEtaMax = 2.5; // GeV]
 double goodJetEtaMax = 4.0; // GeV]
 double goodJetIso = 0.4;
@@ -200,6 +205,7 @@ void nTupler(const char *inputFile, string outname)
   int Ntaujet = 0;
 
   double HT = 0;
+  double HT40 = 0;
   double MET = 0;
   double MET_Phi = 0;
   double DelphMET = 0; //delphes MET
@@ -276,6 +282,7 @@ void nTupler(const char *inputFile, string outname)
 
   // variables
   tree->Branch("HT",&HT,"HT/D");
+  tree->Branch("HT40",&HT40,"HT40/D");
   tree->Branch("MET",&MET,"MET/D");
   tree->Branch("DelphMET",&DelphMET,"DelphMET/D");
   tree->Branch("MET_Phi",&MET_Phi,"MET_Phi/D");
@@ -390,6 +397,7 @@ void nTupler(const char *inputFile, string outname)
 
     // JETS //////////////////////////////////
     HT = 0;
+    HT40 = 0;
     //    JetPt.clear();
     //JetPhi.clear();
 
@@ -418,6 +426,7 @@ void nTupler(const char *inputFile, string outname)
 	if(jet->TauTag>0) Ntaujet++;
 
 	HT += jet->PT;
+	if(jet->PT > goodJetPtMin2)HT40+= jet->PT;
 
       }
 
