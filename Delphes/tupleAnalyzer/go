@@ -1,0 +1,26 @@
+#!/bin/bash
+
+if [ "$#" -ne 1 ]
+then
+	echo "No argument"
+	exit 0
+fi
+#conf=PhaseI_C0_NoPU  PhaseI_C0_140PU PhaseII_C3_140PU  PhaseII_C4_140PU    PhaseI_C0_NoPU_pMSSM2
+conf=$1
+
+ana=SingleS
+
+echo "checking library - compiling if neccesssary (no error check)"
+root -q -b reader${ana}.C+ > /dev/null 2>&1
+
+samples="pMSSM2 pMSSM1 BosonJets TopJets TTbar"
+
+dir=$PWD
+
+mkdir -p $ana
+for i in $samples
+do
+	cat reader_script | sed "s%XXXX%$ana%g" | sed "s%YYYY%${conf}_${i}%g" | sed  "s%ZZZZ%${dir}%g" >| reader_${ana}_${conf}_${i}
+	qsub -l site=hh reader_${ana}_${conf}_${i}
+	rm reader_${ana}_${conf}_${i}
+done

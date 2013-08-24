@@ -1,0 +1,24 @@
+#!/bin/zsh
+## make sure the right shell will be used
+#$ -S /bin/zsh
+## the cpu time for this job
+#$ -l h_cpu=02:00:00
+#$ -l site=hh
+## the maximum memory usage of this job
+#$ -l h_vmem=1500M
+## stderr and stdout are merged together to stdout
+#$ -j y
+## define input dir,output dir,executable LD_LIBRARY_PATH
+#$ -v INDIR=ZZZZ
+#$ -v OUTDIR=ZZZZ
+#$ -o ZZZZ
+#$ -v LD_LIBRARY_PATH=ZZZZ:/opt/d-cache/dcap/lib64:/afs/naf.desy.de/products/root/amd64_rhel50/5.34.00/lib:./:
+echo $PWD
+#
+cd $OUTDIR
+echo start at `date`
+ini ROOT534
+./runReader.py XXXX YYYY
+echo
+mv XXXX_YYYY*.txt XXXX_YYYY*.root ./XXXX
+echo job done at `date`
