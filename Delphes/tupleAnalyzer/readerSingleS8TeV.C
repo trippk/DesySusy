@@ -1,3 +1,4 @@
+// root -q -b readerSingleS8Tev.C+
 #include "NtupleTools3.h"
 #include <fstream>
 #include <iostream>
@@ -7,9 +8,18 @@
 #include <TH1F.h>
 #include <TFile.h>
 
+
 using namespace std;
 
-void readerSingleS(TString list, TString outname,bool useW=true){
+//void readerSingleS8Tev(TString list, TString outname,bool useW=true){
+
+double xsec=1;
+//TString list="/scratch/hh/dust/naf/cms/user/isabell/ECFA/UserCode/DesySusy/Delphes/nTupler/Batch/Output/0PU/ttbar/8TeV/ 19.500/7003932*xsec";
+TString list="/scratch/hh/dust/naf/cms/user/kruecker/nTuples/snowmass/8TeV/ttbar/ 19.500/7003932*xsec";
+TString outname="ttbar_8TeV";
+bool useW=true;
+
+void readerSingleS8TeV(){
 	TObjArray* arr = list.Tokenize(" ");
 	int size=arr->GetEntries();
 	if(size%2!=0) {
@@ -122,7 +132,7 @@ void readerSingleS(TString list, TString outname,bool useW=true){
 		iCFCounter[1]++;
 		hAllLepPt->Fill(lepPt,EvWeight);
 
-		// 2. nJets >= 3,4
+		// 2. nJets >= 3
 		vector<TLorentzVector> &Jets = tree->Get(&Jets,"Jets");
 		int Njet_loose = tree->Get(Njet_loose,"Njet");
 		int Njet_tight = 0;
