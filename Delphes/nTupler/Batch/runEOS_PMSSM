@@ -1,0 +1,24 @@
+export LD_LIBRARY_PATH=`pwd`:$LD_LIBRARY_PATH
+
+base=//eos/cms/store/group/phys_higgs/upgrade/
+
+PhaseII/Configuration4/SUSY_SIGNAL//140PileUp/PMSSM1 
+#PhaseI - Configuration 0 - NoPU
+
+./simpleRunOnAll.py root:${base}/PhaseI/Configuration0/SUSY_SIGNAL/NoPileUp/PMSSM1  ./Output/ECFA/PhaseI_C0/NoPU/pmssm1 ../nTupler dummyConfig.txt cleanUp outName=pmssm1_PhaseI_C0_NoPU.root
+./simpleRunOnAll.py root:${base}/PhaseI/Configuration0/SUSY_SIGNAL/NoPileUp/PMSSM2  ./Output/ECFA/PhaseI_C0/NoPU/pmssm2 ../nTupler dummyConfig.txt cleanUp outName=pmssm2_PhaseI_C0_NoPU.root
+
+#PhaseI - Configuration 0 - 140PU
+
+./simpleRunOnAll.py root:${base}/PhaseI/Configuration0/SUSY_SIGNAL/140PileUp/PMSSM1  ./Output/ECFA/PhaseI_C0/140PU/pmssm1 ../nTupler dummyConfig.txt cleanUp outName=pmssm1_PhaseI_C0_140PU.root
+./simpleRunOnAll.py root:${base}/PhaseI/Configuration0/SUSY_SIGNAL/140PileUp/PMSSM2  ./Output/ECFA/PhaseI_C0/140PU/pmssm2 ../nTupler dummyConfig.txt cleanUp outName=pmssm2_PhaseI_C0_140PU.root
+
+#PhaseII - Configuration 3 - 140PU
+
+./simpleRunOnAll.py root:${base}/PhaseII/Configuration3/SUSY_SIGNAL/140PileUp/PMSSM1  ./Output/ECFA/PhaseII_C3/140PU/pmssm1 ../nTupler dummyConfig.txt cleanUp outName=pmssm1_PhaseII_C3_140PU.root
+./simpleRunOnAll.py root:${base}/PhaseII/Configuration3/SUSY_SIGNAL/140PileUp/PMSSM2  ./Output/ECFA/PhaseII_C3/140PU/pmssm2 ../nTupler dummyConfig.txt cleanUp outName=pmssm2_PhaseII_C3_140PU.root
+
+#PhaseII - Configuration 4 - 140PU
+
+./simpleRunOnAll.py root:${base}/PhaseII/Configuration4/SUSY_SIGNAL/140PileUp/PMSSM1  ./Output/ECFA/PhaseII_C4/140PU/pmssm1 ../nTupler dummyConfig.txt cleanUp outName=pmssm1_PhaseII_C4_140PU.root
+./simpleRunOnAll.py root:${base}/PhaseII/Configuration4/SUSY_SIGNAL/140PileUp/PMSSM2  ./Output/ECFA/PhaseII_C4/140PU/pmssm2 ../nTupler dummyConfig.txt cleanUp outName=pmssm2_PhaseII_C4_140PU.root
