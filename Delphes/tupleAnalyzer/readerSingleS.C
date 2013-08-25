@@ -25,8 +25,8 @@ void readerSingleS(TString list, TString outname,bool useW=true){
 
 	TH1F* hMET   = new TH1F("hMET","MET",100,0,3000);
 	TH1F* hMT    = new TH1F("hMT","MT",100,0,300);
-	TH1F* hMT2Wpre  = new TH1F("hMT2Wpre","MT2W w/o MET,MT req.",100,0,450);
-	TH1F* hMT2W  = new TH1F("hMT2W","MT2W",100,0,450);
+	TH1F* hMT2Wpre  = new TH1F("hMT2Wpre","MT2W w/o MET,MT req.",100,0,500);
+	TH1F* hMT2W  = new TH1F("hMT2W","MT2W",100,0,500);
 	TH1F* hMETMeff  = new TH1F("hMETMeff","MET/(MET+HT)",100,0,1);
 	TH1F* hHT    = new TH1F("hHT","HT40",100,0,5000);
 	TH1F* hDphi  = new TH1F("hDphi","#Delta#phi",100,0,4);
