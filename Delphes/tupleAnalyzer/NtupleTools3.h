@@ -13,14 +13,14 @@
 //              - unique name base argument
 //   dirk.kruecker@desy.de
 
-#ifndef NtupleTools2_h
-#define NtupleTools2_h
+#ifndef NtupleTools3_h
+#define NtupleTools3_h
 
 #ifdef __GNUC__
 // only visible for the gnu pre-compiler
 //#warning __GNUC__
-#pragma GCC diagnostic ignored "-Wunused-parameter"
-#pragma GCC diagnostic ignored "-Wuninitialized"
+//#pragma GCC diagnostic ignored "-Wunused-parameter"
+//#pragma GCC diagnostic ignored "-Wuninitialized"
 #endif
 
 #include <iostream>
@@ -75,18 +75,18 @@ typedef ROOT::Math::PositionVector3D<ROOT::Math::Cartesian3D<float>  >     XYZPo
 #pragma link C++ class map<string,bool>+;
 #pragma link C++ class map<string,string>+;
 //
-#pragma link C++ class pair<string,bool>+;
-#pragma link C++ class pair<string,string>+;
-#pragma link C++ class map<string,int>+;
-#pragma link C++ class map<string,string>+;
+//#pragma link C++ class pair<string,bool>+;
+//#pragma link C++ class pair<string,string>+;
+//#pragma link C++ class map<string,int>+;
+//#pragma link C++ class map<string,string>+;
 //
-#pragma link C++ class ROOT::Math::Cartesian3D<float>+;
-#pragma link C++ class ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> >+;
-#pragma link C++ class ROOT::Math::PositionVector3D<ROOT::Math::Cartesian3D<float>  >+;
-#pragma link C++ class ROOT::Math::DisplacementVector3D<ROOT::Math::Cartesian3D<float> >+;
-#pragma link C++ class ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<float> >+;
-#pragma link C++ class ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiE4D<float> >+;
-#pragma link C++ class ROOT::Math::PtEtaPhiM4D<float>+;
+//#pragma link C++ class ROOT::Math::Cartesian3D<float>+;
+//#pragma link C++ class ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<float> >+;
+//#pragma link C++ class ROOT::Math::PositionVector3D<ROOT::Math::Cartesian3D<float>  >+;
+//#pragma link C++ class ROOT::Math::DisplacementVector3D<ROOT::Math::Cartesian3D<float> >+;
+//#pragma link C++ class ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<float> >+;
+//#pragma link C++ class ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiE4D<float> >+;
+//#pragma link C++ class ROOT::Math::PtEtaPhiM4D<float>+;
 #endif
 
 //namespace ROOT {
@@ -443,9 +443,10 @@ public:
 			FillBranchAddresses(fTree);
 			TString filename = GetFile()->GetName();
 			filename.ReplaceAll("//","/");
-			TString nam( filename(0,filename.Index("//")+1) );
+			TString nam( filename(0,filename.Last('/')+1) );
+			nam.ReplaceAll("//","/");
 			if( weights.find(nam)==weights.end() ) {
-				cout<<"NtupleTools2:GetEntry don't find a weight for "<<filename<<" "<<nam<<endl;
+				cout<<"NtupleTools3:GetEntry don't find a weight for "<<filename<<" "<<nam<<endl;
 				exit(0);
 			}
 			fileWeight=weights[nam];

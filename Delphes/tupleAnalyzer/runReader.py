@@ -4,8 +4,8 @@ import sys
 from ROOT import gROOT
 
 # scenarios and samples
-scenarios = ['PhaseI_C0_NoPU','PhaseI_C0_140PU','PhaseII_C3_140PU','PhaseII_C4_140PU']
-samples   = ['BosonJets','TopJets','TTbar','pMSSM1','pMSSM2']  # DiBoson not available
+scenarios = ['PhaseI_C0_NoPU','PhaseI_C0_140PU','PhaseII_C3_140PU','PhaseII_C4_140PU','8TeV_NoPU']
+samples   = ['BosonJets','TopJets','TTbar','pMSSM1','pMSSM2','TTbar8TeV']  # DiBoson not available
 # by historic reason we have as dir names: diboson bjets  pmssm1  pmssm2  tjets  ttbar
 
 #samples w.o weight
@@ -17,6 +17,7 @@ noWeight  = []
 #Lumi=300
 base = 'nTuples/ECFA/'
 Lumi=3000
+#print 'ECFA0 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
 
 def help(where):
 	print where+'?'
@@ -24,6 +25,7 @@ def help(where):
 	print '   SingleS'
 	print ' then a list of inputs - read the code'
 	print 'e.g. ./runReader.py SingleS PhaseI_C0_NoPU_pMSSM1' 
+	print 'e.g. ./runReader.py SingleS8TeV 8TeV_NoPU_TTbar8TeV' 
 	sys.exit(0)
 
 from operator import mul
@@ -35,6 +37,12 @@ if len(sys.argv)>1:
 	if sys.argv[1]=='SingleS':       # single lepton  stop - CMS
 		gROOT.LoadMacro('readerSingleS.C+')
 		from ROOT import readerSingleS as reader
+	elif sys.argv[1]=='SingleSHT':  # single lepton testing version 
+		gROOT.LoadMacro('readerSingleSHT.C+')
+		from ROOT import readerSingleSHT as reader
+	elif sys.argv[1]=='SingleS8TeV':  # single lepton testing version 
+		gROOT.LoadMacro('readerSingleS8TeV.C+')
+		from ROOT import readerSingleS8TeV as reader
 	elif sys.argv[1]=='SingleSdev':  # single lepton testing version 
 		gROOT.LoadMacro('readerSingleSdev.C+')
 		from ROOT import readerSingleSdev as reader
@@ -149,10 +157,10 @@ inDir['PhaseII_C4_140PU']['TopJets'] = base+'/PhaseII_C4/140PU/tjets/'
 # HT dirs - none for pMSSM samples
 dirsHT['pMSSM1'] = ['/']
 dirsHT['pMSSM2'] = ['/']
-#    xsec - we multiply by lumi 3.846D-09 PYTHIA LO !!!!!!
-#                                2.043D-10
-weights['pMSSM1'] = [0.2043*Lumi]  # is this correct assigned ???
-weights['pMSSM2'] = [3.846*Lumi]
+#    xsec - we multiply by lumi  PYTHIA LO !!!!!!
+#                                
+weights['pMSSM1'] = [0.198*Lumi]  # 
+weights['pMSSM2'] = [4.27*Lumi]
 #
 # NoPU C0
 inDir['PhaseI_C0_NoPU']['pMSSM1'] = base+'PhaseI_C0/NoPU/pmssm1'
@@ -166,6 +174,15 @@ inDir['PhaseII_C3_140PU']['pMSSM2'] = base+'PhaseII_C3/140PU/pmssm2'
 # 140PU C4
 inDir['PhaseII_C4_140PU']['pMSSM1'] = base+'PhaseII_C4/140PU/pmssm1'
 inDir['PhaseII_C4_140PU']['pMSSM2'] = base+'PhaseII_C4/140PU/pmssm2'
+#--------------------------------------------- ttbar 8TeV
+# HT dirs - or lepton decay channel number for 8TeV ttbar
+dirsHT['TTbar8TeV'] = ['sl/','ll/']
+#
+Lumi0=19.5 # 8TeV Lumi
+weights['TTbar8TeV'] = [53.2*Lumi0,13.43*Lumi0]
+#
+# NoPU at 8TeV
+inDir['8TeV_NoPU']['TTbar8TeV'] = base+'8TeV/NoPU/ttbar/'
 #--------------------------------------------- end of sample properties
 
 # 

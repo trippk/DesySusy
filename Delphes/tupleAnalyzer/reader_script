@@ -20,5 +20,5 @@ echo start at `date`
 ini ROOT534
 ./runReader.py XXXX YYYY
 echo
-mv XXXX_YYYY*.txt XXXX_YYYY*.root ./XXXX
+mv XXXX_YYYY.txt XXXX_YYYY_his.root ./XXXX
 echo job done at `date`

@@ -56,7 +56,7 @@ void readerSingleS(TString list, TString outname,bool useW=true){
 	const int CutNumb = 15;
 	const char * CutList[CutNumb] = {"Presel","sngl. lep.","nJets >= 3","nJets >= 4",
                                          "bjets == 1/2","MET>500","MT>120","MT2W>250",
-                                         "dphi12 > 0.5","   HT>750","   HT>1000","   HT>1500",
+                                         "dphi12 > 0.8","   HT>750","   HT>1000","   HT>1500",
                                          "or Meff>0.2","   Meff>0.3","   Meff>0.4"};
 	double CFCounter[CutNumb];
 	int   iCFCounter[CutNumb];
@@ -185,7 +185,7 @@ void readerSingleS(TString list, TString outname,bool useW=true){
 		vector<double> &JetMETdPhi = tree->Get(&JetMETdPhi,"JetMETdPhi");		
 		double dPhi = TMath::Min(JetMETdPhi[0],JetMETdPhi[1]);
 		hDphi->Fill(dPhi,EvWeight);
-		if(dPhi > 0.8) continue;
+		if(dPhi < 0.8) continue;
 		 CFCounter[8]+= EvWeight;
 		iCFCounter[8]++;
 
