@@ -26,22 +26,32 @@ def aTable(base,tag,sys1,sys2,n):
 		what=linesList[0][i].split('\t')[0][10:]
 		nbgrd=d[0]+d[1]+d[2]
 		print ('%16s '+6*'%11i ') % ( what,d[0],d[1],d[2],nbgrd,d[3],d[4] )
-	a=sqrt(nbgrd)
-	b=sqrt(nbgrd*(1+sys1*sys1*nbgrd))
-	c=sqrt(nbgrd*(1+sys2*sys2*nbgrd))
-	print ('%20s '+44*' '+2*'%11f ') % ( 's/sqrt(b)',d[3]/a,d[4]/a )
-	print ('%20s '+44*' '+2*'%11f ') % ( 's/sqrt(b+('+str(sys1)+'*b)^2)',d[3]/b,d[4]/b )
-	print ('%20s '+44*' '+2*'%11f ') % ( 's/sqrt(b+('+str(sys2)+'*b)^2)',d[3]/c,d[4]/c )
+		a=sqrt(nbgrd)
+		b=sqrt(nbgrd*(1+sys1*sys1*nbgrd))
+		c=sqrt(nbgrd*(1+sys2*sys2*nbgrd))
+		as3=sqrt(d[3]+nbgrd)
+		bs3=sqrt(d[3]+nbgrd*(1+sys1*sys1*nbgrd))
+		cs3=sqrt(d[3]+nbgrd*(1+sys2*sys2*nbgrd))
+		as4=sqrt(d[4]+nbgrd)
+		bs4=sqrt(d[4]+nbgrd*(1+sys1*sys1*nbgrd))
+		cs4=sqrt(d[4]+nbgrd*(1+sys2*sys2*nbgrd))
+	print ('%22s '+42*' '+2*'%11f ') % ( 's/sqrt(b)',d[3]/a,d[4]/a )
+	print ('%22s '+42*' '+2*'%11f ') % ( 's/sqrt(b+('+str(sys1)+'*b)^2)',d[3]/b,d[4]/b )
+	print ('%22s '+42*' '+2*'%11f ') % ( 's/sqrt(b+('+str(sys2)+'*b)^2)',d[3]/c,d[4]/c )
+
+	print ('%22s '+42*' '+2*'%11f ') % ( 's/sqrt(s+b)',d[3]/as3,d[4]/as4 )
+	print ('%22s '+42*' '+2*'%11f ') % ( 's/sqrt(s+b+('+str(sys1)+'*b)^2)',d[3]/bs3,d[4]/bs4 )
+	print ('%22s '+42*' '+2*'%11f ') % ( 's/sqrt(s+b+('+str(sys2)+'*b)^2)',d[3]/cs3,d[4]/cs4 )
 	print
 
 
 
 ana='SingleS'
 # here we print <<<<<<<<<<<<<<<<<<<<<<<<
-aTable(ana,'PhaseI_C0_NoPU', 0.25,0.15,5)
+aTable(ana,'PhaseI_C0_NoPU', 0.25,0.15,3)
 print '----------------------------------------------------------------------------------------'
-aTable(ana,'PhaseI_C0_140PU', 0.25,0.15,2)
+aTable(ana,'PhaseI_C0_140PU', 0.25,0.15,3)
 print '----------------------------------------------------------------------------------------'
-aTable(ana,'PhaseII_C3_140PU',0.25,0.15,2)
+aTable(ana,'PhaseII_C3_140PU',0.25,0.15,3)
 print '----------------------------------------------------------------------------------------'
-aTable(ana,'PhaseII_C4_140PU',0.25,0.15,4)
+aTable(ana,'PhaseII_C4_140PU',0.25,0.15,3)
