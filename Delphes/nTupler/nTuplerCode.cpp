@@ -67,7 +67,12 @@ double GetMt2w(const TLorentzVector& Lep,
 	}
 	return 0;
 };
-
+double dR(Track* tr,double eta,double phi){
+    return sqrt(pow((tr->Eta - eta),2) + pow(TMath::Pi()-acos(cos(tr->Phi - phi)),2));
+}
+double dR(Track* tr,Track* tr2){
+    return sqrt(pow((tr->Eta - tr2->Eta),2) + pow(TMath::Pi()-acos(cos(tr->Phi - tr2->Phi)),2));
+}
 double getIso(GenParticle *Track, TClonesArray * Particles)
 // Get isolation of TRack amongst Particles
 	      //double Eta, double Phi, GenParticle)
@@ -182,6 +187,7 @@ void nTupler(const char *inputFile, string outname)
   TClonesArray *branchJet = treeReader->UseBranch("Jet");
   TClonesArray *branchElectron = treeReader->UseBranch("Electron");
   TClonesArray *branchMuon = treeReader->UseBranch("Muon");
+  TClonesArray *branchTrack = treeReader->UseBranch("Track");
   TClonesArray *branchEvent = treeReader->UseBranch("Event");
   TClonesArray *branchMET = treeReader->UseBranch("MissingET");
   TClonesArray *branchGP = treeReader->UseBranch("Particle");
@@ -203,6 +209,9 @@ void nTupler(const char *inputFile, string outname)
   int rawNjet = 0;
   int Nbjet = 0;
   int Ntaujet = 0;
+  int isoTracksP =0;
+  int isoTracksM =0;
+
 
   double HT = 0;
   double HT40 = 0;
@@ -211,9 +220,9 @@ void nTupler(const char *inputFile, string outname)
   double DelphMET = 0; //delphes MET
   double DelphMET_Phi = 0; //delphes MET Phi
   double MT = 0;
-  double MT0 = 0;
+  double DelphMT = 0;
   double MT2W = 0;
-  double MT2W0 = 0;
+  double DelphMT2W = 0;
 
   LHEFEvent * Event;
   /*
@@ -258,6 +267,10 @@ void nTupler(const char *inputFile, string outname)
   tree->Branch("MuonCh",&selMuCharge);
   tree->Branch("MuonIso",&selMuIso);
 
+  // iso track veto
+  tree->Branch("isoTracksP",&isoTracksP);
+  tree->Branch("isoTracksM",&isoTracksM);
+
   tree->Branch("Jets",&selJet);
   tree->Branch("Njet",&Njet,"Njet/I");
   tree->Branch("rawNjet",&rawNjet,"rawNjet/I");
@@ -277,8 +290,8 @@ void nTupler(const char *inputFile, string outname)
 
   tree->Branch("MT",&MT,"MT/D");
   tree->Branch("MT2W",&MT2W,"MT2W/D");
-  tree->Branch("MT0",&MT0,"MT0/D");
-  tree->Branch("MT2W0",&MT2W0,"MT2W0");
+  tree->Branch("DelphMT",&DelphMT,"DelphMT/D");
+  tree->Branch("DelphMT2W",&DelphMT2W,"DelphMT2W/D");
 
   // variables
   tree->Branch("HT",&HT,"HT/D");
@@ -312,7 +325,7 @@ void nTupler(const char *inputFile, string outname)
     selMuCharge.clear();
     selMuIso.clear();
 
-    MT=MT0=MT2W=MT2W0=0;
+    MT=DelphMT=MT2W=DelphMT2W=0;
 
     if(entry%1000 == 0)
       cout << "Entry\t" << entry << endl;
@@ -334,6 +347,7 @@ void nTupler(const char *inputFile, string outname)
     Nel = branchElectron->GetEntries();
     looNel=0;
 
+    vector<Electron*> selelp;
     for(int iel = 0; iel < Nel; iel++)
       {
 	electron = (Electron *) branchElectron->At(iel);
@@ -350,13 +364,7 @@ void nTupler(const char *inputFile, string outname)
 	selEl.push_back(lv_el);
 	selElCharge.push_back(electron->Charge);
 	selElIso.push_back(electron->IsolationVar);
-
-	/*
-	GenParticle* part = (GenParticle*)electron->Particle.GetObject();
-	//	if(part!=0) cout<<part->PID<<" "<<part->Status<<" "<<part->PT<<endl;
-	if(part!=0)
-	  selElIso.push_back(getIso(part,branchGP));
-	*/
+	selelp.push_back(electron);
       }
 
     rawNel=Nel;
@@ -366,7 +374,7 @@ void nTupler(const char *inputFile, string outname)
     Muon *muon;
     Nmu = branchMuon->GetEntries();
     looNmu=0;
-
+    vector<Muon*> selmup;
     for(int imu = 0; imu < Nmu; imu++)
       {
 	muon = (Muon *) branchMuon->At(imu);
@@ -384,16 +392,49 @@ void nTupler(const char *inputFile, string outname)
 	selMu.push_back(lv_mu);
 	selMuCharge.push_back(muon->Charge);
 	selMuIso.push_back(muon->IsolationVar);
-
-	/*
-	GenParticle* part = (GenParticle*)muon->Particle.GetObject();
-	if(part!=0)
-	  selMuIso.push_back(getIso(part,branchGP));
-	*/
+	selmup.push_back(muon);
       }
 
     rawNmu=Nmu;
     Nmu = selMu.size();
+
+
+    // Tracks ///////////////////////////////
+    // iso track flag
+    isoTracksP=0;
+    isoTracksM=0;
+    Track *track;
+    int Ntr = branchTrack->GetEntries();
+    for(int itr = 0; itr < Ntr; itr++) {
+	track = (Track *) branchTrack->At(itr);
+	if( track->PT < 10 ) continue;
+	if( fabs(track->Eta) > goodMuEtaMax ) continue;
+	if( track->Charge ==0 ) continue;
+	bool flag=false;
+	for(int im=0;im<selmup.size();im++) 
+		if(dR(track,selmup[im]->Eta,selmup[im]->Phi)<0.4) {
+			flag=true;
+			break;
+		}
+	if(flag) continue;
+	for(int ie=0;ie<selelp.size();ie++) 
+		if(dR(track,selelp[ie]->Eta,selelp[ie]->Phi)<0.4) {
+			flag=true;
+			break;
+		}
+	if(flag) continue;
+	double iso=0;
+	for(int ktr = 0; ktr < Ntr; ktr++) {
+	    	if(itr==ktr) continue;
+		Track* track2 = (Track *) branchTrack->At(ktr);
+	    	if(dR(track,track2)>0.4) continue; 
+	    	iso+=track2->PT;
+	}
+	iso/=track->PT;
+	if(iso<0.1&&track->Charge>0)isoTracksP++;
+	if(iso<0.1&&track->Charge<0)isoTracksM++;
+      }
+
 
     // JETS //////////////////////////////////
     HT = 0;
@@ -443,15 +484,17 @@ void nTupler(const char *inputFile, string outname)
     
     DelphMET = ((MissingET*)branchMET->At(0))->MET; // Delphes MET
     DelphMET_Phi = ((MissingET*)branchMET->At(0))->Phi;
-
+    double DelphMET_Px = cos(DelphMET_Phi)*DelphMET;
+    double DelphMET_Py = sin(DelphMET_Phi)*DelphMET;
     // transverse mass and MT2W for exactly 1 lepton
     TLorentzVector* Lep=0;
     if(selEl.size()==1&&looNel==0&&(looNmu+selMu.size())==0) Lep = &selEl[0];
     if(selMu.size()==1&&looNmu==0&&(looNel+selEl.size())==0) Lep = &selMu[0];
     if(Lep!=0){
         MT  = sqrt(2*MET* Lep->Pt()*(1-cos(MET_Phi -Lep->Phi()))) ;
-        MT0 = sqrt(2*DelphMET*Lep->Pt()*(1-cos(DelphMET_Phi-Lep->Phi())));
+        DelphMT = sqrt(2*DelphMET*Lep->Pt()*(1-cos(DelphMET_Phi-Lep->Phi())));
 	if(Nbjet>0) MT2W = GetMt2w(*Lep,selJet,selJetB,Nbjet,lv_RecoMET.Px(),lv_RecoMET.Py()); 
+	if(Nbjet>0) DelphMT2W = GetMt2w(*Lep,selJet,selJetB,Nbjet,DelphMET_Px,DelphMET_Py); 
     }
     // Fill Tree
     tree->Fill();
