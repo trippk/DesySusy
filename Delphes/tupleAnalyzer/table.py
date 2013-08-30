@@ -47,11 +47,14 @@ def aTable(base,tag,sys1,sys2,n):
 
 
 ana='SingleS'
+lin=3
+#ana='EWKino'
+#lin=7
 # here we print <<<<<<<<<<<<<<<<<<<<<<<<
-aTable(ana,'PhaseI_C0_NoPU', 0.25,0.15,3)
+aTable(ana,'PhaseI_C0_NoPU', 0.25,0.15,lin)
 print '----------------------------------------------------------------------------------------'
-aTable(ana,'PhaseI_C0_140PU', 0.25,0.15,3)
+aTable(ana,'PhaseI_C0_140PU', 0.25,0.15,lin)
 print '----------------------------------------------------------------------------------------'
-aTable(ana,'PhaseII_C3_140PU',0.25,0.15,3)
+aTable(ana,'PhaseII_C3_140PU',0.25,0.15,lin)
 print '----------------------------------------------------------------------------------------'
-aTable(ana,'PhaseII_C4_140PU',0.25,0.15,3)
+aTable(ana,'PhaseII_C4_140PU',0.25,0.15,lin)
