@@ -23,6 +23,16 @@ void readerSingleS(TString list, TString outname,bool useW=true){
         	weights.push_back( atof( arr->At(i+1)->GetName() ) );
 	}
 
+        //at 1lep 4jets 1b
+        TH1F* aDphi  = new TH1F("aDphi","#Delta#phi",100,0,4);
+        TH1F* aMET   = new TH1F("aMET","MET",100,0,3000);
+        TH1F* aMT    = new TH1F("aMT","MT",100,0,500);
+        TH1F* aMT2W2  = new TH1F("aMT2W2","MT2W 1,2b",100,0,500);
+        TH1F* aMT2W  = new TH1F("aMT2W","MT2W 1,2b only",100,0,500);
+        TH1F* aHT    = new TH1F("aHT","HT40",100,0,4000);
+        TH1F* aLepPt = new TH1F("aLepPt","single lep Pt",100,0,1000);
+        TH1F* a1JetPt = new TH1F("a1JetPt","highest jet Pt",100,0,2000);
+
 	TH1F* hMET   = new TH1F("hMET","MET",100,0,3000);
 	TH1F* hMT    = new TH1F("hMT","MT",100,0,300);
 	TH1F* hMT2Wpre  = new TH1F("hMT2Wpre","MT2W w/o MET,MT req.",100,0,500);
@@ -150,8 +160,23 @@ void readerSingleS(TString list, TString outname,bool useW=true){
 
 		hLepPtJb->Fill(lepPt,EvWeight);
 
-		double MET  = tree->Get(MET,"MET");
-		double MT2W  = tree->Get(MT2W,"MT2W");
+                // distributions at 1lep4jet1b
+                vector<double> &JetMETdPhi = tree->Get(&JetMETdPhi,"JetMETdPhi");
+                double dPhi = TMath::Min(JetMETdPhi[0],JetMETdPhi[1]);
+                aDphi->Fill(dPhi,EvWeight);
+                double MET  = tree->Get(MET,"MET");
+                aMET->Fill(MET,EvWeight);
+                double MT2W  = tree->Get(MT2W,"MT2W");
+                aMT2W2->Fill(MT2W,EvWeight);
+                if(MT2W>0&&MT2W<499)aMT2W->Fill(MT2W,EvWeight);
+                double MT  = tree->Get(MT,"MT");
+                aMT->Fill(MT,EvWeight);
+                aHT->Fill(HT,EvWeight);
+                aLepPt->Fill(lepPt,EvWeight);
+                if(Jets[0].Pt()>40.) a1JetPt->Fill(Jets[0].Pt(),EvWeight);
+
+//		double MET  = tree->Get(MET,"MET");
+//		double MT2W  = tree->Get(MT2W,"MT2W");
 		if(MT2W>0)hMT2Wpre->Fill(MT2W,EvWeight);
 
 		//  MET/Meff
@@ -167,7 +192,7 @@ void readerSingleS(TString list, TString outname,bool useW=true){
 		hLepPtM->Fill(lepPt,EvWeight);
 
 		// 5. MT cut
-		double MT  = tree->Get(MT,"MT");
+//		double MT  = tree->Get(MT,"MT");
 		hMT->Fill(MT,EvWeight);
 		if(MT<120) continue;
 		 CFCounter[6]+= EvWeight;
@@ -182,8 +207,8 @@ void readerSingleS(TString list, TString outname,bool useW=true){
 		hLepPtMM->Fill(lepPt,EvWeight);
 
 		// 6. dPhi
-		vector<double> &JetMETdPhi = tree->Get(&JetMETdPhi,"JetMETdPhi");		
-		double dPhi = TMath::Min(JetMETdPhi[0],JetMETdPhi[1]);
+//		vector<double> &JetMETdPhi = tree->Get(&JetMETdPhi,"JetMETdPhi");		
+//		double dPhi = TMath::Min(JetMETdPhi[0],JetMETdPhi[1]);
 		hDphi->Fill(dPhi,EvWeight);
 		if(dPhi < 0.8) continue;
 		 CFCounter[8]+= EvWeight;
@@ -257,4 +282,16 @@ void readerSingleS(TString list, TString outname,bool useW=true){
 	hLepPtM->Write();
 	hLepPtMM->Write();
 	hMT2Wpre->Write();
+
+        aDphi->Write();
+        aMET->Write();
+        aMT->Write();
+        aMT2W->Write();
+        aMT2W2->Write();
+        aHT->Write();
+        aLepPt->Write();
+        a1JetPt->Write();
+        outf->GetName();
+
+
 }
